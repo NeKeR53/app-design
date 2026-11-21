@@ -1,0 +1,25 @@
+{
+  "name": "app-design",
+  "version": "0.1.0",
+  "description": "Créer, faire évoluer et faire respecter un design system React partagé entre apps web et desktop, avec validation visuelle à chaque étape.",
+  "author": {
+    "name": "NeKeR53"
+  },
+  "homepage": "https://github.com/NeKeR53/app-design",
+  "repository": "https://github.com/NeKeR53/app-design",
+  "keywords": ["design-system", "react", "tauri", "storybook", "ui"],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "App Design",
+    "shortDescription": "Design system React partagé entre apps web et desktop.",
+    "longDescription": "Créer, faire évoluer et faire respecter un design system React partagé entre apps web et desktop, avec validation visuelle à chaque étape. Modes : init, define, inspire, check, propose, audit, apply, review.",
+    "developerName": "NeKeR53",
+    "category": "Developer Tools",
+    "capabilities": ["Interactive", "Write"],
+    "defaultPrompt": [
+      "Initialise un nouveau design system",
+      "Vérifie que cette demande d'UI rentre dans le design",
+      "Audite cette app par rapport au design system"
+    ]
+  }
+}

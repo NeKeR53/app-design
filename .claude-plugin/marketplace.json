@@ -1,0 +1,15 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-marketplace.json",
+  "name": "app-design",
+  "owner": {
+    "name": "NeKeR53"
+  },
+  "description": "Créer, faire évoluer et faire respecter un design system React partagé entre apps web et desktop, avec validation visuelle à chaque étape.",
+  "plugins": [
+    {
+      "name": "app-design",
+      "source": "./",
+      "description": "Créer, faire évoluer et faire respecter un design system React partagé entre apps web et desktop, avec validation visuelle à chaque étape."
+    }
+  ]
+}
