@@ -74,6 +74,12 @@ Versions selon semver (règle 6 du skill design) : une nouvelle option facultati
 - `DiffStat` : compteurs « +12 −3 » seuls, avec texte caché (D-290).
 - Libellés internes `diff…` dans le dictionnaire `messages` (D-089).
 
+- `DocumentViewer` : aperçu d'un PDF ou d'une image, source `src` (`data:`, `blob:`, `https:`) ou `data` (`Blob`, `ArrayBuffer`, `Uint8Array`) (D-310). Barre d'outils : « Page n / N », page précédente et suivante, zoom −/%/+, « Ajuster à la largeur », « Télécharger » (`onDownload`), actions de l'app (`actions`, zone `toolbar`) (D-312). Zoom par paliers 25 → 400 %, Ctrl/⌘ + molette, Ctrl/⌘ + « + » / « − » / « 0 » (D-313). Pages dessinées à l'approche de la zone visible (D-314). Chargement en squelette, erreurs en `EmptyState` avec « Réessayer », format non pris en charge avec « Télécharger » (D-316). Options `height` (`fixed`, `fill`), `name`, `type`.
+- pdf.js en peer dependency facultative (`pdfjs-dist` >= 5) : Socle ne l'importe jamais ; l'app passe `loadPdf={() => import("pdfjs-dist")}` et règle son worker (D-311). Types exportés : `PdfEngine`, `PdfDocumentHandle`, `PdfPageHandle`, `DocumentData`, `DocumentFormat` ; fonction `detectFormat` ; constante `ZOOM_STEPS`.
+- `HtmlContent` : HTML reçu (courriel, page) nettoyé par liste blanche et isolé dans une racine fantôme, `contain: content` (D-317). Images distantes masquées par défaut, bandeau « N images masquées » + « Afficher les images » ; `imagesAllowed`, `defaultImagesAllowed`, `onImagesAllowedChange`, `resolveImage` (`cid:`, proxy) (D-318). Liens http, https, mailto interceptés par `onLink`, adresse au survol ; sans `onLink`, texte simple. Surface `paper` (défaut) ou `theme` (D-319).
+- Tokens `--paper`, `--paper-fg`, `--paper-link`, identiques en clair et en sombre, et utilitaires `bg-paper`, `text-paper-fg`, `text-paper-link` (D-315).
+- Libellés internes ajoutés au dictionnaire `messages` : `documentToolbar`, `pageOf`, `pageNumber`, `documentPages`, `previousPage`, `nextPage`, `zoomIn`, `zoomOut`, `fitWidth`, `zoomPercent`, `download`, `readingDocument`, `documentUnreadable`, `documentReadFailed`, `pdfPassword`, `pdfInvalid`, `pdfUnavailable`, `unsupportedFormat`, `unsupportedFormatText`, `unknownFormat`, `imagesHidden`, `showImages`.
+
 ## [0.2.0] — 2026-11-23
 
 Lot 1 de la migration d'Alfred : bouton à texte, actions, modale, champs, ComboBox, notifications et petits éléments d'affichage (décisions D-100 à D-169). Version mineure : tout est nouveau ou facultatif, rien ne casse.

@@ -251,6 +251,27 @@ export interface SocleMessages {
   diffFileAdded: string;
   diffFileDeleted: string;
   diffFileRenamed: string;
+  /* DocumentViewer et HtmlContent (D-310 à D-319) */
+  documentToolbar: string;
+  pageOf: (n: number, total: number) => string;
+  pageNumber: (n: number) => string;
+  documentPages: (label: string, n: number) => string;
+  zoomIn: string;
+  zoomOut: string;
+  fitWidth: string;
+  zoomPercent: (n: number) => string;
+  download: string;
+  readingDocument: string;
+  documentUnreadable: string;
+  documentReadFailed: string;
+  pdfPassword: string;
+  pdfInvalid: string;
+  pdfUnavailable: string;
+  unsupportedFormat: string;
+  unsupportedFormatText: (kind: string) => string;
+  unknownFormat: string;
+  imagesHidden: (n: number) => string;
+  showImages: string;
 }
 
 const s = (n: number) => (n > 1 ? "s" : "");
@@ -485,4 +506,24 @@ export const frenchMessages: SocleMessages = {
   diffFileAdded: "Ajouté",
   diffFileDeleted: "Supprimé",
   diffFileRenamed: "Renommé",
+  documentToolbar: "Affichage du document",
+  pageOf: (n, t) => `Page ${n} / ${t}`,
+  pageNumber: (n) => `Page ${n}`,
+  documentPages: (l, n) => `${l}, ${n} page${s(n)}`,
+  zoomIn: "Zoom avant",
+  zoomOut: "Zoom arrière",
+  fitWidth: "Ajuster à la largeur",
+  zoomPercent: (n) => `${n} %`,
+  download: "Télécharger",
+  readingDocument: "Lecture du document…",
+  documentUnreadable: "Document illisible",
+  documentReadFailed: "Le fichier n'a pas pu être lu.",
+  pdfPassword: "Ce PDF est protégé par un mot de passe.",
+  pdfInvalid: "Ce fichier n'est pas un PDF valide, ou il est abîmé.",
+  pdfUnavailable: "Aperçu PDF indisponible dans cette app.",
+  unsupportedFormat: "Format non pris en charge",
+  unsupportedFormatText: (k) => `Ce type de fichier (${k}) ne s'affiche pas ici.`,
+  unknownFormat: "inconnu",
+  imagesHidden: (n) => (n > 1 ? `${n} images masquées.` : "1 image masquée."),
+  showImages: "Afficher les images",
 };

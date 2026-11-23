@@ -48,6 +48,7 @@ export default defineConfig({
       "react-aria-components/Toast",
       "@xterm/xterm",
       "@xterm/addon-fit",
+      "pdfjs-dist",
     ],
   },
   test: {
