@@ -8,9 +8,13 @@ export default defineConfig({
   plugins: [react(), tailwindcss()],
   build: {
     lib: {
-      entry: "src/index.ts",
+      // Entrée unique, plus les sous-entrées à dépendances facultatives (D-300).
+      entry: {
+        index: "src/index.ts",
+        markdown: "src/entries/markdown.ts",
+        "markdown-editor": "src/entries/markdown-editor.ts",
+      },
       formats: ["es"],
-      fileName: "index",
     },
     cssCodeSplit: false,
     rollupOptions: {
@@ -19,6 +23,11 @@ export default defineConfig({
         "react-dom",
         "react/jsx-runtime",
         /^react-aria-components/,
+        // Dépendances facultatives (D-300) : installées par l'app qui s'en sert.
+        "react-markdown",
+        "remark-gfm",
+        /^@codemirror\//,
+        /^@lezer\//,
       ],
     },
   },

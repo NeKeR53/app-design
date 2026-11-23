@@ -32,7 +32,8 @@ for (const kind of ["components", "patterns", "templates"]) {
 }
 
 const pkg = JSON.parse(readFileSync("package.json", "utf8"));
-const allowed = new Set([".", "./styles.css", "./theme.css", "./eslint-config", "./biome", "./package.json"]);
+// Sous-entrées à dépendances facultatives (D-300) : seules exceptions à l'entrée unique.
+const allowed = new Set([".", "./styles.css", "./theme.css", "./eslint-config", "./biome", "./markdown", "./markdown-editor", "./package.json"]);
 for (const key of Object.keys(pkg.exports ?? {}))
   if (!allowed.has(key)) errors.push(`package.json : export non autorisé « ${key} » (point d'entrée unique)`);
 

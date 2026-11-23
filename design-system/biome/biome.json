@@ -17,7 +17,7 @@
             },
             "patterns": [
               {
-                "group": ["socle-ui/**", "!socle-ui/styles.css", "!socle-ui/theme.css", "!socle-ui/eslint-config", "!socle-ui/biome"],
+                "group": ["socle-ui/**", "!socle-ui/styles.css", "!socle-ui/theme.css", "!socle-ui/eslint-config", "!socle-ui/biome", "!socle-ui/markdown", "!socle-ui/markdown-editor"],
                 "message": "N'importez que « socle-ui » (point d'entrée unique)."
               },
               {

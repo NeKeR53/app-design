@@ -2125,3 +2125,83 @@
 - Raison : une seule règle de fermeture pour les surfaces qui contiennent une saisie.
 - Options écartées : clic à côté qui ferme toujours.
 - Validation : docs/validation/components/Divers-v1.html (par délégation de l'utilisateur, 2026-11-23)
+
+## D-300 — Markdown : sous-entrées et dépendances facultatives
+- Date : 2026-11-23
+- Portée : global, Markdown, MarkdownEditor
+- Décision : `Markdown` et `MarkdownEditor` ne sont pas exportés par `socle-ui`. Ils ont chacun leur sous-entrée : `socle-ui/markdown` et `socle-ui/markdown-editor`. Leurs librairies sont des peer dependencies facultatives (`peerDependenciesMeta.optional`) : `react-markdown` et `remark-gfm` pour les deux ; `@codemirror/state`, `@codemirror/view`, `@codemirror/commands`, `@codemirror/language`, `@codemirror/lang-markdown` et `@lezer/highlight` pour l'éditeur. Une app installe seulement ce qu'elle utilise. CodeMirror se charge à la première ouverture d'un éditeur (`import()`). Le reste du design system garde son entrée unique `socle-ui` ; `scripts/check.js` et `socle-ui/eslint-config` autorisent ces deux sous-entrées, et seulement elles.
+- Raison : une app sans Markdown ne doit ni installer ni livrer ces librairies ; un `import()` seul ne suffit pas, car le bundler de l'app échoue si le paquet manque.
+- Options écartées : dépendances directes exportées par `socle-ui` ; export par `socle-ui` avec `import()` dynamique.
+- Validation : docs/validation/components/Markdown-v1.html — par délégation de l'utilisateur, 2026-11-23.
+
+## D-301 — Markdown : typographie de lecture
+- Date : 2026-11-23
+- Portée : Markdown
+- Décision : le texte est en `--fs-md`, interligne 1,6. Paragraphes et blocs : 12 px d'écart. Titres en semi-gras, 20 px au-dessus et 8 px en dessous : `#` à 1,25 em, `##` à 1,125 em, `###` et plus à 1 em. Listes : retrait de 24 px, 2 px entre deux éléments. Citation : trait de 3 px `--line-strong` à gauche, texte `--fg-2`. Trait horizontal : `Divider`. Code en ligne : `Code`. Le premier et le dernier bloc n'ont pas de marge extérieure.
+- Raison : un texte Markdown vit dans un panneau, une modale ou une page : sa hiérarchie ne doit pas concurrencer le titre de la page ; le trait distingue la citation d'un bloc de code.
+- Options écartées : citation sur fond `--field` (Alfred) ; titres à la taille des titres de page.
+- Validation : docs/validation/components/Markdown-v1.html — par délégation de l'utilisateur, 2026-11-23.
+
+## D-302 — Markdown : niveau des titres
+- Date : 2026-11-23
+- Portée : Markdown
+- Décision : l'option `headingLevel` (défaut 2) donne le niveau HTML de `#` ; `##` vaut le niveau suivant, jusqu'à 6. La taille affichée ne dépend que du nombre de `#` (D-301).
+- Raison : la page porte déjà son `h1` ; l'app règle la structure sans changer l'aspect.
+- Options écartées : `shiftHeadings` booléen (Alfred).
+- Validation : docs/validation/components/Markdown-v1.html — par délégation de l'utilisateur, 2026-11-23.
+
+## D-303 — Markdown : liens et images
+- Date : 2026-11-23
+- Portée : Markdown
+- Décision : un lien est un `Link` (D-167) : souligné, flèche et texte caché s'il est externe. L'option `onLinkPress(href)` reçoit chaque lien ; elle annule alors la navigation du navigateur (app desktop, routeur de l'app). Les adresses dangereuses (`javascript:`…) sont retirées. Une image ne se charge jamais d'elle-même : sans `renderImage(src, alt)`, elle devient un lien vers son adresse, avec son texte alternatif (ou « Image »). Le HTML écrit dans le texte est ignoré.
+- Raison : un texte vient souvent d'ailleurs (message, agent, fichier) ; charger une image distante ou interpréter du HTML ouvre une fuite ou une faille.
+- Options écartées : images distantes affichées ; HTML brut interprété ; `renderLink` (Alfred).
+- Validation : docs/validation/components/Markdown-v1.html — par délégation de l'utilisateur, 2026-11-23.
+
+## D-304 — Markdown : blocs de code, tableaux, cases
+- Date : 2026-11-23
+- Portée : Markdown
+- Décision : un bloc de code est un `Code block` avec un bouton-icône « Copier le bloc » en haut à droite, visible au survol, au focus, et toujours sur un écran tactile ; après la copie, l'icône devient une coche et le libellé « Bloc copié » pendant 2 s ; un échec affiche « Copie impossible ». L'option `renderCode(language, text)` remplace le rendu d'un bloc d'un langage donné (un schéma) ; `undefined` garde le bloc. Pas de coloration syntaxique. Un tableau est un tableau HTML statique au style de `Table` : en-tête en `--fs-sm`, `--fg-2`, medium ; traits `--line` sous chaque ligne ; 6 × 10 px de marge ; alignement de colonne de GFM ; il défile seul à l'horizontale, dans une région « Tableau » joignable au clavier. Une case de liste de tâches est une case statique (pleine et cochée si faite), avec le texte caché « Fait » ou « À faire » ; un élément fait passe en `--fg-2`.
+- Raison : `Table` est une grille interactive (sélection, tri, clavier en grille) : un mauvais rôle pour un tableau de texte ; une case cliquable laisserait croire que le texte change.
+- Options écartées : composant `Table` ; `Checkbox` en lecture seule (un arrêt de tabulation par case).
+- Validation : docs/validation/components/Markdown-v1.html — par délégation de l'utilisateur, 2026-11-23.
+
+## D-305 — MarkdownEditor : un champ de formulaire
+- Date : 2026-11-23
+- Portée : MarkdownEditor
+- Décision : `MarkdownEditor` a l'anatomie de `Field` : libellé au-dessus, cadre de champ (D-130), aide ou erreur en dessous, compteur « n / max » si `maxLength` (comme `TextArea`). Dans le cadre : la barre de mise en forme, un trait `--line`, puis le texte. Le texte grandit de `minRows` (6) à `maxRows` (20) lignes, puis défile ; `fill` occupe la hauteur du conteneur. Options communes : `label`, `hideLabel`, `description`, `error`, `isRequired`, `isDisabled`, `isReadOnly`, `width`, `name` (champ caché pour un formulaire), `placeholder`, `value`, `defaultValue`, `onChange`, `onBlur`. Désactivé : opacité 40 %, rien n'est joignable. Lecture seule : cadre gris et cadenas (D-131), barre masquée, texte sélectionnable. Erreur : bord `--danger`, message sous le champ (D-132).
+- Raison : un éditeur Markdown est un champ de formulaire comme `TextArea` : mêmes états et même place (FormPage, modale, réglage).
+- Options écartées : éditeur sans libellé ni aide, à part des champs (Alfred).
+- Validation : docs/validation/components/Markdown-v1.html — par délégation de l'utilisateur, 2026-11-23.
+
+## D-306 — MarkdownEditor : police et coloration
+- Date : 2026-11-23
+- Portée : MarkdownEditor
+- Décision : le texte est en `--font-mono`, `--fs-sm`, interligne 1,6, 12 × 8 px de marge, retour à la ligne automatique. La coloration suit les tokens, donc le mode clair et le mode sombre : marques (`#`, `*`, `>`, `-`, `[`, `](`) en `--fg-3` ; titres en semi-gras ; gras, italique et barré en style ; texte de lien en `--accent-text` ; adresse en `--fg-3` soulignée ; code sur fond `--field` ; citation en `--fg-2`. Sélection : `--accent` à 25 %. Curseur : `--fg`.
+- Raison : la chasse fixe garde listes, tableaux et retraits alignés ; les couleurs viennent des tokens, sans thème à part.
+- Options écartées : police du texte ; thème CodeMirror fourni par une librairie.
+- Validation : docs/validation/components/Markdown-v1.html — par délégation de l'utilisateur, 2026-11-23.
+
+## D-307 — MarkdownEditor : barre et raccourcis de mise en forme
+- Date : 2026-11-23
+- Portée : MarkdownEditor
+- Décision : la barre est un `role="toolbar"` « Mise en forme », un seul arrêt de tabulation, parcouru aux flèches gauche et droite. Elle contient des `IconButton` avec leur raccourci dans l'info-bulle (D-032), en trois groupes séparés par un `Divider` vertical : Titre 1, 2, 3 (Mod+Alt+1, 2, 3) ; Gras (Mod+B), Italique (Mod+I), Code (Mod+E), Lien (Mod+K) ; Liste à puces (Mod+Maj+8), Liste numérotée (Mod+Maj+7), Citation (Mod+Maj+9). Chaque commande pose la marque, ou la retire si elle est déjà là. Lien : `[texte](adresse)`, avec « adresse » sélectionnée ; une adresse sélectionnée devient la cible. Un clic sur la barre garde la sélection du texte. Entrée continue une liste ; sur un élément vide, un premier appui espace la liste, un second la quitte. Mod+Z annule, Mod+Maj+Z rétablit. Tab n'est pas capturée : elle quitte l'éditeur.
+- Raison : mêmes raccourcis que les éditeurs courants ; Tab libre pour ne pas piéger le clavier (WCAG 2.1.2).
+- Options écartées : Tab qui indente ; barre à onglets multiples.
+- Validation : docs/validation/components/Markdown-v1.html — par délégation de l'utilisateur, 2026-11-23.
+
+## D-308 — MarkdownEditor : images collées ou déposées
+- Date : 2026-11-23
+- Portée : MarkdownEditor
+- Décision : l'option facultative `onPasteImage(file)` reçoit chaque image collée ou déposée. L'éditeur insère `![Envoi de nom…]()`, puis le remplace par `![alt](adresse)` quand la promesse rend l'adresse (ou `{ src, alt }`). Un échec retire le texte d'attente et affiche « Image non ajoutée : nom » sous le champ, jusqu'à la saisie suivante. Sans l'option, coller une image ne fait rien.
+- Raison : ranger un fichier est le métier de l'app ; l'éditeur ne garde que l'insertion.
+- Options écartées : `onPasteImageError` (le message sous le champ suffit).
+- Validation : docs/validation/components/Markdown-v1.html — par délégation de l'utilisateur, 2026-11-23.
+
+## D-309 — MarkdownEditor : aperçu facultatif et périmètre
+- Date : 2026-11-23
+- Portée : MarkdownEditor
+- Décision : l'option `preview` ajoute l'aperçu rendu par `Markdown` : `"toggle"` ajoute un bouton-icône « Aperçu » (bascule) en fin de barre, qui remplace le texte par l'aperçu et désactive la mise en forme ; `"split"` met l'aperçu à droite du texte, ou en dessous sous 560 px de large. Sans l'option, pas d'aperçu. Un aperçu vide affiche « Rien à afficher ». Retirés (test du générique, solution locale dans Alfred) : compte des modifications non enregistrées (`savedValue`, `onUnsavedChange`), Mod+S (`onSave`), extensions `remarkPlugins`, onglets Écrire / Aperçu.
+- Raison : la coloration rend le texte lisible sans aperçu ; le suivi des modifications et l'enregistrement appartiennent à la page (FormPage).
+- Options écartées : aperçu côte à côte par défaut (Alfred) ; onglets avec `Tabs` (réservé aux vues d'une page).
+- Validation : docs/validation/components/Markdown-v1.html — par délégation de l'utilisateur, 2026-11-23.
