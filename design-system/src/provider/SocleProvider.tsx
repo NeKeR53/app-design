@@ -25,6 +25,11 @@ export interface SocleProviderProps {
   density?: Density;
   /** Plateforme. Défaut : détection automatique (D-020). */
   platform?: Platform;
+  /**
+   * La fenêtre est en plein écran (macOS) : l'AppShell ne réserve plus la place des boutons de fenêtre
+   * et la barre du haut ne déplace plus la fenêtre (D-020). L'app le pilote ; défaut : `false`.
+   */
+  isFullscreen?: boolean;
   /** Préfixe des données mémorisées (sidebar, largeur du détail, dernière vue). Défaut : `socle`. */
   storageKey?: string;
   /** Libellés internes traduits (D-089). Défaut : français ; une entrée absente garde la valeur française. */
@@ -38,6 +43,8 @@ export interface SocleProviderProps {
 
 interface SocleContextValue {
   platform: Platform;
+  /** La fenêtre est en plein écran (option `isFullscreen` du provider, D-020). */
+  isFullscreen: boolean;
   /** Vrai sur macOS (web compris) : sert à l'affichage des raccourcis (D-006). */
   isMac: boolean;
   storageKey: string;
@@ -112,7 +119,7 @@ function accentCss(vars: NonNullable<ReturnType<typeof accentVariables>>): strin
   );
 }
 
-export function SocleProvider({ accent, density, platform, storageKey = "socle", messages, notifications, theme, children }: SocleProviderProps) {
+export function SocleProvider({ accent, density, platform, isFullscreen = false, storageKey = "socle", messages, notifications, theme, children }: SocleProviderProps) {
   const resolvedPlatform = useMemo(() => platform ?? detectPlatform(), [platform]);
   const isMac = resolvedPlatform === "macos" || (resolvedPlatform === "web" && detectIsMac());
   const defaultDensity: Density = density ?? (resolvedPlatform === "web" ? "web" : "desktop");
@@ -216,6 +223,7 @@ export function SocleProvider({ accent, density, platform, storageKey = "socle",
   const value = useMemo<SocleContextValue>(
     () => ({
       platform: resolvedPlatform,
+      isFullscreen,
       isMac,
       storageKey,
       density: currentDensity,
@@ -225,7 +233,7 @@ export function SocleProvider({ accent, density, platform, storageKey = "socle",
       messages: merged,
       notifications: notifications ?? null,
     }),
-    [resolvedPlatform, isMac, storageKey, currentDensity, setDensity, userScheme, setColorScheme, merged, notifications],
+    [resolvedPlatform, isFullscreen, isMac, storageKey, currentDensity, setDensity, userScheme, setColorScheme, merged, notifications],
   );
   // La confirmation (D-127) et la région des toasts (D-154) sont affichées ici, une seule fois pour toute l'app.
   return (
@@ -242,6 +250,7 @@ export function SocleProvider({ accent, density, platform, storageKey = "socle",
 
 const FALLBACK: SocleContextValue = {
   platform: "web",
+  isFullscreen: false,
   isMac: false,
   storageKey: "socle",
   density: "web",

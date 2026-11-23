@@ -4,6 +4,16 @@ Versions selon semver (règle 6 du skill design) : une nouvelle option facultati
 
 ## [Non publié]
 
+## [1.2.0] — 2026-11-23
+
+Version mineure : une option facultative, le défaut ne change pas.
+
+### Ajouté
+- `SocleProvider` : option `isFullscreen` (défaut `false`), lue par `useSocle()`. L'app dit que la fenêtre est en plein écran ; Socle ne le détecte pas (D-370).
+
+### Changé
+- `AppShell`, macOS en plein écran (`isFullscreen`) : plus de place de 78 px pour les boutons de fenêtre ; le bouton de repli prend la marge du web ; la barre du haut n'est plus une zone de déplacement. Hors plein écran, rien ne change (D-370).
+
 ## [1.1.0] — 2026-11-23
 
 Version mineure : aucune API ne casse.

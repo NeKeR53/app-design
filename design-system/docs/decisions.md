@@ -2582,3 +2582,12 @@
 - Raison : juste au-dessus de l'avatar de `Sidebar.Account`, le repère se lisait comme un second avatar ; le nom et le chevron suffisent à dire « on peut changer d'espace ».
 - Options écartées : garder le repère en option (deux dessins pour la même ligne) ; une icône générique de dossier (encore une pastille devant le nom).
 - Validation : par délégation de l'utilisateur, 2026-11-23
+
+## D-370 — AppShell : plein écran macOS
+- Date : 2026-11-23
+- Portée : AppShell, SocleProvider ; complète D-020
+- Décision : sur macOS, quand la fenêtre est en plein écran, l'AppShell ne réserve plus les 78 px des boutons de fenêtre : le bouton de repli de la sidebar prend la marge du web. La barre du haut n'est plus une zone de déplacement (pas de `data-tauri-drag-region`) : une fenêtre en plein écran ne se déplace pas, et un double-clic ne doit pas l'agrandir à la sortie du plein écran. L'app le dit par l'option facultative `isFullscreen` de `SocleProvider` (défaut : `false`) ; Socle ne détecte rien lui-même. Hors plein écran, rien ne change. Windows et web : rien ne change.
+- Raison : en plein écran, macOS cache les boutons de fenêtre ; la place vide décalait le bouton de repli. L'option est sur `SocleProvider` comme `platform` : c'est un état de la fenêtre, un seul par fenêtre, que l'app pose à la racine sans toucher à ses écrans. Pas de détection par défaut : mesurée dans une WKWebView en plein écran natif (MacBook à encoche), la vue fait 1512 × 949 pour un écran de 1512 × 982 ; `innerHeight === screen.height` est faux en plein écran, et `innerHeight === screen.availHeight` est vrai aussi pour une fenêtre agrandie. Aucun test de taille ne sépare les deux cas.
+- Options écartées : option sur `AppShell` (chaque écran de l'app devrait la passer) ; détection par la taille de l'écran (non fiable, voir Raison) ; import de l'API de fenêtre Tauri dans Socle (Socle reste générique).
+- Limite : en plein écran, macOS montre les boutons de fenêtre par-dessus la barre quand le pointeur touche le haut de l'écran, avec la barre des menus ; ils couvrent alors le bouton de repli un instant. C'est le comportement du système.
+- Validation : par délégation de l'utilisateur, 2026-11-23

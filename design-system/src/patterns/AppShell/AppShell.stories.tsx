@@ -337,3 +337,47 @@ export const DetailLarge: Story = {
   },
 };
 
+
+/** Repère du bouton de repli : sa zone, à gauche de la barre du haut. */
+const collapseZone = (root: HTMLElement) => {
+  const zone = within(root).getByRole("button", { name: "Replier la sidebar" }).closest("span")?.parentElement;
+  if (!zone) throw new Error("zone du bouton de repli introuvable");
+  return zone;
+};
+
+/** macOS fenêtré : 78 px réservés aux boutons de fenêtre, la barre déplace la fenêtre (D-020). */
+export const MacFenetre: Story = {
+  render: () => (
+    <SocleProvider platform="macos" storageKey="storybook:mac">
+      <Demo />
+    </SocleProvider>
+  ),
+  play: async ({ canvasElement }) => {
+    const zone = collapseZone(canvasElement);
+    await expect(getComputedStyle(zone).paddingLeft).toBe("78px");
+    await expect(within(canvasElement).getByRole("banner")).toHaveAttribute("data-tauri-drag-region");
+  },
+};
+
+/**
+ * macOS plein écran (`isFullscreen`) : les boutons de fenêtre sont cachés, aucune place réservée ;
+ * le bouton de repli se place comme sur le web ; la barre ne déplace plus la fenêtre (D-020).
+ */
+export const MacPleinEcran: Story = {
+  render: () => (
+    <SocleProvider platform="macos" isFullscreen storageKey="storybook:mac-fs">
+      <Demo />
+    </SocleProvider>
+  ),
+  play: async ({ canvasElement }) => {
+    const zone = collapseZone(canvasElement);
+    await expect(getComputedStyle(zone).paddingLeft).not.toBe("78px");
+    await expect(getComputedStyle(zone).paddingLeft).toBe(getComputedStyle(zone).paddingRight);
+    const banner = within(canvasElement).getByRole("banner");
+    await expect(banner).not.toHaveAttribute("data-tauri-drag-region");
+    await expect(banner.querySelector("[data-tauri-drag-region]")).toBeNull();
+    // Le bouton reste cliquable : la sidebar se replie.
+    await userEvent.click(within(canvasElement).getByRole("button", { name: "Replier la sidebar" }));
+    await waitFor(() => expect(within(canvasElement).getByRole("button", { name: "Déplier la sidebar" })).toBeInTheDocument());
+  },
+};

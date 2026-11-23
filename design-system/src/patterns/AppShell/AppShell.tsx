@@ -1,6 +1,6 @@
 /*
  * Cadre commun de toutes les apps. Spec : AppShell.spec.md.
- * Décisions : D-003, D-016 à D-021, D-025 à D-027, D-220 à D-222, D-240 à D-242 (D-250 à D-252 retirées par D-253).
+ * Décisions : D-003, D-016 à D-021, D-025 à D-027, D-220 à D-222, D-240 à D-242, D-370 (D-250 à D-252 retirées par D-253).
  */
 import { Children, isValidElement, useEffect, useId, useLayoutEffect, useRef, useState, type KeyboardEvent as ReactKeyboardEvent, type PointerEvent as ReactPointerEvent, type ReactElement, type ReactNode } from "react";
 import { Button } from "react-aria-components/Button";
@@ -99,7 +99,7 @@ function useMedia(query: string): boolean {
 }
 
 export function AppShell({ pageTitle, views, activeView, onViewChange, onViewClose, actions, sidebar, detail, detailWidth: detailKind = "default", detailExpandable = false, tabbar, history = true, children }: AppShellProps) {
-  const { isMac, platform } = useSocle();
+  const { isMac, platform, isFullscreen } = useSocle();
   const m = useMessages();
   const isMobile = useMedia("(max-width: 640px)");
   const isTablet = useMedia("(min-width: 641px) and (max-width: 1024px)");
@@ -220,8 +220,11 @@ export function AppShell({ pageTitle, views, activeView, onViewChange, onViewClo
 
   const sidebarVisible = !isMobile && !collapsed;
   const winControls = platform === "windows";
-  const macControls = platform === "macos";
-  const dragRegion = platform === "web" ? {} : { "data-tauri-drag-region": "" };
+  // Plein écran macOS : les boutons de fenêtre sont cachés, pas de place réservée ; la fenêtre
+  // ne se déplace pas, la barre n'est plus une zone de déplacement (D-020).
+  const macFullscreen = platform === "macos" && isFullscreen;
+  const macControls = platform === "macos" && !isFullscreen;
+  const dragRegion = platform === "web" || macFullscreen ? {} : { "data-tauri-drag-region": "" };
   const width = detailWidth ?? undefined;
 
   return (

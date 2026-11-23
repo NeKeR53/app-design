@@ -13,7 +13,7 @@ Cadre commun de toutes les apps : barre supérieure, sidebar, zone de contenu, p
    - actions de la page (facultatives) : boutons-icônes de l'app (cloche), puis `ActionBar` `zone="topbar"` : icônes, « … », action principale à texte (D-220 à D-222) ;
    - bouton Agrandir (facultatif, `detailExpandable`, bureau, panneau ouvert, D-241) ;
    - bouton du panneau de détail, avec l'icône liste (présent si `detail` est fourni) ;
-   - en Tauri, la place réservée aux boutons de fenêtre (D-020).
+   - en Tauri, la place réservée aux boutons de fenêtre (D-020) ; sur macOS en plein écran, aucune place (D-370).
 2. `sidebar` (obligatoire sur bureau et tablette) : navigation, sections, puis le pied : entrées fixes, espace de travail, compte (voir `Sidebar`, D-230 à D-232).
 3. `main` (obligatoire) : le gabarit de la page.
 4. `detail` (facultatif) : panneau de détail (D-018).
@@ -65,6 +65,7 @@ Aucune variante visuelle. La disposition dépend de la largeur (D-013) et de la 
 | F6 et Maj+F6 : zone suivante ou précédente (barre supérieure, sidebar, contenu, détail, barre d'onglets mobile), en sautant les zones masquées ; le focus va au dernier élément focalisé de la zone, sinon au premier atteignable, sinon à la zone (D-350) | verrouillé | `ZonesF6` |
 | Web : lien « Aller au contenu », premier élément atteignable, caché jusqu'au focus ; il envoie le focus sur `main`. En bureau (Tauri), pas de lien (D-350, WCAG 2.4.1) | verrouillé | `LienEvitement`, `SansLienEnBureau` |
 | Mobile : barre d'onglets, feuille « Plus » sans doublons (D-003, D-019) | verrouillé | `Mobile` |
+| macOS : 78 px réservés aux boutons de fenêtre avant le bouton de repli ; la barre déplace la fenêtre (D-020). En plein écran (`isFullscreen` du provider) : aucune place réservée, le bouton de repli prend la marge du web, la barre ne déplace plus la fenêtre (D-370) | réglable par app (`SocleProvider` `isFullscreen`) | `MacFenetre`, `MacPleinEcran` |
 
 ## Contenu
 - Nom de page trop long : il est tronqué, avec une info-bulle.
@@ -94,14 +95,14 @@ Sans objet : les erreurs sont gérées par les gabarits et les composants.
 ## Placement
 Racine de chaque écran, à l'intérieur du `SocleProvider` de l'app (D-029) ; un seul AppShell par fenêtre. La plateforme et le préfixe de mémorisation viennent du provider.
 
-Options du `SocleProvider` : `accent`, `density`, `platform`, `storageKey` (D-029), `messages` (D-089), `notifications` (D-154) et `theme`, le thème d'une organisation (D-337). Sans `theme`, le rendu est neutre et inchangé. Avec `theme`, seuls les tokens et les variantes signature changent ; le conteneur de la sidebar, son overlay et la feuille « Plus » suivent les rôles `--side-*`. Le thème peut aussi fixer les couleurs des graphiques (`--chart-*`), la graisse des titres (`typography.headingWeight`), le bouton secondaire (`signature.buttonSecondary`) et un jeu d'icônes pour les icônes internes (`icons`, D-338).
+Options du `SocleProvider` : `accent`, `density`, `platform`, `isFullscreen` (plein écran macOS, piloté par l'app, défaut `false`, D-370), `storageKey` (D-029), `messages` (D-089), `notifications` (D-154) et `theme`, le thème d'une organisation (D-337). Sans `theme`, le rendu est neutre et inchangé. Avec `theme`, seuls les tokens et les variantes signature changent ; le conteneur de la sidebar, son overlay et la feuille « Plus » suivent les rôles `--side-*`. Le thème peut aussi fixer les couleurs des graphiques (`--chart-*`), la graisse des titres (`typography.headingWeight`), le bouton secondaire (`signature.buttonSecondary`) et un jeu d'icônes pour les icônes internes (`icons`, D-338).
 
 ## Composition
 Contient les icônes internes de Socle (D-028), `Sidebar`, `IconButton`, `Tabs` (onglets de vues), `Tooltip` et un gabarit (`ListPage`, `DetailPage`, `FormPage`). `SettingsPage` s'ouvre dans un `Modal` par-dessus l'AppShell (D-015).
 
 ## Décisions
 Libellés internes : dictionnaire `messages` de SocleProvider (D-089).
-D-003, D-004, D-006, D-013, D-015, D-016, D-017, D-018, D-019, D-020, D-021, D-025, D-026, D-027, D-028, D-029, D-220, D-221, D-222, D-240, D-241, D-242, D-253, D-337, D-338
+D-003, D-004, D-006, D-013, D-015, D-016, D-017, D-018, D-019, D-020, D-021, D-025, D-026, D-027, D-028, D-029, D-220, D-221, D-222, D-240, D-241, D-242, D-253, D-337, D-338, D-370
 
 ## Questions ouvertes
 Aucune.
