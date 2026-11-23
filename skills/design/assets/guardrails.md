@@ -13,6 +13,10 @@
 - interdiction des attributs `style` inline sur les composants de `@moi/ui` ;
 - interdiction des couleurs en dur (hex, rgb, hsl) dans le code et le CSS des apps.
 
+## Config Biome partagée pour les apps
+
+Pour une app qui lint avec Biome (2.6 ou plus récent) : une config `biome.json` livrée dans le package (export `@moi/ui/biome`), que l'app étend par `"extends": ["@moi/ui/biome"]`. Mêmes règles que l'`eslint-config` : `noRestrictedImports`, puis des plugins GritQL (déclarés avec `resolutionKind: "config"`) pour `style` et `className` sur les composants du package (reconnus par leur nom, liste générée depuis les exports) et pour les couleurs en dur dans le code et le CSS. Le script `check` teste cette config sur des fichiers d'exemple.
+
 ## Script `check` du dépôt de référence
 
 Il échoue si :
@@ -24,3 +28,5 @@ Il échoue si :
 
 - Semver strict, selon la règle 6 de `SKILL.md`.
 - Chaque changement met à jour la version dans `package.json` et ajoute une entrée à `CHANGELOG.md`.
+- Le script `check` échoue si la version de `package.json` diffère de celle de la dernière entrée datée de `CHANGELOG.md`.
+- Chaque version publiée a son tag git `v<version>`.

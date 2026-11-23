@@ -1273,3 +1273,51 @@
 - Raison : comportements montrés dans la page de validation v1 et repris de la barre de recherche (D-071) et du Menu, pour un seul clavier dans le design system.
 - Options écartées : liste ouverte au focus (Alfred) ; champ sans chevron (Combobox d'Alfred).
 - Validation : docs/validation/components/ComboBox-v1.html
+
+## D-330 — Garde-fous pour Biome : config partagée `socle-ui/biome`
+- Date : 2026-11-23
+- Portée : global (apps qui lintent avec Biome)
+- Décision : socle-ui livre une config Biome dans `biome/` (export `socle-ui/biome`). L'app l'étend par le nom du package : `"extends": ["socle-ui/biome"]` dans son `biome.json`. Elle reprend les règles de `socle-ui/eslint-config` : imports interdits par `noRestrictedImports` (`react-aria-components`, `react-aria`, `@react-aria/*`, `@react-stately/*`, et tout chemin `socle-ui/…` sauf `styles.css`, `theme.css`, `eslint-config` et `biome`), puis deux règles en plugins GritQL (D-331, D-332). Les plugins se résolvent depuis le dossier de la config partagée (`resolutionKind: "config"`) : Biome 2.6 ou plus récent est requis. La config ne touche ni au formateur ni aux autres règles de l'app.
+- Raison : Alfred lint avec Biome, pas ESLint ; une app ne doit pas recopier les garde-fous à la main, ni les voir dériver d'une version à l'autre.
+- Options écartées : plugin Biome publié par manifeste (`biome-manifest.json`) : l'app devrait lister chaque règle en plus de l'`extends` ; ESLint en plus de Biome dans l'app : deux linters pour un seul besoin.
+- Validation : par délégation de l'utilisateur, 2026-11-23
+
+## D-331 — Biome : `style` et `className` interdits sur un composant Socle, reconnu par son nom
+- Date : 2026-11-23
+- Portée : global (config `socle-ui/biome`)
+- Décision : le plugin `no-socle-override.grit` signale `style` et `className` posés directement sur une balise JSX dont le nom est un composant exporté par socle-ui (`Button`, `Sidebar.Item`…). La liste des noms est générée par `scripts/build-biome.js` à chaque build, depuis `src/index.ts` ; le fichier généré n'est pas suivi par git. Limites, connues et acceptées : un import renommé (`import { Button as B }`) échappe à la règle ; un composant d'une autre librairie qui porte le même nom qu'un composant Socle est signalé, et l'app écrit alors `// biome-ignore lint/plugin: <raison>`. Un attribut posé sur un élément passé en option (`icon={<span className="…" />}`) n'est pas signalé.
+- Raison : un plugin GritQL de Biome ne voit pas le module entier : il ne relie pas une balise à son import, contrairement à la règle ESLint. La liste des exports est le meilleur substitut, et elle suit les versions toute seule.
+- Options écartées : signaler tout composant en PascalCase (faux positifs sur les composants de l'app) ; plugin JavaScript de Biome (encore en préversion) ; script à part `socle-check-ts` : Biome couvre le besoin, un second outil serait oublié.
+- Validation : par délégation de l'utilisateur, 2026-11-23
+
+## D-332 — Biome : couleurs en dur dans le code et dans le CSS
+- Date : 2026-11-23
+- Portée : global (config `socle-ui/biome`)
+- Décision : deux plugins reprennent le motif de `socle/no-hardcoded-color` et de `socle-check-css` (hex, `rgb()`, `rgba()`, `hsl()`, `hsla()`, `oklch()`, `oklab()`) : `no-hardcoded-color.grit` sur les chaînes, les attributs JSX et les gabarits du code ; `no-hardcoded-color-css.grit` sur les déclarations CSS. Une app sous Biome n'a donc pas besoin de `socle-check-css` ; les apps sous ESLint le gardent.
+- Raison : Biome lit aussi le CSS ; un seul outil, une seule commande (`biome check`) dans l'app.
+- Options écartées : garder `socle-check-css` à côté de Biome.
+- Validation : par délégation de l'utilisateur, 2026-11-23
+
+## D-333 — La config Biome est testée par `npm run check`
+- Date : 2026-11-23
+- Portée : dépôt de référence
+- Décision : `scripts/check-biome.js` crée une app de test temporaire, y relie socle-ui dans `node_modules`, étend `socle-ui/biome` par le nom du package et lance `biome lint` sur `scripts/biome-fixtures/`. Chaque garde-fou doit se déclencher à la ligne attendue dans `bad.tsx` et `bad.css`, et rien ne doit être signalé dans `good.tsx` et `good.css`. Biome devient une dépendance de développement du dépôt.
+- Raison : les noms de nœuds GritQL peuvent changer d'une version de Biome à l'autre ; une règle qui ne se déclenche plus doit faire échouer le check, pas passer en silence.
+- Options écartées : test à la main dans Alfred.
+- Validation : par délégation de l'utilisateur, 2026-11-23
+
+## D-334 — Installation locale par yalc ; le `package.json` de l'app pointe sur `.yalc`
+- Date : 2026-11-23
+- Portée : global (installation)
+- Décision : tant que le package n'est pas publié, une app l'installe par yalc : `npm run publish:local` ici, puis `npx yalc add socle-ui` dans l'app. `.yalc` et `yalc.lock` restent hors git ; le `package.json` de l'app se commite avec `"socle-ui": "file:.yalc/socle-ui"`. Un clone neuf de l'app refait d'abord `npm run publish:local` dans ce dépôt, puis `npx yalc add socle-ui` dans l'app. La marche à suivre est dans le README.
+- Raison : yalc copie le package au lieu de le lier : une seule copie de React. Sans `.yalc` dans git, l'app ne commite pas de build.
+- Options écartées : `.yalc` commité dans l'app (build dans l'historique, conflits) ; `yalc link` (lien symbolique, mêmes défauts que `npm link`) ; dépendance git par tag, gardée pour quand une CI devra installer l'app.
+- Validation : par délégation de l'utilisateur, 2026-11-23
+
+## D-335 — `npm run check` vérifie que les versions concordent
+- Date : 2026-11-23
+- Portée : dépôt de référence
+- Décision : `scripts/check.js` échoue si la version de `package.json` diffère de celle de la dernière entrée datée de `CHANGELOG.md` (`## [x.y.z] — AAAA-MM-JJ`, la section `[Non publié]` n'est pas datée), ou de la constante `SOCLE_VERSION` de `src/index.ts`. Chaque version publiée a son tag `v<version>` sur `main`.
+- Raison : la version de l'app se lit dans `package.json`, l'IA la lit dans `AI.md`, l'humain dans le CHANGELOG : elles doivent dire la même chose. Le contrôle a trouvé `SOCLE_VERSION` restée à 0.1.0.
+- Options écartées : contrôle du tag git dans le check (un clone sans tags échouerait).
+- Validation : par délégation de l'utilisateur, 2026-11-23

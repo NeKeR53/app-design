@@ -4,6 +4,14 @@ Versions selon semver (règle 6 du skill design) : une nouvelle option facultati
 
 ## [Non publié]
 
+### Ajouté
+- Config Biome partagée `socle-ui/biome` pour les apps qui lintent avec Biome 2.6 ou plus récent : `"extends": ["socle-ui/biome"]` dans `biome.json` (D-330). Imports interdits (librairie headless, chemins internes) ; `style` et `className` interdits sur un composant Socle, reconnu par son nom (D-331) ; couleurs en dur interdites dans le code et le CSS (D-332).
+- `npm run check` teste la config Biome sur des fichiers d'exemple (D-333) et vérifie que `package.json`, la dernière entrée datée du CHANGELOG et `SOCLE_VERSION` ont la même version (D-335).
+- README : installation dans une app par yalc, clone neuf compris, et règles de version (D-334).
+
+### Corrigé
+- `SOCLE_VERSION` valait encore `0.1.0` dans la 0.2.0 ; elle suit désormais `package.json`.
+
 ## [0.2.0] — 2026-11-23
 
 Lot 1 de la migration d'Alfred : bouton à texte, actions, modale, champs, ComboBox, notifications et petits éléments d'affichage (décisions D-100 à D-169). Version mineure : tout est nouveau ou facultatif, rien ne casse.

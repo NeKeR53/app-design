@@ -97,7 +97,7 @@ export default [
             { name: "react-aria", message: "Utilisez les composants de socle-ui." },
           ],
           patterns: [
-            { group: ["socle-ui/*", "!socle-ui/styles.css", "!socle-ui/theme.css", "!socle-ui/eslint-config"], message: "N'importez que « socle-ui » (point d'entrée unique)." },
+            { group: ["socle-ui/*", "!socle-ui/styles.css", "!socle-ui/theme.css", "!socle-ui/eslint-config", "!socle-ui/biome"], message: "N'importez que « socle-ui » (point d'entrée unique)." },
             { group: ["@react-aria/*", "@react-stately/*"], message: "Utilisez les composants de socle-ui." },
           ],
         },

@@ -1,7 +1,9 @@
 // Garde-fous du dépôt de référence (assets/guardrails.md) :
 // - chaque composant, pattern et gabarit a sa spec (.spec.md) et ses stories (.stories.tsx) ;
 // - une spec en statut « validé » n'a plus de questions ouvertes ;
-// - index.ts est le seul point d'entrée (champ exports de package.json).
+// - index.ts est le seul point d'entrée (champ exports de package.json) ;
+// - la version de package.json est celle de la dernière entrée datée de CHANGELOG.md,
+//   et celle de SOCLE_VERSION dans src/index.ts (D-335).
 import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
 import { join } from "node:path";
 
@@ -30,9 +32,19 @@ for (const kind of ["components", "patterns", "templates"]) {
 }
 
 const pkg = JSON.parse(readFileSync("package.json", "utf8"));
-const allowed = new Set([".", "./styles.css", "./theme.css", "./eslint-config", "./package.json"]);
+const allowed = new Set([".", "./styles.css", "./theme.css", "./eslint-config", "./biome", "./package.json"]);
 for (const key of Object.keys(pkg.exports ?? {}))
   if (!allowed.has(key)) errors.push(`package.json : export non autorisé « ${key} » (point d'entrée unique)`);
+
+// Version : la dernière entrée datée du CHANGELOG (« ## [x.y.z] — AAAA-MM-JJ ») fait foi.
+const changelog = readFileSync("CHANGELOG.md", "utf8");
+const dated = changelog.match(/^## \[(\d+\.\d+\.\d+[^\]]*)\] — \d{4}-\d{2}-\d{2}\s*$/m);
+if (!dated) errors.push("CHANGELOG.md : aucune entrée datée « ## [x.y.z] — AAAA-MM-JJ »");
+else if (dated[1] !== pkg.version)
+  errors.push(`version : package.json dit ${pkg.version}, la dernière entrée datée de CHANGELOG.md dit ${dated[1]}`);
+const constant = readFileSync(join("src", "index.ts"), "utf8").match(/SOCLE_VERSION = "([^"]+)"/);
+if (constant && constant[1] !== pkg.version)
+  errors.push(`version : package.json dit ${pkg.version}, SOCLE_VERSION dans src/index.ts dit ${constant[1]}`);
 
 if (errors.length) {
   console.error("check : échec\n- " + errors.join("\n- "));
