@@ -56,7 +56,7 @@ export const ParDefaut: Story = {
     await expect(Math.round(dialog.closest(".socle-box")!.getBoundingClientRect().width)).toBe(360);
     await userEvent.click(within(dialog).getByRole("button", { name: "Fermer" }));
     await waitFor(() => expect(body().queryByRole("dialog")).toBeNull());
-    await expect(trigger).toHaveFocus();
+    await waitFor(() => expect(trigger).toHaveFocus());
   },
 };
 

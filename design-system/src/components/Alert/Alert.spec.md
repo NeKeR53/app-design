@@ -3,10 +3,9 @@ Statut : validé (2026-11-23) — Version : depuis 1.0.0
 Validation : docs/validation/components/Nouveaux-P1-v1.html (A1 à A3, options A)
 
 ## Rôle
-`Alert` est un encart de message dans le contenu, au-dessus de ce qu'il concerne : un stock bas sur une fiche, une synchronisation impossible au-dessus d'une liste, une adresse vérifiée sous un formulaire.
+`Alert` est un encart de message dans le contenu, au-dessus de ce qu'il concerne : un stock bas sur une fiche, une synchronisation impossible au-dessus d'une liste, une adresse vérifiée sous un formulaire. Il dit aussi un état durable de la page ou de l'app (lecture seule, hors ligne, données d'exemple), en tête du contenu : la barre du haut n'en affiche plus (D-253).
 Ne pas l'utiliser pour :
 - le résultat d'une action qui n'a pas de place dans la page : prendre un toast (`useNotify`, D-154) ;
-- un état durable de la page ou de l'app (hors ligne, lecture seule) : prendre `pageStatus` d'AppShell (D-251) ;
 - une erreur de champ : elle va sous le champ (`Field`, D-132) ;
 - un bandeau pleine largeur : il n'existe pas (D-159).
 

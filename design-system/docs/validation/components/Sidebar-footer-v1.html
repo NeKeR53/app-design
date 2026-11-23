@@ -123,6 +123,7 @@ h2.sec{font-size:16px;margin:28px 0 8px}
 <li>Entrées fixes : même dessin, mêmes états, même sélection que la navigation (compteur, indicateur, actions au survol). Elles ne défilent jamais.</li>
 <li>Sélecteur : un seul espace et aucune action : simple étiquette, sans menu. Sinon, un bouton qui ouvre le menu au-dessus. Choisir l'espace courant ne fait rien.</li>
 <li>Menu : section « Espaces de travail » en choix unique, coche à droite (D-050) ; un trait ; les actions de l'app (« Créer un espace… »).</li>
+<li>Fermeture : un clic à côté du menu ou Échap le ferme ; le focus revient au bouton.</li>
 <li>Clavier : Tab va de la navigation aux entrées fixes, puis au sélecteur, puis au compte. Entrée, Espace ou flèche bas ouvrent le menu ; Échap le ferme et rend le focus.</li>
 <li>Nom long : coupé avec une ellipse, nom complet en info-bulle.</li>
 <li>Mobile : les entrées fixes vont dans « Plus » (ou dans la barre d'onglets avec <code>tabbar</code>) ; le sélecteur et le compte restent en bas de la feuille.</li>
@@ -162,7 +163,7 @@ function render(){
   app.innerHTML='<header class="top">'+leadHTML()+'<div class="rest"><h1>Documents</h1><span style="flex:1"></span>'+ib('list','Panneau de détail','aria-pressed="true"')+'</div></header><div class="body">'+sideHTML(st.sel,foot)+'<main class="main">'+listHTML()+listHTML()+'</main></div>';
   [].forEach.call(app.querySelectorAll('.nav'),function(n,i){n.onclick=function(){st.sel=n.dataset.id||['home','docs','plan','contacts','p1','p2'][i];render();};});
   var b=document.getElementById('ws');if(b){b.onclick=function(){st.menu=!st.menu;render();};}
-  if(st.menu&&b){var m=document.createElement('div');m.className='menu';m.style.left='8px';m.style.bottom='calc(var(--row-h) + 14px)';var list=WS.slice(0,+st.n);m.innerHTML='<div class="mh">Espaces de travail</div>'+list.map(function(w){return '<div class="mi" data-w="'+w+'"><span style="flex:1;overflow:hidden;text-overflow:ellipsis">'+w+'</span>'+(w===st.cur?ic('check'):'<span style="width:16px"></span>')+'</div>';}).join('')+'<div class="sep"></div><div class="mi">'+ic('plus')+'Créer un espace de travail…</div><div class="mi">'+ic('doc')+'Ouvrir un autre dossier…</div>';b.closest('.foot').appendChild(m);[].forEach.call(m.querySelectorAll('[data-w]'),function(x){x.onclick=function(){st.cur=x.dataset.w;st.menu=false;render();};});}
+  if(st.menu&&b){var m=document.createElement('div');m.className='menu';m.style.left='8px';m.style.bottom='calc(var(--row-h) + 14px)';var list=WS.slice(0,+st.n);m.innerHTML='<div class="mh">Espaces de travail</div>'+list.map(function(w){return '<div class="mi" data-w="'+w+'"><span style="flex:1;overflow:hidden;text-overflow:ellipsis">'+w+'</span>'+(w===st.cur?ic('check'):'<span style="width:16px"></span>')+'</div>';}).join('')+'<div class="sep"></div><div class="mi">'+ic('plus')+'Créer un espace de travail…</div><div class="mi">'+ic('doc')+'Ouvrir un autre dossier…</div>';b.closest('.foot').appendChild(m);[].forEach.call(m.querySelectorAll('.mi'),function(x){x.onclick=function(){if(x.dataset.w)st.cur=x.dataset.w;st.menu=false;render();document.getElementById('ws')&&document.getElementById('ws').focus();};});}
   var acc='<div class="acc"><span class="av">CM</span><span style="flex:1">Camille Martin</span>'+ib('gear','Réglages')+'</div>';
   var nav='<div class="navs"><div class="nav on">'+ic('doc')+'<span>Documents</span></div><div class="nav">'+ic('doc')+'<span>Planning</span></div></div>';
   var w='<button class="ws"><span class="mark">A</span><span class="nm">Atelier</span>'+ic('updown')+'</button>';
@@ -171,6 +172,10 @@ function render(){
   document.getElementById('optC').innerHTML='<aside class="side">'+nav+'<div class="foot"><div class="nav">'+ic('chat')+'<span>Assistant</span></div><button class="ws"><span class="av">CM</span><span class="nm">Camille Martin · Atelier</span>'+ic('updown')+'</button></div></aside>';
 }
 themeBar(render);
+
+// Un menu ouvert se ferme par un clic à côté ou par Échap, et rend le focus à son bouton (comme le Menu de Socle).
+document.addEventListener('pointerdown',function(e){if(st.menu&&!e.target.closest('.menu')&&!e.target.closest('#ws,#more,#pill')){st.menu=false;render();}});
+document.addEventListener('keydown',function(e){if(e.key==='Escape'&&st.menu){st.menu=false;render();var t=document.getElementById('ws')||document.getElementById('more');t&&t.focus();}});
 seg('t-n',[['1','Un seul'],['3','Trois']],'3',function(v){st.n=v;st.menu=false;if(v==='1')st.cur='Atelier';render();});
 seg('t-f',[['0','Aucune'],['1','Assistant'],['2','Assistant et Aide']],'1',function(v){st.f=v;render();});
 render();

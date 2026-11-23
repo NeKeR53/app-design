@@ -34,7 +34,7 @@ export type { TabsProps, TabItem, TabPanelProps } from "./components/Tabs/Tabs";
 export { Sidebar, workspaceInitial } from "./patterns/Sidebar/Sidebar";
 export type { SidebarProps, SidebarItemProps, SidebarTreeItemProps, SidebarSectionProps, SidebarAccountProps, SidebarAction, SidebarWorkspaceProps, SidebarWorkspaceEntry } from "./patterns/Sidebar/Sidebar";
 export { AppShell } from "./patterns/AppShell/AppShell";
-export type { AppShellProps, TabbarEntry, PageStatus } from "./patterns/AppShell/AppShell";
+export type { AppShellProps, TabbarEntry } from "./patterns/AppShell/AppShell";
 export { Drawer, PropertyRow } from "./patterns/Drawer/Drawer";
 export type { DrawerProps, DrawerSectionProps, PropertyRowProps, PropertyAction } from "./patterns/Drawer/Drawer";
 export type { DrawerComposedProps, DrawerDeclarativeProps, DetailHeader, DetailSection, DetailField, SectionSummary } from "./patterns/Drawer/Drawer";

@@ -64,7 +64,7 @@ export const Clavier: Story = {
     await userEvent.keyboard("{ArrowDown}{Escape}");
     await waitFor(() => expect(body().queryByRole("listbox")).toBeNull());
     await expect(c.getByTestId("v")).toHaveTextContent("luxembourg");
-    await expect(c.getByRole("button", { name: /Luxembourg/ })).toHaveFocus();
+    await waitFor(() => expect(c.getByRole("button", { name: /Luxembourg/ })).toHaveFocus());
   },
 };
 

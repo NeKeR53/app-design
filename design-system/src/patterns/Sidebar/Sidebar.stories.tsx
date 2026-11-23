@@ -308,6 +308,11 @@ export const EspaceDeTravail: Story = {
     await waitFor(() => expect(body().getByRole("menu")).toBeVisible());
     await userEvent.keyboard("{Escape}");
     await waitFor(() => expect(c.getByRole("button", { name: /Espace de travail : Perso/ })).toHaveFocus());
+    // Un clic à côté du menu le ferme.
+    await userEvent.click(c.getByRole("button", { name: /Espace de travail : Perso/ }));
+    await waitFor(() => expect(body().getByRole("menu")).toBeVisible());
+    await userEvent.click(document.body, { pointerEventsCheck: 0 });
+    await waitFor(() => expect(body().queryByRole("menu")).toBeNull());
   },
 };
 
