@@ -4,6 +4,13 @@ Versions selon semver (règle 6 du skill design) : une nouvelle option facultati
 
 ## [Non publié]
 
+### Ajouté
+- Gabarit `DetailPage` : un élément ouvert en entier. En-tête fixe avec lien de retour vers la vue principale, titre `h1`, statut, méta et actions en zone `header` ; sections séparées par des traits ; colonne de lecture de 760 px par défaut (D-210 à D-214). États `loading`, `error` et `not-found` rendus par le gabarit, lien de retour toujours visible (D-215).
+- Gabarit `Page` (page composée) : barre d'outils sur une ligne (contenu libre et actions en zone `toolbar`), contenu en blocs espacés de 24 px, pied ; options `width`, `fill`, `state` (D-214, D-215, D-217, D-218).
+- `PageSection` (aussi `DetailPage.Section` et `Page.Section`) : bloc titré avec description, actions en zone `section`, états `loading`, `error` et `empty` (D-213, D-216).
+- Libellés internes `backTo`, `pageLoadErrorTitle`, `pageLoadErrorText`, `sectionLoadError`, `notFoundTitle`.
+- Règles de mise en page : DetailPage précisé, section « Page composée » ajoutée dans `docs/layout-rules.md`.
+
 ## [0.2.0] — 2026-11-23
 
 Lot 1 de la migration d'Alfred : bouton à texte, actions, modale, champs, ComboBox, notifications et petits éléments d'affichage (décisions D-100 à D-169). Version mineure : tout est nouveau ou facultatif, rien ne casse.

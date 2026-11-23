@@ -1273,3 +1273,75 @@
 - Raison : comportements montrés dans la page de validation v1 et repris de la barre de recherche (D-071) et du Menu, pour un seul clavier dans le design system.
 - Options écartées : liste ouverte au focus (Alfred) ; champ sans chevron (Combobox d'Alfred).
 - Validation : docs/validation/components/ComboBox-v1.html
+
+## D-210 — DetailPage : en-tête fixe, contenu qui défile ; propriétés au panneau
+- Date : 2026-11-23
+- Portée : DetailPage
+- Décision : DetailPage remplit la zone `main` d'AppShell. L'en-tête (retour, titre, statut, méta, actions) reste fixe, séparé du contenu par un trait ; seul le contenu défile. Le contenu est une suite de sections. Les propriétés de l'élément vont dans le panneau de détail (D-018), jamais dans la page.
+- Raison : les actions restent à portée quand on lit une longue fiche ; même découpe que les autres gabarits.
+- Options écartées : en-tête qui défile avec le contenu ; propriétés dans une section de la page.
+- Validation : par délégation de l'utilisateur, 2026-11-23 — docs/validation/components/DetailPage-v1.html
+
+## D-211 — DetailPage : lien de retour en texte, au-dessus du titre
+- Date : 2026-11-23
+- Portée : DetailPage
+- Décision : le retour est un lien texte « ‹ Demandes » au-dessus du titre, en `--fs-sm` et `--fg-2`, souligné au survol. Il nomme la vue principale où il mène (`back.label`) ; son nom accessible est « Retour à Demandes ». Il reste visible dans tous les états de la page. Il est facultatif.
+- Raison : il dit où il mène, et le titre reste aligné sur les sections.
+- Options écartées : bouton-icône à gauche du titre (Alfred) ; fil d'Ariane qui répète le titre.
+- Validation : par délégation de l'utilisateur, 2026-11-23 — docs/validation/components/DetailPage-v1.html
+
+## D-212 — DetailPage : titre, statut et méta
+- Date : 2026-11-23
+- Portée : DetailPage
+- Décision : le titre est le `h1` de la page, en `--fs-xl`, semi-gras ; un titre long passe à la ligne, il n'est jamais tronqué. Le statut est un `StatusBadge` juste après le titre. La méta tient sur une ligne sous le titre, en `--fs-sm` et `--fg-2` ; ses éléments sont séparés par « · » et passent à la ligne si la place manque. Les actions (`ActionBar`, zone `header`) sont calées en haut à droite.
+- Raison : le titre est l'identité de l'élément ; la méta le situe sans prendre la place des propriétés.
+- Options écartées : titre tronqué avec info-bulle ; statut sous le titre.
+- Validation : par délégation de l'utilisateur, 2026-11-23 — docs/validation/components/DetailPage-v1.html
+
+## D-213 — Sections de page : titre, description, actions ; séparées par un trait
+- Date : 2026-11-23
+- Portée : PageSection (DetailPage, Page)
+- Décision : `PageSection` a un titre `h2` en `--fs-lg`, semi-gras, une description facultative en `--fs-sm` et `--fg-2`, et des actions facultatives (`ActionBar`, zone `section`) à droite du titre. Dans DetailPage, deux sections sont séparées par un trait `--line`, avec 20 px au-dessus et au-dessous. Dans Page, les blocs sont espacés de 24 px, sans trait. Une section ne se replie pas.
+- Raison : une page se lit en entier ; le repli est réservé au panneau de détail (D-061).
+- Options écartées : sections repliables ; sections en cartes.
+- Validation : par délégation de l'utilisateur, 2026-11-23 — docs/validation/components/DetailPage-v1.html
+
+## D-214 — Largeur : colonne de lecture pour DetailPage, pleine largeur pour Page
+- Date : 2026-11-23
+- Portée : DetailPage, Page
+- Décision : option `width` : `"text"` limite la colonne à 760 px, centrée ; `"full"` prend toute la largeur. Défaut `"text"` pour DetailPage, `"full"` pour Page. L'en-tête suit la même colonne que le contenu.
+- Raison : une fiche se lit ; une page composée porte souvent un tableau ou un graphique.
+- Options écartées : colonne calée à gauche ; même défaut pour les deux gabarits.
+- Validation : par délégation de l'utilisateur, 2026-11-23 — docs/validation/components/DetailPage-v1.html
+
+## D-215 — États de la page : chargement, erreur, introuvable
+- Date : 2026-11-23
+- Portée : DetailPage, Page
+- Décision : option `state` : `"loading"` montre des squelettes après 200 ms (D-165), à la place du titre et de la méta si le titre n'est pas encore connu, et à la place du contenu ; `"error"` montre « Impossible de charger » avec « Réessayer » (`onRetry`) à la place du contenu (D-085) ; `"not-found"` montre l'`EmptyState` décrit par `notFound` (titre, phrase, action en zone `empty`). Dans ces trois états, les actions de l'en-tête sont masquées et le lien de retour reste. Un rechargement garde le contenu : l'attente se voit sur l'action (« Actualiser »), par `ActionBar` (D-116).
+- Raison : le gabarit rend chaque état, et l'utilisateur peut toujours revenir à la liste.
+- Options écartées : spinner plein écran ; squelettes à chaque rechargement.
+- Validation : par délégation de l'utilisateur, 2026-11-23 — docs/validation/components/DetailPage-v1.html
+
+## D-216 — États d'une section : chargement, erreur, vide
+- Date : 2026-11-23
+- Portée : PageSection
+- Décision : une section qui charge ses données à part prend `state="loading"` (deux lignes de squelette), `state="error"` (message compact avec « Réessayer ») ou `empty` (`EmptyState` compact, avec action facultative en zone `empty`). Le titre de la section reste visible ; le reste de la page n'est pas touché.
+- Raison : une partie lente (historique, pièces jointes) ne bloque pas toute la fiche.
+- Options écartées : état géré par l'app avec ses propres composants.
+- Validation : par délégation de l'utilisateur, 2026-11-23 — docs/validation/components/DetailPage-v1.html
+
+## D-217 — Page composée : barre d'outils, contenu, pied
+- Date : 2026-11-23
+- Portée : Page
+- Décision : `Page` sert quand aucun gabarit ne convient. Elle pose trois zones : `toolbar` (fixe, une ligne : contenu libre à gauche, qui défile à l'horizontale si la place manque ; `actions` en zone `toolbar` à droite), le contenu (blocs empilés à 24 px, seule zone qui défile), `footer` (fixe, trait au-dessus, `--fs-sm`, `--fg-3`). Elle n'a pas d'en-tête : le nom de la page est dans la barre du haut ; un élément ouvert prend DetailPage. L'app pose des composants du socle dans les zones, sans HTML stylé.
+- Raison : une page hors gabarit garde les mêmes marges, la même barre et le même pied que les autres.
+- Options écartées : en-tête libre dans Page (Alfred) ; barre d'outils sur plusieurs lignes.
+- Validation : par délégation de l'utilisateur, 2026-11-23 — docs/validation/components/DetailPage-v1.html
+
+## D-218 — Page : contenu qui remplit la hauteur
+- Date : 2026-11-23
+- Portée : Page
+- Décision : option `fill` : le contenu prend la hauteur disponible sans défiler et sans marge basse ; son unique enfant (un éditeur, un grand tableau) gère son propre défilement.
+- Raison : un tableau garde son en-tête visible et un éditeur tient dans la fenêtre.
+- Options écartées : hauteur fixe en pixels.
+- Validation : par délégation de l'utilisateur, 2026-11-23 — docs/validation/components/DetailPage-v1.html

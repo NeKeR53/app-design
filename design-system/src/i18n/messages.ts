@@ -73,6 +73,12 @@ export interface SocleMessages {
   /* Petits éléments d'affichage (D-160 à D-169) */
   codeSample: string;
   progressOf: (value: string, max: string) => string;
+  /* Gabarits DetailPage et Page */
+  backTo: (label: string) => string;
+  pageLoadErrorTitle: string;
+  pageLoadErrorText: string;
+  sectionLoadError: string;
+  notFoundTitle: string;
   /* ActionBar */
   moreActions: string;
   confirmQuestion: (label: string) => string;
@@ -180,6 +186,11 @@ export const frenchMessages: SocleMessages = {
   loading: "Chargement…",
   codeSample: "Extrait de code",
   progressOf: (v, max) => `${v} sur ${max}`,
+  backTo: (l) => `Retour à ${l}`,
+  pageLoadErrorTitle: "Impossible de charger la page",
+  pageLoadErrorText: "Le service ne répond pas. Réessayez dans un instant.",
+  sectionLoadError: "Impossible de charger cette partie",
+  notFoundTitle: "Élément introuvable",
   moreActions: "Plus d'actions",
   confirmQuestion: (l) => `${l} ?`,
   notifications: "Notifications",

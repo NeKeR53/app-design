@@ -77,3 +77,7 @@ export { Fieldset } from "./components/Fieldset/Fieldset";
 export type { FieldsetProps } from "./components/Fieldset/Fieldset";
 export { ComboBox } from "./components/ComboBox/ComboBox";
 export type { ComboBoxProps, ComboBoxSingleProps, ComboBoxMultipleProps, ComboBoxItem } from "./components/ComboBox/ComboBox";
+export { Page, PageSection } from "./templates/Page/Page";
+export type { PageProps, PageSectionProps, PageEmpty, PageWidth } from "./templates/Page/Page";
+export { DetailPage } from "./templates/DetailPage/DetailPage";
+export type { DetailPageProps, DetailPageBack } from "./templates/DetailPage/DetailPage";
