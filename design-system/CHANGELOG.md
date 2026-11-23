@@ -4,83 +4,34 @@ Versions selon semver (règle 6 du skill design) : une nouvelle option facultati
 
 ## [Non publié]
 
+## [0.3.0] — 2026-11-23
+
+Lots 2 à 5 de la migration d'Alfred : gabarits de page (ListPage, DetailPanel déclaratif, FormPage, SettingsPage, DetailPage et Page), coquille (actions de page, pied de Sidebar, largeurs du détail, résumé et état), composants spécialisés (TreeView, tableau dense, Terminal, LogViewer, DiffView, Markdown, DocumentViewer, HtmlContent, Disclosure, InlineEdit, StepList, Popover) et garde-fous Biome (décisions D-170 à D-335). Version mineure : tout est nouveau ou facultatif ; les petits changements de l'existant sont listés sous « Modifié ».
+
 ### Ajouté
 - Config Biome partagée `socle-ui/biome` pour les apps qui lintent avec Biome 2.6 ou plus récent : `"extends": ["socle-ui/biome"]` dans `biome.json` (D-330). Imports interdits (librairie headless, chemins internes) ; `style` et `className` interdits sur un composant Socle, reconnu par son nom (D-331) ; couleurs en dur interdites dans le code et le CSS (D-332).
 - `npm run check` teste la config Biome sur des fichiers d'exemple (D-333) et vérifie que `package.json`, la dernière entrée datée du CHANGELOG et `SOCLE_VERSION` ont la même version (D-335).
 - README : installation dans une app par yalc, clone neuf compris, et règles de version (D-334).
-
-### Corrigé
-- `SOCLE_VERSION` valait encore `0.1.0` dans la 0.2.0 ; elle suit désormais `package.json`.
-
-### Ajouté (P8 — gabarit ListPage et valeurs typées)
 - `FormattedValue` : une donnée affichée d'après son type (`text`, `longtext`, `number`, `money`, `percent`, `bytes`, `date`, `datetime`, `relative`, `duration`, `boolean`, `status`, `email`, `url`, `code`, `tags`), au format de la langue (D-170). Vide « — », valeur illisible en texte brut (D-171). Le type fixe l'alignement, la largeur de colonne et le tri (D-172). Exports : `useFormatValue`, `valueSortKey`, `valueLayout`, types `ValueType`, `ValueFormat`, `StatusMap`.
 - `ListPage` : gabarit déclaratif (titre, lignes, colonnes typées, recherche, filtres, `Action`) qui dessine l'en-tête, la barre, la liste (`Table` ou `List`), le pied et les états chargement, vide, aucun résultat et erreur (D-173). Recherche et filtres locaux, ou `remote` avec `onStateChange` (D-174). Pied « Afficher plus » par défaut, pagination en option (D-175). Vide sans barre ; « Effacer la recherche » vide aussi les filtres (D-176). Filtres et tri mémorisés (D-177). Barre de sélection en sélection multiple (D-178).
 - Libellés internes : `locale`, `yes`, `no`, `justNow`, `emptyValue`, `itemCount`, `rangeOf`, `shownOf`, `pagination`, `previousPage`, `nextPage`, `selectedCount`, `clearSelection`.
-
-### Corrigé
-- `Table` : les cellules se redessinent quand seuls les critères de recherche changent ; le texte trouvé passe bien en gras (D-087).
-
-### Interne
-- `ActionBar` : la logique de lancement (confirmation, attente, `onDone`, `onError`) passe dans un hook interne `useActionRunner`, réutilisé par les actions de ligne de `ListPage`. Rendu et API inchangés.
-
-### Ajouté (P9 — DetailPanel déclaratif)
 - `DetailPanel` : forme déclarative, facultative (D-180). L'app passe `header` (titre, sous-titre, statut, actions ; D-181) et `sections` (champs typés rendus par `FormattedValue`, contenu libre, texte vide ; D-182, D-183). Le panneau gère le chargement, l'erreur, l'élément introuvable et le vide (`isLoading`, `hasError`, `onRetry`, `isNotFound`, `emptyMessage` ; D-184). Actions d'en-tête et de section par `ActionBar`, règle de la zone `section` ; `onActionDone` et `onActionError`. Types exportés : `DetailHeader`, `DetailSection`, `DetailField`, `SectionSummary`, `DetailPanelComposedProps`, `DetailPanelDeclarativeProps`.
 - `DetailPanel.Section` : options facultatives `summary` (état court lisible même repliée), `actions` et `defaultCollapsed` (D-183).
 - `DetailPanel` (forme à composants) : option facultative `emptyMessage`.
 - Libellés internes `detailLoadErrorTitle`, `detailLoadErrorText`, `detailNotUpdated`, `detailNotFoundTitle`, `detailNotFoundText`, `detailSectionEmpty`.
-
 - Gabarit `FormPage` (D-022, D-193) : en-tête, sections titrées (titre et aide à gauche à partir de 800 px de conteneur, au-dessus en dessous), pied collé en bas avec l'état d'enregistrement (D-194), « Annuler » (confirmé après une saisie, D-195) et l'action principale, toujours active (D-196). Options `initialValues`, `onDirtyChange`, `isLoading` (squelettes).
 - Formulaire en modale : `const openForm = useOpenForm(); const values = await openForm({ title, fields, submitLabel, onSubmit? })` rend les valeurs, ou `null` si l'utilisateur ferme (D-197). Taille automatique `sm` ou `md`, attente et erreur sur place (D-198). L'hôte est dans `SocleProvider`.
 - Modèle de champ déclaratif `FormField`, commun aux deux : `text`, `email`, `url`, `tel`, `password`, `number`, `textarea`, `select`, `combobox`, `radio`, `checkbox`, `checkboxGroup` et le groupe `fieldset`, dessinés avec les champs du lot 1 (D-190). Pas d'interrupteur (D-137). Valeurs typées (D-191) ; vérification par les champs, règle croisée `validate(valeur, valeurs)`, erreurs rendues par `onSubmit` (`{ errors, message }`) sous les champs (D-192). Entrée et Mod+Entrée envoient (D-196). Types exportés : `FormField`, `FormValues`, `FormSubmitResult`, etc.
 - Libellés du dictionnaire `messages` : `unsavedChanges`, `saving`, `saved`, `saveFailed`, `fixErrors`, `discardTitle`, `discardMessage`, `discard`, `invalidNumber`, `numberTooSmall`, `numberTooLarge`.
 - Règles de placement : FormPage et saisie courte en modale (docs/layout-rules.md).
-
 - Gabarit `SettingsPage` (D-015, D-200 à D-209) : API déclarative `groups → categories → sections → settings`. Réglages typés `switch`, `select`, `text`, `action`, `item`, `info`, et contenu libre de section (`content`, par exemple une `Table`). Navigation avec recherche, groupes, icônes et lien externe en pied ; dernière rubrique mémorisée. Application immédiate ; un échec rétablit la valeur et ouvre un toast `danger`. Listes dans une section : code, étiquettes `StatusBadge`, actions de ligne par `ActionBar`. États de chargement et d'erreur d'une rubrique. Tient dans un `Dialog` `xl` comme en pleine page ; sous 640 px de large : liste, puis rubrique avec « Retour ». Types exportés : `SettingsPageProps`, `SettingsGroup`, `SettingsCategory`, `SettingsSection`, `Setting` et un type par réglage.
 - Tokens `--settings-nav-w`, `--settings-pad`, `--setting-py` (web et desktop).
 - Libellés internes : `settingsSections`, `settingsSearchScope`, `noSettingsFound`, `backToSections`, `settingNotSaved`, `settingsLoadError`, `settingsLoadErrorText`, `loadingSettings`.
-
-### Modifié
-- `Dialog` : un changement fait dans un gabarit à application immédiate (`SettingsPage`) ne compte plus comme une saisie commencée ; le clic hors ferme la modale (D-208). Aucun effet ailleurs.
-- `ActionBar` : la fonction interne `confirmRequest` est exportée dans le module (pas dans `index.ts`), pour être réutilisée par `SettingsPage`.
-
-- Gabarit `DetailPage` : un élément ouvert en entier. En-tête fixe avec lien de retour vers la vue principale, titre `h1`, statut, méta et actions en zone `header` ; sections séparées par des traits ; colonne de lecture de 760 px par défaut (D-210 à D-214). États `loading`, `error` et `not-found` rendus par le gabarit, lien de retour toujours visible (D-215).
-- Gabarit `Page` (page composée) : barre d'outils sur une ligne (contenu libre et actions en zone `toolbar`), contenu en blocs espacés de 24 px, pied ; options `width`, `fill`, `state` (D-214, D-215, D-217, D-218).
-- `PageSection` (aussi `DetailPage.Section` et `Page.Section`) : bloc titré avec description, actions en zone `section`, états `loading`, `error` et `empty` (D-213, D-216).
-- Libellés internes `backTo`, `pageLoadErrorTitle`, `pageLoadErrorText`, `sectionLoadError`, `notFoundTitle`.
-- Règles de mise en page : DetailPage précisé, section « Page composée » ajoutée dans `docs/layout-rules.md`.
-
-- `TreeView` : arbre de nœuds dépliables dans le contenu d'une page (fichiers, dossiers, hiérarchies), sur autant de niveaux que nécessaire (D-260 à D-268). Un nœud sur une ligne : chevron, icône (`openIcon` une fois déplié), libellé, méta (D-261) ; un trait vertical `--tree-line` par niveau (D-262). Sélection `none`, `single` (défaut) ou `multiple` par Mod et Maj ; double-clic ou Entrée : `onAction`, sinon plie ou déplie (D-263). Clavier du motif `tree` et recherche par frappe (D-264). Actions de nœud par le modèle `Action` et `ActionBar` zone `row`, action `danger` confirmée, clic droit et Maj+F10 (D-265). Enfants chargés à la demande par `loadChildren(node, signal)`, avec « Chargement… » et « Impossible de charger · Réessayer » (D-266). Glisser-déposer facultatif par `onMove(ids, { id, position })` : avant, après, dans (D-267). Arbre vide : `EmptyState` compact (D-268). Types `TreeViewProps`, `TreeNode`, `TreeMoveTarget`.
-- Libellés internes `childrenLoadFailed`, `noItems`, `moveItem`, `expand` et `collapse` dans le dictionnaire `messages` (D-089).
-- Règle de choix entre `TreeView` et `Sidebar.TreeItem` (D-260), reportée dans la spec `Sidebar`.
-
-### Ajouté (tableau dense, D-270 à D-277)
 - `Table` : options facultatives pour un tableau dense, sans second composant (D-270).
   - `density="compact"` : lignes de 25 px, en-tête de 28 px (D-271).
   - `groupBy` et `defaultCollapsedGroups` : lignes de groupe en texte, repliables au clic, à Entrée et à Espace ; état mémorisé par tableau (D-272).
   - `rowDescription` : lignes doubles, précision sous le nom (D-273).
 - Libellé interne `groupCount` (« n lignes ») dans le dictionnaire `messages`.
-
-### Corrigé
-- `Table` : une colonne déclarée sous 80 px garde sa largeur (D-274).
-- `Table` : un en-tête coupé par « … » montre son libellé complet en info-bulle (D-275).
-
-- `Terminal` : terminal interactif sur xterm.js (D-280 à D-284). Branchement générique `connection` `{ send, subscribe }`, taille par `onResize`, état par `state` et `reason`, lecture seule, `fill`. Poignée `ref` : `write`, `clear`, `text`, `selection`, `paste`, `bracketedPaste`, `focus`. Clavier de Windows Terminal ; F6 et Maj+F6 sortent du terminal. Barre d'état : état, aide, taille.
-- xterm.js reste côté app (D-280) : `@xterm/xterm` et `@xterm/addon-fit` sont des peer dependencies facultatives ; l'app passe le moteur par `engine` et importe `@xterm/xterm/css/xterm.css`. Une app sans terminal n'a rien à installer.
-- `LogViewer` : journal en lignes horodatées, virtualisé jusqu'à 500 000 lignes (D-285). Filtre de niveau par Menu à choix avec compteurs (D-286), liste des erreurs (D-287), Suivre la fin avec pause et « Revenir à la fin » (D-288), recherche, retour à la ligne, horodatage, copie (D-289). Alimenté par `lines` ou par la poignée `ref.append()`.
-- Tokens `--ansi-0` à `--ansi-15` : les 16 couleurs ANSI, en clair et en sombre, au moins 4,5:1 sur `--surface` (D-281).
-- Libellés du Terminal et du LogViewer dans le dictionnaire `messages` (`terminalOpening`, `logLevel`, `followPaused`…).
-
-- `DiffView` : différences entre deux textes (`before`, `after`, `fileName`) ou lecture d'un diff unifié (`patch`, plusieurs fichiers) (D-290). Vue côte à côte par défaut, unifiée au choix par un `IconButton` à bascule ; unifiée imposée sous 641 px (D-291). Fonds tirés de `--success` et `--danger`, jamais en dur (D-292). Signes + et −, texte caché, `<ins>` et `<del>` (D-293). Mots changés surlignés (D-294). Lignes inchangées repliées, `context` réglable (D-295). En-tête avec nom, résumé et compteurs ; titre par fichier dans un patch (D-296). Navigation F7, Maj+F7, Alt+↓, Alt+↑, annoncée (D-297). Seules les rangées visibles sont dessinées ; option `fill` (D-298). Avis binaire, fins de ligne, diff coupé (D-299).
-- `DiffStat` : compteurs « +12 −3 » seuls, avec texte caché (D-290).
-- Libellés internes `diff…` dans le dictionnaire `messages` (D-089).
-
-- `DocumentViewer` : aperçu d'un PDF ou d'une image, source `src` (`data:`, `blob:`, `https:`) ou `data` (`Blob`, `ArrayBuffer`, `Uint8Array`) (D-310). Barre d'outils : « Page n / N », page précédente et suivante, zoom −/%/+, « Ajuster à la largeur », « Télécharger » (`onDownload`), actions de l'app (`actions`, zone `toolbar`) (D-312). Zoom par paliers 25 → 400 %, Ctrl/⌘ + molette, Ctrl/⌘ + « + » / « − » / « 0 » (D-313). Pages dessinées à l'approche de la zone visible (D-314). Chargement en squelette, erreurs en `EmptyState` avec « Réessayer », format non pris en charge avec « Télécharger » (D-316). Options `height` (`fixed`, `fill`), `name`, `type`.
-- pdf.js en peer dependency facultative (`pdfjs-dist` >= 5) : Socle ne l'importe jamais ; l'app passe `loadPdf={() => import("pdfjs-dist")}` et règle son worker (D-311). Types exportés : `PdfEngine`, `PdfDocumentHandle`, `PdfPageHandle`, `DocumentData`, `DocumentFormat` ; fonction `detectFormat` ; constante `ZOOM_STEPS`.
-- `HtmlContent` : HTML reçu (courriel, page) nettoyé par liste blanche et isolé dans une racine fantôme, `contain: content` (D-317). Images distantes masquées par défaut, bandeau « N images masquées » + « Afficher les images » ; `imagesAllowed`, `defaultImagesAllowed`, `onImagesAllowedChange`, `resolveImage` (`cid:`, proxy) (D-318). Liens http, https, mailto interceptés par `onLink`, adresse au survol ; sans `onLink`, texte simple. Surface `paper` (défaut) ou `theme` (D-319).
-- Tokens `--paper`, `--paper-fg`, `--paper-link`, identiques en clair et en sombre, et utilitaires `bg-paper`, `text-paper-fg`, `text-paper-link` (D-315).
-- Libellés internes ajoutés au dictionnaire `messages` : `documentToolbar`, `pageOf`, `pageNumber`, `documentPages`, `previousPage`, `nextPage`, `zoomIn`, `zoomOut`, `fitWidth`, `zoomPercent`, `download`, `readingDocument`, `documentUnreadable`, `documentReadFailed`, `pdfPassword`, `pdfInvalid`, `pdfUnavailable`, `unsupportedFormat`, `unsupportedFormatText`, `unknownFormat`, `imagesHidden`, `showImages`.
-
-### Ajouté (lot 4 : Disclosure, InlineEdit, StepList, menu contextuel, Popover — D-320 à D-329)
 - `Disclosure` : bloc repliable avec un titre, même forme que les sections de `Sidebar` et `DetailPanel` ; replié par défaut, contenu créé à l'ouverture, état mémorisé avec `id` (D-320, D-321).
 - `InlineEdit` : texte modifiable sur place, sur une ou plusieurs lignes ; fin contour au survol (D-322) ; clic, Entrée ou F2 ouvrent, Entrée (ou Mod+Entrée) et clic à côté enregistrent, Échap annule ; promesse rejetée : saisie gardée avec un message (D-323) ; `isRequired`, `validate`, `placeholder`, `isEditing` (D-324).
 - `StepList` : étapes numérotées, quatre états (à faire, en cours, fait, erreur), horizontal ou vertical ; retour aux étapes passées avec `onSelect` ; resserrement sous 560 et 380 px (D-325, D-326). Fonction `stepStatus` interne.
@@ -88,20 +39,10 @@ Versions selon semver (règle 6 du skill design) : une nouvelle option facultati
 - `Menu` : options facultatives `title`, `anchor` (point ou élément), `isOpen`, `onOpenChange` ; `trigger` devient facultatif avec `anchor`. Crochet `useContextMenu()` : clic droit, Maj+F10 et touche Menu ; un menu ouvert à un point se ferme au défilement (D-327).
 - Libellés internes `editValue`, `stepDone`, `stepError` dans le dictionnaire `messages`.
 - `DetailPanel` (spec) : la valeur d'une `PropertyRow` peut être un `InlineEdit` (D-324) ; `Disclosure` permis dans une section (D-321).
-
-### Modifié
-- `Dialog` : `useEscapeFlag` et `FocusFirstField` sont exportés du module (interne, non exporté par `index.ts`) pour `Popover`. Aucun changement de comportement.
-
-### Ajouté — Markdown et MarkdownEditor (D-300 à D-309)
 - Deux sous-entrées, avec des dépendances facultatives (D-300) : `socle-ui/markdown` (`Markdown`) et `socle-ui/markdown-editor` (`MarkdownEditor`). `react-markdown`, `remark-gfm`, `@codemirror/state`, `@codemirror/view`, `@codemirror/commands`, `@codemirror/language`, `@codemirror/lang-markdown` et `@lezer/highlight` sont des peer dependencies facultatives : une app les installe seulement si elle importe ces sous-entrées. `socle-ui` reste l'entrée de tout le reste ; `scripts/check.js` et `socle-ui/eslint-config` autorisent ces deux sous-entrées.
 - `Markdown` : rendu de GFM avec la typographie de Socle (D-301) ; `headingLevel` (D-302) ; liens en `Link`, `onLinkPress` qui annule la navigation, adresses dangereuses retirées, HTML ignoré, images seulement par `renderImage` (D-303) ; blocs de code en `Code` avec « Copier le bloc », `renderCode`, tableaux statiques au style de `Table`, cases de tâches statiques (D-304).
 - `MarkdownEditor` : champ de formulaire sur CodeMirror 6, chargé à la première ouverture (D-305) ; chasse fixe et coloration aux tokens, en clair et en sombre (D-306) ; barre de mise en forme et raccourcis (D-307) ; images collées ou déposées par `onPasteImage` (D-308) ; aperçu facultatif en bascule ou côte à côte (D-309). États du lot 1 : désactivé, lecture seule, erreur ; compteur avec `maxLength`.
 - Libellés internes ajoutés au dictionnaire `messages` : `copyBlock`, `blockCopied`, `copyFailed`, `table`, `taskDone`, `taskTodo`, `image`, `formatting`, `heading`, `bold`, `italic`, `inlineCode`, `link`, `bulletList`, `orderedList`, `quote`, `preview`, `nothingToPreview`, `imageUploading`, `imageNotAdded`, `linkTextPlaceholder`, `linkUrlPlaceholder`.
-
-### Modifié
-- Spec `TextArea` : renvoie à `MarkdownEditor` pour un texte mis en forme.
-
-### Ajouté (lot 3, coquille)
 - `ActionBar`, zone `topbar` : une action principale sans icône devient un bouton à texte, tout à droite (D-220). Dans la barre du haut d'AppShell, repli selon la place : les icônes passent dans « … » depuis la dernière, puis le bouton à texte (D-221). Option `fit` de `arrangeActions`, type `ActionFit`.
 - `AppShell` : le slot `actions` prend la place libre de la barre et accepte `ActionBar zone="topbar"` avec les boutons-icônes de l'app (D-222).
 - `Sidebar` : option `footer`, des `Sidebar.Item` fixes en bas, au-dessus du compte, hors du défilement (D-230). Nouveau `Sidebar.Workspace` (option `workspace`) : sélecteur d'espace de travail, menu au-dessus, espace ouvert coché, actions de l'app après un trait (D-231). Ordre du pied : entrées fixes, espace, compte (D-232). Fonction `workspaceInitial`, types `SidebarWorkspaceProps` et `SidebarWorkspaceEntry`.
@@ -109,8 +50,42 @@ Versions selon semver (règle 6 du skill design) : une nouvelle option facultati
 - `AppShell` : option `pageSummary`, court résumé en texte après le titre, coupé avec info-bulle, masqué sur mobile (D-250). Option `pageStatus` (`{ label, tone?, description?, menu? }`) : indicateur d'état durable après le titre, avec info-bulle ou menu, annoncé quand il change ; un seul à la fois (D-251, D-252). Type `PageStatus`.
 - Libellés internes `footerNavigation`, `workspaces`, `workspaceLabel` et `workspaceSwitch` dans le dictionnaire `messages`.
 
-### Changé
+### Modifié
+- `Dialog` : un changement fait dans un gabarit à application immédiate (`SettingsPage`) ne compte plus comme une saisie commencée ; le clic hors ferme la modale (D-208). Aucun effet ailleurs.
+- `ActionBar` : la fonction interne `confirmRequest` est exportée dans le module (pas dans `index.ts`), pour être réutilisée par `SettingsPage`.
+- Gabarit `DetailPage` : un élément ouvert en entier. En-tête fixe avec lien de retour vers la vue principale, titre `h1`, statut, méta et actions en zone `header` ; sections séparées par des traits ; colonne de lecture de 760 px par défaut (D-210 à D-214). États `loading`, `error` et `not-found` rendus par le gabarit, lien de retour toujours visible (D-215).
+- Gabarit `Page` (page composée) : barre d'outils sur une ligne (contenu libre et actions en zone `toolbar`), contenu en blocs espacés de 24 px, pied ; options `width`, `fill`, `state` (D-214, D-215, D-217, D-218).
+- `PageSection` (aussi `DetailPage.Section` et `Page.Section`) : bloc titré avec description, actions en zone `section`, états `loading`, `error` et `empty` (D-213, D-216).
+- Libellés internes `backTo`, `pageLoadErrorTitle`, `pageLoadErrorText`, `sectionLoadError`, `notFoundTitle`.
+- Règles de mise en page : DetailPage précisé, section « Page composée » ajoutée dans `docs/layout-rules.md`.
+- `TreeView` : arbre de nœuds dépliables dans le contenu d'une page (fichiers, dossiers, hiérarchies), sur autant de niveaux que nécessaire (D-260 à D-268). Un nœud sur une ligne : chevron, icône (`openIcon` une fois déplié), libellé, méta (D-261) ; un trait vertical `--tree-line` par niveau (D-262). Sélection `none`, `single` (défaut) ou `multiple` par Mod et Maj ; double-clic ou Entrée : `onAction`, sinon plie ou déplie (D-263). Clavier du motif `tree` et recherche par frappe (D-264). Actions de nœud par le modèle `Action` et `ActionBar` zone `row`, action `danger` confirmée, clic droit et Maj+F10 (D-265). Enfants chargés à la demande par `loadChildren(node, signal)`, avec « Chargement… » et « Impossible de charger · Réessayer » (D-266). Glisser-déposer facultatif par `onMove(ids, { id, position })` : avant, après, dans (D-267). Arbre vide : `EmptyState` compact (D-268). Types `TreeViewProps`, `TreeNode`, `TreeMoveTarget`.
+- Libellés internes `childrenLoadFailed`, `noItems`, `moveItem`, `expand` et `collapse` dans le dictionnaire `messages` (D-089).
+- Règle de choix entre `TreeView` et `Sidebar.TreeItem` (D-260), reportée dans la spec `Sidebar`.
+- `Dialog` : `useEscapeFlag` et `FocusFirstField` sont exportés du module (interne, non exporté par `index.ts`) pour `Popover`. Aucun changement de comportement.
+- Spec `TextArea` : renvoie à `MarkdownEditor` pour un texte mis en forme.
 - `ActionBar`, zone `topbar` : une action `primary` **sans icône** était en tête de « … » ; elle est maintenant un bouton à texte (D-220, remplace une partie de D-112). Migration : pour une forme compacte, donner une icône à l’action principale (elle reste alors une icône, en premier, D-112) ; pour la garder dans « … », retirer `primary`.
+
+### Corrigé
+- `SOCLE_VERSION` valait encore `0.1.0` dans la 0.2.0 ; elle suit désormais `package.json`.
+- `Table` : les cellules se redessinent quand seuls les critères de recherche changent ; le texte trouvé passe bien en gras (D-087).
+- `Table` : une colonne déclarée sous 80 px garde sa largeur (D-274).
+- `Table` : un en-tête coupé par « … » montre son libellé complet en info-bulle (D-275).
+- `Terminal` : terminal interactif sur xterm.js (D-280 à D-284). Branchement générique `connection` `{ send, subscribe }`, taille par `onResize`, état par `state` et `reason`, lecture seule, `fill`. Poignée `ref` : `write`, `clear`, `text`, `selection`, `paste`, `bracketedPaste`, `focus`. Clavier de Windows Terminal ; F6 et Maj+F6 sortent du terminal. Barre d'état : état, aide, taille.
+- xterm.js reste côté app (D-280) : `@xterm/xterm` et `@xterm/addon-fit` sont des peer dependencies facultatives ; l'app passe le moteur par `engine` et importe `@xterm/xterm/css/xterm.css`. Une app sans terminal n'a rien à installer.
+- `LogViewer` : journal en lignes horodatées, virtualisé jusqu'à 500 000 lignes (D-285). Filtre de niveau par Menu à choix avec compteurs (D-286), liste des erreurs (D-287), Suivre la fin avec pause et « Revenir à la fin » (D-288), recherche, retour à la ligne, horodatage, copie (D-289). Alimenté par `lines` ou par la poignée `ref.append()`.
+- Tokens `--ansi-0` à `--ansi-15` : les 16 couleurs ANSI, en clair et en sombre, au moins 4,5:1 sur `--surface` (D-281).
+- Libellés du Terminal et du LogViewer dans le dictionnaire `messages` (`terminalOpening`, `logLevel`, `followPaused`…).
+- `DiffView` : différences entre deux textes (`before`, `after`, `fileName`) ou lecture d'un diff unifié (`patch`, plusieurs fichiers) (D-290). Vue côte à côte par défaut, unifiée au choix par un `IconButton` à bascule ; unifiée imposée sous 641 px (D-291). Fonds tirés de `--success` et `--danger`, jamais en dur (D-292). Signes + et −, texte caché, `<ins>` et `<del>` (D-293). Mots changés surlignés (D-294). Lignes inchangées repliées, `context` réglable (D-295). En-tête avec nom, résumé et compteurs ; titre par fichier dans un patch (D-296). Navigation F7, Maj+F7, Alt+↓, Alt+↑, annoncée (D-297). Seules les rangées visibles sont dessinées ; option `fill` (D-298). Avis binaire, fins de ligne, diff coupé (D-299).
+- `DiffStat` : compteurs « +12 −3 » seuls, avec texte caché (D-290).
+- Libellés internes `diff…` dans le dictionnaire `messages` (D-089).
+- `DocumentViewer` : aperçu d'un PDF ou d'une image, source `src` (`data:`, `blob:`, `https:`) ou `data` (`Blob`, `ArrayBuffer`, `Uint8Array`) (D-310). Barre d'outils : « Page n / N », page précédente et suivante, zoom −/%/+, « Ajuster à la largeur », « Télécharger » (`onDownload`), actions de l'app (`actions`, zone `toolbar`) (D-312). Zoom par paliers 25 → 400 %, Ctrl/⌘ + molette, Ctrl/⌘ + « + » / « − » / « 0 » (D-313). Pages dessinées à l'approche de la zone visible (D-314). Chargement en squelette, erreurs en `EmptyState` avec « Réessayer », format non pris en charge avec « Télécharger » (D-316). Options `height` (`fixed`, `fill`), `name`, `type`.
+- pdf.js en peer dependency facultative (`pdfjs-dist` >= 5) : Socle ne l'importe jamais ; l'app passe `loadPdf={() => import("pdfjs-dist")}` et règle son worker (D-311). Types exportés : `PdfEngine`, `PdfDocumentHandle`, `PdfPageHandle`, `DocumentData`, `DocumentFormat` ; fonction `detectFormat` ; constante `ZOOM_STEPS`.
+- `HtmlContent` : HTML reçu (courriel, page) nettoyé par liste blanche et isolé dans une racine fantôme, `contain: content` (D-317). Images distantes masquées par défaut, bandeau « N images masquées » + « Afficher les images » ; `imagesAllowed`, `defaultImagesAllowed`, `onImagesAllowedChange`, `resolveImage` (`cid:`, proxy) (D-318). Liens http, https, mailto interceptés par `onLink`, adresse au survol ; sans `onLink`, texte simple. Surface `paper` (défaut) ou `theme` (D-319).
+- Tokens `--paper`, `--paper-fg`, `--paper-link`, identiques en clair et en sombre, et utilitaires `bg-paper`, `text-paper-fg`, `text-paper-link` (D-315).
+- Libellés internes ajoutés au dictionnaire `messages` : `documentToolbar`, `pageOf`, `pageNumber`, `documentPages`, `previousPage`, `nextPage`, `zoomIn`, `zoomOut`, `fitWidth`, `zoomPercent`, `download`, `readingDocument`, `documentUnreadable`, `documentReadFailed`, `pdfPassword`, `pdfInvalid`, `pdfUnavailable`, `unsupportedFormat`, `unsupportedFormatText`, `unknownFormat`, `imagesHidden`, `showImages`.
+
+### Interne
+- `ActionBar` : la logique de lancement (confirmation, attente, `onDone`, `onError`) passe dans un hook interne `useActionRunner`, réutilisé par les actions de ligne de `ListPage`. Rendu et API inchangés.
 
 ## [0.2.0] — 2026-11-23
 
