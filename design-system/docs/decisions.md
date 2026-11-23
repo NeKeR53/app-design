@@ -1441,3 +1441,79 @@
 - Raison : besoin rare, coût élevé (glisser, clavier, mémoire de l'ordre) ; à revoir si une deuxième app le demande. Validation : par délégation de l'utilisateur, 2026-11-23.
 - Options écartées : sections déplaçables comme dans Alfred (`PanelSections`).
 - Validation : docs/validation/components/DetailPanel-v2.html
+
+## D-190 — Formulaire déclaratif : l'app décrit les champs, Socle les dessine
+- Date : 2026-11-23
+- Portée : FormPage, formulaire en modale (`useOpenForm`)
+- Décision : `FormPage` et `openForm` reçoivent les champs sous forme de données (`FormField`) : `type`, `name`, `label`, `description`, `isRequired`, `validate`, `defaultValue`, et les options propres au type. Types : `text`, `email`, `url`, `tel`, `password`, `number`, `textarea` (→ `TextField`, `TextArea`), `select` (→ `Select`), `combobox` (→ `ComboBox`), `radio` (→ `RadioGroup`), `checkbox` (→ `Checkbox`), `checkboxGroup` (→ `CheckboxGroup`), et le groupe `fieldset` (→ `Fieldset`, qui contient d'autres champs). Pas de type `switch` (D-137). Pas de date ni d'heure tant que Socle n'a pas de sélecteur. Pas de champ dessiné par l'app.
+- Raison : deux apps qui décrivent le même formulaire obtiennent le même écran ; les règles de D-022 et D-130 à D-138 s'appliquent sans effort.
+- Options écartées : composants enfants libres dans le gabarit ; type `custom` avec une fonction de rendu.
+- Validation : docs/validation/components/FormPage-v1.html — par délégation de l'utilisateur, 2026-11-23.
+
+## D-191 — Formulaire déclaratif : valeurs, largeurs et disposition
+- Date : 2026-11-23
+- Portée : FormPage, formulaire en modale
+- Décision :
+  - Valeur rendue par type : texte (`string`, sans espaces autour, sauf `password` ; `""` si vide) ; `number` (`number` ou `null`, virgule acceptée) ; `select`, `radio`, `combobox` simple (`string` ou `null`) ; `combobox` multiple et `checkboxGroup` (`string[]`) ; `checkbox` (`boolean`).
+  - Valeur de départ : `initialValues[name]` (l'objet lu en base convient), sinon `defaultValue` du champ, sinon vide.
+  - Largeur : celle du champ (`width`, D-133) ; par défaut `sm` pour `number`, toute la colonne pour les autres.
+  - Chaque champ est sur sa ligne, l'un sous l'autre, avec 16 px d'écart. Des champs qui vont ensemble passent par `fieldset`.
+- Raison : des valeurs typées évitent les conversions dans chaque app ; une colonne unique se lit et se parcourt au clavier sans surprise.
+- Options écartées : valeurs toujours en texte (« 1 » / « 0 ») ; deux champs courts consécutifs sur une ligne (Alfred).
+- Validation : docs/validation/components/FormPage-v1.html — par délégation de l'utilisateur, 2026-11-23.
+
+## D-192 — Formulaire déclaratif : vérification et erreurs de l'envoi
+- Date : 2026-11-23
+- Portée : FormPage, formulaire en modale
+- Décision : chaque champ vérifie seul, au moment fixé par D-132 (`isRequired`, format, puis `validate(valeur, valeurs)`, qui reçoit aussi les autres valeurs pour une règle croisée). L'envoi est bloqué tant qu'un champ est en erreur ; le focus va au premier. `onSubmit` peut rendre `{ errors: { champ: "phrase" }, message? }` : les phrases s'affichent sous les champs (D-132, option `error`) et disparaissent dès que le champ change. Une exception levée par `onSubmit` affiche son message sur place.
+- Raison : l'erreur du serveur reste à côté de ce qu'il faut corriger (D-159).
+- Options écartées : notification de l'échec par un toast.
+- Validation : docs/validation/components/FormPage-v1.html — par délégation de l'utilisateur, 2026-11-23.
+
+## D-193 — FormPage : mise en page
+- Date : 2026-11-23
+- Portée : FormPage
+- Décision : en-tête (titre en `--fs-xl` semibold, phrase d'intention en `--fg-2`), puis les sections séparées par un trait. Quand le gabarit a au moins 800 px de large (requête de conteneur, donc juste même à côté d'une sidebar ou d'un panneau), la section a deux colonnes : titre et aide sur 240 px à gauche, champs sur 560 px au plus à droite, 32 px d'écart ; en dessous, le titre passe au-dessus des champs. Contenu sur 880 px au plus, calé à gauche, marges `--pad`. Pied collé en bas de la zone qui défile (`sticky`), fond `--surface`, trait au-dessus. Sur mobile, les boutons du pied prennent toute la largeur et l'état passe au-dessus. Pendant le chargement (`isLoading`), des `Skeleton` remplacent les champs.
+- Raison : D-022 ; la requête de conteneur suit la place réelle, pas la fenêtre.
+- Options écartées : points de rupture de la fenêtre (640 / 1024 px) ; contenu centré.
+- Validation : docs/validation/components/FormPage-v1.html — par délégation de l'utilisateur, 2026-11-23.
+
+## D-194 — FormPage : état d'enregistrement dans le pied
+- Date : 2026-11-23
+- Portée : FormPage
+- Décision : à gauche du pied, une phrase en `--fs-sm` : rien tant que rien ne change ; « Modifications non enregistrées » après une saisie ; « Enregistrement… » pendant l'envoi (l'action principale en chargement, D-105) ; « Enregistré » après la réussite ; en `--danger`, la phrase d'erreur après un échec (annoncée, `role="alert"`). La phrase est annoncée poliment aux lecteurs d'écran. Après la réussite, les valeurs envoyées deviennent la référence.
+- Raison : l'utilisateur sait toujours si son travail est en sûreté, sans icône d'ornement.
+- Options écartées : pastille seule ; aucun état.
+- Validation : docs/validation/components/FormPage-v1.html — par délégation de l'utilisateur, 2026-11-23.
+
+## D-195 — FormPage : « Annuler » après une saisie
+- Date : 2026-11-23
+- Portée : FormPage
+- Décision : « Annuler » appelle `onCancel` tout de suite si rien n'a changé. Après une saisie, il demande d'abord « Abandonner les modifications ? » par `useConfirm` (« Les modifications non enregistrées seront perdues. », bouton « Abandonner », ton `danger`). L'option `onDirtyChange` prévient l'app pour qu'elle protège aussi la navigation. Sans `onCancel`, pas de bouton « Annuler ». Le formulaire en modale garde D-122 (saisie courte, Échap ferme).
+- Raison : un long formulaire perdu coûte cher ; D-007 réserve la confirmation à l'irréversible, et l'abandon d'une saisie l'est.
+- Options écartées : quitter sans demander.
+- Validation : docs/validation/components/FormPage-v1.html — par délégation de l'utilisateur, 2026-11-23.
+
+## D-196 — Formulaire déclaratif : action principale toujours active ; Mod+Entrée envoie
+- Date : 2026-11-23
+- Portée : FormPage, formulaire en modale
+- Décision : l'action principale n'est jamais grisée ; un envoi incomplet montre les erreurs. Entrée dans un champ d'une ligne envoie (comportement natif) ; Mod+Entrée envoie de partout, zone de texte comprise. Pendant l'envoi, l'action est en chargement et « Annuler » désactivé.
+- Raison : un bouton grisé n'explique pas ce qui manque.
+- Options écartées : bouton grisé tant que rien ne change ou qu'un champ obligatoire est vide.
+- Validation : docs/validation/components/FormPage-v1.html — par délégation de l'utilisateur, 2026-11-23.
+
+## D-197 — Formulaire en modale : `useOpenForm`, une promesse des valeurs
+- Date : 2026-11-23
+- Portée : formulaire en modale
+- Décision : `const openForm = useOpenForm();` puis `const values = await openForm({ title, description?, fields, initialValues?, submitLabel, cancelLabel?, onSubmit? })`. La promesse rend les valeurs (D-191) une fois le formulaire envoyé, ou `null` si l'utilisateur ferme. Avec `onSubmit`, la modale reste ouverte et attend la promesse ; elle se ferme à la réussite seulement. L'hôte est dans `SocleProvider`, comme la confirmation (D-127) ; une nouvelle demande ferme la précédente (qui rend `null`).
+- Raison : rien à poser dans la page ; même forme que `useConfirm`.
+- Options écartées : `true` / `false` (Alfred) ; composant `FormDialog` piloté par l'app.
+- Validation : docs/validation/components/FormPage-v1.html — par délégation de l'utilisateur, 2026-11-23.
+
+## D-198 — Formulaire en modale : taille, attente et erreur
+- Date : 2026-11-23
+- Portée : formulaire en modale
+- Décision : la modale prend `sm` (400 px) jusqu'à quatre champs sans zone de texte ni groupe, sinon `md` (560 px). Six champs au plus : au-delà, une FormPage. Pied : « Annuler », puis l'action (D-124), qui envoie le formulaire. Pendant `onSubmit`, la modale est occupée (`isBusy`, D-122) et l'action en chargement. Une erreur s'affiche en `--danger` à la fin du corps, juste au-dessus du pied (D-128) ; les erreurs de champ vont sous les champs (D-192).
+- Raison : une saisie courte tient dans une petite fenêtre ; l'erreur reste dans la modale.
+- Options écartées : toujours `md` ; taille au choix de l'app.
+- Validation : docs/validation/components/FormPage-v1.html — par délégation de l'utilisateur, 2026-11-23.

@@ -8,6 +8,7 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useState, t
 import { contrast, mixWithWhite, parseHex, toHex } from "../lib/color";
 import { frenchMessages, type SocleMessages } from "../i18n/messages";
 import { ConfirmProvider } from "../components/Dialog/useConfirm";
+import { FormDialogProvider } from "../templates/FormDialog/FormDialog";
 import type { Notifications, NotifyOptions } from "../components/Toast/notifications";
 import { ToastRegion } from "../components/Toast/Toast";
 
@@ -183,7 +184,9 @@ export function SocleProvider({ accent, density, platform, storageKey = "socle",
   // La confirmation (D-127) et la région des toasts (D-154) sont affichées ici, une seule fois pour toute l'app.
   return (
     <SocleContext.Provider value={value}>
-      <ConfirmProvider>{children}</ConfirmProvider>
+      <ConfirmProvider>
+        <FormDialogProvider>{children}</FormDialogProvider>
+      </ConfirmProvider>
       {notifications ? <ToastRegion notifications={notifications} /> : null}
     </SocleContext.Provider>
   );

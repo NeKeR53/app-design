@@ -64,6 +64,8 @@ Une app décrit ses actions par des données (`Action`) et les passe à `ActionB
 - `header` : titre et phrase d'intention.
 - `sections` : sections titrées. Sur bureau, le titre et l'aide sont à gauche ; ailleurs, ils passent au-dessus. Chaque champ a son libellé au-dessus et son aide ou son erreur en dessous.
 - `footer` : barre d'actions collée en bas, avec l'état d'enregistrement, « Annuler » et l'action principale.
+- Les champs se décrivent par des données (`FormField`) ; le gabarit les dessine, l'un sous l'autre (D-190, D-191). Sections sur deux colonnes à partir de 800 px de conteneur (D-193). « Annuler » après une saisie est confirmé (D-195).
+- Saisie courte (six champs au plus) : `useOpenForm`, en modale, avec le même modèle de champ (D-197, D-198).
 
 ### SettingsPage (D-015)
 - `nav` : recherche, groupes séparés par un trait, éléments de navigation (icône et libellé), lien externe en pied.
