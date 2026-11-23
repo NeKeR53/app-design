@@ -29,7 +29,7 @@ export type { TabsProps, TabItem } from "./components/Tabs/Tabs";
 export { Sidebar, workspaceInitial } from "./patterns/Sidebar/Sidebar";
 export type { SidebarProps, SidebarItemProps, SidebarTreeItemProps, SidebarSectionProps, SidebarAccountProps, SidebarAction, SidebarWorkspaceProps, SidebarWorkspaceEntry } from "./patterns/Sidebar/Sidebar";
 export { AppShell } from "./patterns/AppShell/AppShell";
-export type { AppShellProps, TabbarEntry } from "./patterns/AppShell/AppShell";
+export type { AppShellProps, TabbarEntry, PageStatus } from "./patterns/AppShell/AppShell";
 export { DetailPanel, PropertyRow } from "./patterns/DetailPanel/DetailPanel";
 export type { DetailPanelProps, DetailPanelSectionProps, PropertyRowProps, PropertyAction } from "./patterns/DetailPanel/DetailPanel";
 export { Table } from "./components/Table/Table";

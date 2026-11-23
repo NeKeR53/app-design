@@ -9,6 +9,7 @@ Versions selon semver (règle 6 du skill design) : une nouvelle option facultati
 - `AppShell` : le slot `actions` prend la place libre de la barre et accepte `ActionBar zone="topbar"` avec les boutons-icônes de l'app (D-222).
 - `Sidebar` : option `footer`, des `Sidebar.Item` fixes en bas, au-dessus du compte, hors du défilement (D-230). Nouveau `Sidebar.Workspace` (option `workspace`) : sélecteur d'espace de travail, menu au-dessus, espace ouvert coché, actions de l'app après un trait (D-231). Ordre du pied : entrées fixes, espace, compte (D-232). Fonction `workspaceInitial`, types `SidebarWorkspaceProps` et `SidebarWorkspaceEntry`.
 - `AppShell` : option `detailWidth` (`"default"` ou `"form"`), largeur de départ du panneau de détail, largeur réglée mémorisée pour chacune (D-240). Option `detailExpandable` : bouton bascule Agrandir dans la barre du haut, panneau large de 960 px au plus, sans poignée (D-241, D-242). Token `--detail-w-form` (460 px web, 420 px desktop). Libellé interne `expandDetail`.
+- `AppShell` : option `pageSummary`, court résumé en texte après le titre, coupé avec info-bulle, masqué sur mobile (D-250). Option `pageStatus` (`{ label, tone?, description?, menu? }`) : indicateur d'état durable après le titre, avec info-bulle ou menu, annoncé quand il change ; un seul à la fois (D-251, D-252). Type `PageStatus`.
 - Libellés internes `footerNavigation`, `workspaces`, `workspaceLabel` et `workspaceSwitch` dans le dictionnaire `messages`.
 
 ### Changé
