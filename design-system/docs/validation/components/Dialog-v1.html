@@ -1,0 +1,387 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Dialog — validation v1</title>
+<style>
+/* ---------- Page de validation ---------- */
+:root{--pg-bg:#f6f6f6;--pg-fg:#1a1a1a;--pg-muted:#5c5c5c;--pg-line:#e2e2e2;--pg-card:#fff;--pg-badge:#fff4d6;--pg-badge-fg:#7a5a00;--pg-reco:#e7f0ff;--pg-reco-fg:#1d4ed8;--pg-code:#f0f0f0}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--pg-bg:#121212;--pg-fg:#ececec;--pg-muted:#9a9a9a;--pg-line:#2c2c2c;--pg-card:#1b1b1b;--pg-badge:#3a2f10;--pg-badge-fg:#f3d27a;--pg-reco:#16233d;--pg-reco-fg:#9cc0ff;--pg-code:#222}}
+:root[data-theme="dark"]{--pg-bg:#121212;--pg-fg:#ececec;--pg-muted:#9a9a9a;--pg-line:#2c2c2c;--pg-card:#1b1b1b;--pg-badge:#3a2f10;--pg-badge-fg:#f3d27a;--pg-reco:#16233d;--pg-reco-fg:#9cc0ff;--pg-code:#222}
+*{box-sizing:border-box}html,body{margin:0}
+body{background:var(--pg-bg);color:var(--pg-fg);font:15px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif}
+.pg{max-width:1160px;margin:0 auto;padding:24px 16px 64px}
+h1{font-size:22px;font-weight:600;margin:0 0 4px;display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.sub{color:var(--pg-muted);margin:0 0 20px}
+.badge{font-size:12px;font-weight:600;letter-spacing:.04em;padding:3px 8px;border-radius:8px;background:var(--pg-badge);color:var(--pg-badge-fg)}
+.boxes{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px}
+@media (max-width:760px){.boxes{grid-template-columns:1fr}}
+.box{background:var(--pg-card);border:1px solid var(--pg-line);border-radius:10px;padding:14px 16px;font-size:14px}
+.box h2{font-size:14px;margin:0 0 8px;font-weight:600}.box ul,.box ol{margin:0;padding-left:20px}.box li{margin:6px 0}
+.reco{font-size:11.5px;font-weight:600;padding:1px 6px;border-radius:5px;background:var(--pg-reco);color:var(--pg-reco-fg);margin-left:4px;white-space:nowrap}
+.toolbar{position:sticky;top:0;z-index:100;background:var(--pg-bg);padding:10px 0;border-bottom:1px solid var(--pg-line);margin-bottom:16px;display:flex;flex-wrap:wrap;gap:10px 16px;align-items:center}
+.seg{display:inline-flex;border:1px solid var(--pg-line);border-radius:8px;overflow:hidden;background:var(--pg-card)}
+.seg button{border:0;background:transparent;color:var(--pg-fg);padding:5px 10px;font:inherit;font-size:13px;cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--pg-fg);color:var(--pg-bg)}
+.tlabel{font-size:12px;color:var(--pg-muted);margin-right:6px}
+.hint{margin:8px 0 0;color:var(--pg-muted);font-size:13px}
+h3.sec{font-size:15px;margin:28px 0 10px}
+pre{background:var(--pg-code);border:1px solid var(--pg-line);border-radius:8px;padding:10px 12px;font:12.5px/1.5 ui-monospace,"SF Mono",Consolas,monospace;overflow:auto;margin:6px 0 0}
+.cmp{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+@media (max-width:760px){.cmp{grid-template-columns:1fr}}
+.opt{background:var(--pg-card);border:1px solid var(--pg-line);border-radius:10px;padding:12px 14px;font-size:13px}
+.opt h4{margin:0 0 4px;font-size:14px}.opt p{margin:0;color:var(--pg-muted)}
+
+/* ---------- Tokens T2 (copie de src/tokens) ---------- */
+.tk{--surface:#fff;--surface-side:#f3f3f3;--surface-raised:#fff;--field:#f2f2f2;--hover:#e9e9e9;--selected:#dedede;--line:#e4e4e4;--line-strong:#cfcfcf;--fg:#1a1a1a;--fg-2:#5c5c5c;--fg-3:#6b6b6b;--scrim:rgb(0 0 0/.25);
+  --accent:#1d4ed8;--accent-fg:#fff;--danger:#c62828;--danger-fg:#fff;--raised-line:transparent;
+  --font-sans:-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;
+  --radius-sm:4px;--radius-md:8px;--radius-lg:12px;
+  --shadow-lg:0 12px 32px rgb(0 0 0/.14);--icon:16px;--icon-stroke:1.6;--ease:cubic-bezier(.2,0,0,1);--dur-fast:120ms;--dur-slow:260ms;
+  --fs-sm:12.5px;--fs-md:14px;--fs-lg:16px;--lh:1.45;--row-h:34px;--bar-h:44px;--side-w:220px;--pad:16px;--icon-btn:28px;--dlg-pad:20px}
+.tk.dark{--surface:#181818;--surface-side:#222;--surface-raised:#262626;--field:#2a2a2a;--hover:#303030;--selected:#3d3d3d;--line:#333;--line-strong:#4a4a4a;--fg:#ececec;--fg-2:#ababab;--fg-3:#8f8f8f;--scrim:rgb(0 0 0/.5);
+  --accent:#5b8def;--accent-fg:#0b1630;--danger:#f07167;--danger-fg:#2a0b08;--shadow-lg:0 12px 32px rgb(0 0 0/.6);--raised-line:#333}
+.tk.desktop{--fs-sm:11.5px;--fs-md:13px;--fs-lg:15px;--lh:1.4;--row-h:28px;--bar-h:38px;--side-w:200px;--pad:12px;--icon-btn:24px;--dlg-pad:16px}
+@media (prefers-reduced-motion: reduce){.tk{--dur-fast:0ms;--dur-slow:0ms}}
+
+/* ---------- Mini AppShell ---------- */
+.stage{display:flex;justify-content:center}
+.app{position:relative;width:100%;height:600px;border:1px solid var(--pg-line);border-radius:12px;overflow:hidden;background:var(--surface);color:var(--fg);font-family:var(--font-sans);font-size:var(--fs-md);line-height:var(--lh);display:grid;grid-template-columns:var(--side-w) minmax(0,1fr);grid-template-rows:var(--bar-h) 1fr;transition:width .2s}
+.app.mobile{width:375px;height:700px;grid-template-columns:minmax(0,1fr)}
+.app.mobile .side,.app.mobile .bar-side{display:none}
+.app.mobile .bar{grid-column:1}.app.mobile .main{grid-column:1}
+.app *{box-sizing:border-box}
+.app button{font:inherit;color:inherit;background:none;border:0;cursor:default}
+.app :focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+.ic{width:var(--icon);height:var(--icon);flex:none;stroke:currentColor;fill:none;stroke-width:var(--icon-stroke);stroke-linecap:round;stroke-linejoin:round}
+.ibtn{width:var(--icon-btn);height:var(--icon-btn);display:inline-grid;place-items:center;border-radius:var(--radius-md);color:var(--fg-2);flex:none}
+.ibtn:hover{background:var(--hover);color:var(--fg)}
+.ibtn[disabled]{opacity:.4}.ibtn[disabled]:hover{background:none;color:var(--fg-2)}
+.bar-side{grid-column:1;grid-row:1;background:var(--surface-side);border-right:1px solid var(--line);display:flex;align-items:center;padding:0 8px}
+.bar{grid-column:2;grid-row:1;display:flex;align-items:center;gap:6px;padding:0 8px 0 16px;border-bottom:1px solid var(--line);min-width:0}
+.ptitle{font-weight:600}.bar .sp{flex:1}
+.side{grid-column:1;grid-row:2;background:var(--surface-side);border-right:1px solid var(--line);display:flex;flex-direction:column;padding:6px}
+.it{display:flex;align-items:center;gap:8px;height:var(--row-h);padding:0 8px;border-radius:var(--radius-md);width:100%;text-align:left;color:var(--fg-2)}
+.it:hover{background:var(--hover);color:var(--fg)}.it.on{background:var(--selected);color:var(--fg)}
+.side .grow{flex:1}
+.main{grid-column:2;grid-row:2;overflow:auto;padding:var(--pad)}
+.tools{display:flex;align-items:center;gap:8px;margin-bottom:12px;flex-wrap:wrap}
+.rows{border-top:1px solid var(--line)}
+.row{display:grid;grid-template-columns:minmax(0,1fr) auto auto;align-items:center;gap:12px;min-height:var(--row-h);padding:4px 4px 4px 8px;border-bottom:1px solid var(--line)}
+.row:hover{background:var(--hover)}
+.row .t{overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.row .d{color:var(--fg-3);font-size:var(--fs-sm)}
+.app.mobile .row .d{display:none}
+
+/* ---------- Boutons à texte (rendu de Button, D-102 à D-105) ---------- */
+.btn{height:var(--row-h);padding:0 12px;border-radius:var(--radius-md);font-weight:500;display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
+.btn.secondary{background:var(--field)!important}.btn.secondary:hover{background:var(--hover)!important}
+.btn.primary{background:var(--fg)!important;color:var(--surface)!important}
+.btn.danger{background:var(--danger)!important;color:var(--danger-fg)!important}
+.btn.primary:hover,.btn.danger:hover{filter:brightness(1.08)}
+.btn[disabled]{opacity:.4;filter:none}
+.btn .spin{width:14px;height:14px;border:2px solid currentColor;border-right-color:transparent;border-radius:50%;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(1turn)}}
+
+/* ---------- Champs (provisoires : en attente de P4) ---------- */
+.field{display:flex;flex-direction:column;gap:4px}
+.field label{font-weight:500}
+.field input,.field textarea,.field select{font:inherit;color:var(--fg);background:var(--surface);border:1px solid var(--line-strong);border-radius:var(--radius-md);padding:0 10px;height:var(--row-h)}
+.field textarea{height:auto;min-height:72px;padding:8px 10px;resize:vertical}
+.field .help{font-size:var(--fs-sm);color:var(--fg-3)}
+
+/* ---------- Dialog ---------- */
+.layer{position:absolute;inset:0;z-index:50;display:grid;place-items:center;padding:32px;background:var(--scrim);animation:fade var(--dur-slow) var(--ease)}
+.layer.stacked{background:rgb(0 0 0/.12)}
+.dlg{position:relative;display:flex;flex-direction:column;max-width:100%;max-height:100%;background:var(--surface-raised);color:var(--fg);border:1px solid var(--raised-line);border-radius:var(--radius-lg);box-shadow:var(--shadow-lg);outline:none;animation:pop var(--dur-slow) var(--ease)}
+@keyframes fade{from{opacity:0}}
+@keyframes pop{from{opacity:0;transform:scale(.97)}}
+.dlg.refused{animation:nudge .26s var(--ease)}
+@keyframes nudge{0%,100%{transform:scale(1)}40%{transform:scale(1.015)}}
+/* Tailles — option A */
+.sz-a .dlg.sm{width:400px}.sz-a .dlg.md{width:560px}.sz-a .dlg.lg{width:800px}
+.sz-a .dlg.xl{width:1080px;height:720px}
+/* Tailles — option B : au contenu */
+.sz-b .dlg{width:fit-content;min-width:320px;max-width:800px}.sz-b .dlg.xl{width:1080px;max-width:100%;height:720px}
+/* Tailles — option C : deux tailles */
+.sz-c .dlg.sm,.sz-c .dlg.md{width:480px}.sz-c .dlg.lg,.sz-c .dlg.xl{width:880px}.sz-c .dlg.xl{height:720px}
+
+.dlg-h{display:flex;align-items:flex-start;gap:8px;padding:var(--dlg-pad) calc(var(--dlg-pad) - 8px) 8px var(--dlg-pad)}
+.dlg-h .hd{flex:1;min-width:0;padding-top:2px}
+.dlg-h h2{margin:0;font-size:var(--fs-lg);font-weight:600;line-height:1.35;overflow-wrap:anywhere}
+.dlg-h p{margin:4px 0 0;color:var(--fg-2)}
+.dlg-b{flex:1 1 auto;min-height:0;overflow:auto;overscroll-behavior:contain;padding:8px var(--dlg-pad) var(--dlg-pad);display:flex;flex-direction:column;gap:12px}
+.dlg-b.flush{padding:0;display:block}
+.dlg-f{display:flex;justify-content:flex-end;align-items:center;gap:8px;flex-wrap:wrap;padding:12px var(--dlg-pad)}
+.dlg-f .grow{flex:1}
+.dlg-err{display:flex;gap:6px;align-items:flex-start;color:var(--danger);font-size:var(--fs-sm);margin:0 var(--dlg-pad) 4px}
+/* Traits — option A : toujours ; option B : seulement quand le corps défile */
+.tr-a .dlg-h{border-bottom:1px solid var(--line);padding-bottom:12px}.tr-a .dlg-f{border-top:1px solid var(--line)}
+.tr-a .dlg-b{padding-top:16px}
+.tr-b .dlg-b.scrolled-top{border-top:1px solid var(--line)}.tr-b .dlg-b.more-below{border-bottom:1px solid var(--line)}
+.tr-b .dlg-b.flush{border-top:1px solid var(--line)}
+/* Confirmation */
+.dlg.confirm .dlg-h{padding-right:var(--dlg-pad)}
+.cf-b .dlg.confirm .dlg-h{gap:12px}
+.cf-icon{display:none;width:32px;height:32px;border-radius:50%;place-items:center;background:color-mix(in srgb,var(--danger) 14%,transparent);color:var(--danger);flex:none}
+.cf-b .dlg.confirm .cf-icon{display:grid}
+.tr-a .dlg.confirm .dlg-h,.tr-a .dlg.confirm .dlg-f{border:0}
+/* Petit écran (mobile) */
+.app.mobile .layer{padding:16px}
+.mob-a .app.mobile .layer{place-items:end stretch;padding:0}
+.mob-a .app.mobile .dlg{width:100%!important;max-height:92%;border-radius:var(--radius-lg) var(--radius-lg) 0 0;animation:up var(--dur-slow) var(--ease)}
+.mob-a .app.mobile .dlg.xl{height:92%}
+@keyframes up{from{transform:translateY(40px);opacity:0}}
+.mob-b .app.mobile .dlg.sm,.mob-b .app.mobile .dlg.md{width:100%!important}
+.mob-b .app.mobile .layer:has(.dlg.lg),.mob-b .app.mobile .layer:has(.dlg.xl){padding:0}
+.mob-b .app.mobile .dlg.lg,.mob-b .app.mobile .dlg.xl{width:100%!important;height:100%;max-height:100%;border-radius:0;border:0}
+.mob-c .app.mobile .layer{padding:0}
+.mob-c .app.mobile .dlg{width:100%!important;height:100%;max-height:100%;border-radius:0;border:0}
+.app.mobile .dlg-f .btn{flex:1;justify-content:center}
+
+/* Contenu des exemples */
+.tbl{width:100%;border-collapse:collapse;font-size:var(--fs-md)}
+.tbl th{text-align:left;font-weight:500;color:var(--fg-3);font-size:var(--fs-sm);padding:6px 8px;border-bottom:1px solid var(--line)}
+.tbl td{padding:6px 8px;border-bottom:1px solid var(--line)}
+.set{display:grid;grid-template-columns:220px minmax(0,1fr);height:100%}
+.app.mobile .set{grid-template-columns:1fr}.app.mobile .set-nav{display:none}
+.set-nav{background:var(--surface-side);padding:8px;display:flex;flex-direction:column;gap:2px;border-right:1px solid var(--line)}
+.set-nav .search{height:var(--row-h);border:1px solid var(--line-strong);border-radius:var(--radius-md);padding:0 10px;display:flex;align-items:center;color:var(--fg-3);margin-bottom:8px}
+.set-c{padding:var(--dlg-pad);overflow:auto}
+.set-c h3{margin:0 0 8px;font-size:var(--fs-lg)}
+.srow{display:flex;align-items:center;gap:16px;padding:10px 0;border-bottom:1px solid var(--line)}
+.srow .l{flex:1;min-width:0}.srow .l small{display:block;color:var(--fg-3);font-size:var(--fs-sm)}
+.sw{width:32px;height:18px;border-radius:999px;background:var(--accent);position:relative;flex:none}.sw::after{content:"";position:absolute;right:2px;top:2px;width:14px;height:14px;border-radius:50%;background:#fff}
+.note{font-size:12.5px;color:var(--pg-muted);margin-top:8px}
+.log{font:12px/1.5 ui-monospace,Consolas,monospace;color:var(--pg-muted);margin-top:8px;min-height:18px}
+</style>
+</head>
+<body>
+<div class="pg">
+  <h1>Dialog et confirmation — v1 <span class="badge" id="status">VALIDÉ le 2026-11-23</span></h1>
+  <p class="sub">Mode <code>propose</code>, besoin venu d'Alfred (P3). Nouveau composant <code>Dialog</code> et nouveau hook <code>useConfirm</code>. Version mineure : rien d'existant ne change. Spec à écrire : <code>src/components/Dialog/Dialog.spec.md</code>.</p>
+
+  <div class="boxes">
+    <div class="box">
+      <h2>Déjà décidé</h2>
+      <ul>
+        <li>Une modale flotte : surface <code>--surface-raised</code>, ombre, rayon de 12 px (D-040, layout-rules).</li>
+        <li>Ouverture en 260 ms (<code>dur-slow</code>), rien ne bouge si l'utilisateur réduit les animations (D-014).</li>
+        <li>Échap ferme ce qui flotte, le plus haut d'abord (layout-rules).</li>
+        <li>Les Réglages s'ouvrent dans une grande modale sur bureau et tablette, en plein écran sur mobile (D-015). AppShell renvoie vers <code>Dialog</code> pour toute fenêtre secondaire.</li>
+        <li>Confirmation seulement pour l'irréversible ; sinon, annulation possible (D-007).</li>
+        <li>React Aria gère le piège du focus, le retour du focus au déclencheur et le blocage du défilement de la page (D-008).</li>
+        <li>Le × est un <code>IconButton</code> (D-035 à D-037). Les libellés internes (« Fermer », « Annuler ») viennent de <code>messages</code> (D-089).</li>
+        <li>Les boutons du pied sont des <code>Button</code> (D-100 à D-105) : principale monochrome, danger en rouge plein, chargement avec roue.</li>
+      </ul>
+    </div>
+    <div class="box">
+      <h2>À décider</h2>
+      <ol>
+        <li><b>Tailles</b> : A quatre largeurs fixes <code>sm</code> 400, <code>md</code> 560 (défaut), <code>lg</code> 800, <code>xl</code> 1080 × 720 avec un corps sans marge pour un gabarit (Réglages) ; B largeur au contenu (320 à 800 px), plus <code>xl</code> ; C deux largeurs, 480 et 880. <span class="reco">validé : A</span></li>
+        <li><b>Petit écran</b> (≤ 640 px) : A feuille qui monte du bas, pour toutes ; B <code>sm</code> et <code>md</code> centrées avec 16 px de marge, <code>lg</code> et <code>xl</code> en plein écran ; C tout en plein écran. <span class="reco">validé : B</span></li>
+        <li><b>Clic hors de la modale</b> : A ferme toujours ; B ferme, sauf si une saisie a commencé (la modale fait alors un court rebond) ; C ne ferme jamais. <span class="reco">validé : B</span></li>
+        <li><b>Traits</b> sous l'en-tête et au-dessus du pied : A toujours ; B seulement quand le corps défile. <span class="reco">validé : B</span></li>
+        <li><b>Ordre des boutons du pied</b> : A le même partout, calé à droite : « Annuler », puis l'action principale ; B selon le système (principale à gauche sous Windows). <span class="reco">validé : A</span></li>
+        <li><b>Focus à l'ouverture</b> : A l'élément marqué <code>autoFocus</code>, sinon le premier champ du corps, sinon la modale elle-même ; confirmation : « Annuler » ; B le premier élément focusable (souvent le ×) ; C l'action principale. <span class="reco">validé : A</span></li>
+        <li><b>Apparence de la confirmation</b> : A titre, phrase et deux boutons, sans × ni icône, le bouton rouge porte le danger ; B la même avec une icône d'alerte rouge ; C une Dialog <code>sm</code> ordinaire, avec ×. <span class="reco">validé : A</span></li>
+        <li><b>Où vit la confirmation</b> : A <code>SocleProvider</code> l'affiche, <code>useConfirm()</code> renvoie seulement <code>confirm</code> ; B le hook renvoie aussi un élément que l'app doit placer. <span class="reco">validé : A</span></li>
+        <li><b>Action longue après « Supprimer »</b> : A la confirmation se ferme tout de suite, la suite se montre ailleurs (notification) ; B option <code>onConfirm</code> asynchrone : la confirmation reste ouverte avec le bouton en chargement, rien ne la ferme, et une erreur s'affiche sur place. Sans <code>onConfirm</code>, comportement A. <span class="reco">validé : B</span></li>
+      </ol>
+    </div>
+  </div>
+
+  <h3 class="sec">API proposée</h3>
+  <div class="cmp">
+    <div class="opt"><h4>Dialog</h4><p>Pilotée par l'app. Le titre est obligatoire (nom accessible).</p>
+<pre>&lt;Dialog
+  isOpen={open}
+  onOpenChange={setOpen}
+  title="Nouveau projet"
+  description="Il sera visible par l'équipe."
+  size="md"            // sm | md | lg | xl
+  isBusy={saving}      // rien ne la ferme
+  footer={&lt;&gt;
+    &lt;Button onPress={close}&gt;Annuler&lt;/Button&gt;
+    &lt;Button variant="primary"
+      onPress={save}&gt;Créer&lt;/Button&gt;
+  &lt;/&gt;}
+&gt;
+  …champs…
+&lt;/Dialog&gt;</pre></div>
+    <div class="opt"><h4>useConfirm</h4><p>Remplace <code>window.confirm</code>. Résout <code>true</code> ou <code>false</code>.</p>
+<pre>const confirm = useConfirm();
+
+const ok = await confirm({
+  title: "Supprimer « Atelier » ?",
+  message: "Le projet et ses 12 tâches
+    seront supprimés.",
+  confirmLabel: "Supprimer",
+  // danger: true par défaut
+  // onConfirm: () =&gt; api.remove(id)
+});</pre></div>
+    <div class="opt"><h4>Exclus de la v1</h4><p>
+      Pas de modale non bloquante (prendre un Popover ou le panneau de détail).<br>
+      Pas de position libre ni de glisser.<br>
+      Pas de saisie du nom pour confirmer.<br>
+      Pas de <code>className</code> ni de <code>style</code>.<br>
+      Pas de pied sans le × (le × est toujours là, sauf en confirmation).<br>
+      Quand le modèle <code>Action</code> (P2) sera validé, <code>footer</code> pourra accepter une liste d'actions, et <code>Action.confirm</code> pourra appeler <code>useConfirm</code>.
+    </p></div>
+  </div>
+
+  <h3 class="sec">Dans l'app</h3>
+  <div class="toolbar" id="toolbar">
+    <span><span class="tlabel">Mode</span><span class="seg" data-k="theme"><button aria-pressed="true" data-v="light">Clair</button><button aria-pressed="false" data-v="dark">Sombre</button></span></span>
+    <span><span class="tlabel">Densité</span><span class="seg" data-k="density"><button aria-pressed="true" data-v="web">Web</button><button aria-pressed="false" data-v="desktop">Desktop</button></span></span>
+    <span><span class="tlabel">Format</span><span class="seg" data-k="format"><button aria-pressed="true" data-v="desk">Bureau</button><button aria-pressed="false" data-v="mobile">Mobile</button></span></span>
+    <span><span class="tlabel">1 Tailles</span><span class="seg" data-k="sz"><button aria-pressed="true" data-v="a">A</button><button aria-pressed="false" data-v="b">B</button><button aria-pressed="false" data-v="c">C</button></span></span>
+    <span><span class="tlabel">2 Mobile</span><span class="seg" data-k="mob"><button aria-pressed="false" data-v="a">A</button><button aria-pressed="true" data-v="b">B</button><button aria-pressed="false" data-v="c">C</button></span></span>
+    <span><span class="tlabel">3 Clic hors</span><span class="seg" data-k="out"><button aria-pressed="false" data-v="a">A</button><button aria-pressed="true" data-v="b">B</button><button aria-pressed="false" data-v="c">C</button></span></span>
+    <span><span class="tlabel">4 Traits</span><span class="seg" data-k="tr"><button aria-pressed="false" data-v="a">A</button><button aria-pressed="true" data-v="b">B</button></span></span>
+    <span><span class="tlabel">5 Ordre</span><span class="seg" data-k="order"><button aria-pressed="true" data-v="a">A</button><button aria-pressed="false" data-v="b">B Windows</button></span></span>
+    <span><span class="tlabel">6 Focus</span><span class="seg" data-k="focus"><button aria-pressed="true" data-v="a">A</button><button aria-pressed="false" data-v="b">B</button><button aria-pressed="false" data-v="c">C</button></span></span>
+    <span><span class="tlabel">7 Confirmation</span><span class="seg" data-k="cf"><button aria-pressed="true" data-v="a">A</button><button aria-pressed="false" data-v="b">B</button><button aria-pressed="false" data-v="c">C</button></span></span>
+    <span><span class="tlabel">9 Action longue</span><span class="seg" data-k="async"><button aria-pressed="false" data-v="a">A</button><button aria-pressed="true" data-v="b">B réussit</button><button aria-pressed="false" data-v="err">B échoue</button></span></span>
+  </div>
+
+  <div id="root" class="sz-a mob-b tr-b cf-a">
+  <div class="stage">
+    <div class="app tk" id="app">
+      <div class="bar-side"><button class="ibtn" aria-label="Replier la sidebar"><svg class="ic" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M9 4v16"/></svg></button></div>
+      <div class="bar">
+        <span class="ptitle">Projets</span><span class="sp"></span>
+        <button class="ibtn" aria-label="Réglages" data-open="settings"><svg class="ic" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></button>
+      </div>
+      <nav class="side">
+        <button class="it on">Projets</button><button class="it">Tâches</button><button class="it">Équipe</button>
+        <span class="grow"></span>
+      </nav>
+      <main class="main">
+        <div class="tools">
+          <button class="btn primary" data-open="create">Nouveau projet</button>
+          <button class="btn secondary" data-open="preview">Aperçu de l'import</button>
+        </div>
+        <div class="rows" id="rows"></div>
+      </main>
+    </div>
+  </div>
+  <p class="hint">À jouer : ouvrez une modale, essayez Échap, Tab et Maj+Tab, un clic sur le fond (avant et après avoir tapé dans un champ). La corbeille d'une ligne ouvre la confirmation. Dans les Réglages, « Supprimer l'espace » ouvre une confirmation par-dessus la modale : Échap ne ferme que la plus haute.</p>
+  <div class="log" id="log"></div>
+  <p class="note">Hôte de la confirmation (question 8) : rien ne se voit à l'écran. Avec A, l'app n'a rien à placer ; avec B, chaque écran qui confirme doit rendre <code>{confirmDialog}</code>.</p>
+  </div>
+</div>
+
+<script>
+const root=document.getElementById('root'),app=document.getElementById('app'),log=document.getElementById('log');
+const S={theme:'light',density:'web',format:'desk',sz:'a',mob:'b',out:'b',tr:'b',order:'a',focus:'a',cf:'a',async:'b'};
+const ico={x:'<svg class="ic" viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12"/></svg>',trash:'<svg class="ic" viewBox="0 0 24 24"><path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14"/></svg>',alert:'<svg class="ic" viewBox="0 0 24 24"><path d="M12 9v4M12 17h.01"/><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/></svg>'};
+let projects=['Atelier de printemps','Refonte du portail client','Inventaire 2026','Migration des archives','Formation des nouveaux arrivants'];
+function say(t){log.textContent='→ '+t}
+function apply(){
+  app.classList.toggle('dark',S.theme==='dark');app.classList.toggle('desktop',S.density==='desktop');app.classList.toggle('mobile',S.format==='mobile');
+  root.className=`sz-${S.sz} mob-${S.mob} tr-${S.tr} cf-${S.cf}`;
+  document.querySelectorAll('.dlg-b').forEach(edges);
+}
+document.querySelectorAll('.seg').forEach(seg=>seg.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;seg.querySelectorAll('button').forEach(x=>x.setAttribute('aria-pressed',x===b));S[seg.dataset.k]=b.dataset.v;apply()}));
+function renderRows(){const r=document.getElementById('rows');r.innerHTML=projects.map((p,i)=>`<div class="row"><span class="t">${p}</span><span class="d">Modifié il y a ${i+2} j</span><button class="ibtn" aria-label="Supprimer ${p}" data-del="${i}">${ico.trash}</button></div>`).join('')}
+renderRows();
+
+/* ---------- Pile de modales ---------- */
+const stack=[];
+const FOC='input:not([disabled]),textarea:not([disabled]),select:not([disabled]),button:not([disabled]),[tabindex]:not([tabindex="-1"])';
+function btn(label,kind,attrs=''){return `<button class="btn ${kind}" ${attrs}>${label}</button>`}
+function foot(cancel,primary){return S.order==='b'?primary+cancel:cancel+primary}
+function edges(b){if(b.classList.contains('flush'))return;b.classList.toggle('scrolled-top',b.scrollTop>0);b.classList.toggle('more-below',b.scrollTop+b.clientHeight<b.scrollHeight-1)}
+function open(kind,invoker,extra){
+  const layer=document.createElement('div');layer.className='layer'+(stack.length?' stacked':'');
+  const t=TPL[kind](extra);const isConfirm=kind==='confirm';
+  const id='d'+Date.now();
+  layer.innerHTML=`<div class="dlg ${t.size}${isConfirm?' confirm':''}" role="${isConfirm?'alertdialog':'dialog'}" aria-modal="true" aria-labelledby="${id}t" ${t.desc?`aria-describedby="${id}d"`:''} tabindex="-1">
+    <div class="dlg-h">${isConfirm?`<span class="cf-icon">${ico.alert}</span>`:''}<div class="hd"><h2 id="${id}t">${t.title}</h2>${t.desc?`<p id="${id}d">${t.desc}</p>`:''}</div>
+    ${isConfirm&&S.cf!=='c'?'':`<button class="ibtn" aria-label="Fermer" data-close>${ico.x}</button>`}</div>
+    ${t.body!=null?`<div class="dlg-b${t.flush?' flush':''}">${t.body}</div>`:''}
+    <div class="dlg-err" hidden></div>
+    ${t.footer?`<div class="dlg-f">${t.footer}</div>`:''}</div>`;
+  app.appendChild(layer);
+  const d=layer.firstElementChild;const entry={layer,d,invoker,edited:false,busy:false,kind,extra};stack.push(entry);
+  const b=d.querySelector('.dlg-b');if(b){b.addEventListener('scroll',()=>edges(b));requestAnimationFrame(()=>edges(b))}
+  d.addEventListener('input',()=>entry.edited=true);
+  layer.addEventListener('pointerdown',e=>{entry.down=e.target===layer});
+  layer.addEventListener('click',e=>{if(e.target!==layer||!entry.down)return;outside(entry)});
+  d.addEventListener('click',e=>{const c=e.target.closest('[data-close],[data-cancel]');if(c){close(entry,'bouton');return}const a=e.target.closest('[data-act]');if(a)act(entry,a)});
+  // Focus initial
+  let target;
+  if(S.focus==='a'){target=isConfirm?d.querySelector('[data-cancel]'):(d.querySelector('[autofocus]')||(b&&b.querySelector('input,textarea,select'))||d)}
+  else if(S.focus==='b'){target=d.querySelector(FOC)}
+  else{target=d.querySelector('[data-act]')||d}
+  (target||d).focus();
+  say(`ouverture « ${t.title} », focus sur : ${describe(document.activeElement)}`);
+}
+function describe(el){if(!el)return'rien';if(el.classList.contains('dlg'))return'la modale';return el.getAttribute('aria-label')||el.textContent.trim()||el.tagName.toLowerCase()}
+function refuse(e,why){e.d.classList.remove('refused');void e.d.offsetWidth;e.d.classList.add('refused');say('fermeture refusée : '+why)}
+function outside(e){
+  if(e.busy)return refuse(e,'action en cours');
+  if(S.out==='c')return refuse(e,'le clic hors ne ferme jamais (option C)');
+  if(S.out==='b'&&e.edited)return refuse(e,'une saisie a commencé (option B)');
+  close(e,'clic hors');
+}
+function close(e,how,result){
+  if(e.busy&&how!=='fin')return refuse(e,'action en cours');
+  const i=stack.indexOf(e);if(i<0)return;stack.splice(i,1);e.layer.remove();
+  if(e.resolve)e.resolve(!!result);
+  if(e.invoker&&e.invoker.isConnected)e.invoker.focus();
+  say(`fermeture (${how}), focus rendu à : ${describe(document.activeElement)}`);
+}
+function act(e,a){
+  if(e.kind!=='confirm'){close(e,'action principale');return}
+  const run=e.extra&&e.extra.onConfirm;
+  if(S.async==='a'||!run){close(e,'fin',true);run&&run(true);return}
+  e.busy=true;a.disabled=false;a.innerHTML='<span class="spin"></span>'+a.textContent;a.setAttribute('aria-busy','true');
+  e.d.querySelectorAll('[data-cancel],[data-close]').forEach(x=>x.disabled=true);
+  const err=e.d.querySelector('.dlg-err');err.hidden=true;
+  say('action en cours : Échap, clic hors et Annuler sont bloqués');
+  setTimeout(()=>{
+    e.busy=false;e.d.querySelectorAll('[data-cancel],[data-close]').forEach(x=>x.disabled=false);a.removeAttribute('aria-busy');a.innerHTML=a.textContent;
+    if(S.async==='err'){err.hidden=false;err.innerHTML=ico.alert+'<span>La suppression a échoué : le serveur ne répond pas. Réessayez.</span>';err.setAttribute('role','alert');a.focus();say('erreur affichée dans la confirmation, le bouton est de nouveau actif');return}
+    close(e,'fin',true);run(true);
+  },1400);
+}
+app.addEventListener('keydown',ev=>{
+  const e=stack[stack.length-1];if(!e)return;
+  if(ev.key==='Escape'){ev.preventDefault();if(e.busy)return refuse(e,'action en cours');close(e,'Échap');return}
+  if(ev.key==='Tab'){const f=[...e.d.querySelectorAll(FOC)].filter(x=>x.offsetParent!==null);if(!f.length){ev.preventDefault();return}
+    const first=f[0],last=f[f.length-1],a=document.activeElement;
+    if(ev.shiftKey&&(a===first||a===e.d)){ev.preventDefault();last.focus()}else if(!ev.shiftKey&&a===last){ev.preventDefault();first.focus()}}
+});
+app.addEventListener('click',ev=>{
+  const o=ev.target.closest('[data-open]');if(o&&!o.closest('.layer')||o&&o.closest('.layer')===stack[stack.length-1]?.layer){if(o)open(o.dataset.open,o)}
+  const del=ev.target.closest('[data-del]');if(del&&!del.closest('.layer')){const i=+del.dataset.del;const name=projects[i];
+    open('confirm',del,{title:`Supprimer « ${name} » ?`,desc:'Le projet et ses tâches seront supprimés. Cette action est définitive.',label:'Supprimer',onConfirm:()=>{projects.splice(i,1);renderRows();const rows=document.querySelectorAll('[data-del]');(rows[i]||rows[i-1]||document.querySelector('[data-open=create]')).focus();say('projet supprimé, focus sur la ligne voisine')}})}
+  const ds=ev.target.closest('[data-delspace]');if(ds){open('confirm',ds,{title:'Supprimer l’espace « Équipe A » ?',desc:'Tous les projets de l’espace seront supprimés.',label:'Supprimer l’espace',onConfirm:()=>{}})}
+});
+
+const TPL={
+  create:()=>({size:'md',title:'Nouveau projet',desc:'Il sera visible par toute l’équipe.',
+    body:`<div class="field"><label for="f1">Nom</label><input id="f1" placeholder="Ex. Atelier d’automne"></div>
+          <div class="field"><label for="f2">Description</label><textarea id="f2"></textarea><span class="help">Facultatif. 500 caractères au plus.</span></div>
+          <div class="field"><label for="f3">Responsable</label><select id="f3"><option>Camille Martin</option><option>Sam Leroy</option></select></div>`,
+    footer:foot(btn('Annuler','secondary','data-cancel'),btn('Créer','primary','data-act'))}),
+  preview:()=>({size:'lg',title:'Aperçu de l’import',desc:'48 lignes lues dans le fichier. Vérifiez avant d’importer.',
+    body:`<table class="tbl"><thead><tr><th>Nom</th><th>Responsable</th><th>Échéance</th><th>Statut</th></tr></thead><tbody>${Array.from({length:24},(_,i)=>`<tr><td>Projet importé ${i+1}</td><td>${['Camille Martin','Sam Leroy','Noa Petit'][i%3]}</td><td>${(i%28)+1}/12/2026</td><td>${['Nouveau','En cours','Fini'][i%3]}</td></tr>`).join('')}</tbody></table>`,
+    footer:foot(btn('Annuler','secondary','data-cancel'),btn('Importer 48 lignes','primary','data-act'))}),
+  settings:()=>({size:'xl',title:'Réglages',flush:true,
+    body:`<div class="set"><div class="set-nav"><div class="search">Rechercher</div><button class="it on">Général</button><button class="it">Apparence</button><button class="it">Notifications</button><button class="it">Espaces de travail</button></div>
+      <div class="set-c"><h3>Général</h3>
+      <div class="srow"><div class="l">Ouvrir au démarrage<small>La dernière page consultée.</small></div><span class="sw"></span></div>
+      <div class="srow"><div class="l">Langue<small>Langue de l’interface.</small></div><span>Français</span></div>
+      <div class="srow"><div class="l">Espace « Équipe A »<small>Supprime l’espace et ses projets.</small></div><button class="btn secondary" data-delspace>Supprimer l’espace</button></div>
+      </div></div>`}),
+  confirm:(x)=>({size:'sm',title:x.title,desc:x.desc,
+    footer:foot(btn('Annuler','secondary','data-cancel'),btn(x.label,'danger','data-act'))})
+};
+apply();
+</script>
+</body>
+</html>

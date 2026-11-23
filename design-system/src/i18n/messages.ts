@@ -91,6 +91,10 @@ export interface SocleMessages {
   toneWarning: string;
   toneDanger: string;
   closeNotificationCenter: string;
+  /* Dialog et confirmation */
+  close: string;
+  cancel: string;
+  actionFailed: string;
 }
 
 const s = (n: number) => (n > 1 ? "s" : "");
@@ -173,4 +177,7 @@ export const frenchMessages: SocleMessages = {
   toneWarning: "Alerte",
   toneDanger: "Erreur",
   closeNotificationCenter: "Fermer les notifications",
+  close: "Fermer",
+  cancel: "Annuler",
+  actionFailed: "L'action a échoué. Réessayez.",
 };

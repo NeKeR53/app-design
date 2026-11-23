@@ -15,6 +15,7 @@
   --side-w: 240px;
   --detail-w: 272px;
   --target-min: 24px;
+  --dlg-pad: 16px;        /* marge intérieure d'une modale (Dialog) */
   --icon-btn: 24px;       /* bouton-icône (D-035) */
   --btn-h-sm: 24px;       /* bouton à texte, taille sm (D-101) */
 }

@@ -24,6 +24,8 @@ Ces règles s'appliquent à toutes les apps. Si aucune règle ne couvre un cas, 
 - **Points de rupture** : 640 et 1024 px (D-013).
 - **Messages** (D-159) : le résultat d'une action va dans un toast (D-154), avec « Annuler » si l'action se défait (D-007) ; un événement passé va dans le centre de notifications (D-156) ; un état durable de la page ou de l'app (hors ligne, lecture seule) va dans la barre du haut ; un message local reste un encart dans la zone concernée (D-085). Jamais de bandeau pleine largeur.
 - **Échap** ferme ce qui flotte (overlay, feuille, détail en overlay, modale, menu).
+- **Fenêtre secondaire** : `Dialog`, au-dessus de l'AppShell. Pied calé à droite : « Annuler », puis l'action (D-124). Sur mobile, `sm` et `md` centrées, `lg` et `xl` en plein écran (D-121).
+- **Confirmation** : seulement avant une action irréversible (D-007), par `useConfirm` : titre en question, phrase de conséquence, bouton au verbe de l'action (D-126 à D-128).
 
 ## Actions (D-111)
 

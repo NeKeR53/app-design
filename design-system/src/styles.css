@@ -85,3 +85,19 @@
     }
   }
 }
+
+/* Dialog (D-014, D-122) : fondu du fond, léger zoom de la fenêtre, rebond d'une fermeture refusée. */
+@layer base {
+  @keyframes socle-fade {
+    from { opacity: 0; }
+  }
+  @keyframes socle-pop {
+    from { opacity: 0; transform: scale(0.97); }
+  }
+  .socle-nudge {
+    animation: socle-nudge var(--dur-slow) var(--ease);
+  }
+  @keyframes socle-nudge {
+    40% { transform: scale(1.02); }
+  }
+}

@@ -1054,3 +1054,75 @@
 - Raison : choix de l'utilisateur ; un bandeau décale tout le contenu et se confond avec la barre.
 - Options écartées : bandeau pleine largeur.
 - Validation : par délégation de l'utilisateur, 2026-11-23 — docs/validation/components/Notifications-v1.html
+
+## D-120 — Dialog : quatre tailles fixes
+- Date : 2026-11-23
+- Portée : Dialog
+- Décision : la largeur d'une modale suit le type de contenu, avec quatre tailles fixes : `sm` 400 px (question courte, confirmation), `md` 560 px par défaut (formulaire court), `lg` 800 px (tableau, aperçu), `xl` 1080 × 720 px. En `xl`, le corps n'a pas de marge intérieure, pour recevoir un gabarit (SettingsPage, D-015). Toutes les tailles restent à 32 px au moins des bords de la fenêtre et le corps défile au-delà.
+- Raison : une largeur fixe ne saute pas pendant la saisie, et quatre tailles couvrent les usages relevés dans Alfred.
+- Options écartées : largeur au contenu (320 à 800 px) ; deux largeurs (480 et 880 px).
+- Validation : docs/validation/components/Dialog-v1.html
+
+## D-121 — Dialog : petit écran, centrée ou plein écran
+- Date : 2026-11-23
+- Portée : Dialog
+- Décision : sur mobile (≤ 640 px, D-013), `sm` et `md` restent centrées, sur toute la largeur moins 16 px de marge ; `lg` et `xl` passent en plein écran, sans rayon. Les boutons du pied se partagent alors la largeur.
+- Raison : c'est la règle déjà prise pour les Réglages (D-015), et une petite question n'a pas besoin de tout l'écran.
+- Options écartées : feuille qui monte du bas pour toutes ; tout en plein écran.
+- Validation : docs/validation/components/Dialog-v1.html
+
+## D-122 — Dialog : clic hors de la modale, sauf saisie commencée
+- Date : 2026-11-23
+- Portée : Dialog
+- Décision : un clic sur le fond ferme la modale, sauf si une saisie a commencé depuis son ouverture : la modale fait alors un court rebond et reste ouverte. Échap et le × ferment toujours. Pendant une action en cours (`isBusy`), rien ne la ferme.
+- Raison : un clic égaré ne fait jamais perdre une saisie, et une modale de consultation se ferme vite.
+- Options écartées : le clic hors ferme toujours ; le clic hors ne ferme jamais.
+- Validation : docs/validation/components/Dialog-v1.html
+
+## D-123 — Dialog : traits seulement quand le corps défile
+- Date : 2026-11-23
+- Portée : Dialog
+- Décision : aucun trait entre l'en-tête, le corps et le pied quand tout tient. Quand le corps défile, un trait `--line` apparaît sous l'en-tête dès qu'on a défilé, et au-dessus du pied tant qu'il reste du contenu en dessous. En `xl`, le trait sous l'en-tête est toujours là (le gabarit a sa propre navigation).
+- Raison : pas de décoration inutile (principes), et le trait garde son sens « il y a plus ».
+- Options écartées : traits toujours présents.
+- Validation : docs/validation/components/Dialog-v1.html
+
+## D-124 — Dialog : même ordre des boutons partout
+- Date : 2026-11-23
+- Portée : Dialog, confirmation
+- Décision : le pied est calé à droite, avec « Annuler » (`secondary`) puis l'action (`primary` ou `danger`) tout à droite, sur macOS, Windows et le web.
+- Raison : les apps web et multiplateformes, dont l'inspiration, gardent cet ordre partout, et une même app ne change pas d'un poste à l'autre.
+- Options écartées : ordre selon le système (action principale à gauche sous Windows).
+- Validation : docs/validation/components/Dialog-v1.html
+
+## D-125 — Dialog : focus à l'ouverture
+- Date : 2026-11-23
+- Portée : Dialog, confirmation
+- Décision : à l'ouverture, le focus va à l'élément marqué `autoFocus`, sinon au premier champ du corps, sinon à la modale elle-même (le lecteur d'écran lit le titre). Dans une confirmation, il va à « Annuler ». À la fermeture, il revient à l'élément qui a ouvert la modale.
+- Raison : on tape tout de suite dans un formulaire, et Entrée ne déclenche jamais une suppression par erreur.
+- Options écartées : premier élément focusable (souvent le ×) ; action principale.
+- Validation : docs/validation/components/Dialog-v1.html
+
+## D-126 — Confirmation : sobre, sans × ni icône
+- Date : 2026-11-23
+- Portée : confirmation
+- Décision : une confirmation est une modale `sm` avec un titre, une phrase facultative et deux boutons. Elle n'a ni × ni icône d'alerte : seul le bouton `danger` porte le danger. Rôle `alertdialog`.
+- Raison : monochrome et sans décoration (principes), et « Annuler » rend le × inutile.
+- Options écartées : icône d'alerte rouge ; Dialog `sm` ordinaire avec ×.
+- Validation : docs/validation/components/Dialog-v1.html
+
+## D-127 — Confirmation : affichée par `SocleProvider`
+- Date : 2026-11-23
+- Portée : confirmation, SocleProvider
+- Décision : `SocleProvider` affiche la confirmation. `useConfirm()` renvoie seulement la fonction `confirm(options)`, qui rend une promesse de `true` (confirmé) ou `false` (annulé). Une seule confirmation est ouverte à la fois : une nouvelle demande annule la précédente (`false`).
+- Raison : l'app n'a rien à placer dans chaque écran, et deux confirmations ne peuvent pas s'empiler par erreur.
+- Options écartées : le hook renvoie aussi un élément que l'écran doit rendre.
+- Validation : docs/validation/components/Dialog-v1.html
+
+## D-128 — Confirmation : action longue et erreur sur place
+- Date : 2026-11-23
+- Portée : confirmation
+- Décision : l'option facultative `onConfirm` (fonction asynchrone) garde la confirmation ouverte pendant l'action : le bouton passe en chargement (D-105), « Annuler », Échap et le clic hors sont bloqués. Si l'action échoue, son message s'affiche en rouge au-dessus du pied, annoncé au lecteur d'écran, et le bouton redevient actif pour réessayer. Si elle réussit, la confirmation se ferme et la promesse rend `true`. Sans `onConfirm`, la confirmation se ferme tout de suite.
+- Raison : l'utilisateur voit le résultat là où il a agi, sans dépendre des notifications.
+- Options écartées : fermer tout de suite et montrer la suite par une notification.
+- Validation : docs/validation/components/Dialog-v1.html
