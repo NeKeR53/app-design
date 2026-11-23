@@ -4,6 +4,17 @@ Versions selon semver (règle 6 du skill design) : une nouvelle option facultati
 
 ## [Non publié]
 
+### Ajouté — composants de chat
+- `ChatComposer`, `ChatOptions` et `ChatOptionButton` : zone de saisie d'un chat avec un agent et sa rangée d'options (D-371).
+- `MentionInput` et `MentionText` : texte à pastilles de références avec suggestions fournies par l'app (D-372).
+- `MessageQueue` : file de messages réordonnable dans la zone de saisie (D-373).
+- `AttachmentChip` et `AttachmentList` : image, fichier, texte collé (D-374).
+- `ChatTranscript`, `ChatMessage` et `MessageActions` : conversation collée en bas, « Nouveaux messages », actions près du texte (D-375).
+- `AgentActivity`, `ActivityGroup`, `WorkStatus`, `WorkSummary` : travail de l'agent (D-376).
+- `ChoicePrompt` : question ou autorisation de l'agent (D-377).
+- `UsageRing` et `UsageMeter` : jauge de contexte qui ouvre le volet des limites (D-378).
+- Raccourcis : Échap s'affiche « Échap » (`keyEscape`).
+
 ## [1.2.0] — 2026-11-23
 
 Version mineure : une option facultative, le défaut ne change pas.

@@ -282,3 +282,37 @@ export { Tag, TagGroup } from "./components/Tag/Tag";
 export type { TagProps, TagGroupProps } from "./components/Tag/Tag";
 export { CodeField } from "./components/CodeField/CodeField";
 export type { CodeFieldProps } from "./components/CodeField/CodeField";
+/* Jauge d'usage et lignes de limite (D-378). */
+export { UsageRing } from "./components/UsageRing/UsageRing";
+export type { UsageRingProps, UsageRingAction } from "./components/UsageRing/UsageRing";
+export { UsageMeter } from "./components/UsageRing/UsageMeter";
+export type { UsageMeterProps } from "./components/UsageRing/UsageMeter";
+export type { UsageTone } from "./components/UsageRing/usage";
+/* Zone de saisie du chat (D-371 à D-374). */
+export { ChatComposer, isLongPaste, clipboardImages } from "./components/ChatComposer/ChatComposer";
+export type { ChatComposerProps, ChatComposerHandle, ChatAddMenuItem, ChatSubmitMode } from "./components/ChatComposer/ChatComposer";
+export { ChatOptions, ChatOptionButton } from "./components/ChatComposer/ChatOptions";
+export type { ChatOptionsProps, ChatOptionButtonProps } from "./components/ChatComposer/ChatOptions";
+export { MentionInput, MentionText } from "./components/MentionInput/MentionInput";
+export type { MentionInputProps, MentionInputHandle } from "./components/MentionInput/MentionInput";
+export { trimMentionReferences } from "./components/MentionInput/mentions";
+export type { MentionItem, MentionReference, MentionTrigger } from "./components/MentionInput/mentions";
+export { MessageQueue } from "./components/MessageQueue/MessageQueue";
+export type { MessageQueueProps, QueuedMessage } from "./components/MessageQueue/MessageQueue";
+export { AttachmentChip, AttachmentList } from "./components/AttachmentChip/AttachmentChip";
+export type { AttachmentChipProps, AttachmentListProps, AttachmentKind, AttachmentStatus } from "./components/AttachmentChip/AttachmentChip";
+/* Relevé de conversation, travail de l'agent, question de l'agent (D-375 à D-377). */
+export { ChatTranscript } from "./components/ChatTranscript/ChatTranscript";
+export type { ChatTranscriptProps } from "./components/ChatTranscript/ChatTranscript";
+export { ChatMessage } from "./components/ChatTranscript/ChatMessage";
+export type { ChatMessageProps, ChatMessageRole } from "./components/ChatTranscript/ChatMessage";
+export { MessageActions } from "./components/ChatTranscript/MessageActions";
+export type { MessageActionsProps } from "./components/ChatTranscript/MessageActions";
+export { AgentActivity, ActivityGroup } from "./components/AgentActivity/AgentActivity";
+export type { AgentActivityProps, ActivityGroupProps, ActivityItem, ActivityKind, ActivityStatus } from "./components/AgentActivity/AgentActivity";
+export { WorkStatus } from "./components/AgentActivity/WorkStatus";
+export type { WorkStatusProps, WorkPhase } from "./components/AgentActivity/WorkStatus";
+export { WorkSummary } from "./components/AgentActivity/WorkSummary";
+export type { WorkSummaryProps } from "./components/AgentActivity/WorkSummary";
+export { ChoicePrompt } from "./components/ChoicePrompt/ChoicePrompt";
+export type { ChoicePromptProps, ChoiceOption, ChoicePromptAnswer } from "./components/ChoicePrompt/ChoicePrompt";

@@ -9,12 +9,14 @@ export interface KeyNames {
   keyBackspace: string;
   keyDelete: string;
   keyEnter: string;
+  keyEscape: string;
 }
 
 /** Texte affiché : « ⌘K » sur macOS, « Ctrl+K » ailleurs. */
 export function formatShortcut(shortcut: string, isMac: boolean, names: KeyNames): string {
   const win: Record<string, string> = { Mod: "Ctrl", Shift: names.keyShift, Alt: "Alt", Ctrl: "Ctrl", Backspace: names.keyBackspace, Delete: names.keyDelete, Enter: names.keyEnter };
-  const parts = shortcut.split("+").map((k) => (isMac ? MAC_KEYS[k] : win[k]) ?? k.toUpperCase());
+  // Échap s'écrit en toutes lettres, sur macOS comme ailleurs (libellé traduit).
+  const parts = shortcut.split("+").map((k) => (k === "Escape" ? names.keyEscape : ((isMac ? MAC_KEYS[k] : win[k]) ?? k.toUpperCase())));
   return isMac ? parts.join("") : parts.join("+");
 }
 

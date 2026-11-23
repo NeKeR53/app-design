@@ -2591,3 +2591,69 @@
 - Options écartées : option sur `AppShell` (chaque écran de l'app devrait la passer) ; détection par la taille de l'écran (non fiable, voir Raison) ; import de l'API de fenêtre Tauri dans Socle (Socle reste générique).
 - Limite : en plein écran, macOS montre les boutons de fenêtre par-dessus la barre quand le pointeur touche le haut de l'écran, avec la barre des menus ; ils couvrent alors le bouton de repli un instant. C'est le comportement du système.
 - Validation : par délégation de l'utilisateur, 2026-11-23
+
+## D-371 — ChatComposer et ChatOptions
+- Date : 2026-11-23
+- Portée : ChatComposer, ChatOptions
+- Décision : cadre de saisie (marge 6 px, rayon `--radius-md`, bord `--line-strong`, fond `--surface`) : file, pièces jointes, puis « + », texte, emplacement de l'app, « Arrêter » (pendant une réponse, à côté de la flèche, Échap) et flèche d'envoi. Entrée envoie, Maj+Entrée va à la ligne, ⌘/Ctrl+Entrée met en file pendant une réponse ; texte d'attente « ⌘↩ pour mettre en file » pendant une réponse. Images collées et fichiers déposés vont à l'app ; un collage d'au moins 2 000 caractères ou 20 lignes devient « Texte collé n ». Le « + » ouvre « Joindre des fichiers… » puis une entrée par déclencheur. `ChatOptions` : emplacement à gauche, boutons texte sans cadre à droite.
+- Raison : structure des deux apps d'origine, qui dupliquaient ce code.
+- Options écartées : un seul bouton envoyer / arrêter ; boutons à chevron sous la zone ; « + » limité aux fichiers.
+- Validation : choix de l'utilisateur, 2026-11-23 — docs/validation/components/Chat-v1.html (Q1, Q2, Q5, Q6)
+
+## D-372 — MentionInput
+- Date : 2026-11-23
+- Portée : MentionInput
+- Décision : champ éditable multiligne ; une ressource choisie devient une pastille non éditable avec ×. Déclencheurs `{ char, label, load }` fournis par l'app ; liste au-dessus du curseur (224 px au plus) après 150 ms, états recherche / vide / erreur ; ↑↓, Entrée ou Tab, Échap ; focus gardé dans le champ (`aria-activedescendant`) ; collage en texte brut.
+- Raison : citer fichiers et commandes sans quitter la saisie.
+- Options écartées : textarea avec jetons en texte ; ComboBox.
+- Validation : choix de l'utilisateur, 2026-11-23 — docs/validation/components/Chat-v1.html (Q11)
+
+## D-373 — MessageQueue
+- Date : 2026-11-23
+- Portée : MessageQueue
+- Décision : file dans le cadre de saisie, au-dessus du texte, séparée par un filet ; lignes de 24 px : poignée (glisser ou ↑↓, annoncé) ou horloge s'il n'y a qu'un message, aperçu, « Modifier », « Retirer », « Envoyer maintenant » ↗ ; un ordre refusé par l'app est rétabli.
+- Raison : la file reste près de l'endroit où l'on écrit.
+- Options écartées : file hors du cadre.
+- Validation : choix de l'utilisateur, 2026-11-23 — docs/validation/components/Chat-v1.html (Q9)
+
+## D-374 — AttachmentChip
+- Date : 2026-11-23
+- Portée : AttachmentChip, AttachmentList
+- Décision : vignette d'image de 56 px (× au survol et au focus), étiquette de fichier de 28 px (trombone, nom coupé au milieu, ×), étiquette de texte collé qui ouvre le texte en lecture seule dans une Modal ; états en préparation (Spinner) et en erreur (bord `--danger`, erreur en info-bulle) ; 8 px d'écart.
+- Raison : même rendu pour images, fichiers et collages longs avant l'envoi.
+- Options écartées : FileList ; texte collé dans le champ.
+- Validation : choix de l'utilisateur, 2026-11-23 — docs/validation/components/Chat-v1.html (Q11)
+
+
+## D-375 — ChatTranscript, ChatMessage, MessageActions
+- Date : 2026-11-23
+- Portée : ChatTranscript, ChatMessage, MessageActions
+- Décision : le relevé est une zone défilante nommée, avec une colonne centrée de 760 px. Il suit le contenu tant que l'utilisateur est à moins de 100 px du bas ; un envoi (`followKey`) le ramène en bas. Si l'utilisateur a remonté et qu'un contenu arrive, « Nouveaux messages ↓ » apparaît au-dessus du bas ; le bouton ramène en bas et recolle. La fin de réponse est lue poliment par `announce`, jamais mot à mot. Bulle de l'utilisateur à droite, 85 % au plus, `--surface-side`, rayon md ; réponse de l'assistant sans bulle. Les actions forment une `toolbar` (un arrêt de Tab, flèches) de boutons de 24 px aux icônes de 12 px : 4 px sous la bulle, à droite, pour l'utilisateur ; dans la marge basse, à gauche, pour l'assistant ; visibles au survol et au focus, toujours visibles sur écran tactile. Copier (toujours) : coche et « Copié » ; Citer : la sélection, sinon tout le message ; Relancer, Repartir d'ici et Modifier (en place : Échap annule, Entrée renvoie) quand l'app les fournit.
+- Raison : même lecture qu'avant dans les apps, actions proches du texte ; on ne perd pas sa place pendant une longue réponse.
+- Options écartées : menu « … » par message ; `role="log"`, qui lirait chaque fragment ; défilement sans bouton ni annonce.
+- Validation : choix de l'utilisateur, 2026-11-23 — docs/validation/components/Chat-v1.html (Q8, Q10)
+
+## D-376 — AgentActivity, ActivityGroup, WorkStatus, WorkSummary
+- Date : 2026-11-23
+- Portée : AgentActivity, ActivityGroup, WorkStatus, WorkSummary
+- Décision : chaque outil tient sur une ligne : icône du type, verbe, objet en chasse fixe ; pendant l'exécution, un Spinner remplace l'icône. Un échec affiche « Échec » en `--danger` et reste visible, même groupe replié. Au-delà de 3 outils, un résumé repliable « n outils exécutés · x en cours · y en échec », déplié tant qu'un outil tourne. La sortie d'un outil est en lecture seule, sur 2 à 12 lignes. `WorkStatus` montre l'étape et « depuis 12 s » : seul le libellé est annoncé (`status`), le temps écoulé est un `timer`. Après le tour, `WorkSummary` replie le travail derrière « A travaillé pendant 42 s · 4 outils appelés » ; la réponse reste visible.
+- Raison : on suit le travail pendant qu'il se fait, sans encombrer la conversation ensuite.
+- Options écartées : travail toujours déplié ; annonce de chaque seconde.
+- Validation : choix de l'utilisateur, 2026-11-23 — docs/validation/components/Chat-v1.html (Q7)
+
+## D-377 — ChoicePrompt
+- Date : 2026-11-23
+- Portée : ChoicePrompt
+- Décision : carte au-dessus de la zone de saisie : question ou autorisation, puis options numérotées dans une `ListBox` sans sélection (`onAction`) : un choix répond tout de suite. Les touches 1 à 9 n'agissent que si le focus est dans la carte. « Autre réponse… » devient un champ (Entrée envoie, Échap referme) ; une autorisation n'a pas de réponse libre par défaut. `onChoose` reçoit `{ id }` ou `{ text }`.
+- Raison : une réponse en un geste, au clavier comme à la souris, sans voler les chiffres tapés dans la zone de saisie.
+- Options écartées : `radiogroup` avec bouton « Valider » ; touches globales.
+- Validation : choix de l'utilisateur, 2026-11-23 — docs/validation/components/Chat-v1.html (Q11)
+
+
+## D-378 — Jauge d'usage et lignes de limite
+- Date : 2026-11-23
+- Portée : UsageRing, UsageMeter
+- Décision : `UsageRing` affiche une part utilisée dans un anneau de 16 px (trait 2 px, rail `--line-strong`, valeur `--accent`, `--warning` à 80 %, `--danger` à 95 %, seuils réglables). Avec contenu, c'est un bouton à texte nommé « <libellé> : 72 % », avec la même info-bulle, qui ouvre un volet au-dessus (forme de Popover, 440 px) : en-tête facultatif (titre, lien « Tout voir → ») puis le contenu de l'app. Sans contenu, c'est un `meter` seul. `UsageMeter` est une ligne du volet : libellé, « Remise à zéro <date> », pourcentage, barre de 4 px `role="meter"` dont `aria-valuetext` dit « Élevé » ou « Critique » au-delà des seuils.
+- Raison : la zone de saisie du chat montre le contexte utilisé sans prendre de place et donne le détail des limites en un clic ; le seuil n'est jamais dit par la couleur seule.
+- Options écartées : barre d'usage au-dessus de la zone de saisie ; laisser l'app composer Popover et ProgressBar ; valeur visible à côté de l'anneau.
+- Validation : choix de l'utilisateur, 2026-11-23 — docs/validation/components/Chat-v1.html (Q4)

@@ -72,6 +72,7 @@ export default defineConfig({
       "react-aria-components/ColorSwatch",
       "react-aria-components/ColorSwatchPicker",
       "react-aria-components/ColorField",
+      "react-aria-components/Meter",
     ],
   },
   test: {

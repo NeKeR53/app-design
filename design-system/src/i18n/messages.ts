@@ -404,6 +404,85 @@ export interface SocleMessages {
   /* CodeField (Nouveaux P4, K1) : avancement lu poliment, code incomplet. */
   codeProgress: (filled: number, total: number) => string;
   codeIncomplete: (length: number, numeric: boolean) => string;
+  /* UsageRing et UsageMeter (D-378) */
+  usageContext: string;
+  usagePanel: string;
+  usageSeeAll: string;
+  usageResetsAt: (date: string) => string;
+  usageLevel: (tone: "warning" | "danger") => string;
+  usageValueText: (percent: string, level: string | null) => string;
+  usageRingName: (label: string, valueText: string) => string;
+  /* ChatComposer et ChatOptions (D-371) */
+  keyEscape: string;
+  composerMessage: string;
+  composerAdd: string;
+  composerAttachFiles: string;
+  composerSend: string;
+  composerSendNow: string;
+  composerResume: string;
+  composerStop: string;
+  composerQueueHint: (keys: string) => string;
+  composerDropHere: string;
+  /* MentionInput (D-372) */
+  mentionSearching: string;
+  mentionEmpty: string;
+  mentionError: string;
+  mentionSuggestions: (label: string) => string;
+  /* MessageQueue (D-373) */
+  queueLabel: (n: number) => string;
+  queueMove: (n: number) => string;
+  queueMoveHint: string;
+  queueMoved: (position: number, total: number) => string;
+  queueWaiting: string;
+  queueEdit: (n: number) => string;
+  queueRemove: (n: number) => string;
+  queueSendNow: (n: number) => string;
+  /* AttachmentChip (D-374) */
+  attachmentList: string;
+  attachmentPastedText: (n: number) => string;
+  attachmentTextSummary: (label: string, characters: string) => string;
+  attachmentView: (label: string) => string;
+  attachmentContent: (label: string) => string;
+  attachmentPending: (name: string) => string;
+  attachmentError: (name: string) => string;
+  /* ChatTranscript, ChatMessage, MessageActions (D-375) */
+  transcriptLabel: string;
+  transcriptNewMessages: string;
+  transcriptShowEarlier: string;
+  messageYou: string;
+  messageAssistant: string;
+  messageActions: string;
+  messageCopy: string;
+  messageCopied: string;
+  messageQuote: string;
+  messageRetry: string;
+  messageFork: string;
+  messageEdit: string;
+  messageEditCancel: string;
+  messageEditSend: string;
+  /* AgentActivity, WorkStatus, WorkSummary (D-376) */
+  activityRunning: string;
+  activityDone: string;
+  activityFailed: string;
+  activityDetail: (title: string) => string;
+  activityGroup: (total: number, running: number, failed: number) => string;
+  workDuration: (seconds: number) => string;
+  workThinking: string;
+  workTool: (name: string) => string;
+  workWriting: string;
+  workApproval: string;
+  workWorking: string;
+  workSince: (duration: string) => string;
+  workSummary: (duration: string, tools: number) => string;
+  /* ChoicePrompt (D-377) */
+  choiceQuestion: string;
+  choicePermission: string;
+  choiceOptions: string;
+  choiceOther: string;
+  choiceReply: string;
+  choiceAnswer: string;
+  choiceSend: string;
+  choiceCancel: string;
 }
 
 const s = (n: number) => (n > 1 ? "s" : "");
@@ -768,4 +847,77 @@ export const frenchMessages: SocleMessages = {
   colorLowContrast: (r) => `Contraste trop faible avec le texte : ${r} pour 1, 4,5 pour 1 au moins.`,
   codeProgress: (n, total) => `${n} sur ${total}`,
   codeIncomplete: (n, numeric) => `Saisissez les ${n} ${numeric ? "chiffres" : "caractères"} du code.`,
+  usageContext: "Contexte utilisé",
+  usagePanel: "Limites d'usage",
+  usageSeeAll: "Tout voir",
+  usageResetsAt: (date) => `Remise à zéro ${date}`,
+  usageLevel: (tone) => (tone === "danger" ? "Critique" : "Élevé"),
+  usageValueText: (percent, level) => (level ? `${percent} (${level})` : percent),
+  usageRingName: (label, valueText) => `${label} : ${valueText}`,
+  keyEscape: "Échap",
+  composerMessage: "Message",
+  composerAdd: "Ajouter au message",
+  composerAttachFiles: "Joindre des fichiers…",
+  composerSend: "Envoyer",
+  composerSendNow: "Envoyer maintenant",
+  composerResume: "Relancer",
+  composerStop: "Arrêter",
+  composerQueueHint: (keys) => `${keys} pour mettre en file`,
+  composerDropHere: "Déposez vos fichiers ici",
+  mentionSearching: "Recherche…",
+  mentionEmpty: "Aucun résultat",
+  mentionError: "Recherche indisponible. Fermez puis réessayez.",
+  mentionSuggestions: (l) => `Suggestions : ${l}`,
+  queueLabel: (n) => `${n} message${s(n)} en file`,
+  queueMove: (n) => `Déplacer le message ${n}`,
+  queueMoveHint: "Flèches haut et bas pour réordonner",
+  queueMoved: (p, n) => `Message déplacé en position ${p} sur ${n}`,
+  queueWaiting: "En file : part à la fin de l'étape en cours",
+  queueEdit: (n) => `Modifier le message ${n}`,
+  queueRemove: (n) => `Retirer le message ${n}`,
+  queueSendNow: (n) => `Envoyer le message ${n} maintenant`,
+  attachmentList: "Pièces jointes",
+  attachmentPastedText: (n) => `Texte collé ${n}`,
+  attachmentTextSummary: (l, c) => `${l} · ${c} caractères`,
+  attachmentView: (l) => `Voir ${l}`,
+  attachmentContent: (l) => `Contenu de ${l}`,
+  attachmentPending: (n) => `Préparation de ${n}`,
+  attachmentError: (n) => `${n} n'a pas pu être joint.`,
+  transcriptLabel: "Conversation",
+  transcriptNewMessages: "Nouveaux messages",
+  transcriptShowEarlier: "Afficher les messages précédents",
+  messageYou: "Vous",
+  messageAssistant: "Assistant",
+  messageActions: "Actions du message",
+  messageCopy: "Copier le message",
+  messageCopied: "Copié",
+  messageQuote: "Citer dans la réponse",
+  messageRetry: "Relancer le message",
+  messageFork: "Repartir d'ici",
+  messageEdit: "Modifier le message",
+  messageEditCancel: "Annuler",
+  messageEditSend: "Envoyer",
+  activityRunning: "En cours",
+  activityDone: "Terminé",
+  activityFailed: "Échec",
+  activityDetail: (t) => `Détail de ${t}`,
+  activityGroup: (n, r, f) =>
+    [`${n} outil${s(n)} exécuté${s(n)}`, r ? `${r} en cours` : "", f ? `${f} en échec` : ""].filter(Boolean).join(" · "),
+  workDuration: (t) =>
+    t < 60 ? `${t} s` : t < 3600 ? `${Math.floor(t / 60)} min ${t % 60} s` : `${Math.floor(t / 3600)} h ${Math.floor((t % 3600) / 60)} min ${t % 60} s`,
+  workThinking: "Réflexion en cours",
+  workTool: (name) => `Outil en cours : ${name}`,
+  workWriting: "Rédaction en cours",
+  workApproval: "Autorisation requise",
+  workWorking: "Travail en cours",
+  workSince: (d) => `depuis ${d}`,
+  workSummary: (d, n) => `A travaillé pendant ${d} · ${n} outil${n === 1 ? " appelé" : "s appelés"}`,
+  choiceQuestion: "Question de l'agent",
+  choicePermission: "Autorisation demandée",
+  choiceOptions: "Réponses proposées",
+  choiceOther: "Autre réponse…",
+  choiceReply: "Répondre…",
+  choiceAnswer: "Votre réponse",
+  choiceSend: "Envoyer",
+  choiceCancel: "Annuler",
 };

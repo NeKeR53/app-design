@@ -1,0 +1,103 @@
+# AgentActivity
+Statut : validé (2026-11-23) — Version : depuis la version qui suit 1.0.0
+Validation : docs/validation/components/Chat-v1.html (Q7 A, Q11 A)
+
+## Rôle
+`AgentActivity` montre un outil appelé par l'agent sur une ligne ; `ActivityGroup` montre une suite d'outils et la groupe derrière un résumé au-delà de 3 (D-376).
+Ne pas l'utiliser pour :
+- l'étape en cours avec son temps écoulé : prendre `WorkStatus` ;
+- le travail d'un tour terminé : le mettre dans `WorkSummary` ;
+- un journal de commandes complet : prendre `LogViewer` ou `Terminal`.
+
+## Anatomie
+1. Ligne (obligatoire) : 28 px de haut au moins, `--fs-sm` en `--fg-2`, espaces de 8 px.
+   - Icône de 15 px selon le type, ou `Spinner` `sm` pendant l'exécution.
+   - Verbe puis objet en `--font-mono`, coupés avec une ellipse (texte entier en `title`).
+   - « Échec » en `--danger`, si l'outil a échoué.
+2. Chevron (si `detail`) : la ligne devient un bouton qui ouvre la sortie.
+3. Sortie (si ouverte) : zone de texte en lecture seule, `--surface-side`, rayon `--radius-md`, marges 12 px, police à chasse fixe, de 2 à 12 lignes, 320 px au plus.
+4. Résumé du groupe (plus de 3 outils) : « 5 outils exécutés · 1 en cours · 1 en échec », chevron ; liste de 280 px au plus, qui défile.
+
+## Variantes
+| Type (`kind`) | Icône |
+|---|---|
+| `command` | Invite dans un cadre |
+| `edit` | Crayon |
+| `search` | Loupe |
+| `read` | Livre ouvert |
+| `think` | Cerveau |
+| `other` (défaut) | Clé |
+
+## Options
+`AgentActivity`
+| Option | Type | Défaut | Description |
+|---|---|---|---|
+| `kind` | `ActivityKind` | `"other"` | Type d'outil. |
+| `verb` | `string` | — (obligatoire) | « Exécuté », « Modifié », « Lu ». |
+| `object` | `string` | aucun | Commande, chemin, motif, en chasse fixe. |
+| `status` | `"running" \| "done" \| "error"` | `"done"` | État de l'outil. |
+| `detail` | `string` | aucun | Sortie de l'outil, montrée à l'ouverture. |
+
+`ActivityGroup`
+| Option | Type | Défaut | Description |
+|---|---|---|---|
+| `items` | `ActivityItem[]` | — (obligatoire) | Outils (`id` + options d'`AgentActivity`). |
+| `defaultExpanded` | `boolean` | déplié si un outil tourne | Ouverture au premier affichage. |
+
+## Exclus
+- Pas de lien de fichier dans la ligne dans cette version : l'app peut le mettre dans `detail`.
+- Pas d'images dans la sortie.
+- Pas de `className` ni de `style`.
+
+## États
+| État | Rendu |
+|---|---|
+| En cours | Roue à la place de l'icône ; « En cours » lu par le lecteur d'écran. |
+| Terminé | Icône du type ; « Terminé » lu par le lecteur d'écran. |
+| Échec | « Échec » visible en `--danger`. |
+| Groupe replié avec échec | Résumé en `--danger` ; les outils en échec restent visibles sous le résumé. |
+| Survol d'une ligne ouvrable | Texte `--fg`. |
+
+## Comportement
+| Règle | Niveau de réglage | Test (story) |
+|---|---|---|
+| Icône par type, objet en chasse fixe, roue pendant l'exécution, « Échec » en `--danger` | verrouillé | `Lignes` |
+| Avec `detail`, clic, Entrée ou Espace ouvrent la sortie, de 2 à 12 lignes | réglable par l'app (`detail`) | `Detail` |
+| Jusqu'à 3 outils, une ligne chacun, sans résumé | verrouillé | `PeuDOutils` |
+| Au-delà de 3, résumé repliable au clavier | verrouillé | `Groupe` |
+| Déplié tant qu'un outil tourne, replié à la fin (sauf choix de l'utilisateur) | verrouillé | `GroupeEnCours` |
+| Un outil en échec reste visible, groupe replié | verrouillé | `ErreurVisible` |
+
+## Contenu
+- Verbe au participe passé (« Exécuté », « Modifié », « Lu », « Recherché ») ; « Réflexion » pour `think`.
+- Objet : la commande ou le chemin tels quels.
+
+## Densité
+Ligne de 28 px au moins dans les deux densités ; texte `--fs-sm`.
+
+## Clavier
+Tab atteint le résumé et chaque ligne ouvrable ; Entrée ou Espace ouvre ou ferme ; la sortie est atteinte au Tab et défile aux flèches.
+
+## Accessibilité
+- Résumé et lignes ouvrables : boutons avec `aria-expanded` et `aria-controls`.
+- La liste du groupe est nommée par le résumé.
+- L'état de chaque outil est un texte (caché sauf « Échec »), pas une couleur seule (1.4.1).
+- Les icônes et la roue sont décoratives.
+
+## Taille d'écran
+Identique ; l'objet se coupe avec une ellipse.
+
+## Erreurs
+Un outil en échec : « Échec » en rouge, toujours visible ; sa sortie dans `detail`.
+
+## Placement
+Dans `ChatTranscript`, entre les messages, ou dans `WorkSummary`.
+
+## Composition
+`Button` de React Aria, `Spinner`, icônes internes `SquareTerminal`, `Pencil`, `Search`, `BookOpen`, `Brain`, `Wrench`, `ChevronDown`.
+
+## Décisions
+D-360, D-376
+
+## Questions ouvertes
+Aucune.

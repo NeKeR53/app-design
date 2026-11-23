@@ -62,6 +62,16 @@ export const ICON_NAMES = [
   "FileArchive",
   "File",
   "Upload",
+  "Square",
+  "Paperclip",
+  "GripVertical",
+  "Pencil",
+  "SquareTerminal",
+  "BookOpen",
+  "Brain",
+  "Wrench",
+  "RotateCcw",
+  "Shuffle",
 ] as const;
 export type IconName = (typeof ICON_NAMES)[number];
 
@@ -322,3 +332,59 @@ export const FileArchive = icon(
 export const File = icon(PAGE, "File");
 /** Zone de dépôt : flèche vers le haut. */
 export const Upload = icon(<path d="M12 3v12M7 8l5-5 5 5M5 21h14" />, "Upload");
+
+/* ChatComposer, MessageQueue, AttachmentChip (D-371, D-373, D-374) */
+/** Arrêter : carré plein aux coins arrondis. */
+export const Square = icon(<rect x="6" y="6" width="12" height="12" rx="2" fill="currentColor" />, "Square");
+export const Paperclip = icon(
+  <path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l8.57-8.57A4 4 0 1 1 18 8.84l-8.59 8.57a2 2 0 0 1-2.83-2.83l8.49-8.48" />,
+  "Paperclip",
+);
+/** Poignée de réordonnancement : deux colonnes de trois points. */
+export const GripVertical = icon(
+  <>
+    <circle cx="9" cy="5" r="1" />
+    <circle cx="9" cy="12" r="1" />
+    <circle cx="9" cy="19" r="1" />
+    <circle cx="15" cy="5" r="1" />
+    <circle cx="15" cy="12" r="1" />
+    <circle cx="15" cy="19" r="1" />
+  </>,
+  "GripVertical",
+);
+export const Pencil = icon(
+  <path d="M21.17 6.81a1 1 0 0 0-3.99-3.99L3.84 16.17a2 2 0 0 0-.5.83l-1.32 4.35a.5.5 0 0 0 .62.62l4.35-1.32a2 2 0 0 0 .83-.5zM15 5l4 4" />,
+  "Pencil",
+);
+
+/* ChatTranscript, MessageActions, AgentActivity (D-375, D-376) */
+/** Commande : invite dans un cadre. */
+export const SquareTerminal = icon(
+  <>
+    <path d="m7 11 2-2-2-2M11 13h4" />
+    <rect width="18" height="18" x="3" y="3" rx="2" />
+  </>,
+  "SquareTerminal",
+);
+/** Lecture d'un fichier. */
+export const BookOpen = icon(
+  <path d="M12 7v14M3 18a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h5a4 4 0 0 1 4 4 4 4 0 0 1 4-4h5a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-6a3 3 0 0 0-3 3 3 3 0 0 0-3-3z" />,
+  "BookOpen",
+);
+/** Réflexion de l'agent. */
+export const Brain = icon(
+  <path d="M12 5a3 3 0 1 0-5.997.125 4 4 0 0 0-2.526 5.77 4 4 0 0 0 .556 6.588A4 4 0 1 0 12 18ZM12 5a3 3 0 1 1 5.997.125 4 4 0 0 1 2.526 5.77 4 4 0 0 1-.556 6.588A4 4 0 1 1 12 18ZM15 13a4.5 4.5 0 0 1-3-4 4.5 4.5 0 0 1-3 4M17.599 6.5a3 3 0 0 0 .399-1.375M6.003 5.125A3 3 0 0 0 6.401 6.5M3.477 10.896a4 4 0 0 1 .585-.396M19.938 10.5a4 4 0 0 1 .585.396M6 18a4 4 0 0 1-1.967-.516M19.967 17.484A4 4 0 0 1 18 18" />,
+  "Brain",
+);
+/** Outil sans type connu. */
+export const Wrench = icon(
+  <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z" />,
+  "Wrench",
+);
+/** Relancer un message. */
+export const RotateCcw = icon(<path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8M3 3v5h5" />, "RotateCcw");
+/** Repartir d'ici : nouvelle conversation à partir d'un message. */
+export const Shuffle = icon(
+  <path d="m18 14 4 4-4 4M18 2l4 4-4 4M2 18h1.973a4 4 0 0 0 3.3-1.7l5.454-7.6a4 4 0 0 1 3.3-1.7H22M2 6h1.972a4 4 0 0 1 3.6 2.2M22 18h-6.041a4 4 0 0 1-3.3-1.8l-.359-.45" />,
+  "Shuffle",
+);
