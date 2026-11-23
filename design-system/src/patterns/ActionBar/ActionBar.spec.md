@@ -114,7 +114,7 @@ Voir D-117. Sur écran tactile, les cibles suivent `Button` et `IconButton` (44 
 Zones `topbar` (option `actions` d'AppShell), `header` et `toolbar` d'un gabarit, titre de section, ligne de Table ou de List, état vide (layout-rules, section « Actions »). Jamais dans un pied de formulaire ou de modale, ni dans une ligne de propriété.
 
 ## Composition
-Contient `Button`, `IconButton`, `Menu` et `Tooltip` (via `IconButton`). La confirmation passe par la confirmation de Socle (P3) ; tant qu'elle n'est pas fournie, `ActionBar` utilise la boîte de confirmation du navigateur.
+Contient `Button`, `IconButton`, `Menu` et `Tooltip` (via `IconButton`). La confirmation passe par `useConfirm` (D-127) : la modale affichée par `SocleProvider`.
 
 ## Décisions
 D-011, D-013, D-021, D-032, D-048, D-049, D-059, D-066, D-089, D-105, D-107, D-110, D-111, D-112, D-113, D-114, D-115, D-116, D-117, D-118
