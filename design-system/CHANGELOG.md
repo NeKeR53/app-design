@@ -53,6 +53,17 @@ Versions selon semver (règle 6 du skill design) : une nouvelle option facultati
 - Libellés internes `childrenLoadFailed`, `noItems`, `moveItem`, `expand` et `collapse` dans le dictionnaire `messages` (D-089).
 - Règle de choix entre `TreeView` et `Sidebar.TreeItem` (D-260), reportée dans la spec `Sidebar`.
 
+### Ajouté (tableau dense, D-270 à D-277)
+- `Table` : options facultatives pour un tableau dense, sans second composant (D-270).
+  - `density="compact"` : lignes de 25 px, en-tête de 28 px (D-271).
+  - `groupBy` et `defaultCollapsedGroups` : lignes de groupe en texte, repliables au clic, à Entrée et à Espace ; état mémorisé par tableau (D-272).
+  - `rowDescription` : lignes doubles, précision sous le nom (D-273).
+- Libellé interne `groupCount` (« n lignes ») dans le dictionnaire `messages`.
+
+### Corrigé
+- `Table` : une colonne déclarée sous 80 px garde sa largeur (D-274).
+- `Table` : un en-tête coupé par « … » montre son libellé complet en info-bulle (D-275).
+
 ## [0.2.0] — 2026-11-23
 
 Lot 1 de la migration d'Alfred : bouton à texte, actions, modale, champs, ComboBox, notifications et petits éléments d'affichage (décisions D-100 à D-169). Version mineure : tout est nouveau ou facultatif, rien ne casse.

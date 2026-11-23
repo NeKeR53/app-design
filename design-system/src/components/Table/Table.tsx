@@ -1,8 +1,8 @@
 /*
  * Adapté du starter Tailwind de React Aria (adobe/react-spectrum, starters/tailwind),
- * licence Apache 2.0. Spec : Table.spec.md. Décisions : D-062 à D-067, D-084 à D-087.
+ * licence Apache 2.0. Spec : Table.spec.md. Décisions : D-062 à D-067, D-084 à D-087, D-270 à D-277.
  */
-import { useState, type MouseEvent, type ReactNode } from "react";
+import { useLayoutEffect, useRef, useState, type KeyboardEvent, type MouseEvent, type ReactNode } from "react";
 import type { Key, Selection, SortDescriptor } from "react-aria-components";
 import { Cell, Column, ColumnResizer, ResizableTableContainer, Row, Table as RACTable, TableBody, TableHeader } from "react-aria-components/Table";
 import { Button } from "react-aria-components/Button";
@@ -10,7 +10,7 @@ import { Checkbox } from "react-aria-components/Checkbox";
 import { useMessages, useStoredState } from "../../provider/SocleProvider";
 import { buttonReset, cx, focusRing } from "../../lib/cx";
 import { ErrorBanner, highlight, LoadError, NoResults, ReloadBar, type ResultsStateProps } from "../../lib/results";
-import { ArrowDown, ArrowUp, Check, Minus } from "../../icons";
+import { ArrowDown, ArrowUp, Check, ChevronDown, Minus } from "../../icons";
 import { Menu } from "../Menu/Menu";
 import { Tooltip } from "../Tooltip/Tooltip";
 import { Skeleton as Bar, SkeletonGroup } from "../Skeleton/Skeleton";
@@ -21,7 +21,7 @@ export interface TableColumn {
   label: string;
   /** `end` pour les nombres : alignés à droite, chiffres de largeur égale. */
   align?: "start" | "end";
-  /** Largeur par défaut en px ; la première colonne prend la place restante. */
+  /** Largeur par défaut en px ; la première colonne prend la place restante. Sous 80 px, elle est aussi la largeur minimale (D-274). */
   width?: number;
   sortable?: boolean;
 }
@@ -52,12 +52,31 @@ export interface TableProps<T extends { id: string }> extends ResultsStateProps 
   onAction?: (id: string) => void;
   /** Deux actions au plus, au survol (D-066). */
   rowActions?: (row: T) => TableRowAction[];
-  /** Identifiant de mémorisation des largeurs et du tri. Défaut : `label`. */
+  /** Identifiant de mémorisation des largeurs, du tri et des groupes repliés. Défaut : `label`. */
   storageId?: string;
+  /** `compact` : lignes de 25 px, en-tête de 28 px (D-271). Défaut : `default` (`--row-h`). */
+  density?: "default" | "compact";
+  /** Range les lignes sous des lignes de groupe repliables, dans l'ordre de première apparition (D-272). */
+  groupBy?: (row: T) => string;
+  /** Groupes repliés au premier affichage ; ensuite, l'état replié est mémorisé (D-272). */
+  defaultCollapsedGroups?: string[];
+  /** Précision sous le nom, dans la colonne principale : toutes les lignes deviennent doubles (D-273). */
+  rowDescription?: (row: T) => string | undefined;
 }
+
+/** Ligne de groupe (D-272) : son id ne peut pas croiser celui d'une ligne de l'app. */
+interface GroupItem {
+  id: string;
+  group: string;
+  count: number;
+}
+const GROUP_PREFIX = "\u0000group:";
+const isGroup = (item: object): item is GroupItem => "group" in item && String((item as GroupItem).id).startsWith(GROUP_PREFIX);
 
 const MIN_W = 80;
 const MAX_W = 480;
+/** Largeur minimale absolue d'une colonne étroite déclarée (D-274). */
+const NARROW_W = 32;
 
 const checkboxClass = cx(
   "group/cb inline-grid size-4 cursor-default place-items-center rounded-sm border-[1.5px] border-fg-3 bg-surface text-accent-fg",
@@ -88,6 +107,10 @@ export function Table<T extends { id: string }>({
   onRetry,
   searchTerms,
   onClearSearch,
+  density = "default",
+  groupBy,
+  defaultCollapsedGroups,
+  rowDescription,
 }: TableProps<T>) {
   const m = useMessages();
   const key = storageId ?? label;
@@ -100,6 +123,16 @@ export function Table<T extends { id: string }>({
   const multiple = selectionMode === "multiple";
   const [checkedCount, setCheckedCount] = useState(0);
   const withActions = Boolean(rowActions);
+  const compact = density === "compact";
+  // Groupes repliés, mémorisés par tableau (D-272, D-007).
+  const [collapsed, setCollapsed] = useStoredState<string[]>(`table:${key}:collapsed`, defaultCollapsedGroups ?? []);
+  const toggleGroup = (g: string) => setCollapsed(collapsed.includes(g) ? collapsed.filter((x) => x !== g) : [...collapsed, g]);
+  const colCount = (multiple ? 1 : 0) + columns.length + (withActions ? 1 : 0);
+  // Hauteurs (D-271, D-273) : ligne simple ou double, en-tête ; marge de case resserrée en compact.
+  const rowH = rowDescription ? "h-[calc(var(--row-h)+12px)]" : "h-(--row-h)";
+  const headH = compact ? "h-7" : "h-(--row-h)";
+  // En compact, l'interligne serré garde la ligne à 25 px même avec une pastille de 24 px.
+  const padX = compact ? "px-2 py-0 leading-tight [&>*]:align-top" : "px-2.5";
 
   const onContextMenu = (e: MouseEvent) => {
     const btn = (e.target as HTMLElement).closest('[role="row"]')?.querySelector<HTMLElement>("[data-row-menu]");
@@ -111,10 +144,45 @@ export function Table<T extends { id: string }>({
 
   const terms = searchTerms?.filter(Boolean) ?? [];
   const firstLoad = isLoading && rows.length === 0;
+  // React Aria ne pose `aria-expanded` que dans un arbre : on le pose sur chaque ligne de groupe,
+  // à chaque changement des lignes (React Aria les monte dans un second temps).
+  const boxRef = useRef<HTMLDivElement>(null);
+  const grouped = Boolean(groupBy);
+  useLayoutEffect(() => {
+    const box = boxRef.current;
+    if (!box || !grouped) return;
+    const sync = () =>
+      box.querySelectorAll<HTMLElement>("[data-group]").forEach((el) => {
+        const v = String(!el.hasAttribute("data-collapsed"));
+        if (el.getAttribute("aria-expanded") !== v) el.setAttribute("aria-expanded", v);
+      });
+    sync();
+    const obs = new MutationObserver(sync);
+    obs.observe(box, { subtree: true, childList: true, attributes: true, attributeFilter: ["data-collapsed"] });
+    return () => obs.disconnect();
+  }, [grouped]);
+  const items: Array<T | GroupItem> = groupBy ? groupRows(rows, groupBy, collapsed) : rows;
+  const groupKeys = groupBy ? items.filter(isGroup).map((g) => g.id) : [];
+
+  // Espace replie aussi la ligne de groupe ; Entrée passe par `onAction` de la ligne (D-272).
+  const onKeyDown = (e: KeyboardEvent) => {
+    if (e.key !== " ") return;
+    const g = (e.target as HTMLElement).closest<HTMLElement>("[data-group]")?.dataset.group;
+    if (g !== undefined) {
+      e.preventDefault();
+      e.stopPropagation();
+      toggleGroup(g);
+    }
+  };
   const empty = !isLoading && !hasError && rows.length === 0 && terms.length > 0;
 
   return (
-    <div className="socle-box relative flex min-h-0 flex-1 flex-col font-sans text-md text-fg" onContextMenu={onContextMenu}>
+    <div
+      ref={boxRef}
+      className={cx("socle-box relative flex min-h-0 flex-1 flex-col font-sans text-md text-fg", compact && "[--row-h:25px]")}
+      onContextMenu={onContextMenu}
+      onKeyDownCapture={groupBy ? onKeyDown : undefined}
+    >
       {isLoading && rows.length > 0 && <ReloadBar />}
       {hasError && rows.length > 0 && <ErrorBanner onRetry={onRetry} />}
       {hasError && rows.length === 0 ? (
@@ -148,12 +216,13 @@ export function Table<T extends { id: string }>({
               setStoredSort(d);
               onSortChange?.(d);
             }}
-            {...(onAction ? { onRowAction: (k: Key) => onAction(String(k)) } : {})}
+            {...(groupKeys.length ? { disabledKeys: groupKeys, disabledBehavior: "selection" as const } : {})}
+            {...(onAction ? { onRowAction: (k: Key) => !String(k).startsWith(GROUP_PREFIX) && onAction(String(k)) } : {})}
             className={cx("w-full border-separate border-spacing-0 outline-none", multiple && checkedCount > 1 && "socle-has-checked")}
           >
             <TableHeader className="sticky top-0 z-[2] bg-surface">
               {multiple && (
-                <Column width={40} minWidth={40} className="h-(--row-h) border-b border-line px-3 text-start">
+                <Column width={40} minWidth={40} className={cx(headH, "border-b border-line px-3 text-start")}>
                   <Checkbox slot="selection" aria-label={m.selectAll} className={checkboxClass}>
                     {({ isSelected, isIndeterminate }) => <Box isSelected={isSelected} isIndeterminate={isIndeterminate} />}
                   </Checkbox>
@@ -165,17 +234,22 @@ export function Table<T extends { id: string }>({
                   id={col.id}
                   isRowHeader={i === 0}
                   allowsSorting={Boolean(col.sortable)}
-                  {...(i === 0 ? { minWidth: 160 } : { defaultWidth: widths[col.id] ?? col.width ?? 140, minWidth: MIN_W, maxWidth: MAX_W })}
+                  {...(i === 0
+                    ? { minWidth: 160 }
+                    : { defaultWidth: widths[col.id] ?? col.width ?? 140, minWidth: Math.max(NARROW_W, Math.min(MIN_W, col.width ?? MIN_W)), maxWidth: MAX_W })}
                   className={cx(
-                    "group/col relative h-(--row-h) cursor-default border-b border-line px-2.5 text-sm font-medium text-fg-2 outline-none data-hovered:text-fg",
+                    "group/col relative cursor-default border-b border-line text-sm font-medium text-fg-2 outline-none data-hovered:text-fg",
+                    headH,
+                    padX,
                     col.align === "end" ? "text-end" : "text-start",
                     focusRing,
                     "data-focus-visible:-outline-offset-2",
                   )}
                 >
                   {({ allowsSorting, sortDirection }) => (
-                    <span className={cx("flex items-center gap-1", col.align === "end" && "justify-end")}>
-                      <span className="truncate">{col.label}</span>
+                    <span className={cx("flex min-w-0 items-center gap-1", col.align === "end" && "justify-end")}>
+                      {/* Libellé coupé : libellé complet en info-bulle (D-275). */}
+                      <OverflowTooltip text={col.label} />
                       {allowsSorting && <span className="inline-grid w-3 place-items-center">{sortDirection === "ascending" ? <ArrowUp size={12} /> : sortDirection === "descending" ? <ArrowDown size={12} /> : null}</span>}
                       {i > 0 && (
                         <span
@@ -197,17 +271,21 @@ export function Table<T extends { id: string }>({
                   )}
                 </Column>
               ))}
-              {withActions && <Column width={72} minWidth={72} aria-label={m.rowActions} className="h-(--row-h) border-b border-line" />}
+              {withActions && <Column width={72} minWidth={72} aria-label={m.rowActions} className={cx(headH, "border-b border-line")} />}
             </TableHeader>
             <TableBody
-              items={firstLoad ? [] : rows}
+              items={firstLoad ? [] : items}
               // Les cellules se redessinent quand la recherche ou le rendu change, même avec les mêmes lignes (D-087).
               dependencies={[terms.join("\u0000"), renderCell, rowActions]}
               renderEmptyState={() =>
                 firstLoad ? <Skeleton cols={columns.length} /> : empty ? <NoResults terms={terms} onClearSearch={onClearSearch} /> : null
               }
             >
-              {(row) => (
+              {(item) => {
+                if (isGroup(item)) return <GroupRow item={item} colCount={colCount} isCollapsed={collapsed.includes(item.group)} onToggle={() => toggleGroup(item.group)} countLabel={m.groupCount} />;
+                const row = item;
+                const description = rowDescription?.(row);
+                return (
                 <Row
                   id={row.id}
                   className={cx(
@@ -218,7 +296,7 @@ export function Table<T extends { id: string }>({
                   )}
                 >
                   {multiple && (
-                    <Cell className="h-(--row-h) border-b border-line px-3">
+                    <Cell className={cx(rowH, "border-b border-line px-3")}>
                       <Checkbox slot="selection" className={cx(checkboxClass, "invisible group-data-hovered/row:visible group-data-focus-visible/row:visible data-selected:visible [.socle-has-checked_&]:visible pointer-coarse:visible")}>
                         {({ isSelected, isIndeterminate }) => <Box isSelected={isSelected} isIndeterminate={isIndeterminate} />}
                       </Checkbox>
@@ -228,12 +306,24 @@ export function Table<T extends { id: string }>({
                     const raw = renderCell ? renderCell(row, col.id) : (row as Record<string, unknown>)[col.id];
                     const isEmpty = raw === undefined || raw === null || raw === "";
                     // Texte coupé : texte complet dans l'info-bulle Socle (Table.spec.md, Contenu).
-                    const content = isEmpty ? "—" : typeof raw === "string" ? <OverflowTooltip text={raw} textClass="block min-w-0 truncate">{highlight(raw, terms)}</OverflowTooltip> : (raw as ReactNode);
+                    const text = isEmpty ? "—" : typeof raw === "string" ? <OverflowTooltip text={raw} textClass="block min-w-0 truncate">{highlight(raw, terms)}</OverflowTooltip> : (raw as ReactNode);
+                    // Ligne double : précision sous le nom, dans la colonne principale (D-273).
+                    const content =
+                      i === 0 && rowDescription ? (
+                        <span className="flex min-w-0 flex-col leading-tight">
+                          <span className="min-w-0">{text}</span>
+                          {description ? <OverflowTooltip text={description} textClass="block min-w-0 truncate text-sm text-fg-3" /> : null}
+                        </span>
+                      ) : (
+                        text
+                      );
                     return (
                       <Cell
                         key={col.id}
                         className={cx(
-                          "h-(--row-h) max-w-0 truncate border-b border-line px-2.5 whitespace-nowrap",
+                          "max-w-0 truncate border-b border-line whitespace-nowrap",
+                          rowH,
+                          padX,
                           i === 0 ? "text-fg" : "text-fg-2",
                           isEmpty && "text-fg-3",
                           col.align === "end" && "text-end tabular-nums",
@@ -251,17 +341,59 @@ export function Table<T extends { id: string }>({
                     );
                   })}
                   {withActions && (
-                    <Cell className="h-(--row-h) border-b border-line pr-2">
+                    <Cell className={cx(rowH, "border-b border-line pr-2")}>
                       <RowActions actions={rowActions!(row).slice(0, 2)} />
                     </Cell>
                   )}
                 </Row>
-              )}
+                );
+              }}
             </TableBody>
           </RACTable>
         </ResizableTableContainer>
       )}
     </div>
+  );
+}
+
+/** Lignes de l'app rangées sous leurs lignes de groupe, dans l'ordre de première apparition (D-272). */
+function groupRows<T extends { id: string }>(rows: T[], groupBy: (row: T) => string, collapsed: string[]): Array<T | GroupItem> {
+  const groups = new Map<string, T[]>();
+  for (const r of rows) {
+    const g = groupBy(r);
+    const list = groups.get(g);
+    if (list) list.push(r);
+    else groups.set(g, [r]);
+  }
+  const out: Array<T | GroupItem> = [];
+  groups.forEach((list, g) => {
+    out.push({ id: GROUP_PREFIX + g, group: g, count: list.length });
+    if (!collapsed.includes(g)) out.push(...list);
+  });
+  return out;
+}
+
+/** Ligne de groupe : chevron, nom en gras, « · n lignes », sans fond ; clic, Entrée ou Espace replient (D-272). */
+function GroupRow({ item, colCount, isCollapsed, onToggle, countLabel }: { item: GroupItem; colCount: number; isCollapsed: boolean; onToggle: () => void; countLabel: (n: number) => string }) {
+  return (
+    <Row
+      id={item.id}
+      textValue={item.group}
+      onAction={onToggle}
+      data-group={item.group}
+      data-collapsed={isCollapsed || undefined}
+      className={cx("group/grow cursor-default outline-none data-hovered:[&>td]:bg-hover", focusRing, "data-focus-visible:-outline-offset-2")}
+    >
+      <Cell colSpan={colCount} className="h-(--row-h) border-b border-line px-2 align-bottom pb-1 pt-2">
+        <span className="flex min-w-0 items-center gap-1">
+          <span aria-hidden className={cx("inline-grid shrink-0 text-fg-3", isCollapsed && "-rotate-90")}>
+            <ChevronDown size={12} />
+          </span>
+          <span className="min-w-0 truncate font-semibold text-fg">{item.group}</span>
+          <span className="shrink-0 text-fg-3">· {countLabel(item.count)}</span>
+        </span>
+      </Cell>
+    </Row>
   );
 }
 
