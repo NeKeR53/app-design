@@ -1,0 +1,275 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DiffView — validation v1</title>
+<style>
+/* ---------- Page de validation ---------- */
+:root{--pg-bg:#f6f6f6;--pg-fg:#1a1a1a;--pg-muted:#5c5c5c;--pg-line:#e2e2e2;--pg-card:#fff;--pg-badge:#dff3e6;--pg-badge-fg:#145c30;--pg-reco:#e7f0ff;--pg-reco-fg:#1d4ed8}
+:root[data-theme="dark"]{--pg-bg:#121212;--pg-fg:#ececec;--pg-muted:#9a9a9a;--pg-line:#2c2c2c;--pg-card:#1b1b1b;--pg-badge:#123321;--pg-badge-fg:#8fe0b0;--pg-reco:#16233d;--pg-reco-fg:#9cc0ff}
+*{box-sizing:border-box}html,body{margin:0}
+body{background:var(--pg-bg);color:var(--pg-fg);font:15px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif}
+.pg{max-width:1180px;margin:0 auto;padding:24px 16px 64px}
+h1{font-size:22px;font-weight:600;margin:0 0 4px;display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+h2.sec{font-size:16px;margin:28px 0 8px}
+.intro{color:var(--pg-muted);margin:0 0 20px}
+.badge{font-size:12px;font-weight:600;letter-spacing:.04em;padding:3px 8px;border-radius:6px;background:var(--pg-badge);color:var(--pg-badge-fg)}
+.boxes{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px}
+@media (max-width:760px){.boxes{grid-template-columns:1fr}}
+.box{background:var(--pg-card);border:1px solid var(--pg-line);border-radius:10px;padding:14px 16px;font-size:14px}
+.box h2{font-size:14px;margin:0 0 8px;font-weight:600}.box ul,.box ol{margin:0;padding-left:20px}.box li{margin:5px 0}
+.reco{font-size:11.5px;font-weight:600;padding:1px 6px;border-radius:5px;background:var(--pg-reco);color:var(--pg-reco-fg);margin-left:4px}
+.toolbar{position:sticky;top:0;z-index:100;background:var(--pg-bg);padding:10px 0;border-bottom:1px solid var(--pg-line);margin-bottom:16px;display:flex;flex-wrap:wrap;gap:10px 16px;align-items:center}
+.seg{display:inline-flex;border:1px solid var(--pg-line);border-radius:8px;overflow:hidden;background:var(--pg-card)}
+.seg button{border:0;background:transparent;color:var(--pg-fg);padding:5px 10px;font:inherit;font-size:13px;cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--pg-fg);color:var(--pg-bg)}
+.tlabel{font-size:12px;color:var(--pg-muted);margin-right:6px}
+.cmp{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+@media (max-width:760px){.cmp{grid-template-columns:1fr}}
+.opt{background:var(--pg-card);border:1px solid var(--pg-line);border-radius:10px;padding:12px 14px;font-size:13px}
+.opt h3{margin:0 0 2px;font-size:13px}.opt p{margin:0 0 10px;color:var(--pg-muted)}
+
+/* ---------- Tokens Socle (copie de src/tokens) ---------- */
+.tk{--surface:#fff;--surface-side:#f3f3f3;--field:#f2f2f2;--hover:#e9e9e9;--selected:#dedede;--line:#e4e4e4;--line-strong:#cfcfcf;--fg:#1a1a1a;--fg-2:#5c5c5c;--fg-3:#6b6b6b;
+  --accent:#1d4ed8;--accent-text:#1d4ed8;--success:#15803d;--danger:#c62828;
+  --font-sans:-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;--font-mono:ui-monospace,"SF Mono","Cascadia Code",Consolas,monospace;
+  --fs-xs:11.5px;--fs-sm:12.5px;--fs-md:14px;--row-h:34px;--bar-h:44px;--pad:16px;--icon-btn:28px;--btn-h-sm:26px;--side-w:220px}
+:root[data-theme="dark"] .tk{--surface:#181818;--surface-side:#222;--field:#2a2a2a;--hover:#303030;--selected:#3d3d3d;--line:#333;--line-strong:#4a4a4a;--fg:#ececec;--fg-2:#ababab;--fg-3:#8f8f8f;--accent:#5b8def;--accent-text:#7da4f2;--success:#5cc98a;--danger:#f07167}
+.tk[data-density="desktop"]{--fs-xs:10.5px;--fs-sm:11.5px;--fs-md:13px;--row-h:28px;--bar-h:38px;--pad:12px;--icon-btn:24px;--btn-h-sm:24px}
+
+/* ---------- Écran : AppShell réduit ---------- */
+.app{display:grid;grid-template-columns:var(--side-w) 1fr;height:640px;border:1px solid var(--line);border-radius:10px;overflow:hidden;background:var(--surface);color:var(--fg);font-family:var(--font-sans);font-size:var(--fs-md)}
+@media (max-width:640px){.app{grid-template-columns:1fr}.side{display:none}}
+.side{background:var(--surface-side);padding:8px;display:flex;flex-direction:column;gap:2px}
+.side .it{height:var(--row-h);display:flex;align-items:center;padding:0 10px;border-radius:8px;color:var(--fg-2)}
+.side .it.on{background:var(--selected);color:var(--fg);font-weight:500}
+.main{display:flex;flex-direction:column;min-width:0;min-height:0}
+.top{height:var(--bar-h);display:flex;align-items:center;padding:0 var(--pad);border-bottom:1px solid var(--line);font-weight:600;gap:8px}
+.page{flex:1;min-height:0;display:grid;grid-template-columns:240px 1fr;gap:0}
+@media (max-width:900px){.page{grid-template-columns:1fr}.files{display:none}}
+.files{border-right:1px solid var(--line);padding:8px;overflow:auto}
+.files .f{height:var(--row-h);display:flex;align-items:center;gap:8px;padding:0 10px;border-radius:8px;cursor:default}
+.files .f.on{background:var(--selected)}
+.files .f .n{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-family:var(--font-mono);font-size:var(--fs-sm)}
+.content{padding:var(--pad);min-width:0;min-height:0;display:flex;flex-direction:column}
+
+/* ---------- DiffStat ---------- */
+.stat{font-family:var(--font-mono);font-size:var(--fs-sm);font-variant-numeric:tabular-nums;white-space:nowrap}
+.stat .a{color:var(--success)}.stat .r{color:var(--danger)}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+
+/* ---------- DiffView ---------- */
+.dv{--add:color-mix(in srgb,var(--success) 12%,var(--surface));--add-w:color-mix(in srgb,var(--success) 32%,var(--surface));
+  --del:color-mix(in srgb,var(--danger) 10%,var(--surface));--del-w:color-mix(in srgb,var(--danger) 30%,var(--surface));
+  display:flex;flex-direction:column;min-height:0;flex:1;border:1px solid var(--line);border-radius:8px;overflow:hidden;background:var(--surface)}
+.dv:focus-within:has(.scr:focus-visible){outline:2px solid var(--accent);outline-offset:1px}
+.bar{display:flex;align-items:center;gap:8px;min-height:var(--bar-h);padding:0 6px 0 12px;border-bottom:1px solid var(--line);background:var(--surface-side);font-size:var(--fs-sm);flex-wrap:wrap}
+.bar .name{font-family:var(--font-mono);font-weight:600;color:var(--fg);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.bar .sum{color:var(--fg-2)}
+.bar .sp{flex:1}
+.ib{width:var(--icon-btn);height:var(--icon-btn);display:inline-grid;place-items:center;border:0;border-radius:8px;background:transparent;color:var(--fg-2);cursor:default;position:relative}
+.ib:hover{background:var(--hover);color:var(--fg)}
+.ib[aria-pressed="true"]{background:var(--hover);color:var(--fg)}
+.ib:disabled{opacity:.4}
+.ib:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+.ib svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+.ib[data-tip]:hover::after{content:attr(data-tip);position:absolute;top:calc(100% + 6px);right:0;background:#1f1f1f;color:#f2f2f2;font-size:12px;padding:4px 8px;border-radius:6px;white-space:nowrap;z-index:5}
+.scr{flex:1;min-height:0;overflow:auto;font-family:var(--font-mono);font-size:var(--fs-sm);line-height:20px;outline:none}
+.rows{width:max-content;min-width:100%}
+.row{display:grid;height:20px;white-space:pre;position:relative}
+.u .row.l{grid-template-columns:4ch 4ch 20px 1fr}
+.s .rows{width:100%}.s .row.l{grid-template-columns:4ch minmax(0,1fr) 4ch minmax(0,1fr)}.s .half{overflow:hidden}
+.num{padding:0 6px;text-align:right;color:var(--fg-3);background:var(--surface-side);user-select:none}
+.s .num:nth-child(3){border-left:1px solid var(--line)}
+.half{display:flex;min-width:0}
+.sign{width:20px;flex:none;text-align:center;color:var(--fg-3);user-select:none}
+.txt{padding-right:16px}
+.is-add{background:var(--add)}.is-del{background:var(--del)}
+.num.is-add{background:var(--add-w);color:var(--fg)}.num.is-del{background:var(--del-w);color:var(--fg)}
+.is-add .sign{color:var(--success)}.is-del .sign{color:var(--danger)}
+.is-none{background:repeating-linear-gradient(-45deg,var(--surface-side) 0 4px,var(--surface) 4px 8px)}
+ins,del{text-decoration:none;border-radius:2px;color:inherit}
+ins{background:var(--add-w)}del{background:var(--del-w)}
+.row.cur::before{content:"";position:absolute;inset:0 auto 0 0;width:3px;background:var(--accent);z-index:1}
+.gap{display:flex;align-items:center;gap:8px;height:32px;padding:0 12px;border-block:1px solid var(--line);background:var(--surface-side);color:var(--fg-2);font-family:var(--font-sans);font-size:var(--fs-sm);position:sticky;left:0;width:100%}
+.btn{height:var(--btn-h-sm);padding:0 8px;border:0;border-radius:8px;background:transparent;color:var(--fg);font:inherit;font-weight:500;display:inline-flex;align-items:center;gap:6px;cursor:default}
+.btn:hover{background:var(--hover)}.btn:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+.btn svg{width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:1.6}
+.note{display:flex;align-items:center;height:32px;padding:0 12px;color:var(--fg-2);font-family:var(--font-sans);font-size:var(--fs-sm)}
+.empty{flex:1;display:grid;place-items:center;text-align:center;color:var(--fg-2);font-family:var(--font-sans);padding:32px}
+.empty b{display:block;color:var(--fg);font-size:var(--fs-md);margin-bottom:4px}
+
+/* Options de la question 1 */
+.mini{border:1px solid var(--line);border-radius:8px;background:var(--surface-side);padding:6px 8px;display:flex;gap:6px;align-items:center;font-family:var(--font-sans);font-size:var(--fs-sm);color:var(--fg)}
+.mini .sp{flex:1}
+.segm{display:inline-flex;background:var(--field);border-radius:8px;padding:2px}
+.segm span{padding:2px 8px;border-radius:6px}.segm span.on{background:var(--surface);box-shadow:0 1px 2px rgb(0 0 0 / .12)}
+.menu{padding:3px 8px;border-radius:8px;background:var(--field)}
+</style>
+</head>
+<body>
+<div class="pg">
+  <h1>DiffView — affichage de différences <span class="badge" id="badge">VALIDÉ le 2026-11-23</span></h1>
+  <p class="intro">Différences entre deux textes, ou lecture d'un diff unifié. Besoin venu d'Alfred (onglet « Modifications » d'un agent, historique d'un fichier). Test du générique : réussi. Toute app qui garde des versions (code, configuration, document, réglages) en a l'usage. Validation : par délégation de l'utilisateur, 2026-11-23.</p>
+
+  <div class="toolbar" role="group" aria-label="Bascules">
+    <span><span class="tlabel">Thème</span><span class="seg" data-k="theme"><button aria-pressed="true" data-v="light">Clair</button><button aria-pressed="false" data-v="dark">Sombre</button></span></span>
+    <span><span class="tlabel">Densité</span><span class="seg" data-k="density"><button aria-pressed="true" data-v="web">Web</button><button aria-pressed="false" data-v="desktop">Desktop</button></span></span>
+    <span><span class="tlabel">Contenu</span><span class="seg" data-k="content"><button aria-pressed="true" data-v="code">Code</button><button aria-pressed="false" data-v="md">Markdown</button><button aria-pressed="false" data-v="same">Identique</button><button aria-pressed="false" data-v="bin">Binaire</button></span></span>
+  </div>
+
+  <div class="boxes">
+    <div class="box">
+      <h2>Déjà décidé</h2>
+      <ul>
+        <li>Couleurs par rôles seulement : <code>--success</code>, <code>--danger</code>, <code>--accent</code> (D-012). Aucune couleur en dur.</li>
+        <li>Une information ne passe jamais par la couleur seule (principes, D-160).</li>
+        <li><code>IconButton</code> à bascule (<code>isSelected</code>), info-bulle et raccourci (D-032, D-034).</li>
+        <li><code>Button</code> <code>subtle</code> taille <code>sm</code> dans une zone dense (D-101).</li>
+        <li>Libellés internes dans le dictionnaire <code>messages</code> (D-089).</li>
+        <li>Chasse fixe <code>--font-mono</code>, comme <code>Code</code> en bloc (D-168).</li>
+      </ul>
+    </div>
+    <div class="box">
+      <h2>À décider (tranché par délégation)</h2>
+      <ol>
+        <li>Bascule entre « côte à côte » et « unifié » : A, B ou C ? <b>Retenu : A</b>.</li>
+        <li>Mode par défaut : côte à côte, unifié imposé sous 641 px. <b>Retenu</b>.</li>
+        <li>Fonds : mélange à 12 % (ligne) et 32 % (mots) du ton avec <code>--surface</code>, calculé dans le composant, sans nouveau token global. <b>Retenu</b>.</li>
+        <li>Repli : plus de 3 lignes inchangées de chaque côté d'un changement. <b>Retenu</b>.</li>
+        <li><code>DiffStat</code> (« +12 −3 ») exporté seul, pour une liste de fichiers. <b>Retenu</b>.</li>
+      </ol>
+    </div>
+  </div>
+
+  <h2 class="sec">Question 1 — la bascule de vue</h2>
+  <div class="cmp tk" id="q1">
+    <div class="opt"><h3>A. Bouton-icône à bascule <span class="reco">recommandé, retenu</span></h3><p>Un <code>IconButton</code> « Côte à côte » (<code>aria-pressed</code>). Rien de nouveau ; tient dans une barre étroite.</p>
+      <div class="mini"><b>config.yaml</b><span class="sp"></span><span class="ib" aria-pressed="true" style="display:inline-grid"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M12 4v16"/></svg></span></div></div>
+    <div class="opt"><h3>B. Contrôle segmenté</h3><p>« Côte à côte | Unifié ». Clair, mais ce composant n'existe pas dans Socle (spec RadioGroup) : il faudrait le créer.</p>
+      <div class="mini"><b>config.yaml</b><span class="sp"></span><span class="segm"><span class="on">Côte à côte</span><span>Unifié</span></span></div></div>
+    <div class="opt"><h3>C. Menu « Affichage »</h3><p>Un <code>Menu</code> à choix. Un clic de plus pour une action fréquente.</p>
+      <div class="mini"><b>config.yaml</b><span class="sp"></span><span class="menu">Affichage ▾</span></div></div>
+  </div>
+
+  <h2 class="sec">Dans l'écran — onglet « Modifications »</h2>
+  <p class="intro">Jouable : bouton « Côte à côte », « Afficher les lignes inchangées », « Afficher 9 lignes » dans un repli, changement suivant et précédent (boutons, ou F7, Maj+F7, Alt+↓, Alt+↑ dans le diff). Réduisez la fenêtre sous 641 px : la vue unifiée s'impose.</p>
+  <div class="tk" id="tk">
+    <div class="app">
+      <nav class="side"><div class="it">Accueil</div><div class="it on">Projets</div><div class="it">Agents</div><div class="it">Réglages</div></nav>
+      <div class="main">
+        <div class="top">Projet Atlas · Modifications</div>
+        <div class="page">
+          <div class="files" id="files"></div>
+          <div class="content" id="content"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <h2 class="sec">Ce qui ne se joue pas ici</h2>
+  <ul>
+    <li>Diff de plusieurs fichiers (option <code>patch</code>) : un en-tête de fichier collant par fichier, avec statut (« Ajouté », « Supprimé », « Renommé ») et <code>DiffStat</code>.</li>
+    <li>Gros fichiers : seules les rangées visibles sont dessinées ; hauteur de rangée fixe de 20 px dans les deux densités.</li>
+    <li>Mode contraste élevé : mots retirés barrés, mots ajoutés soulignés, signes en gras.</li>
+    <li>Lecteur d'écran : chaque ligne changée commence par « Ajoutée : » ou « Retirée : » ; le changement courant est annoncé (« Changement 2 sur 3 : avant, ligne 7 ; après, lignes 7 à 8 »).</li>
+  </ul>
+</div>
+
+<script>
+const T = {
+  code: { name: "src/config/server.ts",
+    before: "import { readFile } from \"node:fs/promises\";\n\nexport interface ServerConfig {\n  host: string;\n  port: number;\n  timeout: number;\n}\n\nconst defaults: ServerConfig = {\n  host: \"localhost\",\n  port: 8080,\n  timeout: 30,\n};\n\nexport async function loadConfig(path: string) {\n  const raw = await readFile(path, \"utf8\");\n  const data = JSON.parse(raw);\n  return { ...defaults, ...data };\n}\n\nexport function describe(config: ServerConfig) {\n  return `${config.host}:${config.port}`;\n}\n\nexport function isLocal(config: ServerConfig) {\n  return config.host === \"localhost\";\n}\n",
+    after: "import { readFile } from \"node:fs/promises\";\n\nexport interface ServerConfig {\n  host: string;\n  port: number;\n  timeoutSeconds: number;\n  retries: number;\n}\n\nconst defaults: ServerConfig = {\n  host: \"localhost\",\n  port: 8080,\n  timeoutSeconds: 30,\n  retries: 3,\n};\n\nexport async function loadConfig(path: string) {\n  const raw = await readFile(path, \"utf8\");\n  const data = JSON.parse(raw);\n  return { ...defaults, ...data };\n}\n\nexport function describe(config: ServerConfig) {\n  return `${config.host}:${config.port}`;\n}\n\nexport function isLocal(config: ServerConfig) {\n  return config.host === \"127.0.0.1\";\n}\n" },
+  md: { name: "docs/guide.md",
+    before: "# Guide\n\nCe guide explique l'installation.\n\n## Installation\n\nLancez la commande suivante.\nPuis ouvrez l'application.\n\n## Aide\n\nÉcrivez au support.\n",
+    after: "# Guide\n\nCe guide explique l'installation et la mise à jour.\n\n## Installation\n\nLancez la commande suivante.\nPuis ouvrez l'application.\n\n## Mise à jour\n\nRelancez la même commande.\n\n## Aide\n\nÉcrivez au support.\n" },
+  same: { name: "package.json", before: "{\n  \"name\": \"atlas\"\n}\n", after: "{\n  \"name\": \"atlas\"\n}\n" },
+  bin: { name: "assets/logo.png", binary: true },
+};
+const S = { theme: "light", density: "web", content: "code", split: true, showAll: false, open: new Set(), cur: -1 };
+const narrow = matchMedia("(max-width: 640px)");
+const esc = s => s.replace(/&/g,"&amp;").replace(/</g,"&lt;");
+const lines = t => t.replace(/\n$/,"").split("\n");
+
+function lcs(a, b) { // diff ligne à ligne (programmation dynamique ; la vraie version : Myers)
+  const n=a.length,m=b.length,d=Array.from({length:n+1},()=>new Int32Array(m+1));
+  for(let i=n-1;i>=0;i--)for(let j=m-1;j>=0;j--)d[i][j]=a[i]===b[j]?d[i+1][j+1]+1:Math.max(d[i+1][j],d[i][j+1]);
+  const out=[];let i=0,j=0;
+  while(i<n||j<m){ if(i<n&&j<m&&a[i]===b[j]){out.push({k:"c",t:b[j],o:i+1,n:j+1});i++;j++;}
+    else if(j<m&&(i===n||d[i][j+1]>=d[i+1][j])){out.push({k:"a",t:b[j],n:j+1});j++;} else {out.push({k:"d",t:a[i],o:i+1});i++;} }
+  // retirées avant ajoutées dans un même changement
+  const res=[];for(let x=0;x<out.length;){ if(out[x].k==="c"){res.push(out[x++]);continue;} const r=[],ad=[]; while(x<out.length&&out[x].k!=="c"){(out[x].k==="d"?r:ad).push(out[x]);x++;} res.push(...r,...ad);} return res;
+}
+function words(a,b){ const tok=/[\p{L}\p{N}_]+|\s+|[^\p{L}\p{N}_\s]/gu; const A=a.match(tok)||[],B=b.match(tok)||[];
+  const ops=lcs(A,B); let common=0; const ra=[],rb=[];
+  for(const o of ops){ if(o.k==="c"){common+=o.t.trim().length;ra.push(esc(o.t));rb.push(esc(o.t));} else if(o.k==="d")ra.push("<del>"+esc(o.t)+"</del>"); else rb.push("<ins>"+esc(o.t)+"</ins>"); }
+  const vis=Math.max(a.replace(/\s/g,"").length,b.replace(/\s/g,"").length);
+  if(vis&&common/vis<0.4) return null; return [ra.join("").replace(/<\/del><del>/g,""),rb.join("").replace(/<\/ins><ins>/g,"")]; }
+
+function model(doc){
+  const L=lcs(lines(doc.before),lines(doc.after)); const ctx=3, shown=L.map(()=>0);
+  L.forEach((l,i)=>{ if(l.k!=="c") for(let j=Math.max(0,i-ctx);j<=Math.min(L.length-1,i+ctx);j++) shown[j]=1; });
+  const seg=[]; for(let i=0;i<L.length;){let j=i;while(j<L.length&&shown[j]===shown[i])j++; const run=L.slice(i,j);
+    if(shown[i]||run.length<4){const last=seg[seg.length-1]; if(last&&last.type==="l")last.lines.push(...run); else seg.push({type:"l",lines:run});} else seg.push({type:"g",lines:run,id:i}); i=j;}
+  return {L,seg,add:L.filter(l=>l.k==="a").length,del:L.filter(l=>l.k==="d").length};
+}
+const SIGN={c:" ",a:"+",d:"−"}, SAY={c:"",a:"Ajoutée : ",d:"Retirée : "}, CLS={c:"",a:"is-add",d:"is-del"};
+const sign=l=>`<span class="sign"><span aria-hidden="true">${SIGN[l.k]}</span>${SAY[l.k]?`<span class="sr">${SAY[l.k]}</span>`:""}</span>`;
+const stat=(a,r)=>`<span class="stat"><span class="a" aria-hidden="true">+${a}</span> <span class="r" aria-hidden="true">−${r}</span><span class="sr">${a} ligne${a>1?"s":""} ajoutée${a>1?"s":""}, ${r} retirée${r>1?"s":""}</span></span>`;
+const ICON={split:'<svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M12 4v16"/></svg>',
+  unfold:'<svg viewBox="0 0 24 24"><path d="M12 22v-6M12 8V2M4 12H2M10 12H8M16 12h-2M22 12h-2M15 19l-3 3-3-3M15 5l-3-3-3 3"/></svg>',
+  up:'<svg viewBox="0 0 24 24"><path d="m18 15-6-6-6 6"/></svg>',down:'<svg viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg>'};
+
+function render(){
+  document.documentElement.dataset.theme=S.theme; document.getElementById("tk").dataset.density=S.density;
+  const files=document.getElementById("files");
+  files.innerHTML=Object.entries(T).map(([k,d])=>{const m=d.binary?null:model(d); return `<div class="f${k===S.content?" on":""}" data-f="${k}"><span class="n">${d.name}</span>${m&&(m.add||m.del)?stat(m.add,m.del):""}</div>`;}).join("");
+  files.querySelectorAll(".f").forEach(f=>f.onclick=()=>{S.content=f.dataset.f;S.open.clear();S.cur=-1;sync();render();});
+  const doc=T[S.content], c=document.getElementById("content"), split=S.split&&!narrow.matches;
+  if(doc.binary){ c.innerHTML=`<div class="dv"><div class="bar"><span class="name">${doc.name}</span><span class="sum">Fichier binaire</span></div><div class="note">Fichier binaire : contenu non comparé.</div></div>`; return; }
+  const m=model(doc); const changes=[]; let html="";
+  const pushChange=(r,a)=>{changes.push({r,a});return changes.length-1;};
+  let rowIdx=0;
+  for(const s of m.seg){
+    if(s.type==="g"&&!(S.showAll||S.open.has(s.id))){ html+=`<div class="gap">${s.lines.length} lignes inchangées<button class="btn" data-open="${s.id}">${ICON.unfold}Afficher ${s.lines.length} lignes</button></div>`; continue; }
+    const ls=s.lines; for(let i=0;i<ls.length;){
+      if(ls[i].k==="c"){ const l=ls[i++]; html+= split?`<div class="row l"><span class="num">${l.o}</span><span class="half">${sign(l)}<span class="txt">${esc(l.t)}</span></span><span class="num">${l.n}</span><span class="half">${sign(l)}<span class="txt">${esc(l.t)}</span></span></div>`
+        :`<div class="row l"><span class="num">${l.o}</span><span class="num">${l.n}</span>${sign(l)}<span class="txt">${esc(l.t)}</span></div>`; continue; }
+      const r=[],a=[]; while(i<ls.length&&ls[i].k==="d")r.push(ls[i++]); while(i<ls.length&&ls[i].k==="a")a.push(ls[i++]);
+      const ch=pushChange(r,a), cur=ch===S.cur?" cur":"";
+      const w=(x,y,side)=>{ if(!x) return null; if(!y) return esc(x.t); const p=words(side==="d"?x.t:y.t, side==="d"?y.t:x.t); return p?(side==="d"?p[0]:p[1]):esc(x.t); };
+      if(split){ for(let k=0;k<Math.max(r.length,a.length);k++){ const L=r[k],R=a[k];
+        html+=`<div class="row l${cur}">${L?`<span class="num is-del">${L.o}</span><span class="half is-del">${sign(L)}<span class="txt">${w(L,R,"d")}</span></span>`:`<span class="num"></span><span class="half is-none"></span>`}${R?`<span class="num is-add">${R.n}</span><span class="half is-add">${sign(R)}<span class="txt">${w(R,L,"a")}</span></span>`:`<span class="num"></span><span class="half is-none"></span>`}</div>`; } }
+      else { r.forEach((l,k)=>html+=`<div class="row l is-del${cur}"><span class="num is-del">${l.o}</span><span class="num is-del"></span>${sign(l)}<span class="txt">${w(l,a[k],"d")}</span></div>`);
+        a.forEach((l,k)=>html+=`<div class="row l is-add${cur}"><span class="num is-add"></span><span class="num is-add">${l.n}</span>${sign(l)}<span class="txt">${w(l,r[k],"a")}</span></div>`); }
+    }
+  }
+  const foldable=m.seg.some(s=>s.type==="g");
+  const sum=changes.length?`${changes.length} changement${changes.length>1?"s":""}`:"Aucune différence";
+  c.innerHTML=`<div class="dv ${split?"s":"u"}"><div class="bar" role="toolbar" aria-label="Affichage des différences"><span class="name">${doc.name}</span><span class="sum">${sum}</span>${m.add||m.del?stat(m.add,m.del):""}<span class="sp"></span>
+    ${narrow.matches?"":`<button class="ib" aria-label="Côte à côte" data-tip="Côte à côte" aria-pressed="${S.split}" id="b-split">${ICON.split}</button>`}
+    ${foldable?`<button class="ib" aria-label="Afficher les lignes inchangées" data-tip="Afficher les lignes inchangées" aria-pressed="${S.showAll}" id="b-all">${ICON.unfold}</button>`:""}
+    <button class="ib" aria-label="Changement précédent" data-tip="Changement précédent (Maj+F7)" id="b-prev" ${changes.length?"":"disabled"}>${ICON.up}</button>
+    <button class="ib" aria-label="Changement suivant" data-tip="Changement suivant (F7)" id="b-next" ${changes.length?"":"disabled"}>${ICON.down}</button>
+    <span class="sr" aria-live="polite" id="live"></span></div>
+    ${changes.length?`<section class="scr" tabindex="0" aria-label="Modifications de ${doc.name}" id="scr"><div class="rows">${html}</div></section>`:`<div class="empty"><div><b>Aucune différence</b>Les deux versions sont identiques.</div></div>`}</div>`;
+  const $=id=>document.getElementById(id);
+  $("b-split")&&($("b-split").onclick=()=>{S.split=!S.split;render();});
+  $("b-all")&&($("b-all").onclick=()=>{S.showAll=!S.showAll;render();});
+  c.querySelectorAll("[data-open]").forEach(b=>b.onclick=()=>{S.open.add(+b.dataset.open);render();});
+  const go=d=>{ if(!changes.length)return; S.cur=S.cur<0?(d>0?0:changes.length-1):(S.cur+d+changes.length)%changes.length; render();
+    const ch=changes[S.cur], sp=x=>x.length?(x.length>1?`lignes ${x[0][x===ch.r?"o":"n"]} à ${x[x.length-1][x===ch.r?"o":"n"]}`:`ligne ${x[0][x===ch.r?"o":"n"]}`):"";
+    $("live").textContent=`Changement ${S.cur+1} sur ${changes.length}`+[ch.r.length?" : avant, "+sp(ch.r):"",ch.a.length?" ; après, "+sp(ch.a):""].join("");
+    const el=c.querySelector(".row.cur"); el&&el.scrollIntoView({block:"center"}); $("scr").focus(); };
+  $("b-prev").onclick=()=>go(-1); $("b-next").onclick=()=>go(1);
+  $("scr")&&($("scr").onkeydown=e=>{ const f=(e.key==="F7"&&!e.shiftKey)||(e.altKey&&e.key==="ArrowDown"), b=(e.key==="F7"&&e.shiftKey)||(e.altKey&&e.key==="ArrowUp"); if(f||b){e.preventDefault();go(f?1:-1);} });
+}
+function sync(){ document.querySelectorAll(".seg").forEach(g=>g.querySelectorAll("button").forEach(b=>b.setAttribute("aria-pressed",String(S[g.dataset.k]===b.dataset.v)))); }
+document.querySelectorAll(".seg").forEach(g=>g.querySelectorAll("button").forEach(b=>b.onclick=()=>{S[g.dataset.k]=b.dataset.v; if(g.dataset.k==="content"){S.open.clear();S.cur=-1;} sync(); render();}));
+narrow.addEventListener("change",render);
+render();
+</script>
+</body>
+</html>

@@ -137,3 +137,16 @@ export const Clock = icon(
 );
 export const ListX = icon(<path d="M11 12H3M16 6H3M16 18H3M19 10l-4 4M15 10l4 4" />, "ListX");
 export const ArrowDownToLine = icon(<path d="M12 17V3M6 11l6 6 6-6M19 21H5" />, "ArrowDownToLine");
+/** Deux colonnes : vue côte à côte (DiffView, D-291). */
+export const Columns = icon(
+  <>
+    <rect x="3" y="4" width="18" height="16" rx="2" />
+    <path d="M12 4v16" />
+  </>,
+  "Columns",
+);
+/** Lignes inchangées dépliées (DiffView, D-295). Lucide « unfold-vertical ». */
+export const UnfoldVertical = icon(
+  <path d="M12 22v-6M12 8V2M4 12H2M10 12H8M16 12h-2M22 12h-2M15 19l-3 3-3-3M15 5l-3-3-3 3" />,
+  "UnfoldVertical",
+);

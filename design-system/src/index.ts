@@ -130,3 +130,5 @@ export type { TerminalProps, TerminalHandle, TerminalConnection, TerminalState }
 export type { TerminalEngine, TerminalEngineSource } from "./components/Terminal/terminalEngine";
 export { LogViewer } from "./components/LogViewer/LogViewer";
 export type { LogViewerProps, LogViewerHandle, LogViewerView, LogLevelFilter, LogLine, LogLevel } from "./components/LogViewer/LogViewer";
+export { DiffView, DiffStat } from "./components/DiffView/DiffView";
+export type { DiffViewProps, DiffViewMode, DiffStatProps } from "./components/DiffView/DiffView";
