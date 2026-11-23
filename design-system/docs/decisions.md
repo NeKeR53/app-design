@@ -1050,7 +1050,7 @@
 ## D-159 — Pas de bandeau pleine largeur ; avenir de FeedbackBanner
 - Date : 2026-11-23
 - Portée : global (layout-rules)
-- Décision : aucune app n'affiche de bandeau pleine largeur sous la barre du haut. Un état durable de la page ou de l'app (hors ligne, lecture seule) se signale dans la barre du haut, par un indicateur compact. Un message local reste un encart dans le contenu (comme D-085). Le résultat d'une action va dans un toast. L'indicateur de barre du haut et l'encart feront chacun une proposition à part ; l'apparence `bar` de `FeedbackBanner` (Alfred) n'a pas d'équivalent. L'indicateur de barre du haut est défini par D-251.
+- Décision : aucune app n'affiche de bandeau pleine largeur sous la barre du haut. Un état durable de la page ou de l'app (hors ligne, lecture seule) se signale dans la barre du haut, par un indicateur compact. Un message local reste un encart dans le contenu (comme D-085). Le résultat d'une action va dans un toast. L'indicateur de barre du haut et l'encart feront chacun une proposition à part ; l'apparence `bar` de `FeedbackBanner` (Alfred) n'a pas d'équivalent. L'indicateur de barre du haut, défini par D-251, est retiré par D-253 : la partie « indicateur compact » de cette décision est remplacée par D-253.
 - Raison : choix de l'utilisateur ; un bandeau décale tout le contenu et se confond avec la barre.
 - Options écartées : bandeau pleine largeur.
 - Validation : par délégation de l'utilisateur, 2026-11-23 — docs/validation/components/Notifications-v1.html
@@ -2278,7 +2278,7 @@
 - Options écartées : cycle sections, formulaire, large (Alfred, OneApp).
 - Validation : par délégation de l'utilisateur, 2026-11-23 — docs/validation/components/DetailPanel-width-v1.html
 
-## D-250 — Barre du haut : résumé après le titre
+## D-250 — Barre du haut : résumé après le titre (retirée par D-253)
 - Date : 2026-11-23
 - Portée : AppShell
 - Décision : l'option `pageSummary` d'AppShell est un texte court qui suit le nom de la page (et l'état, D-251), après un trait vertical de 16 px en `--line` : « 3 personnes · 2 en écart · 6 environnements ». Texte seul, en `--fs-sm` et `--fg-2`, sur une ligne, 320 px ou 30 % de la barre au plus ; coupé avec une ellipse, texte complet en info-bulle s'il est coupé. Il se coupe avant le titre et avant les vues. Il est masqué sur mobile.
@@ -2286,7 +2286,7 @@
 - Options écartées : étiquettes ou pastilles dans le résumé (trop de couleur dans la barre, D-160) ; résumé dans l'en-tête du gabarit (la barre du haut est la seule à rester visible quand la page défile).
 - Validation : par délégation de l'utilisateur, 2026-11-23 — docs/validation/components/AppShell-summary-v1.html
 
-## D-251 — Barre du haut : indicateur d'état durable de la page
+## D-251 — Barre du haut : indicateur d'état durable de la page (retirée par D-253)
 - Date : 2026-11-23
 - Portée : AppShell, layout-rules (suite de D-159)
 - Décision : l'option `pageStatus` d'AppShell, `{ label, tone?, description?, menu? }`, montre un état durable de la page ou de l'app (« Lecture seule », « Hors ligne », « Exemple ») juste après le titre. Cadre de 24 px de haut, bord `--line`, rayon 8 px, fond `--surface` ; dedans, le `StatusBadge` du ton (point et libellé, D-160). Largeur de 160 px au plus (120 px sur mobile), libellé coupé au-delà. Avec `menu`, c'est un bouton qui ouvre un `Menu` sous lui (« Quitter les données d'exemple ») ; son nom est « {label} : {description} ». Sans menu et avec `description`, il prend le focus et l'info-bulle donne la phrase. Sans `description` ni `menu`, il n'est pas focusable.
@@ -2294,10 +2294,18 @@
 - Options écartées : pastille teintée parmi les actions, à droite (Alfred : plus de couleur, mêlée aux actions) ; bandeau sous la barre (exclu par D-159).
 - Validation : par délégation de l'utilisateur, 2026-11-23 — docs/validation/components/AppShell-summary-v1.html
 
-## D-252 — État de la page : un seul, annoncé
+## D-252 — État de la page : un seul, annoncé (retirée par D-253)
 - Date : 2026-11-23
 - Portée : AppShell
 - Décision : une page montre un seul état à la fois : l'app choisit le plus important. Quand l'état apparaît ou change, une zone `role="status"` cachée l'annonce au lecteur d'écran (« Hors ligne : … »). Ordre dans la barre : titre, état, trait, résumé, trait, vues, puis les actions.
 - Raison : deux pastilles côte à côte se lisent mal ; un état qui change sans annonce passe inaperçu sans la vue.
 - Options écartées : liste d'états ; annonce par un toast (le toast est réservé au résultat d'une action, D-159).
 - Validation : par délégation de l'utilisateur, 2026-11-23 — docs/validation/components/AppShell-summary-v1.html
+
+## D-253 — Barre du haut : ni résumé ni indicateur d'état
+- Date : 2026-11-23
+- Portée : AppShell, layout-rules (remplace D-250, D-251, D-252 et la partie « indicateur compact » de D-159)
+- Décision : la barre du haut ne montre ni résumé après le titre ni indicateur d'état de la page. Les options `pageSummary` et `pageStatus` d'AppShell et le type `PageStatus` sont retirés. Après le titre ne viennent que les onglets de vues (D-021). Un état durable de la page ou de l'app (lecture seule, hors ligne, données d'exemple) se dit dans le contenu de la page, par un encart local (D-085) ; jamais par un bandeau pleine largeur (D-159). Un chiffre clé de la page va dans l'en-tête du gabarit ou dans le contenu.
+- Raison : choix de l'utilisateur à la relecture de la page de validation : il ne veut ni état ni résumé dans la barre du haut.
+- Options écartées : garder `pageSummary` seul ; garder `pageStatus` seul ; garder les deux en les cachant par défaut.
+- Validation : décision de l'utilisateur, 2026-11-23 — docs/validation/components/AppShell-summary-v1.html (marquée RETIRÉ)

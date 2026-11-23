@@ -6,7 +6,7 @@ Ces règles s'appliquent à toutes les apps. Si aucune règle ne couvre un cas, 
 
 | Zone | Ce qui y va | Ce qui n'y va pas |
 |---|---|---|
-| `topbar` | Bouton de repli de la sidebar, précédent/suivant, **nom de la page**, **onglets des vues de la page** (D-021), actions de la page (`ActionBar` `topbar` : icônes, « … », action principale à texte, D-220), cloche du centre de notifications (D-157), état durable de la page en indicateur compact, juste après le titre (D-159, D-251), résumé court après le titre (D-250), bouton du panneau de détail (icône liste), commandes (Mod+K). En Tauri, la place des boutons de fenêtre (D-020). | Les filtres, la recherche dans une liste, les actions sur un élément précis. Aucun bandeau pleine largeur dessous (D-159). |
+| `topbar` | Bouton de repli de la sidebar, précédent/suivant, **nom de la page**, **onglets des vues de la page** (D-021), actions de la page (`ActionBar` `topbar` : icônes, « … », action principale à texte, D-220), cloche du centre de notifications (D-157), bouton du panneau de détail (icône liste), commandes (Mod+K). En Tauri, la place des boutons de fenêtre (D-020). | Les filtres, la recherche dans une liste, les actions sur un élément précis. Aucun bandeau pleine largeur dessous (D-159). |
 | `sidebar` → navigation | Les pages principales : une icône, puis un libellé. Une action facultative peut apparaître au survol (D-002). | Les vues d'une page : elles sont dans les onglets (D-021). |
 | `sidebar` → sections | Des sections repliables, qui contiennent soit des éléments de navigation, soit des éléments sur deux lignes avec enfants (D-002). | Des réglages, ou du contenu de travail. |
 | `sidebar` → `footer` | Trois pages fixes au plus (assistant, aide, corbeille), toujours visibles (D-230). | Des sections, du contenu qui s'allonge. |
@@ -24,7 +24,7 @@ Ces règles s'appliquent à toutes les apps. Si aucune règle ne couvre un cas, 
 - **Mobile** : barre d'onglets en bas. « Plus » ouvre une feuille sans les entrées déjà présentes dans les onglets (D-003, D-019).
 - **Réglages** : modale sur bureau et tablette, plein écran sur mobile (D-015).
 - **Points de rupture** : 640 et 1024 px (D-013).
-- **Messages** (D-159) : le résultat d'une action va dans un toast (D-154), avec « Annuler » si l'action se défait (D-007) ; un événement passé va dans le centre de notifications (D-156) ; un état durable de la page ou de l'app (hors ligne, lecture seule) va dans la barre du haut, après le titre, par `pageStatus` : un seul à la fois (D-251, D-252) ; un message local reste un encart dans la zone concernée (D-085). Jamais de bandeau pleine largeur.
+- **Messages** (D-159) : le résultat d'une action va dans un toast (D-154), avec « Annuler » si l'action se défait (D-007) ; un événement passé va dans le centre de notifications (D-156) ; un état durable de la page ou de l'app (hors ligne, lecture seule) se dit dans le contenu, par un encart local (D-085, D-253) ; rien après le titre de la barre du haut, sauf les vues ; un message local reste un encart dans la zone concernée (D-085). Jamais de bandeau pleine largeur.
 - **Échap** ferme ce qui flotte (overlay, feuille, détail en overlay, modale, menu).
 - **Fenêtre secondaire** : `Dialog`, au-dessus de l'AppShell. Pied calé à droite : « Annuler », puis l'action (D-124). Sur mobile, `sm` et `md` centrées, `lg` et `xl` en plein écran (D-121).
 - **Confirmation** : seulement avant une action irréversible (D-007), par `useConfirm` : titre en question, phrase de conséquence, bouton au verbe de l'action (D-126 à D-128).

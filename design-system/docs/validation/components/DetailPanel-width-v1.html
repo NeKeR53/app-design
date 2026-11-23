@@ -78,7 +78,7 @@ h2.sec{font-size:16px;margin:28px 0 8px}
 .detail.form{width:var(--detail-w-form)}
 .detail.wide{width:960px;flex-shrink:1;min-width:var(--detail-w)}
 .main.keep{min-width:360px}
-.handle{position:absolute;top:0;bottom:0;left:-3px;width:6px;cursor:col-resize}.handle:hover{background:var(--line)}
+.handle{position:absolute;top:0;bottom:0;left:-3px;width:6px;cursor:col-resize;z-index:5;touch-action:none}.handle:hover,.handle:focus-visible{background:var(--line);outline:none}.handle:focus-visible{background:var(--accent)}
 .fld{display:flex;flex-direction:column;gap:4px;margin:0 0 12px}.fld label{font-size:var(--fs-sm);color:var(--fg-2)}.fld input,.fld textarea{font:inherit;border:1px solid var(--line-strong);border-radius:var(--radius-md);background:var(--surface);color:var(--fg);padding:6px 8px}
 .code{font-family:ui-monospace,monospace;font-size:var(--fs-sm);background:var(--field);border-radius:var(--radius-md);padding:10px;white-space:pre;overflow:auto}
 </style>
@@ -120,6 +120,7 @@ h2.sec{font-size:16px;margin:28px 0 8px}
 <div class="box"><ul>
 <li>Agrandir : bouton bascule (<code>aria-pressed</code>), nommé « Agrandir le panneau de détail » ; icône flèches vers l'extérieur, puis vers l'intérieur. Visible sur bureau, quand le panneau est ouvert.</li>
 <li>Large : 960 px au plus ; le contenu garde au moins 360 px ; la sidebar ne bouge pas. Pas de poignée en mode large. Réduire rend la largeur d'avant.</li>
+<li>Poignée (D-025) : glissez le bord gauche du panneau, de 240 à 480 px ; flèches par 16 px ; double-clic pour revenir à la largeur de départ.</li>
 <li>Mémoire : l'état large est mémorisé ; la largeur réglée l'est pour <code>default</code> et pour <code>form</code>, chacune à part. Double-clic : retour au défaut de la page.</li>
 <li>Tablette et mobile : ni bouton ni mode large (overlay et plein écran, D-018).</li>
 <li>Aucune animation (D-026).</li>
@@ -149,14 +150,27 @@ function listHTML(){return ['Rapport trimestriel','Plan de charge 2027','Compte 
 function detailHTML(){return '<h4>Propriétés</h4><dl><div class="prop"><dt>Auteur</dt><dd>Inès Moreau</dd></div><div class="prop"><dt>Modifié</dt><dd>21 nov. 2026</dd></div><div class="prop"><dt>Statut</dt><dd>En relecture</dd></div><div class="prop"><dt>Dossier</dt><dd>Direction</dd></div></dl>';}
 </script>
 <script>
-var st={k:'default',x:'on',wide:false};
+var st={k:'default',x:'on',wide:false,w:{default:null,form:null}};
 function formHTML(){return '<h4>Modifier le contact</h4><div class="fld"><label>Nom</label><input value="Inès Moreau"></div><div class="fld"><label>Adresse e-mail</label><input value="ines.moreau@example.com"></div><div class="fld"><label>Note</label><textarea rows="4">Rappeler avant la réunion du comité.</textarea></div>';}
 function render(){
   var app=document.getElementById('app');
   var cls='detail'+(st.wide?' wide':(st.k==='form'?' form':''));
   var exp=st.x==='on'?ib(st.wide?'min':'max','Agrandir le panneau de détail','aria-pressed="'+st.wide+'" id="exp"'):'';
-  app.innerHTML='<header class="top">'+leadHTML()+'<div class="rest"><h1>Contacts</h1><span style="flex:1"></span>'+ib('search','Rechercher')+exp+ib('list','Panneau de détail','aria-pressed="true"')+'</div></header><div class="body">'+sideHTML('contacts')+'<main class="main'+(st.wide?' keep':'')+'">'+listHTML()+'</main><aside class="'+cls+'">'+(st.wide?'':'<div class="handle" title="Largeur du panneau de détail"></div>')+(st.k==='form'?formHTML():detailHTML())+'</aside></div>';
+  app.innerHTML='<header class="top">'+leadHTML()+'<div class="rest"><h1>Contacts</h1><span style="flex:1"></span>'+ib('search','Rechercher')+exp+ib('list','Panneau de détail','aria-pressed="true"')+'</div></header><div class="body">'+sideHTML('contacts')+'<main class="main'+(st.wide?' keep':'')+'">'+listHTML()+'</main><aside class="'+cls+'">'+(st.wide?'':'<div class="handle" role="separator" aria-orientation="vertical" tabindex="0" aria-label="Largeur du panneau de détail" title="Glisser pour régler la largeur ; double-clic : largeur par défaut"></div>')+(st.k==='form'?formHTML():detailHTML())+'</aside></div>';
   var e=document.getElementById('exp');if(e)e.onclick=function(){st.wide=!st.wide;render();};
+  // Poignée jouable (D-025) : glisser de 240 à 480 px, flèches par 16 px, double-clic pour revenir au défaut de la page (D-240).
+  var aside=app.querySelector('aside.detail'),h=app.querySelector('.handle');
+  if(!st.wide&&st.w[st.k])aside.style.width=st.w[st.k]+'px';
+  if(h){
+    var clamp=function(v){return Math.round(Math.min(480,Math.max(240,v)));};
+    var set=function(v){st.w[st.k]=clamp(v);aside.style.width=st.w[st.k]+'px';h.setAttribute('aria-valuenow',st.w[st.k]);document.getElementById('explain').textContent='Largeur du panneau : '+st.w[st.k]+' px (réglée à la poignée, mémorisée pour « '+st.k+' »).';};
+    h.setAttribute('aria-valuemin','240');h.setAttribute('aria-valuemax','480');
+    h.onpointerdown=function(ev){ev.preventDefault();var x0=ev.clientX,w0=aside.getBoundingClientRect().width;h.setPointerCapture(ev.pointerId);
+      h.onpointermove=function(m){set(w0+(x0-m.clientX));};
+      h.onpointerup=function(){h.onpointermove=null;h.onpointerup=null;};};
+    h.ondblclick=function(){st.w[st.k]=null;render();};
+    h.onkeydown=function(k){if(k.key!=='ArrowLeft'&&k.key!=='ArrowRight')return;k.preventDefault();set(aside.getBoundingClientRect().width+(k.key==='ArrowLeft'?16:-16));};
+  }
   var w=app.querySelector('aside.detail').getBoundingClientRect().width;
   document.getElementById('explain').textContent='Largeur du panneau : '+Math.round(w)+' px ('+(st.wide?'large':st.k==='form'?'formulaire, --detail-w-form':'sections, --detail-w')+').';
 }

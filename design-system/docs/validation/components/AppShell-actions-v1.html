@@ -181,6 +181,10 @@ function render(){
   document.getElementById('explain').textContent=(r.text?'Bouton à texte visible. ':'Bouton à texte replié en tête de « … ». ')+r.icons.length+' icône(s) visible(s)'+(narrow?' (sous 640 px, D-117).':'.')+' Faites glisser la largeur pour voir le repli.';
 }
 themeBar(render);
+
+// Un menu ouvert se ferme par un clic à côté ou par Échap, et rend le focus à son bouton (comme le Menu de Socle).
+document.addEventListener('pointerdown',function(e){if(st.menu&&!e.target.closest('.menu')&&!e.target.closest('#ws,#more,#pill')){st.menu=false;render();}});
+document.addEventListener('keydown',function(e){if(e.key==='Escape'&&st.menu){st.menu=false;render();var t=document.getElementById('ws')||document.getElementById('more');t&&t.focus();}});
 seg('t-opt',[['A','A (reco)'],['B','B'],['C','C']],'A',function(v){st.opt=v;if(v==='B'){ACTIONS[0].icon=undefined;}render();});
 seg('t-state',[['normal','Normal'],['pending','Attente'],['disabled','Désactivé'],['menu','Menu ouvert']],'normal',function(v){st.state=v;st.menu=v==='menu';render();});
 var wi=document.getElementById('t-w');wi.max=Math.min(1180,document.querySelector('.pg').clientWidth-32);wi.value=wi.max;st.w=+wi.value;wi.oninput=function(){st.w=+wi.value;render();};
