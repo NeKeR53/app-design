@@ -106,6 +106,7 @@ export type {
   FormSubmitResult,
 } from "./lib/form";
 export { SettingsPage } from "./templates/SettingsPage/SettingsPage";
+export type {
   SettingsPageProps,
   SettingsGroup,
   SettingsCategory,
