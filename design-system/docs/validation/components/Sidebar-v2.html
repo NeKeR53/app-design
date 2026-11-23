@@ -1,0 +1,198 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sidebar — validation v2</title>
+<style>
+/* ---------- Page de validation ---------- */
+:root{--pg-bg:#f6f6f6;--pg-fg:#1a1a1a;--pg-muted:#5c5c5c;--pg-line:#e2e2e2;--pg-card:#fff;--pg-badge:#fff4d6;--pg-badge-fg:#7a5a00;--pg-reco:#e7f0ff;--pg-reco-fg:#1d4ed8}
+:root[data-theme="dark"]{--pg-bg:#121212;--pg-fg:#ececec;--pg-muted:#9a9a9a;--pg-line:#2c2c2c;--pg-card:#1b1b1b;--pg-badge:#3a2f10;--pg-badge-fg:#f3d27a;--pg-reco:#16233d;--pg-reco-fg:#9cc0ff}
+*{box-sizing:border-box}html,body{margin:0}
+body{background:var(--pg-bg);color:var(--pg-fg);font:15px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif}
+.pg{max-width:1100px;margin:0 auto;padding:24px 16px 64px}
+h1{font-size:22px;font-weight:600;margin:0 0 4px;display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.lead{color:var(--pg-muted);margin:0 0 20px}
+.badge{font-size:12px;font-weight:600;letter-spacing:.04em;padding:3px 8px;border-radius:6px;background:var(--pg-badge);color:var(--pg-badge-fg)}
+.boxes{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px}
+@media (max-width:760px){.boxes{grid-template-columns:1fr}}
+.box{background:var(--pg-card);border:1px solid var(--pg-line);border-radius:10px;padding:14px 16px;font-size:14px}
+.box h2{font-size:14px;margin:0 0 8px;font-weight:600}.box ul,.box ol{margin:0;padding-left:20px}.box li{margin:5px 0}
+.reco{font-size:11.5px;font-weight:600;padding:1px 6px;border-radius:5px;background:var(--pg-reco);color:var(--pg-reco-fg);margin-left:4px}
+.toolbar{position:sticky;top:0;z-index:100;background:var(--pg-bg);padding:10px 0;border-bottom:1px solid var(--pg-line);margin-bottom:16px;display:flex;flex-wrap:wrap;gap:10px 16px;align-items:center}
+.seg{display:inline-flex;border:1px solid var(--pg-line);border-radius:8px;overflow:hidden;background:var(--pg-card)}
+.seg button{border:0;background:transparent;color:var(--pg-fg);padding:5px 10px;font:inherit;font-size:13px;cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--pg-fg);color:var(--pg-bg)}
+.tlabel{font-size:12px;color:var(--pg-muted);margin-right:6px}
+.hint{margin:8px 0 0;color:var(--pg-muted);font-size:13px}
+
+/* ---------- Tokens T2 (copie de src/tokens) ---------- */
+.tk{--surface:#fff;--surface-side:#f3f3f3;--surface-raised:#fff;--hover:#e9e9e9;--selected:#dedede;--line:#e4e4e4;--fg:#1a1a1a;--fg-2:#5c5c5c;--fg-3:#6b6b6b;
+  --accent:#1d4ed8;--success:#15803d;--font-sans:-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;
+  --radius-sm:4px;--radius-md:8px;--radius-lg:12px;--shadow-md:0 6px 20px rgb(0 0 0/.10);
+  --icon:16px;--icon-stroke:1.6;--fs-sm:12.5px;--fs-md:14px;--lh:1.45;--row-h:34px;--bar-h:44px;--side-w:264px;--icon-btn:28px;
+  --tip-bg:#1f1f1f;--tip-fg:#f2f2f2;--tip-fg-2:#a8a8a8;--tip-line:transparent;--tree-line:#cfcfcf}
+.tk.dark{--surface:#181818;--surface-side:#222;--surface-raised:#262626;--hover:#303030;--selected:#3d3d3d;--line:#333;--fg:#ececec;--fg-2:#ababab;--fg-3:#8f8f8f;
+  --accent:#5b8def;--success:#5cc98a;--shadow-md:0 6px 20px rgb(0 0 0/.5);--tip-bg:#3a3a3a;--tip-line:#4a4a4a;--tip-fg-2:#b5b5b5;--tree-line:#4a4a4a}
+.tk.desktop{--fs-sm:11.5px;--fs-md:13px;--lh:1.4;--row-h:28px;--bar-h:38px;--side-w:240px;--icon-btn:24px}
+
+/* ---------- Mini AppShell ---------- */
+.app{position:relative;height:560px;border:1px solid var(--pg-line);border-radius:12px;overflow:hidden;background:var(--surface);color:var(--fg);font-family:var(--font-sans);font-size:var(--fs-md);line-height:var(--lh);display:grid;grid-template-columns:var(--side-w) minmax(0,1fr);grid-template-rows:var(--bar-h) 1fr}
+.app *{box-sizing:border-box}.app button{font:inherit;color:inherit}
+.app :focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
+.ic{width:var(--icon);height:var(--icon);flex:none;stroke:currentColor;fill:none;stroke-width:var(--icon-stroke);stroke-linecap:round;stroke-linejoin:round}
+.bar-side{grid-column:1;grid-row:1;background:var(--surface-side);border-right:1px solid var(--line)}
+.bar{grid-column:2;grid-row:1;display:flex;align-items:center;padding:0 16px;border-bottom:1px solid var(--line);font-weight:600}
+.main{grid-column:2;grid-row:2;padding:24px;color:var(--fg-2)}
+.main h2{color:var(--fg);margin:0 0 6px;font-size:18px}
+.side{grid-column:1;grid-row:2;background:var(--surface-side);border-right:1px solid var(--line);padding:6px;overflow:auto}
+
+/* Élément du haut */
+.it{display:flex;align-items:center;gap:8px;height:var(--row-h);padding:0 4px 0 8px;border-radius:var(--radius-md);color:var(--fg-2);cursor:default;position:relative}
+.it:hover{background:var(--hover);color:var(--fg)}
+.it[aria-current="page"]{background:var(--selected);color:var(--fg)}
+.it .slot{width:var(--icon);flex:none;display:inline-grid;place-items:center}
+.it .lab{flex:1;min-width:0;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.it .ind{display:inline-grid;place-items:center;color:var(--fg-3);flex:none}
+.it .ind .ic{width:14px;height:14px}
+.it .ind.live{width:8px;height:8px;border-radius:50%;background:var(--success);margin:0 4px}
+.count{font-size:var(--fs-sm);color:var(--fg-3);padding:0 4px}
+.it[aria-current="page"] .count,.it[aria-current="page"] .ind{color:var(--fg-2)}
+.acts{display:flex;gap:2px}
+.act{width:22px;height:22px;display:inline-grid;place-items:center;border-radius:var(--radius-sm);color:var(--fg-2);border:0;background:transparent;padding:0}
+.act .ic{width:14px;height:14px}
+.act:hover{background:var(--selected);color:var(--fg)}
+.it[aria-current="page"] .act:hover{background:var(--hover)}
+/* Visibilité des actions */
+.tk.vis-hover .acts{display:none}
+.tk.vis-hover .it:hover .acts,.tk.vis-hover .it:focus-within .acts,.tk.vis-hover .it[aria-current="page"] .acts{display:flex}
+.tk.vis-hover .it:hover .count,.tk.vis-hover .it:focus-within .count{display:none}
+/* Sous-éléments */
+.kids{margin-left:16px}
+.kid{position:relative;padding-left:14px}
+.kid::before{content:"";position:absolute;left:0;top:0;bottom:0;border-left:1px solid var(--tree-line)}
+.kid:last-child::before{bottom:auto;height:calc(var(--row-h)/2);width:8px;border-bottom:1px solid var(--tree-line);border-bottom-left-radius:8px}
+.kid:not(:last-child)::after{content:"";position:absolute;left:0;top:calc(var(--row-h)/2);width:8px;border-top:1px solid var(--tree-line)}
+.tw{width:16px;height:16px;display:inline-grid;place-items:center;border-radius:var(--radius-sm);color:var(--fg-3);flex:none;border:0;background:transparent;padding:0}
+.tw .ic{width:12px;height:12px}.tw[aria-expanded="true"] .ic{transform:rotate(90deg)}
+.tw:hover{background:var(--selected);color:var(--fg)}
+.sec-h{display:flex;align-items:center;gap:4px;height:28px;margin-top:10px;padding:0 8px;font-size:var(--fs-sm);color:var(--fg-3)}
+
+.tip{position:fixed;z-index:1000;max-width:240px;width:max-content;padding:3px 8px;border-radius:var(--radius-md);background:var(--tip-bg);color:var(--tip-fg);border:1px solid var(--tip-line);font-family:var(--font-sans);font-size:var(--fs-sm);line-height:1.4;pointer-events:none;opacity:0;transition:opacity 120ms}
+.tip.show{opacity:1}
+</style>
+</head>
+<body>
+<div class="pg">
+  <h1>Sidebar — v2 : éléments du haut <span class="badge" id="status">VALIDÉ le 2026-11-21</span></h1>
+  <p class="lead">La v1 (validée) a travaillé les sections et les éléments sur deux lignes. Cette v2 reprend les éléments de navigation du haut (<code>Sidebar.Item</code>) : leurs icônes, leurs actions et leurs indicateurs.</p>
+
+  <div class="boxes">
+    <div class="box">
+      <h2>Déjà décidé</h2>
+      <ul>
+        <li>Icône puis libellé ; une action peut apparaître au survol (D-002, layout-rules).</li>
+        <li>Sélection : fond fixe au survol (D-039) ; rayon 8 px, action imbriquée 4 px (D-040).</li>
+        <li>Compteur gris facultatif à droite (D-044).</li>
+        <li>Info-bulle sur chaque action, avec son raccourci (D-030 à D-033).</li>
+      </ul>
+    </div>
+    <div class="box">
+      <h2>À décider</h2>
+      <ol>
+        <li><b>Icône de gauche</b> : obligatoire (v1) ; ou facultative, avec la place gardée pour aligner les libellés (comme le Menu, D-047). Choix : obligatoire (D-052). <span class="reco">validé</span></li>
+        <li><b>Actions à droite</b> : une seule ; ou jusqu'à deux (par exemple « + » et « … »). Choix : deux au plus (D-053). <span class="reco">validé</span></li>
+        <li><b>Quand les actions s'affichent</b> : au survol, au focus et sur l'élément sélectionné (v1) ; ou toujours. Choix : survol (D-054). <span class="reco">validé</span></li>
+        <li><b>Indicateur permanent à droite</b> : petite icône d'état toujours visible (lien externe ↗, verrou, point d'activité), en plus du compteur. Choix : oui, un seul, jamais avec un compteur (D-055). <span class="reco">validé</span></li>
+        <li><b>Sous-éléments</b> : un élément du haut peut se déplier sur des sous-pages (Documents › Rapports, Modèles), reliées par le trait de D-042. Choix : oui, un niveau (D-056). <span class="reco">validé</span></li>
+      </ol>
+    </div>
+  </div>
+
+  <div class="toolbar">
+    <span><span class="tlabel">Icône de gauche</span><span class="seg" data-k="icon"><button aria-pressed="true" data-v="req">Obligatoire</button><button aria-pressed="false" data-v="opt">Facultative</button></span></span>
+    <span><span class="tlabel">Actions</span><span class="seg" data-k="acts"><button aria-pressed="false" data-v="1">Une</button><button aria-pressed="true" data-v="2">Deux au plus</button></span></span>
+    <span><span class="tlabel">Affichage des actions</span><span class="seg" data-k="vis"><button aria-pressed="true" data-v="hover">Survol</button><button aria-pressed="false" data-v="always">Toujours</button></span></span>
+    <span><span class="tlabel">Indicateur</span><span class="seg" data-k="ind"><button aria-pressed="true" data-v="yes">Oui</button><button aria-pressed="false" data-v="no">Non</button></span></span>
+    <span><span class="tlabel">Sous-éléments</span><span class="seg" data-k="kids"><button aria-pressed="true" data-v="yes">Oui</button><button aria-pressed="false" data-v="no">Non</button></span></span>
+    <span><span class="tlabel">Mode</span><span class="seg" data-k="mode"><button aria-pressed="true" data-v="light">Clair</button><button aria-pressed="false" data-v="dark">Sombre</button></span></span>
+    <span><span class="tlabel">Densité</span><span class="seg" data-k="density"><button aria-pressed="true" data-v="web">Web</button><button aria-pressed="false" data-v="desktop">Desktop</button></span></span>
+  </div>
+  <div class="app tk" id="app"></div>
+  <p class="hint">À essayer : survolez chaque élément ; regardez « Documents » (deux actions), « Aide en ligne » (lien externe ↗), « Archives » (verrou), « Synchronisation » (point d'activité) ; dépliez « Documents » avec son chevron ; passez « Icône de gauche » sur Facultative pour voir « Aide en ligne » sans icône.</p>
+</div>
+<div class="tip tk" id="tip" role="tooltip"></div>
+
+<script>
+(function(){
+  var state = {icon:'req', acts:'2', vis:'hover', ind:'yes', kids:'yes', mode:'light', density:'web'};
+  var P = {
+    home:'<path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z"/>', file:'<path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/>',
+    cal:'<rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 10h18M8 2v4M16 2v4"/>', check:'<path d="M20 6 9 17l-5-5"/>',
+    archive:'<rect x="2" y="3" width="20" height="5" rx="1"/><path d="M4 8v11a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8M10 12h4"/>', sync:'<path d="M21 12a9 9 0 0 1-15 6.7L3 16M3 12a9 9 0 0 1 15-6.7L21 8M21 3v5h-5M3 21v-5h5"/>',
+    help:'<circle cx="12" cy="12" r="9"/><path d="M9.1 9a3 3 0 0 1 5.8 1c0 2-3 3-3 3M12 17h.01"/>', plus:'<path d="M5 12h14M12 5v14"/>',
+    more:'<circle cx="5" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/>', filter:'<path d="M3 5h18l-7 8v6l-4 2v-8z"/>',
+    ext:'<path d="M7 17 17 7M7 7h10v10"/>', lock:'<rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/>', right:'<path d="m9 18 6-6-6-6"/>'
+  };
+  function ic(n){ return '<svg class="ic" viewBox="0 0 24 24" aria-hidden="true">'+P[n]+'</svg>'; }
+  var NAV = [
+    {id:'home',icon:'home',label:'Accueil'},
+    {id:'docs',icon:'file',label:'Documents',acts:[['plus','Nouveau document'],['more','Plus d\'actions']],kids:[{id:'rep',label:'Rapports',count:12},{id:'mod',label:'Modèles'},{id:'arch2',label:'Brouillons',count:3}]},
+    {id:'plan',icon:'cal',label:'Planning',acts:[['plus','Nouvel événement']]},
+    {id:'valid',icon:'check',label:'À valider',count:3,acts:[['filter','Filtrer']]},
+    {id:'arch',icon:'archive',label:'Archives',ind:'lock',indLabel:'Lecture seule'},
+    {id:'sync',icon:'sync',label:'Synchronisation',ind:'live',indLabel:'En cours'},
+    {id:'help',icon:'help',optIcon:true,label:'Aide en ligne',ind:'ext',indLabel:'S\'ouvre dans le navigateur'}];
+  var sel = 'docs', open = {docs:true};
+  var app = document.getElementById('app'), tip = document.getElementById('tip');
+  function itemHTML(it, child){
+    var showIcon = !child && !(state.icon==='opt' && it.optIcon);
+    var slot = child ? '' : '<span class="slot">'+(showIcon?ic(it.icon):'')+'</span>';
+    var acts = (it.acts||[]).slice(0, state.acts==='1'?1:2);
+    var hasKids = state.kids==='yes' && it.kids;
+    var ind = state.ind==='yes' && it.ind ? (it.ind==='live' ? '<span class="ind live" role="img" aria-label="'+it.indLabel+'" data-tip="'+it.indLabel+'"></span>' : '<span class="ind" role="img" aria-label="'+it.indLabel+'" data-tip="'+it.indLabel+'">'+ic(it.ind)+'</span>') : '';
+    var h = '<div class="'+(child?'kid':'')+'"><div class="it" tabindex="-1" data-id="'+it.id+'"'+(sel===it.id?' aria-current="page"':'')+(hasKids?' aria-expanded="'+!!open[it.id]+'"':'')+'>'
+      + slot + '<span class="lab">'+it.label+'</span>'
+      + (hasKids?'<button class="tw" tabindex="-1" aria-label="'+(open[it.id]?'Replier':'Déplier')+' '+it.label+'" aria-expanded="'+!!open[it.id]+'" data-toggle="'+it.id+'">'+ic('right')+'</button>':'')
+      + ind + (it.count?'<span class="count">'+it.count+'</span>':'')
+      + (acts.length?'<span class="acts">'+acts.map(function(a){ return '<button class="act" tabindex="-1" aria-label="'+a[1]+'" data-tip="'+a[1]+'">'+ic(a[0])+'</button>'; }).join('')+'</span>':'')
+      + '</div>';
+    if (hasKids && open[it.id]) h += '<div class="kids" role="group">'+it.kids.map(function(k){ return itemHTML(k,true); }).join('')+'</div>';
+    return h + '</div>';
+  }
+  function find(id){ var f; NAV.forEach(function(n){ if (n.id===id) f = n.label; (n.kids||[]).forEach(function(k){ if (k.id===id) f = k.label; }); }); return f; }
+  function render(){
+    app.innerHTML = '<div class="bar-side"></div><div class="bar">'+find(sel)+'</div>'
+      + '<nav class="side" aria-label="Navigation principale">'+NAV.map(function(n){ return itemHTML(n,false); }).join('')
+      + '<div class="sec-h">Favoris</div>'+itemHTML({id:'f',icon:'file',label:'Rapports mensuels'},false)+'</nav>'
+      + '<main class="main"><h2>'+find(sel)+'</h2><p>Contenu de la page.</p></main>';
+    apply();
+  }
+  app.addEventListener('click', function(e){
+    var t = e.target.closest('[data-toggle]'); if (t){ var id = t.getAttribute('data-toggle'); open[id] = !open[id]; render(); return; }
+    if (e.target.closest('.act')) return;
+    var it = e.target.closest('.it'); if (it && it.getAttribute('data-id')!==sel){ sel = it.getAttribute('data-id'); render(); }
+  });
+  var timer = null, shown = false;
+  app.addEventListener('pointerover', function(e){
+    var el = e.target.closest('[data-tip]'); if (!el) return;
+    clearTimeout(timer);
+    timer = setTimeout(function(){ tip.textContent = el.getAttribute('data-tip'); var a = el.getBoundingClientRect(), w = tip.offsetWidth; tip.style.left = Math.max(8, a.left + a.width/2 - w/2)+'px'; tip.style.top = (a.bottom+6)+'px'; tip.classList.add('show'); shown = true; }, shown ? 0 : 500);
+  });
+  app.addEventListener('pointerout', function(e){ if (e.target.closest('[data-tip]')){ clearTimeout(timer); tip.classList.remove('show'); shown = false; } });
+  function apply(){
+    [app, tip].forEach(function(n){ n.classList.toggle('dark', state.mode==='dark'); n.classList.toggle('desktop', state.density==='desktop'); n.classList.toggle('vis-hover', state.vis==='hover'); });
+    document.documentElement.setAttribute('data-theme', state.mode);
+  }
+  document.querySelectorAll('.seg').forEach(function(seg){
+    seg.addEventListener('click', function(e){
+      var b = e.target.closest('button'); if (!b) return;
+      seg.querySelectorAll('button').forEach(function(x){ x.setAttribute('aria-pressed', String(x===b)); });
+      state[seg.getAttribute('data-k')] = b.getAttribute('data-v'); render();
+    });
+  });
+  render();
+})();
+</script>
+</body>
+</html>

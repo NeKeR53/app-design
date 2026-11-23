@@ -1,0 +1,84 @@
+/*
+ * socle-ui/theme.css — tokens Socle exposés à Tailwind (D-009, D-010).
+ *
+ * Dans une app :
+ *   @import "tailwindcss";
+ *   @import "socle-ui/theme.css";
+ *
+ * `inline reference` : les utilitaires pointent directement sur les variables
+ * Socle (bg-surface → var(--surface)) sans redéclarer de variables, ce qui
+ * permet au mode sombre, aux densités et à l'accent de l'app de s'appliquer.
+ * Les palettes par défaut de Tailwind sont retirées : seules les couleurs
+ * Socle existent (pas de bg-red-500).
+ */
+@import "./tokens/index.css";
+
+@theme inline reference {
+  /* Couleurs : uniquement les rôles Socle */
+  --color-*: initial;
+  --color-surface: var(--surface);
+  --color-surface-side: var(--surface-side);
+  --color-surface-raised: var(--surface-raised);
+  --color-field: var(--field);
+  --color-hover: var(--hover);
+  --color-selected: var(--selected);
+  --color-line: var(--line);
+  --color-line-strong: var(--line-strong);
+  --color-tree-line: var(--tree-line);
+  --color-fg: var(--fg);
+  --color-fg-2: var(--fg-2);
+  --color-fg-3: var(--fg-3);
+  --color-scrim: var(--scrim);
+  --color-accent: var(--accent);
+  --color-accent-fg: var(--accent-fg);
+  --color-accent-text: var(--accent-text);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-danger: var(--danger);
+  --color-info: var(--info);
+  --color-tip-bg: var(--tip-bg);
+  --color-tip-fg: var(--tip-fg);
+  --color-tip-fg-2: var(--tip-fg-2);
+  --color-tip-line: var(--tip-line);
+  --color-transparent: transparent;
+  --color-current: currentColor;
+
+  /* Typographie */
+  --font-*: initial;
+  --font-sans: var(--font-sans);
+  --font-mono: var(--font-mono);
+  --text-*: initial;
+  --text-xs: var(--fs-xs);
+  --text-sm: var(--fs-sm);
+  --text-md: var(--fs-md);
+  --text-lg: var(--fs-lg);
+  --text-xl: var(--fs-xl);
+  --text-2xl: var(--fs-2xl);
+  --font-weight-*: initial;
+  --font-weight-normal: var(--fw-regular);
+  --font-weight-medium: var(--fw-medium);
+  --font-weight-semibold: var(--fw-semibold);
+
+  /* Rayons, ombres */
+  --radius-*: initial;
+  --radius-sm: var(--radius-sm);
+  --radius-md: var(--radius-md);
+  --radius-lg: var(--radius-lg);
+  --radius-full: var(--radius-full);
+  --shadow-*: initial;
+  --shadow-sm: var(--shadow-sm);
+  --shadow-md: var(--shadow-md);
+  --shadow-lg: var(--shadow-lg);
+
+  /* Mouvement */
+  --ease-*: initial;
+  --ease-standard: var(--ease);
+
+  /* Points de rupture (D-013) : tablet ≥ 641px, desktop ≥ 1025px */
+  --breakpoint-*: initial;
+  --breakpoint-tablet: 641px;
+  --breakpoint-desktop: 1025px;
+
+  /* Espacements : base de 4 px fixe (--sp-1), indépendante de la taille de police de la page. */
+  --spacing: 4px;
+}

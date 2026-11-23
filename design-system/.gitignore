@@ -1,0 +1,11 @@
+node_modules/
+dist/
+# Documentation pour l'IA, générée par `npm run build:ai` et livrée avec le package
+ai/
+storybook-static/
+coverage/
+*.log
+.DS_Store
+# Captures d'inspiration : elles contiennent des données personnelles
+docs/inspirations/**/*.png
+docs/inspirations/**/*.webp

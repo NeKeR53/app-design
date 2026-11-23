@@ -1,0 +1,254 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tabs — validation v1</title>
+<style>
+/* ---------- Page de validation ---------- */
+:root{--pg-bg:#f6f6f6;--pg-fg:#1a1a1a;--pg-muted:#5c5c5c;--pg-line:#e2e2e2;--pg-card:#fff;--pg-badge:#fff4d6;--pg-badge-fg:#7a5a00;--pg-reco:#e7f0ff;--pg-reco-fg:#1d4ed8}
+:root[data-theme="dark"]{--pg-bg:#121212;--pg-fg:#ececec;--pg-muted:#9a9a9a;--pg-line:#2c2c2c;--pg-card:#1b1b1b;--pg-badge:#3a2f10;--pg-badge-fg:#f3d27a;--pg-reco:#16233d;--pg-reco-fg:#9cc0ff}
+*{box-sizing:border-box}html,body{margin:0}
+body{background:var(--pg-bg);color:var(--pg-fg);font:15px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif}
+.pg{max-width:1100px;margin:0 auto;padding:24px 16px 64px}
+h1{font-size:22px;font-weight:600;margin:0 0 4px;display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.sub{color:var(--pg-muted);margin:0 0 20px}
+.badge{font-size:12px;font-weight:600;letter-spacing:.04em;padding:3px 8px;border-radius:6px;background:var(--pg-badge);color:var(--pg-badge-fg)}
+.boxes{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px}
+@media (max-width:760px){.boxes{grid-template-columns:1fr}}
+.box{background:var(--pg-card);border:1px solid var(--pg-line);border-radius:10px;padding:14px 16px;font-size:14px}
+.box h2{font-size:14px;margin:0 0 8px;font-weight:600}.box ul,.box ol{margin:0;padding-left:20px}.box li{margin:5px 0}
+.reco{font-size:11.5px;font-weight:600;padding:1px 6px;border-radius:5px;background:var(--pg-reco);color:var(--pg-reco-fg);margin-left:4px}
+.toolbar{position:sticky;top:0;z-index:100;background:var(--pg-bg);padding:10px 0;border-bottom:1px solid var(--pg-line);margin-bottom:16px;display:flex;flex-wrap:wrap;gap:10px 16px;align-items:center}
+.seg{display:inline-flex;border:1px solid var(--pg-line);border-radius:8px;overflow:hidden;background:var(--pg-card)}
+.seg button{border:0;background:transparent;color:var(--pg-fg);padding:5px 10px;font:inherit;font-size:13px;cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--pg-fg);color:var(--pg-bg)}
+.tlabel{font-size:12px;color:var(--pg-muted);margin-right:6px}
+.hint{margin:8px 0 0;color:var(--pg-muted);font-size:13px}
+h3.sec{font-size:15px;margin:28px 0 10px}
+
+/* ---------- Tokens T2 (copie de src/tokens) ---------- */
+.tk{--surface:#fff;--surface-side:#f3f3f3;--field:#f2f2f2;--hover:#e9e9e9;--selected:#dedede;--line:#e4e4e4;--fg:#1a1a1a;--fg-2:#5c5c5c;--fg-3:#6b6b6b;
+  --accent:#1d4ed8;--font-sans:-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;
+  --radius-sm:4px;--radius-md:8px;--radius-lg:12px;--shadow-md:0 6px 20px rgb(0 0 0/.10);--surface-raised:#fff;
+  --icon:16px;--icon-stroke:1.6;--ease:cubic-bezier(.2,0,0,1);--dur-fast:120ms;
+  --fs-sm:12.5px;--fs-md:14px;--lh:1.45;--row-h:34px;--bar-h:44px;--side-w:240px;--icon-btn:28px;
+  --tab-r:var(--radius-md)}
+.tk.dark{--surface:#181818;--surface-side:#222;--surface-raised:#262626;--field:#2a2a2a;--hover:#303030;--selected:#3d3d3d;--line:#333;--fg:#ececec;--fg-2:#ababab;--fg-3:#8f8f8f;--accent:#5b8def;--shadow-md:0 6px 20px rgb(0 0 0/.5)}
+.tk.desktop{--fs-sm:11.5px;--fs-md:13px;--lh:1.4;--row-h:28px;--bar-h:38px;--side-w:220px;--icon-btn:24px}
+.tk.r8{--tab-r:var(--radius-md)}
+
+/* ---------- Mini AppShell ---------- */
+.app{position:relative;height:420px;border:1px solid var(--pg-line);border-radius:12px;overflow:hidden;background:var(--surface);color:var(--fg);font-family:var(--font-sans);font-size:var(--fs-md);line-height:var(--lh);display:grid;grid-template-columns:var(--side-w) minmax(0,1fr);grid-template-rows:var(--bar-h) 1fr}
+.app *{box-sizing:border-box}.app button{font:inherit;color:inherit}
+.app :focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
+.ic{width:var(--icon);height:var(--icon);flex:none;stroke:currentColor;fill:none;stroke-width:var(--icon-stroke);stroke-linecap:round;stroke-linejoin:round}
+.ib{width:var(--icon-btn);height:var(--icon-btn);display:inline-grid;place-items:center;flex:none;border:0;background:transparent;color:var(--fg-2);border-radius:var(--radius-md)}
+.ib:hover{background:var(--hover);color:var(--fg)}
+.bar-side{grid-column:1;grid-row:1;background:var(--surface-side);border-right:1px solid var(--line);display:flex;align-items:center;padding:0 8px}
+.bar{grid-column:2;grid-row:1;display:flex;align-items:center;gap:8px;padding:0 8px 0 16px;border-bottom:1px solid var(--line);min-width:0}
+.ptitle{font-weight:600;flex:none}
+.psep{width:1px;height:16px;background:var(--line);flex:none}
+.sp{flex:1}
+.side{grid-column:1;grid-row:2;background:var(--surface-side);border-right:1px solid var(--line);padding:6px}
+.it{display:flex;align-items:center;gap:8px;height:var(--row-h);padding:0 8px;border-radius:var(--radius-md);color:var(--fg-2)}
+.it.on{background:var(--selected);color:var(--fg)}
+.main{grid-column:2;grid-row:2;padding:20px;overflow:auto}
+.main h2{margin:0 0 6px;font-size:18px}.main p{margin:0;color:var(--fg-2)}
+
+/* ---------- Onglets ---------- */
+.tabs{display:flex;align-items:center;gap:2px;min-width:0;overflow-x:auto;scrollbar-width:none;flex:0 1 auto;align-self:stretch}
+.tabs::-webkit-scrollbar{display:none}
+.tab{display:flex;align-items:center;height:calc(var(--row-h) - 4px);border-radius:var(--tab-r);flex:none;max-width:200px;color:var(--fg-2);cursor:default;outline-offset:-2px}
+.tab:hover{background:var(--hover);color:var(--fg)}
+.tab .l{padding:0 10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tab.closable .l{padding-right:2px}
+.tab .x{width:20px;height:20px;flex:none;border:0;background:transparent;border-radius:var(--radius-sm);display:grid;place-items:center;margin-right:4px;opacity:0;color:var(--fg-2)}
+.tab .x .ic{width:12px;height:12px}
+.tab:hover .x,.tab[aria-selected="true"] .x,.tk.x-always .tab .x{opacity:1}
+.tab .x:hover{background:var(--field);color:var(--fg)}
+/* A — fond plein */
+.tk.look-a .tab[aria-selected="true"]{background:var(--selected);color:var(--fg)}
+.tk.look-a.hov-dark .tab[aria-selected="true"]{background:var(--hover)}
+.tk.look-a.hov-dark .tab[aria-selected="true"]:hover{background:var(--selected)}
+/* B — soulignement */
+.tk.look-b .tab{align-self:stretch;height:auto;border-radius:0}
+.tk.look-b .tab:hover{background:transparent;color:var(--fg)}
+.tk.look-b .tab:hover .l{background:var(--hover);border-radius:var(--tab-r)}
+.tk.look-b .tab .l{padding:3px 10px;margin:0 -2px}
+.tk.look-b .tab[aria-selected="true"]{color:var(--fg);box-shadow:inset 0 -2px 0 var(--accent)}
+/* C — relié au contenu */
+.tk.look-c .bar{background:var(--surface-side)}
+.tk.look-c .tabs{align-items:flex-end}
+.tk.look-c .tab{margin-bottom:-1px;border-radius:var(--tab-r) var(--tab-r) 0 0;border:1px solid transparent;border-bottom:0;height:calc(var(--row-h) - 2px)}
+.tk.look-c .tab[aria-selected="true"]{background:var(--surface);border-color:var(--line);color:var(--fg)}
+.tk.look-c .tab[aria-selected="true"]:hover{background:var(--surface)}
+
+.more{display:none}
+.app.overflow .more{display:inline-grid}
+.menu{position:fixed;z-index:200;width:260px;background:var(--surface-raised);border:1px solid var(--line);border-radius:var(--radius-lg);box-shadow:var(--shadow-md);padding:4px;display:none;font-family:var(--font-sans);font-size:var(--fs-md);color:var(--fg)}
+.menu.open{display:block}
+.menu .row{display:flex;align-items:center;height:var(--row-h);border-radius:var(--radius-md);padding:0 4px 0 10px}
+.menu .row:hover{background:var(--hover)}.menu .row.on{background:var(--selected)}
+.menu .row span{flex:1;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+
+/* ---------- Aperçu A / B / C ---------- */
+.cmp{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+@media (max-width:760px){.cmp{grid-template-columns:1fr}}
+.opt{background:var(--pg-card);border:1px solid var(--pg-line);border-radius:10px;padding:12px;font-size:13px}
+.opt h4{margin:0 0 2px;font-size:14px}.opt p{margin:0 0 10px;color:var(--pg-muted)}
+.opt .mini{border:1px solid var(--pg-line);border-radius:8px;overflow:hidden;background:var(--surface);color:var(--fg);font-family:var(--font-sans);font-size:var(--fs-md)}
+.opt .mini .bar{height:var(--bar-h);border-bottom:1px solid var(--line);padding:0 10px}
+.opt .mini .body{height:40px;background:var(--surface)}
+
+/* ---------- Info-bulle (D-030 à D-033) ---------- */
+.tip{position:fixed;z-index:1000;max-width:240px;padding:3px 8px;border-radius:8px;background:#1f1f1f;color:#f2f2f2;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;font-size:12.5px;line-height:1.4;pointer-events:none;opacity:0;transition:opacity 120ms;width:max-content}
+.tip.dark{background:#3a3a3a;border:1px solid #4a4a4a}
+.tip.show{opacity:1}
+.tip kbd{font:inherit;color:#a8a8a8;margin-left:8px}
+</style>
+</head>
+<body>
+<div class="pg">
+  <h1>Tabs — v1 <span class="badge" id="status">VALIDÉ le 2026-11-21</span></h1>
+  <p class="sub">Spec : src/components/Tabs/Tabs.spec.md. Onglets de vues dans la barre supérieure (D-021). Troisième brique d'AppShell, après Tooltip et IconButton (validés).</p>
+
+  <div class="boxes">
+    <div class="box">
+      <h2>Déjà décidé</h2>
+      <ul>
+        <li>Vues de la page, pas de pages : la sidebar choisit la page (D-021).</li>
+        <li>Vues fixes sans × ; une vue ouverte depuis un élément est fermable ; Mod+1 à 9 (D-021).</li>
+        <li>Trop de vues : défilement et chevron « Toutes les vues » ; sur mobile, le titre ouvre la liste (D-027).</li>
+        <li>Changement de vue immédiat, sans animation (D-026). Libellé tronqué à 200 px, avec info-bulle.</li>
+        <li>Clavier : flèches avec activation immédiate ; Suppr ferme une vue fermable.</li>
+      </ul>
+    </div>
+    <div class="box">
+      <h2>À décider</h2>
+      <ol>
+        <li><b>Onglet actif</b> : A fond plein (comme la sidebar) ; B soulignement accent ; C onglet relié au contenu. Choix : A (D-038). <span class="reco">validé</span></li>
+        <li><b>Survol de l'onglet actif</b> : fond fixe (cliquer l'onglet actif ne fait rien) ; ou fond clair qui fonce au survol, comme le bouton-icône (D-034). Choix : fixe (D-039). <span class="reco">validé</span></li>
+        <li><b>Rayon</b> : 4 px (actuel) ou 8 px, comme le bouton-icône (D-036) et la sidebar. Choix : 8 px, règle globale des rayons (D-040). <span class="reco">validé</span></li>
+        <li><b>Bouton ×</b> : visible au survol et sur l'onglet actif ; ou toujours visible. Choix : survol + actif (D-041). <span class="reco">validé</span></li>
+      </ol>
+    </div>
+  </div>
+
+  <h3 class="sec">Aperçu des options pour l'onglet actif</h3>
+  <div class="cmp" id="cmp"></div>
+
+  <h3 class="sec">Dans l'app</h3>
+  <div class="toolbar">
+    <span><span class="tlabel">Actif</span><span class="seg" data-k="look"><button aria-pressed="true" data-v="a">A</button><button aria-pressed="false" data-v="b">B</button><button aria-pressed="false" data-v="c">C</button></span></span>
+    <span><span class="tlabel">Survol de l'actif</span><span class="seg" data-k="hov"><button aria-pressed="true" data-v="fixed">Fixe</button><button aria-pressed="false" data-v="dark">Fonce</button></span></span>
+    <span><span class="tlabel">Rayon</span><span class="seg" data-k="radius"><button aria-pressed="false" data-v="4">4 px</button><button aria-pressed="true" data-v="8">8 px</button></span></span>
+    <span><span class="tlabel">×</span><span class="seg" data-k="x"><button aria-pressed="true" data-v="hover">Survol + actif</button><button aria-pressed="false" data-v="always">Toujours</button></span></span>
+    <span><span class="tlabel">Vues</span><span class="seg" data-k="many"><button aria-pressed="true" data-v="no">4</button><button aria-pressed="false" data-v="yes">10</button></span></span>
+    <span><span class="tlabel">Mode</span><span class="seg" data-k="mode"><button aria-pressed="true" data-v="light">Clair</button><button aria-pressed="false" data-v="dark">Sombre</button></span></span>
+    <span><span class="tlabel">Densité</span><span class="seg" data-k="density"><button aria-pressed="true" data-v="web">Web</button><button aria-pressed="false" data-v="desktop">Desktop</button></span></span>
+  </div>
+  <div class="app tk" id="app"></div>
+  <p class="hint">À essayer : cliquez sur les onglets ; survolez l'onglet actif ; au clavier, tabulez jusqu'aux onglets puis utilisez les flèches, Origine, Fin et Suppr (sur « Rapport Sud-Ouest ») ; Ctrl ou ⌘ + 1 à 4 ; fermez une vue avec × ou un clic du milieu ; passez « Vues » à 10 puis ouvrez le chevron.</p>
+</div>
+<div class="menu tk" id="menu" role="menu"></div>
+<div class="tip" id="tip" role="tooltip"></div>
+
+<script>
+(function(){
+  var state = {look:'a', hov:'fixed', radius:'8', x:'hover', many:'no', mode:'light', density:'web'};
+  var BASE = [{id:'all',label:'Tous les documents'},{id:'new',label:'Créer un rapport'},{id:'arch',label:'Archives'},{id:'r1',label:'Rapport trimestriel des ventes de la région Sud-Ouest',closable:true}];
+  var EXTRA = ['Budget 2027','Contrat cadre fournisseur','Plan de formation','Compte rendu de réunion','Note de service','Inventaire annuel'].map(function(l,i){ return {id:'x'+i,label:l,closable:true}; });
+  var views = BASE.slice(), active = 'all';
+  var X = '<svg class="ic" viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12"/></svg>';
+  var app = document.getElementById('app'), menu = document.getElementById('menu'), tip = document.getElementById('tip');
+  function esc(s){ return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;'); }
+  function tabHTML(v){ var on = v.id===active;
+    return '<div class="tab'+(v.closable?' closable':'')+'" role="tab" aria-selected="'+on+'" tabindex="'+(on?0:-1)+'" data-id="'+v.id+'"><span class="l">'+esc(v.label)+'</span>'
+      + (v.closable?'<button class="x" tabindex="-1" aria-label="Fermer la vue '+esc(v.label)+'" data-close="'+v.id+'">'+X+'</button>':'')+'</div>'; }
+  function cur(){ return views.filter(function(v){ return v.id===active; })[0]; }
+  function render(focus){
+    app.innerHTML = '<div class="bar-side"><button class="ib" aria-label="Replier la sidebar"><svg class="ic" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 3v18"/></svg></button></div>'
+      + '<div class="bar"><span class="ptitle">Documents</span><span class="psep"></span><div class="tabs" role="tablist" aria-label="Vues de la page Documents">'+views.map(tabHTML).join('')+'</div>'
+      + '<button class="ib more" aria-label="Toutes les vues" aria-haspopup="menu"><svg class="ic" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg></button><span class="sp"></span>'
+      + '<button class="ib" aria-label="Rechercher"><svg class="ic" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg></button></div>'
+      + '<nav class="side"><div class="it on">Documents</div><div class="it">Modèles</div><div class="it">Planning</div></nav>'
+      + '<main class="main" role="tabpanel"><h2>'+esc(cur().label)+'</h2><p>Contenu de la vue. La sidebar reste sur « Documents » : elle choisit la page, pas la vue.</p></main>';
+    var tabs = app.querySelector('.tabs');
+    requestAnimationFrame(function(){ app.classList.toggle('overflow', tabs.scrollWidth > tabs.clientWidth + 1); var on = tabs.querySelector('[aria-selected="true"]'); if (on) on.scrollIntoView({block:'nearest',inline:'nearest'}); if (focus && on) on.focus(); });
+    apply(); renderMenu();
+  }
+  function select(id, focus){ active = id; render(focus); }
+  function close(id){ var i = views.findIndex(function(v){ return v.id===id; }); if (i<0 || !views[i].closable) return;
+    var wasActive = id===active; views.splice(i,1); if (wasActive) active = views[Math.max(0,i-1)].id; hideTip(); render(true); }
+
+  app.addEventListener('click', function(e){
+    var c = e.target.closest('[data-close]'); if (c){ e.stopPropagation(); close(c.getAttribute('data-close')); return; }
+    var t = e.target.closest('.tab'); if (t){ select(t.getAttribute('data-id'), true); return; }
+    var m = e.target.closest('.more'); if (m){ var r = m.getBoundingClientRect(); menu.style.left = Math.max(8, r.right-260)+'px'; menu.style.top = (r.bottom+4)+'px'; menu.classList.toggle('open'); }
+  });
+  app.addEventListener('auxclick', function(e){ var t = e.target.closest('.tab'); if (t && e.button===1) close(t.getAttribute('data-id')); });
+  app.addEventListener('keydown', function(e){
+    var t = e.target.closest('.tab'); if (!t) return;
+    var i = views.findIndex(function(v){ return v.id===t.getAttribute('data-id'); }), n = -1;
+    if (e.key==='ArrowRight') n = (i+1)%views.length; else if (e.key==='ArrowLeft') n = (i-1+views.length)%views.length;
+    else if (e.key==='Home') n = 0; else if (e.key==='End') n = views.length-1;
+    else if ((e.key==='Delete'||e.key==='Backspace') && views[i].closable){ e.preventDefault(); close(views[i].id); return; }
+    if (n>=0){ e.preventDefault(); select(views[n].id, true); }
+  });
+  document.addEventListener('keydown', function(e){
+    if ((e.metaKey||e.ctrlKey) && /^[1-9]$/.test(e.key)){ var v = views[+e.key-1]; if (v){ e.preventDefault(); select(v.id); } }
+    if (e.key==='Escape') menu.classList.remove('open');
+  });
+  document.addEventListener('pointerdown', function(e){ if (!menu.contains(e.target) && !e.target.closest('.more')) menu.classList.remove('open'); hideTip(); }, true);
+  function renderMenu(){
+    menu.innerHTML = views.map(function(v){ return '<div class="row'+(v.id===active?' on':'')+'" data-id="'+v.id+'"><span>'+esc(v.label)+'</span>'+(v.closable?'<button class="ib" style="width:22px;height:22px" aria-label="Fermer la vue '+esc(v.label)+'" data-close="'+v.id+'">'+X+'</button>':'')+'</div>'; }).join('');
+  }
+  menu.addEventListener('click', function(e){
+    var c = e.target.closest('[data-close]'); if (c){ close(c.getAttribute('data-close')); return; }
+    var r = e.target.closest('.row'); if (r){ menu.classList.remove('open'); select(r.getAttribute('data-id')); }
+  });
+
+  /* Info-bulle sur libellé tronqué (D-031) */
+  var timer = null, shown = false;
+  app.addEventListener('pointerover', function(e){
+    var t = e.target.closest('.tab'); if (!t || e.target.closest('.x')) return;
+    var l = t.querySelector('.l'); if (l.scrollWidth <= l.clientWidth + 1) return;
+    clearTimeout(timer);
+    timer = setTimeout(function(){ tip.textContent = l.textContent; var a = t.getBoundingClientRect(); tip.style.left = Math.max(8, a.left)+'px'; tip.style.top = (a.bottom+6)+'px'; tip.classList.add('show'); shown = true; }, shown ? 0 : 500);
+  });
+  app.addEventListener('pointerout', function(e){ var t = e.target.closest('.tab'); if (t && !(e.relatedTarget && t.contains(e.relatedTarget))) hideTip(); });
+  function hideTip(){ clearTimeout(timer); tip.classList.remove('show'); shown = false; }
+
+  /* Aperçu A / B / C */
+  var OPTS = [['a','A — Fond plein','Même rendu que l\'élément actif de la sidebar.'],['b','B — Soulignement','Trait accent de 2 px sous l\'onglet actif.'],['c','C — Relié au contenu','Barre grise ; l\'onglet actif prend la couleur du contenu.']];
+  function renderCmp(){
+    document.getElementById('cmp').innerHTML = OPTS.map(function(o){
+      var cls = 'tk look-'+o[0]+(state.mode==='dark'?' dark':'')+(state.density==='desktop'?' desktop':'')+(state.radius==='8'?' r8':'');
+      return '<div class="opt"><h4>'+o[1]+(o[0]==='a'?' <span class="reco">choisi</span>':'')+'</h4><p>'+o[2]+'</p><div class="mini '+cls+'"><div class="bar" style="display:flex;align-items:center;gap:8px"><span class="ptitle">Documents</span><span class="psep"></span><div class="tabs">'
+        + '<div class="tab" aria-selected="true"><span class="l">Tous</span></div><div class="tab"><span class="l">Créer</span></div><div class="tab"><span class="l">Archives</span></div></div></div><div class="body"></div></div></div>';
+    }).join('');
+  }
+  function apply(){
+    [app, menu].forEach(function(n){
+      n.classList.toggle('dark', state.mode==='dark'); n.classList.toggle('desktop', state.density==='desktop');
+      n.classList.remove('look-a','look-b','look-c'); n.classList.add('look-'+state.look);
+      n.classList.toggle('hov-dark', state.hov==='dark'); n.classList.toggle('r8', state.radius==='8'); n.classList.toggle('x-always', state.x==='always');
+    });
+    tip.classList.toggle('dark', state.mode==='dark');
+    document.documentElement.setAttribute('data-theme', state.mode);
+    renderCmp();
+  }
+  document.querySelectorAll('.seg').forEach(function(seg){
+    seg.addEventListener('click', function(e){
+      var b = e.target.closest('button'); if (!b) return;
+      seg.querySelectorAll('button').forEach(function(x){ x.setAttribute('aria-pressed', String(x===b)); });
+      var k = seg.getAttribute('data-k'); state[k] = b.getAttribute('data-v');
+      if (k==='many'){ views = state.many==='yes' ? BASE.concat(EXTRA) : BASE.slice(); if (!cur()) active = 'all'; render(); } else apply();
+    });
+  });
+  render();
+})();
+</script>
+</body>
+</html>

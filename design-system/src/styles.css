@@ -1,0 +1,71 @@
+/*
+ * socle-ui/styles.css — feuille compilée de tous les composants (D-010).
+ * Importée une fois par l'app. Pas de preflight : Socle ne réinitialise pas
+ * les styles globaux de l'app.
+ */
+@layer theme, base, components, utilities;
+@import "tailwindcss/theme.css" layer(theme);
+@import "tailwindcss/utilities.css" layer(utilities);
+@import "./theme.css";
+
+@source "./";
+@source not "./**/*.stories.tsx";
+@source not "./**/*.mdx";
+
+/*
+ * Remise à zéro des boutons de Socle, limitée à leur classe : pas de reset global.
+ * Elle est dans la couche base, donc les utilitaires de chaque composant l'emportent
+ * (couleur, taille de texte, marges).
+ */
+@layer base {
+  .socle-btn {
+    appearance: none;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    background: none;
+    font: inherit;
+    color: inherit;
+    text-align: inherit;
+  }
+  .socle-btn,
+  .socle-btn *,
+  .socle-box,
+  .socle-box * {
+    box-sizing: border-box;
+  }
+}
+
+/* Barre de rechargement des résultats (D-084) ; fixe si l'utilisateur réduit les animations. */
+@layer base {
+  .socle-reload {
+    animation: socle-reload 1.1s var(--ease) infinite;
+  }
+  @keyframes socle-reload {
+    from { left: -30%; }
+    to { left: 100%; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .socle-reload {
+      animation: none;
+      left: 0;
+      width: 100%;
+      opacity: 0.5;
+    }
+  }
+}
+
+/* Indicateur d'attente de la barre de recherche (D-081) : trois fois plus lent si l'utilisateur réduit les animations. */
+@layer base {
+  .socle-spin {
+    animation: socle-spin 0.8s linear infinite;
+  }
+  @keyframes socle-spin {
+    to { transform: rotate(360deg); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .socle-spin {
+      animation-duration: 2.4s;
+    }
+  }
+}

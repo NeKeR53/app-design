@@ -1,0 +1,365 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SearchField — validation v2</title>
+<style>
+/* ---------- Page de validation ---------- */
+:root{--pg-bg:#f6f6f6;--pg-fg:#1a1a1a;--pg-muted:#5c5c5c;--pg-line:#e2e2e2;--pg-card:#fff;--pg-badge:#fff4d6;--pg-badge-fg:#7a5a00;--pg-reco:#e7f0ff;--pg-reco-fg:#1d4ed8}
+:root[data-theme="dark"]{--pg-bg:#121212;--pg-fg:#ececec;--pg-muted:#9a9a9a;--pg-line:#2c2c2c;--pg-card:#1b1b1b;--pg-badge:#3a2f10;--pg-badge-fg:#f3d27a;--pg-reco:#16233d;--pg-reco-fg:#9cc0ff}
+*{box-sizing:border-box}html,body{margin:0}
+body{background:var(--pg-bg);color:var(--pg-fg);font:15px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif}
+.pg{max-width:1180px;margin:0 auto;padding:24px 16px 64px}
+h1{font-size:22px;font-weight:600;margin:0 0 4px;display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.intro{color:var(--pg-muted);margin:0 0 20px}
+.badge{font-size:12px;font-weight:600;letter-spacing:.04em;padding:3px 8px;border-radius:6px;background:var(--pg-badge);color:var(--pg-badge-fg)}
+.boxes{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px}
+@media (max-width:760px){.boxes{grid-template-columns:1fr}}
+.box{background:var(--pg-card);border:1px solid var(--pg-line);border-radius:10px;padding:14px 16px;font-size:14px}
+.box h2{font-size:14px;margin:0 0 8px;font-weight:600}.box ul,.box ol{margin:0;padding-left:20px}.box li{margin:5px 0}
+.reco{font-size:11.5px;font-weight:600;padding:1px 6px;border-radius:5px;background:var(--pg-reco);color:var(--pg-reco-fg);margin-left:4px}
+.toolbar{position:sticky;top:0;z-index:100;background:var(--pg-bg);padding:10px 0;border-bottom:1px solid var(--pg-line);margin-bottom:16px;display:flex;flex-wrap:wrap;gap:10px 16px;align-items:center}
+.seg{display:inline-flex;border:1px solid var(--pg-line);border-radius:8px;overflow:hidden;background:var(--pg-card)}
+.seg button{border:0;background:transparent;color:var(--pg-fg);padding:5px 10px;font:inherit;font-size:13px;cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--pg-fg);color:var(--pg-bg)}
+.tlabel{font-size:12px;color:var(--pg-muted);margin-right:6px}
+.hint{margin:8px 0 0;color:var(--pg-muted);font-size:13px}
+
+/* ---------- Tokens T2 (copie de src/tokens) ---------- */
+.tk{--surface:#fff;--surface-side:#f3f3f3;--surface-raised:#fff;--field:#f2f2f2;--hover:#e9e9e9;--selected:#dedede;--line:#e4e4e4;--line-strong:#cfcfcf;--fg:#1a1a1a;--fg-2:#5c5c5c;--fg-3:#6b6b6b;
+  --accent:#1d4ed8;--success:#15803d;--warning:#b45309;--info:#1d4ed8;--font-sans:-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;
+  --radius-sm:4px;--radius-md:8px;--radius-lg:12px;--shadow-md:0 6px 20px rgb(0 0 0/.10);--icon:16px;--icon-stroke:1.6;--fs-xs:11.5px;--fs-sm:12.5px;--fs-md:14px;--lh:1.45;--row-h:34px;--row2-h:52px;--bar-h:44px;--side-w:200px;
+  --mark-bg:#fde68a;--mark-fg:#1a1a1a;--chip:#e3e3e3;--chip-on:#cfcfcf}
+.tk.dark{--surface:#181818;--surface-side:#222;--surface-raised:#262626;--field:#2a2a2a;--hover:#303030;--selected:#3d3d3d;--line:#333;--line-strong:#4a4a4a;--fg:#ececec;--fg-2:#ababab;--fg-3:#8f8f8f;
+  --accent:#5b8def;--success:#5cc98a;--warning:#e0a24a;--info:#5b8def;--shadow-md:0 6px 20px rgb(0 0 0/.5);--mark-bg:#6b5412;--mark-fg:#fff3c4;--chip:#3a3a3a;--chip-on:#4f4f4f}
+.tk.desktop{--fs-xs:10.5px;--fs-sm:11.5px;--fs-md:13px;--lh:1.4;--row-h:28px;--row2-h:44px;--bar-h:38px}
+
+/* ---------- Mini AppShell ---------- */
+.app{position:relative;height:600px;border:1px solid var(--pg-line);border-radius:12px;overflow:hidden;background:var(--surface);color:var(--fg);font-family:var(--font-sans);font-size:var(--fs-md);line-height:var(--lh);display:grid;grid-template-columns:var(--side-w) minmax(0,1fr);grid-template-rows:var(--bar-h) 1fr}
+.app *{box-sizing:border-box}.app button,.app input{font:inherit;color:inherit}
+.ic{width:var(--icon);height:var(--icon);flex:none;stroke:currentColor;fill:none;stroke-width:var(--icon-stroke);stroke-linecap:round;stroke-linejoin:round}
+.bar-side{background:var(--surface-side);border-right:1px solid var(--line)}
+.bar{display:flex;align-items:center;padding:0 16px;border-bottom:1px solid var(--line);font-weight:600}
+.side{background:var(--surface-side);border-right:1px solid var(--line);padding:6px}
+.nav{display:flex;align-items:center;gap:8px;height:var(--row-h);padding:0 8px;border-radius:var(--radius-md);color:var(--fg-2)}
+.nav.on{background:var(--selected);color:var(--fg)}
+.main{display:flex;flex-direction:column;min-width:0;min-height:0;position:relative}
+.tools{display:flex;align-items:flex-start;gap:8px;padding:12px 16px;position:relative}
+.btn2{height:var(--row-h);padding:0 12px;border:0;border-radius:var(--radius-md);background:var(--field);font-size:var(--fs-sm);flex:none}
+.btn2:hover{background:var(--hover)}
+
+/* ---------- Barre de recherche ---------- */
+.sf{position:relative;display:flex;align-items:center;gap:4px;min-height:var(--row-h);min-width:280px;max-width:560px;flex:0 1 auto;padding:0 4px 0 10px;border-radius:var(--radius-md);color:var(--fg-3);cursor:text}
+.tk.look-field .sf{background:var(--field);border:1px solid transparent}
+.tk.look-field .sf:hover{background:var(--hover)}
+.tk.look-border .sf{background:var(--surface);border:1px solid var(--line-strong)}
+.tk.look-border .sf:hover{border-color:var(--fg-3)}
+.sf:focus-within{outline:2px solid var(--accent);outline-offset:1px}
+.tk.look-field .sf:focus-within{background:var(--field)}
+.sf > .ic{margin-right:4px}
+.chips{display:flex;gap:4px;align-items:center;min-width:0}
+.tk.ov-grow .chips{flex-wrap:nowrap;overflow:hidden}
+.tk.ov-grow.expanded .sf{flex-wrap:wrap;padding-top:3px;padding-bottom:3px}.tk.ov-grow.expanded .chips{display:contents}
+.chip.more{border:0;cursor:default}.chip.more:hover{background:var(--chip-on)}
+.tk.ov-wrap .sf{flex-wrap:wrap;padding-top:3px;padding-bottom:3px}
+.tk.ov-wrap .chips{flex-wrap:wrap;display:contents}
+.chip{display:inline-flex;align-items:center;gap:2px;height:calc(var(--row-h) - 10px);max-width:160px;padding:0 2px 0 7px;border-radius:var(--radius-sm);background:var(--chip);color:var(--fg);font-size:var(--fs-sm);flex:none;outline:none}
+.chip.on,.chip:focus-visible{background:var(--chip-on);box-shadow:0 0 0 2px var(--accent)}
+.chip .lab{overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.chip .ty{color:var(--fg-2)}
+.chip button{width:18px;height:18px;border:0;background:transparent;border-radius:3px;display:inline-grid;place-items:center;color:var(--fg-2);padding:0;flex:none}
+.chip button:hover{background:var(--chip-on);color:var(--fg)}
+.chip button .ic{width:12px;height:12px}
+.chip.more{padding:0 7px;color:var(--fg-2)}
+.sf input{flex:1 1 80px;min-width:80px;border:0;background:transparent;outline:none;color:var(--fg);height:calc(var(--row-h) - 2px);padding:0 2px}
+.sf input::placeholder{color:var(--fg-3)}
+.sf .kbd{font-size:var(--fs-xs);color:var(--fg-3);border:1px solid var(--line-strong);border-radius:var(--radius-sm);padding:0 5px;line-height:16px;margin-right:4px;flex:none}
+.sf:focus-within .kbd,.sf.filled .kbd{display:none}
+.sf .clr{width:22px;height:22px;border:0;background:transparent;border-radius:var(--radius-sm);display:none;place-items:center;color:var(--fg-2);padding:0;flex:none;align-self:center}
+.sf.filled .clr{display:inline-grid}
+.sf .clr:hover{background:var(--selected);color:var(--fg)}
+.sf .clr .ic{width:14px;height:14px}
+
+/* Suggestions (style du Menu) */
+.sugg{position:absolute;z-index:50;min-width:320px;max-width:440px;background:var(--surface-raised);border:1px solid var(--line);border-radius:var(--radius-lg);box-shadow:var(--shadow-md);padding:4px;display:none}
+.sugg.open{display:block}
+.sg-t{font-size:var(--fs-sm);color:var(--fg-3);padding:6px 10px 2px}
+.sg{display:flex;align-items:center;gap:8px;height:var(--row-h);padding:0 10px;border-radius:var(--radius-md);cursor:default}
+.sg.hl{background:var(--hover)}
+.sg .ic{color:var(--fg-2)}
+.sg .l{flex:1;min-width:0;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.sg .ty{color:var(--fg-2)}
+.sg .n{font-size:var(--fs-sm);color:var(--fg-3)}
+.sg-sep{border-top:1px solid var(--line);margin:4px 6px}
+.spin{width:14px;height:14px;border:2px solid var(--line-strong);border-top-color:var(--fg-2);border-radius:50%;animation:spin .8s linear infinite;flex:none;display:none}
+@keyframes spin{to{transform:rotate(360deg)}}
+@media (prefers-reduced-motion: reduce){.spin{animation-duration:2.4s}}
+.sf.loading .spin{display:inline-block}
+.tk.no-fieldspin .sf .spin{display:none}
+.sg.wait,.sg.err{color:var(--fg-2);cursor:default}
+.sg.wait .spin{display:inline-block}
+.sg.err button{margin-left:auto;border:0;background:transparent;color:var(--accent);font-size:var(--fs-sm);padding:2px 4px;border-radius:var(--radius-sm)}
+.sk{min-height:var(--row2-h);padding:10px 12px;border-bottom:1px solid var(--line);display:flex;flex-direction:column;gap:8px;justify-content:center}
+.sk i{display:block;height:10px;border-radius:var(--radius-sm);background:var(--field)}
+.sk i:first-child{width:46%}.sk i:last-child{width:28%}
+.errbox{text-align:center;padding:48px 16px;color:var(--fg-2)}
+.errbox b{display:block;color:var(--fg);font-weight:500;margin-bottom:4px}
+.errbox p{margin:0 0 12px;font-size:var(--fs-sm)}
+
+/* Liste */
+.wrap{flex:1;min-height:0;overflow:auto;margin:0 16px}
+.li{display:flex;flex-direction:column;justify-content:center;min-height:var(--row2-h);padding:6px 12px;border-bottom:1px solid var(--line)}
+.li .t{color:var(--fg)}.li .s{color:var(--fg-2);font-size:var(--fs-sm);display:flex;gap:8px}
+.pill{display:inline-flex;align-items:center;gap:5px}.pill i{width:7px;height:7px;border-radius:50%;display:inline-block}
+mark{background:var(--mark-bg);color:var(--mark-fg);border-radius:2px;padding:0 1px}
+.tk.no-mark mark{background:none;color:inherit;padding:0}
+.empty{text-align:center;padding:48px 16px;color:var(--fg-2)}
+.empty b{display:block;color:var(--fg);font-weight:500;margin-bottom:12px}
+.foot{padding:10px 16px;font-size:var(--fs-sm);color:var(--fg-3);border-top:1px solid var(--line)}
+</style>
+</head>
+<body>
+<div class="pg">
+  <h1>SearchField — v2 : suggestions et étiquettes <span class="badge" id="status">REMPLACÉ par la v3</span></h1>
+  <p class="intro">Spec : src/components/SearchField/SearchField.spec.md. Votre demande (D-071) : des suggestions pendant la frappe ; Entrée ajoute une étiquette dans la barre, que l'on retire avec ×.</p>
+
+  <div class="boxes">
+    <div class="box">
+      <h2>Déjà décidé</h2>
+      <ul>
+        <li>Suggestions sous le champ, au style du Menu ; la première est toujours « Rechercher « texte » » : Entrée ajoute donc le texte saisi ; les flèches choisissent une autre suggestion (D-071).</li>
+        <li>× retire une étiquette ; Retour arrière dans un champ vide met en avant la dernière, puis la retire.</li>
+        <li>Échap : ferme les suggestions, puis efface le texte, puis quitte le champ.</li>
+        <li>Suggestions et étiquettes facultatives, désactivées par défaut ; sans elles, c'est un champ simple (D-072).</li>
+        <li>Source locale ou API ; en API, seule la réponse à la dernière saisie s'affiche (D-076). La page simule une API qui répond en 700 ms.</li>
+        <li>Étiquette de 4 px de rayon, car placée dans un autre contrôle (D-040) ; coupée à 160 px.</li>
+        <li>Recherche sans casse ni accents ; compteur en pied ; recherche globale : Mod+K (D-006).</li>
+      </ul>
+    </div>
+    <div class="box">
+      <h2>À décider</h2>
+      <ol>
+        <li><b>Apparence</b> : fond <code>--field</code> sans bord ; ou bord fin. Choix : bord fin, nouveau token <code>--line-strong</code> (D-073). <span class="reco">validé</span></li>
+        <li><b>Suggestions</b> : A « Rechercher « texte » », puis les valeurs trouvées, rangées par type (Statut, Demandeur, Service), avec le nombre de résultats ; B « Rechercher « texte » », puis les éléments trouvés. Choix : B (D-074). <span class="reco">validé</span></li>
+        <li><b>Combinaison</b> des étiquettes de texte : toutes en ET (« remb » ET « hugo » : seulement ce qui contient les deux) ; ou en OU (ce qui contient l'une ou l'autre). Choix : ET (D-075). <span class="reco">validé</span></li>
+        <li><b>Débordement</b> : le champ s'élargit jusqu'à 560 px ; au-delà, « +n » résume les étiquettes les plus anciennes (3 restent visibles au focus, 2 sinon) ; un clic sur « +n » les montre toutes ; ou le champ passe toujours sur plusieurs lignes. <span class="reco">reco s'élargit</span></li>
+        <li><b>Pendant la frappe</b>, avant Entrée : le texte filtre déjà la liste (aperçu) ; ou seules les étiquettes filtrent. <span class="reco">reco aperçu</span></li>
+        <li><b>Raccourci</b> : Mod+F ; « / » ; aucun. <span class="reco">reco Mod+F</span></li>
+        <li><b>Surlignage</b> du texte trouvé (nouveau token <code>--mark-bg</code>). <span class="reco">reco oui</span></li>
+        <li><b>API : envoi</b> à partir de 2 caractères, après 300 ms sans frappe ; une étiquette ajoutée part tout de suite. <span class="reco">reco 2 car. · 300 ms</span></li>
+        <li><b>API : attente</b> montrée à trois endroits : petit indicateur rotatif dans le champ ; ligne « Recherche… » dans les suggestions ; lignes squelettes dans les résultats (les anciens résultats restent visibles si la réponse arrive en moins de 300 ms). <span class="reco">reco</span></li>
+        <li><b>API : erreur</b> dans les suggestions, une ligne « Suggestions indisponibles » avec « Réessayer » ; dans les résultats, « Impossible de charger les résultats » avec « Réessayer ». Les étiquettes restent en place. <span class="reco">reco</span></li>
+      </ol>
+    </div>
+  </div>
+
+  <div class="toolbar">
+    <span><span class="tlabel">Source</span><span class="seg" data-k="src"><button aria-pressed="true" data-v="api">API</button><button aria-pressed="false" data-v="err">API en erreur</button><button aria-pressed="false" data-v="local">Locale</button></span></span>
+    <span><span class="tlabel">Envoi (API)</span><span class="seg" data-k="deb"><button aria-pressed="false" data-v="1-150">1 car. · 150 ms</button><button aria-pressed="true" data-v="2-300">2 car. · 300 ms</button><button aria-pressed="false" data-v="3-500">3 car. · 500 ms</button></span></span>
+    <span><span class="tlabel">Attente dans le champ</span><span class="seg" data-k="fspin"><button aria-pressed="true" data-v="yes">Oui</button><button aria-pressed="false" data-v="no">Non</button></span></span>
+    <span><span class="tlabel">Étiquettes</span><span class="seg" data-k="tagm"><button aria-pressed="true" data-v="yes">Activées</button><button aria-pressed="false" data-v="no">Désactivées</button></span></span>
+    <span><span class="tlabel">Apparence</span><span class="seg" data-k="look"><button aria-pressed="false" data-v="field">Fond</button><button aria-pressed="true" data-v="border">Bord</button></span></span>
+    <span><span class="tlabel">Suggestions</span><span class="seg" data-k="sug"><button aria-pressed="false" data-v="types">A types</button><button aria-pressed="true" data-v="items">B éléments</button><button aria-pressed="false" data-v="none">Aucune</button></span></span>
+    <span><span class="tlabel">Combinaison</span><span class="seg" data-k="comb"><button aria-pressed="true" data-v="and">ET</button><button aria-pressed="false" data-v="or">OU</button></span></span>
+    <span><span class="tlabel">Débordement</span><span class="seg" data-k="ov"><button aria-pressed="true" data-v="grow">S'élargit</button><button aria-pressed="false" data-v="wrap">Lignes</button></span></span>
+    <span><span class="tlabel">Frappe</span><span class="seg" data-k="live"><button aria-pressed="true" data-v="yes">Aperçu</button><button aria-pressed="false" data-v="no">Étiquettes seules</button></span></span>
+    <span><span class="tlabel">Raccourci</span><span class="seg" data-k="key"><button aria-pressed="true" data-v="modf">Mod+F</button><button aria-pressed="false" data-v="slash">/</button><button aria-pressed="false" data-v="none">Aucun</button></span></span>
+    <span><span class="tlabel">Surlignage</span><span class="seg" data-k="mark"><button aria-pressed="true" data-v="yes">Oui</button><button aria-pressed="false" data-v="no">Non</button></span></span>
+    <span><span class="tlabel">Mode</span><span class="seg" data-k="mode"><button aria-pressed="true" data-v="light">Clair</button><button aria-pressed="false" data-v="dark">Sombre</button></span></span>
+    <span><span class="tlabel">Densité</span><span class="seg" data-k="density"><button aria-pressed="true" data-v="web">Web</button><button aria-pressed="false" data-v="desktop">Desktop</button></span></span>
+  </div>
+  <div class="app tk" id="app">
+    <div class="bar-side"></div><div class="bar">Demandes</div>
+    <nav class="side"><div class="nav on"><svg class="ic" viewBox="0 0 24 24"><path d="M22 12h-6l-2 3h-4l-2-3H2"/><path d="M5.5 5h13l3.5 7v6a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2v-6z"/></svg>Demandes</div></nav>
+    <main class="main">
+      <div class="tools">
+        <div class="sf" id="sf" role="group" aria-label="Recherche">
+          <svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+          <span class="chips" id="chips" role="group" aria-label="Critères de recherche"></span>
+          <input id="q" role="combobox" aria-expanded="false" aria-controls="sugg" aria-autocomplete="list" aria-label="Rechercher dans les demandes" placeholder="Rechercher dans les demandes" autocomplete="off">
+          <span class="spin" id="fspin" role="status" aria-label="Recherche en cours"></span>
+          <span class="kbd" id="kbd"></span>
+          <button class="clr" id="clr" aria-label="Tout effacer"><svg class="ic" viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+        </div>
+        <button class="btn2">Trier</button>
+        <div class="sugg" id="sugg" role="listbox" aria-label="Suggestions"></div>
+      </div>
+      <div class="wrap" id="list" role="grid" aria-label="Demandes"></div>
+      <div class="foot" id="foot" aria-live="polite"></div>
+    </main>
+  </div>
+  <p class="hint">À essayer : tapez « remb » puis Entrée, puis « hugo » et Entrée (comparez ET et OU) ; tapez « acc », flèche bas, Entrée (élément suggéré) ; ajoutez 4 ou 5 étiquettes pour le débordement ; Retour arrière deux fois dans le champ vide ; × sur une étiquette ; Échap.</p>
+</div>
+
+<script>
+(function(){
+  var state = {src:'api', deb:'2-300', fspin:'yes', tagm:'yes', look:'border', sug:'items', comb:'and', ov:'grow', live:'yes', key:'modf', mark:'yes', mode:'light', density:'web'};
+  var ST = {'En attente':'var(--warning)','Traitée':'var(--success)','Nouvelle':'var(--info)'};
+  var DATA = [
+    ['Demande d\'accès au dossier Clients','Camille Martin','Nouvelle','Achats'],['Remboursement de frais de déplacement','Louis Bernard','En attente','Compta'],
+    ['Inscription à l\'École de management','Inès Moreau','Traitée','RH'],['Changement d\'adresse de facturation','Inès Moreau','En attente','Compta'],
+    ['Commande de matériel informatique','Hugo Petit','En attente','Achats'],['Congé exceptionnel','Sarah Lefèvre','Traitée','RH'],
+    ['Accès au parking — badge perdu','Nathan Roux','Nouvelle','RH'],['Formation sécurité incendie','Léa Garnier','Nouvelle','RH'],
+    ['Mise à jour du logiciel de paie','Camille Martin','En attente','RH'],['Renouvellement de contrat de maintenance','Louis Bernard','Traitée','Achats'],
+    ['Accès VPN pour le télétravail','Tom Faure','Nouvelle','IT'],['Remboursement de repas client','Hugo Petit','En attente','Compta']
+  ].map(function(r){ return {t:r[0], who:r[1], st:r[2], svc:r[3]}; });
+  var TYPES = [{id:'st',label:'Statut',key:'st'},{id:'who',label:'Demandeur',key:'who'},{id:'svc',label:'Service',key:'svc'}];
+  var tags = [], hl = 0, sugItems = [], armed = false, focused = false, expanded = false;
+  var app = document.getElementById('app'), q = document.getElementById('q'), sf = document.getElementById('sf'), chips = document.getElementById('chips'), sugg = document.getElementById('sugg'), list = document.getElementById('list'), foot = document.getElementById('foot');
+  var X = '<svg class="ic" viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12"/></svg>';
+  function norm(s){ return s.normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase(); }
+  function esc(s){ return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;'); }
+  function count(pred){ return DATA.filter(pred).length; }
+  function countWith(tag){ var saveLive = state.live; state.live = 'no'; tags.push(tag); var n = DATA.filter(match).length; tags.pop(); state.live = saveLive; return n; }
+  function match(d){
+    var text = tags.filter(function(t){ return !t.type; }).map(function(t){ return t.label; });
+    if ((state.live==='yes' || state.tagm==='no') && q.value.trim()) text.push(q.value.trim());
+    var hay = norm(d.t+' '+d.who+' '+d.st+' '+d.svc);
+    var live = (state.live==='yes' || state.tagm==='no') && q.value.trim() ? norm(q.value.trim()) : null;
+    if (state.comb==='or'){ var tt = tags.filter(function(t){ return !t.type; }); if (tt.length && !tt.some(function(t){ return hay.indexOf(norm(t.label)) >= 0; })) return false; if (live && hay.indexOf(live) < 0) return false; }
+    else if (!text.every(function(t){ return hay.indexOf(norm(t)) >= 0; })) return false;
+    var typed = tags.filter(function(t){ return t.type; });
+    if (state.comb==='and') return typed.every(function(t){ return d[t.key]===t.label; });
+    var by = {}; typed.forEach(function(t){ (by[t.key] = by[t.key] || []).push(t.label); });
+    return Object.keys(by).every(function(k){ return by[k].indexOf(d[k]) >= 0; });
+  }
+  function terms(){ var t = tags.filter(function(x){ return !x.type; }).map(function(x){ return x.label; }); if ((state.live==='yes' || state.tagm==='no') && q.value.trim()) t.push(q.value.trim()); return t; }
+  function hlText(text){
+    var ts = terms().map(norm).filter(Boolean); if (!ts.length) return esc(text);
+    var n = norm(text), marks = [];
+    ts.forEach(function(t){ var i = 0, k; while ((k = n.indexOf(t, i)) >= 0){ marks.push([k, k+t.length]); i = k + t.length; } });
+    marks.sort(function(a,b){ return a[0]-b[0]; });
+    var out = '', pos = 0; marks.forEach(function(m){ if (m[0] < pos) return; out += esc(text.slice(pos, m[0])) + '<mark>' + esc(text.slice(m[0], m[1])) + '</mark>'; pos = m[1]; });
+    return out + esc(text.slice(pos));
+  }
+  var LAT = 700, reqList = 0, reqSugg = 0, tList = null, tSugg = null, pendingList = false, pendingSugg = false;
+  function debCfg(){ var p = state.deb.split('-'); return {min:+p[0], ms:+p[1]}; }
+  function api(){ return state.src !== 'local'; }
+  function setSpin(){ sf.classList.toggle('loading', pendingList || pendingSugg); }
+  function renderList(now){
+    if (!api()){ renderListNow(); return; }
+    clearTimeout(tList); var id = ++reqList;
+    tList = setTimeout(function(){
+      pendingList = true; setSpin();
+      var slow = setTimeout(function(){ if (id===reqList && pendingList) list.innerHTML = '<div class="sk"><i></i><i></i></div>'.repeat(5); }, 300);
+      setTimeout(function(){
+        if (id !== reqList) return; /* réponse périmée : ignorée */
+        clearTimeout(slow); pendingList = false; setSpin();
+        if (state.src==='err'){ list.innerHTML = '<div class="errbox" role="alert"><b>Impossible de charger les résultats</b><p>Le service ne répond pas. Vos critères sont gardés.</p><button class="btn2" id="retry">Réessayer</button></div>'; foot.textContent = ''; document.getElementById('retry').onclick = function(){ renderList(true); }; return; }
+        renderListNow();
+      }, LAT);
+    }, now ? 0 : debCfg().ms);
+  }
+  function renderListNow(){
+    var rows = DATA.filter(match);
+    list.innerHTML = rows.length ? rows.map(function(d){ return '<div class="li" role="row"><span class="t">'+hlText(d.t)+'</span><span class="s"><span>'+hlText(d.who)+'</span><span>·</span><span>'+esc(d.svc)+'</span><span class="pill"><i style="background:'+ST[d.st]+'"></i>'+esc(d.st)+'</span></span></div>'; }).join('')
+      : '<div class="empty"><b>Aucun résultat</b><button class="btn2" id="clear2">Effacer la recherche</button></div>';
+    var active = tags.length || ((state.live==='yes' || state.tagm==='no') && q.value.trim());
+    foot.textContent = active ? rows.length+' résultat'+(rows.length>1?'s':'')+' sur '+DATA.length : DATA.length+' demandes';
+    var c2 = document.getElementById('clear2'); if (c2) c2.onclick = clearAll;
+  }
+  function renderChips(){
+    var showAll = expanded || state.ov==='wrap', keep = showAll ? tags.length : Math.min(tags.length, focused ? 3 : 2);
+    app.classList.toggle('expanded', expanded);
+    function draw(k){
+      var more = tags.length - k, list2 = tags.slice(more);
+      chips.innerHTML = (more ? '<button class="chip more" data-more title="'+esc(tags.slice(0,more).map(lab).join(', '))+'" aria-label="Afficher les '+more+' autres critères">+'+more+'</button>' : '')
+        + list2.map(function(t){ var i = tags.indexOf(t);
+          return '<span class="chip'+(armed && i===tags.length-1?' on':'')+'" tabindex="-1" data-i="'+i+'" title="'+esc(lab(t))+'"><span class="lab">'+(t.type?'<span class="ty">'+esc(t.typeLabel)+' : </span>':'')+esc(t.label)+'</span><button tabindex="-1" aria-label="Retirer '+esc(lab(t))+'" data-rm="'+i+'">'+X+'</button></span>'; }).join('');
+    }
+    draw(keep);
+    /* Les étiquettes ne sont jamais coupées : on en résume une de plus tant qu'elles ne tiennent pas. */
+    while (!showAll && keep > 1 && chips.scrollWidth > chips.clientWidth + 1){ keep--; draw(keep); }
+    sf.classList.toggle('filled', !!(tags.length || q.value));
+    q.placeholder = tags.length ? '' : 'Rechercher dans les demandes';
+  }
+  function lab(t){ return (t.type ? t.typeLabel+' : ' : '') + t.label; }
+  function buildSugg(){
+    var v = q.value.trim(); sugItems = [];
+    if (!v || state.sug==='none' || (api() && v.length < debCfg().min)){ closeSugg(); pendingSugg = false; setSpin(); return; }
+    if (api()){
+      clearTimeout(tSugg); var id = ++reqSugg;
+      sugItems = [{label:v}];
+      showSugg('<div class="sg" role="option" data-s="0"><svg class="ic" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg><span class="l">Rechercher « '+esc(v)+' »</span></div><div class="sg-t">Éléments</div><div class="sg wait" role="status"><span class="spin"></span>Recherche…</div>');
+      tSugg = setTimeout(function(){
+        pendingSugg = true; setSpin();
+        setTimeout(function(){
+          if (id !== reqSugg) return;
+          pendingSugg = false; setSpin();
+          var head = '<div class="sg" role="option" data-s="0"><svg class="ic" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg><span class="l">Rechercher « '+esc(v)+' »</span></div>';
+          if (state.src==='err'){ showSugg(head + '<div class="sg-t">Éléments</div><div class="sg err" role="alert">Suggestions indisponibles<button data-retry>Réessayer</button></div>'); return; }
+          var items = DATA.filter(function(d){ return norm(d.t).indexOf(norm(v))>=0; }).slice(0,5);
+          items.forEach(function(d){ sugItems.push({label:d.t}); });
+          showSugg(head + (items.length ? '<div class="sg-t">Éléments</div>' + items.map(function(d,i){ return '<div class="sg" role="option" data-s="'+(i+1)+'"><span class="l">'+esc(d.t)+'</span></div>'; }).join('') : '<div class="sg-t">Aucun élément trouvé</div>'));
+        }, LAT);
+      }, debCfg().ms);
+      return;
+    }
+    var h = '<div class="sg" role="option" data-s="0">'+'<svg class="ic" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg><span class="l">Rechercher « '+esc(v)+' »</span><span class="n">'+countWith({label:v})+'</span></div>';
+    sugItems.push({label:v});
+    if (state.sug==='types'){
+      TYPES.forEach(function(ty){
+        var vals = []; DATA.forEach(function(d){ var x = d[ty.key]; if (vals.indexOf(x)<0 && norm(x).indexOf(norm(v))>=0 && !tags.some(function(t){ return t.key===ty.key && t.label===x; })) vals.push(x); });
+        if (!vals.length) return;
+        h += '<div class="sg-t">'+ty.label+'</div>';
+        vals.slice(0,4).forEach(function(x){ sugItems.push({type:ty.id, key:ty.key, typeLabel:ty.label, label:x});
+          h += '<div class="sg" role="option" data-s="'+(sugItems.length-1)+'"><span class="l"><span class="ty">'+ty.label+' : </span>'+esc(x)+'</span><span class="n">'+countWith({type:ty.id, key:ty.key, typeLabel:ty.label, label:x})+'</span></div>'; });
+      });
+    } else {
+      var items = DATA.filter(function(d){ return norm(d.t).indexOf(norm(v))>=0; }).slice(0,5);
+      if (items.length){ h += '<div class="sg-t">Éléments</div>'; items.forEach(function(d){ sugItems.push({label:d.t}); h += '<div class="sg" role="option" data-s="'+(sugItems.length-1)+'"><span class="l">'+esc(d.t)+'</span></div>'; }); }
+    }
+    showSugg(h);
+  }
+  function showSugg(h){
+    sugg.innerHTML = h; hl = Math.min(hl, sugItems.length-1); if (hl < 0) hl = 0; paintHl();
+    var r = sf.getBoundingClientRect(), m = sf.parentNode.getBoundingClientRect();
+    sugg.style.left = (r.left - m.left)+'px'; sugg.style.top = (r.bottom - m.top + 4)+'px';
+    sugg.classList.add('open'); q.setAttribute('aria-expanded','true');
+  }
+  function paintHl(){ sugg.querySelectorAll('.sg[role="option"]').forEach(function(el){ el.classList.toggle('hl', +el.getAttribute('data-s')===hl); el.setAttribute('aria-selected', String(+el.getAttribute('data-s')===hl)); }); }
+  function closeSugg(){ sugg.classList.remove('open'); q.setAttribute('aria-expanded','false'); }
+  function addTag(s){ if (!s || !s.label) return; if (!tags.some(function(t){ return lab(t)===lab(s); })) tags.push(s); q.value = ''; armed = false; closeSugg(); renderChips(); renderList(true); }
+  function clearAll(){ tags = []; q.value = ''; armed = false; closeSugg(); renderChips(); renderList(); q.focus(); }
+  q.addEventListener('input', function(){ armed = false; hl = 0; buildSugg(); renderChips(); if (state.live==='yes' || state.tagm==='no') renderList(); });
+  q.addEventListener('keydown', function(e){
+    if (e.key==='ArrowDown' && sugg.classList.contains('open')){ e.preventDefault(); hl = Math.min(sugItems.length-1, hl+1); paintHl(); }
+    else if (e.key==='ArrowUp' && sugg.classList.contains('open')){ e.preventDefault(); hl = Math.max(0, hl-1); paintHl(); }
+    else if (e.key==='Enter'){ e.preventDefault(); if (state.tagm==='no'){ if (sugg.classList.contains('open') && hl > 0){ q.value = sugItems[hl].label; } closeSugg(); renderChips(); renderList(); return; } if (sugg.classList.contains('open')) addTag(sugItems[hl]); else if (q.value.trim()) addTag({label:q.value.trim()}); }
+    else if (e.key==='Backspace' && !q.value && tags.length){ e.preventDefault(); if (armed){ tags.pop(); armed = false; renderList(); } else armed = true; renderChips(); }
+    else if (e.key==='Escape'){ e.preventDefault(); if (sugg.classList.contains('open')) closeSugg(); else if (q.value){ q.value = ''; renderChips(); renderList(); } else q.blur(); }
+    else armed = false;
+  });
+  q.addEventListener('focus', function(){ focused = true; renderChips(); });
+  q.addEventListener('blur', function(){ setTimeout(function(){ if (document.activeElement !== q){ focused = false; armed = false; expanded = false; closeSugg(); renderChips(); } }, 120); });
+  sugg.addEventListener('mousedown', function(e){ e.preventDefault(); if (e.target.closest('[data-retry]')){ buildSugg(); return; } var el = e.target.closest('.sg[role="option"]'); if (el) addTag(sugItems[+el.getAttribute('data-s')]); });
+  sugg.addEventListener('mousemove', function(e){ var el = e.target.closest('.sg'); if (el){ hl = +el.getAttribute('data-s'); paintHl(); } });
+  chips.addEventListener('mousedown', function(e){ if (e.target.closest('[data-more]')){ e.preventDefault(); expanded = true; renderChips(); q.focus(); return; } var b = e.target.closest('[data-rm]'); if (b){ e.preventDefault(); tags.splice(+b.getAttribute('data-rm'),1); armed = false; renderChips(); renderList(); q.focus(); } });
+  sf.addEventListener('mousedown', function(e){ if (!e.target.closest('button') && e.target !== q){ e.preventDefault(); q.focus(); } });
+  document.getElementById('clr').addEventListener('click', clearAll);
+  document.addEventListener('keydown', function(e){
+    if (document.activeElement === q) return;
+    if (state.key==='slash' && e.key==='/' && !/^(INPUT|TEXTAREA)$/.test(document.activeElement.tagName)){ e.preventDefault(); q.focus(); }
+    if (state.key==='modf' && (e.metaKey||e.ctrlKey) && e.key.toLowerCase()==='f'){ e.preventDefault(); q.focus(); }
+  });
+  function apply(){
+    app.classList.toggle('dark', state.mode==='dark'); app.classList.toggle('desktop', state.density==='desktop');
+    ['look-field','look-border','ov-grow','ov-wrap'].forEach(function(c){ app.classList.remove(c); });
+    app.classList.add('look-'+state.look); app.classList.toggle('no-fieldspin', state.fspin==='no'); app.classList.add('ov-'+state.ov); app.classList.toggle('no-mark', state.mark==='no');
+    var k = document.getElementById('kbd'); k.textContent = state.key==='slash' ? '/' : state.key==='modf' ? '⌘F' : ''; k.style.display = state.key==='none' ? 'none' : '';
+    document.documentElement.setAttribute('data-theme', state.mode);
+    renderChips(); renderList();
+  }
+  document.querySelectorAll('.seg').forEach(function(seg){
+    seg.addEventListener('click', function(e){
+      var b = e.target.closest('button'); if (!b) return;
+      seg.querySelectorAll('button').forEach(function(x){ x.setAttribute('aria-pressed', String(x===b)); });
+      state[seg.getAttribute('data-k')] = b.getAttribute('data-v'); if (state.tagm==='no') tags = []; closeSugg(); apply();
+    });
+  });
+  apply();
+})();
+</script>
+</body>
+</html>

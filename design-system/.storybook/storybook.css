@@ -1,0 +1,22 @@
+/*
+ * Styles propres à Storybook : utilitaires Tailwind des stories et des pages
+ * de documentation (exclus de socle-ui/styles.css), puis fond et texte.
+ */
+@import "tailwindcss/theme.css" layer(theme);
+@import "tailwindcss/utilities.css" layer(utilities) source(none);
+@import "../src/theme.css";
+@source "../src";
+@source "../docs/storybook";
+
+html,
+body {
+  background: var(--surface);
+  color: var(--fg);
+  font-family: var(--font-sans);
+  font-size: var(--fs-md);
+  line-height: var(--lh);
+  margin: 0;
+}
+.socle-story {
+  padding: var(--sp-6);
+}

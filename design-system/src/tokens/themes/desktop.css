@@ -1,0 +1,19 @@
+/* Densité « desktop », compacte (D-004). Par défaut pour les apps Tauri. */
+[data-density="desktop"] {
+  --fs-xs: 10.5px;
+  --fs-sm: 11.5px;
+  --fs-md: 13px;
+  --fs-lg: 15px;
+  --fs-xl: 19px;
+  --fs-2xl: 23px;
+  --lh: 1.4;
+
+  --row-h: 28px;
+  --row2-h: 44px;
+  --bar-h: 38px;
+  --pad: 12px;
+  --side-w: 240px;
+  --detail-w: 272px;
+  --target-min: 24px;
+  --icon-btn: 24px;       /* bouton-icône (D-035) */
+}

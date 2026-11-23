@@ -1,0 +1,298 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tooltip — validation v1</title>
+<style>
+/* ---------- Page de validation ---------- */
+:root{--pg-bg:#f6f6f6;--pg-fg:#1a1a1a;--pg-muted:#5c5c5c;--pg-line:#e2e2e2;--pg-card:#fff;--pg-badge:#fff4d6;--pg-badge-fg:#7a5a00;--pg-reco:#e7f0ff;--pg-reco-fg:#1d4ed8}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--pg-bg:#121212;--pg-fg:#ececec;--pg-muted:#9a9a9a;--pg-line:#2c2c2c;--pg-card:#1b1b1b;--pg-badge:#3a2f10;--pg-badge-fg:#f3d27a;--pg-reco:#16233d;--pg-reco-fg:#9cc0ff}}
+:root[data-theme="dark"]{--pg-bg:#121212;--pg-fg:#ececec;--pg-muted:#9a9a9a;--pg-line:#2c2c2c;--pg-card:#1b1b1b;--pg-badge:#3a2f10;--pg-badge-fg:#f3d27a;--pg-reco:#16233d;--pg-reco-fg:#9cc0ff}
+*{box-sizing:border-box}html,body{margin:0}
+body{background:var(--pg-bg);color:var(--pg-fg);font:15px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif}
+.pg{max-width:1100px;margin:0 auto;padding:24px 16px 64px}
+h1{font-size:22px;font-weight:600;margin:0 0 4px;display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.sub{color:var(--pg-muted);margin:0 0 20px}
+.badge{font-size:12px;font-weight:600;letter-spacing:.04em;padding:3px 8px;border-radius:var(--radius-md);background:var(--pg-badge);color:var(--pg-badge-fg)}
+.boxes{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px}
+@media (max-width:760px){.boxes{grid-template-columns:1fr}}
+.box{background:var(--pg-card);border:1px solid var(--pg-line);border-radius:10px;padding:14px 16px;font-size:14px}
+.box h2{font-size:14px;margin:0 0 8px;font-weight:600}.box ul,.box ol{margin:0;padding-left:20px}.box li{margin:5px 0}
+.reco{font-size:11.5px;font-weight:600;padding:1px 6px;border-radius:5px;background:var(--pg-reco);color:var(--pg-reco-fg);margin-left:4px}
+.toolbar{position:sticky;top:0;z-index:100;background:var(--pg-bg);padding:10px 0;border-bottom:1px solid var(--pg-line);margin-bottom:16px;display:flex;flex-wrap:wrap;gap:10px 16px;align-items:center}
+.seg{display:inline-flex;border:1px solid var(--pg-line);border-radius:8px;overflow:hidden;background:var(--pg-card)}
+.seg button{border:0;background:transparent;color:var(--pg-fg);padding:5px 10px;font:inherit;font-size:13px;cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--pg-fg);color:var(--pg-bg)}
+.tlabel{font-size:12px;color:var(--pg-muted);margin-right:6px}
+.hint{margin:8px 0 0;color:var(--pg-muted);font-size:13px}
+h3.sec{font-size:15px;margin:28px 0 10px}
+
+/* ---------- Tokens T2 (copie de src/tokens) ---------- */
+.tk{--surface:#fff;--surface-side:#f3f3f3;--surface-raised:#fff;--field:#f2f2f2;--hover:#e9e9e9;--selected:#dedede;--line:#e4e4e4;--fg:#1a1a1a;--fg-2:#5c5c5c;--fg-3:#6b6b6b;
+  --accent:#1d4ed8;--accent-fg:#fff;--danger:#c62828;
+  --font-sans:-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;
+  --sp-1:4px;--sp-2:8px;--sp-3:12px;--sp-4:16px;--radius-sm:4px;--radius-md:8px;--radius-lg:12px;
+  --shadow-md:0 6px 20px rgb(0 0 0/.10);--icon:16px;--icon-stroke:1.6;--ease:cubic-bezier(.2,0,0,1);--dur-fast:120ms;
+  --fs-sm:12.5px;--fs-md:14px;--lh:1.45;--row-h:34px;--bar-h:44px;--side-w:240px;
+  /* Info-bulle : option A (sombre constant) */
+  --tip-bg:#1f1f1f;--tip-fg:#f2f2f2;--tip-fg-2:#a8a8a8;--tip-line:transparent;--tip-shadow:none}
+.tk.dark{--surface:#181818;--surface-side:#222;--surface-raised:#262626;--field:#2a2a2a;--hover:#303030;--selected:#3d3d3d;--line:#333;--fg:#ececec;--fg-2:#ababab;--fg-3:#8f8f8f;
+  --accent:#5b8def;--accent-fg:#0b1630;--danger:#f07167;--shadow-md:0 6px 20px rgb(0 0 0/.5);
+  --tip-bg:#3a3a3a;--tip-fg:#f2f2f2;--tip-fg-2:#b5b5b5;--tip-line:#4a4a4a}
+.tk.desktop{--fs-sm:11.5px;--fs-md:13px;--lh:1.4;--row-h:28px;--bar-h:38px;--side-w:220px}
+/* option B : inversée */
+.tk.look-b{--tip-bg:#1f1f1f;--tip-fg:#f2f2f2;--tip-fg-2:#a8a8a8;--tip-line:transparent}
+.tk.dark.look-b{--tip-bg:#ececec;--tip-fg:#1a1a1a;--tip-fg-2:#5c5c5c;--tip-line:transparent}
+/* option C : flottante comme les menus */
+.tk.look-c{--tip-bg:var(--surface-raised);--tip-fg:var(--fg);--tip-fg-2:var(--fg-2);--tip-line:var(--line);--tip-shadow:var(--shadow-md)}
+@media (prefers-reduced-motion: reduce){.tk{--dur-fast:0ms}}
+
+/* ---------- Mini AppShell ---------- */
+.app{position:relative;height:520px;border:1px solid var(--pg-line);border-radius:12px;overflow:hidden;background:var(--surface);color:var(--fg);font-family:var(--font-sans);font-size:var(--fs-md);line-height:var(--lh);display:grid;grid-template-columns:var(--side-w) minmax(0,1fr);grid-template-rows:var(--bar-h) 1fr}
+.app *{box-sizing:border-box}
+.app button{font:inherit;color:inherit;background:none;border:0;cursor:default}
+.app :focus-visible{outline:2px solid var(--accent);outline-offset:1px;border-radius:var(--radius-sm)}
+.ic{width:var(--icon);height:var(--icon);flex:none;stroke:currentColor;fill:none;stroke-width:var(--icon-stroke);stroke-linecap:round;stroke-linejoin:round}
+.ibtn{width:28px;height:28px;display:inline-grid;place-items:center;border-radius:var(--radius-md);color:var(--fg-2)}
+.ibtn:hover{background:var(--hover);color:var(--fg)}
+.ibtn[disabled]{opacity:.4}.ibtn[disabled]:hover{background:none;color:var(--fg-2)}
+.bar-side{grid-column:1;grid-row:1;background:var(--surface-side);border-right:1px solid var(--line);display:flex;align-items:center;gap:2px;padding:0 8px}
+.bar{grid-column:2;grid-row:1;display:flex;align-items:center;gap:8px;padding:0 8px 0 16px;border-bottom:1px solid var(--line);min-width:0}
+.ptitle{font-weight:600}
+.bar .sp{flex:1}
+.side{grid-column:1;grid-row:2;background:var(--surface-side);border-right:1px solid var(--line);display:flex;flex-direction:column;min-height:0;padding:6px}
+.it{display:flex;align-items:center;gap:8px;height:var(--row-h);padding:0 8px;border-radius:var(--radius-md);width:100%;text-align:left;color:var(--fg-2);min-width:0}
+.it:hover{background:var(--hover);color:var(--fg)}.it.on{background:var(--selected);color:var(--fg)}
+.it span{overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.slabel{font-size:var(--fs-sm);color:var(--fg-3);padding:12px 8px 4px}
+.side .grow{flex:1}
+.foot{display:flex;align-items:center;gap:8px;padding:8px;border-top:1px solid var(--line)}
+.av{width:24px;height:24px;border-radius:50%;background:var(--selected);display:grid;place-items:center;font-size:var(--fs-sm);font-weight:600;flex:none}
+.foot .who{flex:1;min-width:0;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.main{grid-column:2;grid-row:2;overflow:auto;padding:16px}
+.tools{display:flex;align-items:center;gap:8px;margin-bottom:12px}
+.btn{height:30px;padding:0 12px;border:1px solid var(--line)!important;border-radius:var(--radius-md);background:var(--surface)!important}
+.btn[disabled]{color:var(--fg-3)}
+.rows{border:1px solid var(--line);border-radius:var(--radius-lg);overflow:hidden}
+.row{display:grid;grid-template-columns:minmax(0,1fr) 120px auto;align-items:center;gap:12px;height:44px;padding:0 8px 0 12px;border-bottom:1px solid var(--line)}
+.row:last-child{border-bottom:0}.row:hover{background:var(--hover)}
+.row .t{overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.row .d{color:var(--fg-2);font-size:var(--fs-sm)}
+.row .acts{display:flex;gap:2px}
+
+/* ---------- Info-bulle ---------- */
+.tip{position:fixed;z-index:1000;max-width:240px;padding:3px 8px;border-radius:var(--radius-md);background:var(--tip-bg);color:var(--tip-fg);border:1px solid var(--tip-line);box-shadow:var(--tip-shadow);font-family:var(--font-sans);font-size:var(--fs-sm);line-height:1.4;pointer-events:none;opacity:0;transition:opacity var(--dur-fast) var(--ease);overflow-wrap:break-word}
+.tip.show{opacity:1}
+.tip kbd{font:inherit;color:var(--tip-fg-2);margin-left:8px;white-space:nowrap}
+.tip .arrow{position:absolute;width:8px;height:8px;background:var(--tip-bg);border:1px solid var(--tip-line);transform:rotate(45deg);display:none}
+.tip.has-arrow .arrow{display:block}
+.tip[data-side="bottom"] .arrow{top:-5px;border-right:0;border-bottom:0}
+.tip[data-side="top"] .arrow{bottom:-5px;border-left:0;border-top:0}
+.tip[data-side="right"] .arrow{left:-5px;border-top:0;border-right:0}
+.tip[data-side="left"] .arrow{right:-5px;border-bottom:0;border-left:0}
+
+/* ---------- Aperçu A / B / C ---------- */
+.cmp{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+@media (max-width:760px){.cmp{grid-template-columns:1fr}}
+.opt{background:var(--pg-card);border:1px solid var(--pg-line);border-radius:10px;padding:12px;font-size:13px}
+.opt h4{margin:0 0 2px;font-size:14px}.opt p{margin:0 0 10px;color:var(--pg-muted)}
+.duo{display:grid;grid-template-columns:1fr 1fr;border-radius:8px;overflow:hidden;border:1px solid var(--pg-line)}
+.duo > div{min-width:0;padding:18px 10px 14px;display:flex;flex-direction:column;align-items:center;gap:6px;background:var(--surface);color:var(--fg);font-family:var(--font-sans)}
+.duo .ibtn{background:var(--hover);color:var(--fg)}
+.duo .tip{position:relative;opacity:1;white-space:nowrap}
+</style>
+</head>
+<body>
+<div class="pg">
+  <h1>Tooltip — v1 <span class="badge" id="status">VALIDÉ le 2026-11-21</span></h1>
+  <p class="sub">Spec : src/components/Tooltip/Tooltip.spec.md. Première brique d'AppShell : IconButton, la sidebar et les titres tronqués s'en servent.</p>
+
+  <div class="boxes">
+    <div class="box">
+      <h2>Déjà décidé</h2>
+      <ul>
+        <li>Une info-bulle se place du côté où il y a de la place ; elle n'est jamais coupée par un bord (layout-rules).</li>
+        <li>Fondu de 120 ms ; rien ne bouge si l'utilisateur réduit les animations (D-014).</li>
+        <li>Raccourcis notés « Mod » : ⌘ sur macOS, Ctrl sur Windows (D-006).</li>
+        <li>Texte seul, 240 px de large au plus ; jamais sur un élément désactivé ni sur écran tactile ; contenu interactif → Popover.</li>
+      </ul>
+    </div>
+    <div class="box">
+      <h2>À décider</h2>
+      <ol>
+        <li><b>Apparence</b> : A sombre constant (bulle sombre en clair comme en sombre, avec un bord fin en sombre) ; B inversée (claire en mode sombre) ; C flottante comme les menus. Choix : A (D-030). <span class="reco">validé</span></li>
+        <li><b>Délai</b> : 500 ms au premier survol ; puis apparition immédiate en passant d'un bouton à l'autre, tant qu'on ne s'arrête pas plus de 600 ms (D-031). <span class="reco">validé</span></li>
+        <li><b>Raccourci</b> : affiché après le texte, en couleur secondaire (« Replier la sidebar ⌘B ») (D-032). <span class="reco">validé</span></li>
+        <li><b>Flèche</b> vers l'élément : aucune (D-033). <span class="reco">validé</span></li>
+      </ol>
+    </div>
+  </div>
+
+  <h3 class="sec">Aperçu des options d'apparence</h3>
+  <div class="cmp" id="cmp"></div>
+
+  <h3 class="sec">Dans l'app</h3>
+  <div class="toolbar" id="toolbar">
+    <span><span class="tlabel">Apparence</span><span class="seg" data-k="look"><button aria-pressed="true" data-v="a">A</button><button aria-pressed="false" data-v="b">B</button><button aria-pressed="false" data-v="c">C</button></span></span>
+    <span><span class="tlabel">Délai</span><span class="seg" data-k="delay"><button aria-pressed="false" data-v="0">0</button><button aria-pressed="true" data-v="500">500 ms</button><button aria-pressed="false" data-v="1000">1 s</button></span></span>
+    <span><span class="tlabel">Raccourci</span><span class="seg" data-k="kbd"><button aria-pressed="true" data-v="on">Oui</button><button aria-pressed="false" data-v="off">Non</button></span></span>
+    <span><span class="tlabel">Flèche</span><span class="seg" data-k="arrow"><button aria-pressed="true" data-v="off">Non</button><button aria-pressed="false" data-v="on">Oui</button></span></span>
+    <span><span class="tlabel">Plateforme</span><span class="seg" data-k="plat"><button aria-pressed="true" data-v="mac">macOS</button><button aria-pressed="false" data-v="win">Windows</button></span></span>
+    <span><span class="tlabel">Mode</span><span class="seg" data-k="mode"><button aria-pressed="true" data-v="light">Clair</button><button aria-pressed="false" data-v="dark">Sombre</button></span></span>
+    <span><span class="tlabel">Densité</span><span class="seg" data-k="density"><button aria-pressed="true" data-v="web">Web</button><button aria-pressed="false" data-v="desktop">Desktop</button></span></span>
+  </div>
+
+  <div class="app tk" id="app">
+    <div class="bar-side">
+      <button class="ibtn" data-tip="Replier la sidebar" data-kbd="B" aria-label="Replier la sidebar"><svg class="ic" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 3v18"/></svg></button>
+      <span style="flex:1"></span>
+      <button class="ibtn" data-tip="Précédent" data-kbd="[" aria-label="Précédent"><svg class="ic" viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"/></svg></button>
+      <button class="ibtn" data-tip="Suivant" data-kbd="]" aria-label="Suivant"><svg class="ic" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg></button>
+    </div>
+    <div class="bar">
+      <span class="ptitle">Documents</span>
+      <span class="sp"></span>
+      <button class="ibtn" data-tip="Rechercher" data-kbd="K" aria-label="Rechercher"><svg class="ic" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg></button>
+      <button class="ibtn" data-tip="Nouveau document" aria-label="Nouveau document"><svg class="ic" viewBox="0 0 24 24"><path d="M5 12h14M12 5v14"/></svg></button>
+      <button class="ibtn" data-tip="Afficher le panneau de détail" data-kbd="." aria-label="Afficher le panneau de détail"><svg class="ic" viewBox="0 0 24 24"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg></button>
+      <button class="ibtn" data-tip="Plus d'actions" aria-label="Plus d'actions"><svg class="ic" viewBox="0 0 24 24"><circle cx="5" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/></svg></button>
+    </div>
+    <nav class="side" aria-label="Navigation">
+      <button class="it on"><svg class="ic" viewBox="0 0 24 24"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/></svg><span>Documents</span></button>
+      <button class="it"><svg class="ic" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 10h18M8 2v4M16 2v4"/></svg><span>Planning</span></button>
+      <div class="slabel">Récents</div>
+      <button class="it" data-trunc><svg class="ic" viewBox="0 0 24 24"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/></svg><span>Rapport trimestriel des ventes de la région Sud-Ouest</span></button>
+      <button class="it" data-trunc><svg class="ic" viewBox="0 0 24 24"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/></svg><span>Note</span></button>
+      <span class="grow"></span>
+      <div class="foot">
+        <span class="av">CM</span><span class="who">Camille Martin</span>
+        <button class="ibtn" data-tip="Réglages" data-kbd="," data-place="bottom" aria-label="Réglages"><svg class="ic" viewBox="0 0 24 24"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg></button>
+      </div>
+    </nav>
+    <main class="main">
+      <div class="tools">
+        <button class="btn">Filtrer</button>
+        <button class="btn" disabled>Exporter</button>
+        <span style="flex:1"></span>
+        <button class="ibtn" data-tip="Les documents archivés restent consultables pendant 90 jours, puis ils sont supprimés." aria-label="À propos de l'archivage"><svg class="ic" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 16v-4M12 8h.01"/></svg></button>
+      </div>
+      <div class="rows" id="rows"></div>
+    </main>
+  </div>
+  <p class="hint">À essayer : survolez les boutons de la barre, puis glissez de l'un à l'autre (apparition immédiate) ; survolez l'engrenage en bas à gauche (la bulle remonte) et « Plus d'actions » au bord droit (la bulle glisse) ; survolez un titre tronqué ; tabulez au clavier (apparition immédiate), puis Échap. « Exporter » est désactivé : pas d'info-bulle.</p>
+</div>
+
+<div class="tip tk" id="tip" role="tooltip"><span class="arrow"></span><span id="tipText"></span></div>
+
+<script>
+(function(){
+  var state = {look:'a', delay:500, kbd:'on', arrow:'off', plat:'mac', mode:'light', density:'web'};
+  var app = document.getElementById('app'), tip = document.getElementById('tip'), tipText = document.getElementById('tipText');
+  var DOCS = [['Rapport trimestriel des ventes de la région Sud-Ouest et analyse des écarts','21 nov.'],['Budget 2027','20 nov.'],['Compte rendu de la réunion d\'équipe du lundi','18 nov.'],['Contrat cadre fournisseur','12 nov.'],['Plan de formation','3 nov.']];
+  document.getElementById('rows').innerHTML = DOCS.map(function(d){
+    return '<div class="row"><span class="t" data-trunc>'+d[0]+'</span><span class="d">'+d[1]+'</span><span class="acts">'
+      + '<button class="ibtn" data-tip="Modifier" aria-label="Modifier"><svg class="ic" viewBox="0 0 24 24"><path d="M21.17 6.81a1 1 0 0 0-3.99-3.99L3.84 16.17a2 2 0 0 0-.5.83l-1.32 4.35a.5.5 0 0 0 .62.62l4.35-1.32a2 2 0 0 0 .83-.5z"/></svg></button>'
+      + '<button class="ibtn" data-tip="Supprimer" data-kbd="⌫" aria-label="Supprimer"><svg class="ic" viewBox="0 0 24 24"><path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button></span></div>';
+  }).join('');
+  // Titre de la ligne tronqué : focusable pour le clavier
+  app.querySelectorAll('.row .t').forEach(function(t){ t.tabIndex = 0; });
+
+  function kbdLabel(k){
+    if (k === '⌫') return state.plat==='mac' ? '⌫' : 'Suppr';
+    return state.plat==='mac' ? '⌘'+k : 'Ctrl+'+k;
+  }
+  function textOf(el){
+    if (el.hasAttribute('data-tip')) return el.getAttribute('data-tip');
+    var s = el.matches('[data-trunc]') && el.querySelector('span') ? el.querySelector('span') : el;
+    return s.scrollWidth > s.clientWidth + 1 ? s.textContent : null; // seulement si le texte est tronqué
+  }
+
+  /* ---------- Placement : côté préféré, retournement, glissement ---------- */
+  var GAP = 6, PAD = 8;
+  function place(el){
+    var a = el.getBoundingClientRect(), b = app.getBoundingClientRect();
+    tip.style.left = '0px'; tip.style.top = '0px';
+    var w = tip.offsetWidth, h = tip.offsetHeight;
+    var pref = el.getAttribute('data-place') || 'bottom';
+    var side = pref;
+    var fits = {bottom: a.bottom + GAP + h <= b.bottom - PAD, top: a.top - GAP - h >= b.top + PAD};
+    if (!fits[side]) side = side==='bottom' ? 'top' : 'bottom';
+    if (!fits[side]) side = pref;
+    var top = side==='bottom' ? a.bottom + GAP : a.top - GAP - h;
+    var left = a.left + a.width/2 - w/2;
+    left = Math.max(b.left + PAD, Math.min(left, b.right - PAD - w));
+    tip.style.left = left + 'px'; tip.style.top = top + 'px'; tip.setAttribute('data-side', side);
+    var ar = tip.querySelector('.arrow');
+    ar.style.left = Math.max(8, Math.min(w - 16, a.left + a.width/2 - left - 4)) + 'px';
+  }
+
+  /* ---------- Délai et passage d'un bouton à l'autre ---------- */
+  var timer = null, current = null, lastHide = 0, WARM = 600;
+  function show(el, now){
+    var t = textOf(el); if (!t) return;
+    clearTimeout(timer);
+    var go = function(){
+      current = el;
+      var k = el.getAttribute('data-kbd');
+      tipText.innerHTML = '';
+      tipText.appendChild(document.createTextNode(t));
+      if (k && state.kbd==='on'){ var kb = document.createElement('kbd'); kb.textContent = kbdLabel(k); tipText.appendChild(kb); }
+      tip.style.whiteSpace = t.length > 40 ? 'normal' : 'nowrap';
+      place(el); tip.classList.add('show');
+    };
+    var warm = current || (Date.now() - lastHide < WARM);
+    if (now || warm || state.delay === 0) go(); else timer = setTimeout(go, state.delay);
+  }
+  function hide(){ clearTimeout(timer); if (current){ lastHide = Date.now(); } current = null; tip.classList.remove('show'); }
+
+  var targets = '[data-tip],[data-trunc]';
+  app.addEventListener('pointerover', function(e){
+    if (e.pointerType === 'touch') return;
+    var el = e.target.closest(targets); if (!el || el.disabled) return;
+    if (el !== current) show(el, false);
+  });
+  app.addEventListener('pointerout', function(e){
+    var el = e.target.closest(targets); if (!el) return;
+    if (e.relatedTarget && el.contains(e.relatedTarget)) return;
+    hide();
+  });
+  var keyboard = false;
+  document.addEventListener('keydown', function(e){ keyboard = true; if (e.key === 'Escape' && current){ hide(); e.stopPropagation(); } }, true);
+  document.addEventListener('pointerdown', function(){ keyboard = false; hide(); }, true);
+  app.addEventListener('focusin', function(e){ var el = e.target.closest(targets); if (el && keyboard) show(el, true); });
+  app.addEventListener('focusout', function(){ hide(); });
+  window.addEventListener('scroll', hide, true);
+
+  /* ---------- Aperçu A / B / C ---------- */
+  var OPTS = [['a','A — Sombre constant','Bulle sombre en clair comme en sombre ; bord fin en sombre.'],['b','B — Inversée','Sombre en mode clair, claire en mode sombre.'],['c','C — Flottante','Comme les menus : fond relevé, bordure, ombre.']];
+  function renderCmp(){
+    document.getElementById('cmp').innerHTML = OPTS.map(function(o){
+      var cell = function(dark){ return '<div class="tk look-'+o[0]+(dark?' dark':'')+(state.density==='desktop'?' desktop':'')+'"><span class="ibtn"><svg class="ic" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg></span><span class="tip tk look-'+o[0]+(dark?' dark':'')+(state.density==='desktop'?' desktop':'')+'">Rechercher'+(state.kbd==='on'?'<kbd>'+kbdLabel('K')+'</kbd>':'')+'</span></div>'; };
+      return '<div class="opt"><h4>'+o[1]+(o[0]==='a'?' <span class="reco">choisi</span>':'')+'</h4><p>'+o[2]+'</p><div class="duo">'+cell(false)+cell(true)+'</div></div>';
+    }).join('');
+  }
+
+  function apply(){
+    [app, tip].forEach(function(n){
+      n.classList.toggle('dark', state.mode==='dark');
+      n.classList.toggle('desktop', state.density==='desktop');
+      n.classList.remove('look-a','look-b','look-c'); n.classList.add('look-'+state.look);
+    });
+    tip.classList.toggle('has-arrow', state.arrow==='on');
+    document.documentElement.setAttribute('data-theme', state.mode);
+    renderCmp(); hide();
+  }
+  document.querySelectorAll('.seg').forEach(function(seg){
+    seg.addEventListener('click', function(e){
+      var b = e.target.closest('button'); if (!b) return;
+      seg.querySelectorAll('button').forEach(function(x){ x.setAttribute('aria-pressed', String(x===b)); });
+      var k = seg.getAttribute('data-k'), v = b.getAttribute('data-v');
+      state[k] = k==='delay' ? +v : v; apply();
+    });
+  });
+  apply();
+})();
+</script>
+</body>
+</html>

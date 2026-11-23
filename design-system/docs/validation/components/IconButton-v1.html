@@ -1,0 +1,232 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>IconButton — validation v1</title>
+<style>
+/* ---------- Page de validation ---------- */
+:root{--pg-bg:#f6f6f6;--pg-fg:#1a1a1a;--pg-muted:#5c5c5c;--pg-line:#e2e2e2;--pg-card:#fff;--pg-badge:#fff4d6;--pg-badge-fg:#7a5a00;--pg-reco:#e7f0ff;--pg-reco-fg:#1d4ed8}
+:root[data-theme="dark"]{--pg-bg:#121212;--pg-fg:#ececec;--pg-muted:#9a9a9a;--pg-line:#2c2c2c;--pg-card:#1b1b1b;--pg-badge:#3a2f10;--pg-badge-fg:#f3d27a;--pg-reco:#16233d;--pg-reco-fg:#9cc0ff}
+*{box-sizing:border-box}html,body{margin:0}
+body{background:var(--pg-bg);color:var(--pg-fg);font:15px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif}
+.pg{max-width:1100px;margin:0 auto;padding:24px 16px 64px}
+h1{font-size:22px;font-weight:600;margin:0 0 4px;display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.sub{color:var(--pg-muted);margin:0 0 20px}
+.badge{font-size:12px;font-weight:600;letter-spacing:.04em;padding:3px 8px;border-radius:var(--radius-md);background:var(--pg-badge);color:var(--pg-badge-fg)}
+.boxes{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px}
+@media (max-width:760px){.boxes{grid-template-columns:1fr}}
+.box{background:var(--pg-card);border:1px solid var(--pg-line);border-radius:10px;padding:14px 16px;font-size:14px}
+.box h2{font-size:14px;margin:0 0 8px;font-weight:600}.box ul,.box ol{margin:0;padding-left:20px}.box li{margin:5px 0}
+.reco{font-size:11.5px;font-weight:600;padding:1px 6px;border-radius:5px;background:var(--pg-reco);color:var(--pg-reco-fg);margin-left:4px}
+.toolbar{position:sticky;top:0;z-index:100;background:var(--pg-bg);padding:10px 0;border-bottom:1px solid var(--pg-line);margin-bottom:16px;display:flex;flex-wrap:wrap;gap:10px 16px;align-items:center}
+.seg{display:inline-flex;border:1px solid var(--pg-line);border-radius:8px;overflow:hidden;background:var(--pg-card)}
+.seg button{border:0;background:transparent;color:var(--pg-fg);padding:5px 10px;font:inherit;font-size:13px;cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--pg-fg);color:var(--pg-bg)}
+.tlabel{font-size:12px;color:var(--pg-muted);margin-right:6px}
+.hint{margin:8px 0 0;color:var(--pg-muted);font-size:13px}
+h3.sec{font-size:15px;margin:28px 0 10px}
+
+/* ---------- Tokens T2 (copie de src/tokens) ---------- */
+.tk{--surface:#fff;--surface-side:#f3f3f3;--surface-raised:#fff;--field:#f2f2f2;--hover:#e9e9e9;--selected:#dedede;--line:#e4e4e4;--fg:#1a1a1a;--fg-2:#5c5c5c;--fg-3:#6b6b6b;
+  --accent:#1d4ed8;--accent-fg:#fff;
+  --font-sans:-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;
+  --radius-sm:4px;--radius-md:8px;--radius-lg:12px;--shadow-md:0 6px 20px rgb(0 0 0/.10);
+  --icon:16px;--icon-stroke:1.6;--ease:cubic-bezier(.2,0,0,1);--dur-fast:120ms;
+  --fs-sm:12.5px;--fs-md:14px;--lh:1.45;--row-h:34px;--bar-h:44px;--side-w:240px;--detail-w:280px;
+  --tip-bg:#1f1f1f;--tip-fg:#f2f2f2;--tip-fg-2:#a8a8a8;--tip-line:transparent;
+  /* Taille du bouton-icône : option A */
+  --ib:28px}
+.tk.dark{--surface:#181818;--surface-side:#222;--surface-raised:#262626;--field:#2a2a2a;--hover:#303030;--selected:#3d3d3d;--line:#333;--fg:#ececec;--fg-2:#ababab;--fg-3:#8f8f8f;
+  --accent:#5b8def;--accent-fg:#0b1630;--shadow-md:0 6px 20px rgb(0 0 0/.5);
+  --tip-bg:#3a3a3a;--tip-fg:#f2f2f2;--tip-fg-2:#b5b5b5;--tip-line:#4a4a4a}
+.tk.desktop{--fs-sm:11.5px;--fs-md:13px;--lh:1.4;--row-h:28px;--bar-h:38px;--side-w:220px;--detail-w:260px;--ib:24px}
+.tk.size-b{--ib:32px}.tk.size-b.desktop{--ib:28px}
+.tk.touch{--ib:44px}
+@media (prefers-reduced-motion: reduce){.tk{--dur-fast:0ms}}
+
+/* ---------- IconButton ---------- */
+.ib{width:var(--ib);height:var(--ib);display:inline-grid;place-items:center;flex:none;border:0;padding:0;background:transparent;color:var(--fg-2);border-radius:var(--radius-md);cursor:default;transition:background-color var(--dur-fast) var(--ease),color var(--dur-fast) var(--ease)}
+.tk.round .ib{border-radius:50%}
+.ib:hover,.ib.f-hover{background:var(--hover);color:var(--fg)}
+.ib:active,.ib.f-press{background:var(--selected)}
+.ib[aria-pressed="true"]{background:var(--hover);color:var(--fg)}
+.ib[aria-pressed="true"]:hover,.ib[aria-pressed="true"].f-hover{background:var(--selected)}
+.ib:focus-visible,.ib.f-focus{outline:2px solid var(--accent);outline-offset:1px}
+.ib[disabled]{opacity:.4}.ib[disabled]:hover{background:transparent;color:var(--fg-2)}
+/* variante avec fond (option B de la question 3) */
+.ib.filled{background:var(--field);color:var(--fg)}
+.ib.filled:hover,.ib.filled.f-hover{background:var(--hover)}
+.tk.no-filled .ib.filled{background:transparent;color:var(--fg-2)}
+.tk.no-filled .ib.filled:hover{background:var(--hover);color:var(--fg)}
+.ic{width:var(--icon);height:var(--icon);stroke:currentColor;fill:none;stroke-width:var(--icon-stroke);stroke-linecap:round;stroke-linejoin:round}
+.group{display:flex;gap:2px;align-items:center}
+
+/* ---------- Mini AppShell ---------- */
+.app{position:relative;height:500px;border:1px solid var(--pg-line);border-radius:12px;overflow:hidden;background:var(--surface);color:var(--fg);font-family:var(--font-sans);font-size:var(--fs-md);line-height:var(--lh);display:grid;grid-template-columns:var(--side-w) minmax(0,1fr) var(--detail-w);grid-template-rows:var(--bar-h) 1fr}
+.app.nodetail{grid-template-columns:var(--side-w) minmax(0,1fr) 0}
+.app *{box-sizing:border-box}
+.app button{font:inherit}
+.bar-side{grid-column:1;grid-row:1;background:var(--surface-side);border-right:1px solid var(--line);display:flex;align-items:center;gap:2px;padding:0 8px}
+.bar{grid-column:2/4;grid-row:1;display:flex;align-items:center;gap:8px;padding:0 8px 0 16px;border-bottom:1px solid var(--line);min-width:0}
+.ptitle{font-weight:600}.sp{flex:1}
+.side{grid-column:1;grid-row:2;background:var(--surface-side);border-right:1px solid var(--line);display:flex;flex-direction:column;padding:6px}
+.it{display:flex;align-items:center;gap:8px;height:var(--row-h);padding:0 8px;border-radius:var(--radius-md);color:var(--fg-2)}
+.it.on{background:var(--selected);color:var(--fg)}
+.grow{flex:1}
+.foot{display:flex;align-items:center;gap:8px;padding:8px;border-top:1px solid var(--line)}
+.av{width:24px;height:24px;border-radius:50%;background:var(--selected);display:grid;place-items:center;font-size:var(--fs-sm);font-weight:600;flex:none}
+.foot .who{flex:1}
+.main{grid-column:2;grid-row:2;overflow:auto;padding:16px;min-width:0}
+.rows{border:1px solid var(--line);border-radius:var(--radius-lg);overflow:hidden}
+.row{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:12px;min-height:44px;padding:4px 8px 4px 12px;border-bottom:1px solid var(--line)}
+.row:last-child{border-bottom:0}.row:hover{background:var(--hover)}
+.row .t{overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.row .acts{opacity:.0}.row:hover .acts,.row:focus-within .acts{opacity:1}
+.card{position:relative;margin-top:16px;border:1px solid var(--line);border-radius:var(--radius-lg);padding:16px;height:120px;background:linear-gradient(135deg,var(--field),var(--surface))}
+.card .corner{position:absolute;top:8px;right:8px}
+.card p{margin:0;color:var(--fg-2);font-size:var(--fs-sm)}
+.detail{grid-column:3;grid-row:2;border-left:1px solid var(--line);overflow:hidden;display:flex;flex-direction:column}
+.app.nodetail .detail{display:none}
+.d-head{display:flex;align-items:center;gap:8px;padding:6px 8px 6px 16px;border-bottom:1px solid var(--line);font-weight:600}
+.d-body{padding:16px;color:var(--fg-2);font-size:var(--fs-sm)}
+
+/* ---------- Grille d'états ---------- */
+.states{display:grid;grid-template-columns:repeat(7,1fr);gap:0;border:1px solid var(--pg-line);border-radius:10px;overflow:hidden}
+@media (max-width:760px){.states{grid-template-columns:repeat(3,1fr)}}
+.states > div{display:flex;flex-direction:column;align-items:center;gap:8px;padding:16px 8px;background:var(--surface);color:var(--fg);font-family:var(--font-sans);font-size:12px}
+.states span.l{color:var(--fg-2)}
+
+/* ---------- Info-bulle (D-030 à D-033) ---------- */
+.tip{position:fixed;z-index:1000;max-width:240px;padding:3px 8px;border-radius:var(--radius-md);background:var(--tip-bg);color:var(--tip-fg);border:1px solid var(--tip-line);font-family:var(--font-sans);font-size:var(--fs-sm);line-height:1.4;pointer-events:none;opacity:0;transition:opacity var(--dur-fast) var(--ease);white-space:nowrap}
+.tip.show{opacity:1}
+.tip kbd{font:inherit;color:var(--tip-fg-2);margin-left:8px}
+</style>
+</head>
+<body>
+<div class="pg">
+  <h1>IconButton — v1 <span class="badge" id="status">VALIDÉ le 2026-11-21</span></h1>
+  <p class="sub">Spec : src/components/IconButton/IconButton.spec.md. Deuxième brique d'AppShell, après Tooltip (validé).</p>
+
+  <div class="boxes">
+    <div class="box">
+      <h2>Déjà décidé</h2>
+      <ul>
+        <li><code>label</code> obligatoire : nom accessible et texte de l'info-bulle ; raccourci facultatif (D-032).</li>
+        <li>Info-bulle sombre, 500 ms, sans flèche (D-030 à D-033) ; aucune sur un bouton désactivé.</li>
+        <li>Icône de 16 px en <code>currentColor</code> (D-011, D-028) ; boutons voisins espacés de 2 px.</li>
+        <li>Pas de couleur d'accent ni de danger ; pas de chargement ; bascule possible (<code>aria-pressed</code>).</li>
+        <li>Sélectionné : fond clair <code>--hover</code> ; au survol, il fonce en <code>--selected</code> (D-034).</li>
+        <li>Sur écran tactile : zone de 44 × 44 px, pas d'info-bulle.</li>
+      </ul>
+    </div>
+    <div class="box">
+      <h2>À décider</h2>
+      <ol>
+        <li><b>Taille</b> : A 28 px en web, 24 px en desktop ; B 32 px en web, 28 px en desktop. Les deux passent le minimum de 24 px. Choix : A (D-035). <span class="reco">validé</span></li>
+        <li><b>Rayon</b> : arrondi de 8 px (<code>--radius-md</code>), comme les éléments de la sidebar ; ou rond. Choix : 8 px (D-036). <span class="reco">validé</span></li>
+        <li><b>Variantes</b> : une seule, transparente ; ou aussi une variante avec fond <code>--field</code> pour un bouton isolé sur une image ou une carte (coin de la carte ci-dessous). Choix : une seule (D-037). <span class="reco">validé</span></li>
+      </ol>
+    </div>
+  </div>
+
+  <div class="toolbar">
+    <span><span class="tlabel">Taille</span><span class="seg" data-k="size"><button aria-pressed="true" data-v="a">A</button><button aria-pressed="false" data-v="b">B</button></span></span>
+    <span><span class="tlabel">Rayon</span><span class="seg" data-k="radius"><button aria-pressed="true" data-v="md">8 px</button><button aria-pressed="false" data-v="round">Rond</button></span></span>
+    <span><span class="tlabel">Variante avec fond</span><span class="seg" data-k="filled"><button aria-pressed="true" data-v="no">Non</button><button aria-pressed="false" data-v="yes">Oui</button></span></span>
+    <span><span class="tlabel">Écran</span><span class="seg" data-k="touch"><button aria-pressed="true" data-v="no">Souris</button><button aria-pressed="false" data-v="yes">Tactile</button></span></span>
+    <span><span class="tlabel">Mode</span><span class="seg" data-k="mode"><button aria-pressed="true" data-v="light">Clair</button><button aria-pressed="false" data-v="dark">Sombre</button></span></span>
+    <span><span class="tlabel">Densité</span><span class="seg" data-k="density"><button aria-pressed="true" data-v="web">Web</button><button aria-pressed="false" data-v="desktop">Desktop</button></span></span>
+  </div>
+
+  <h3 class="sec" style="margin-top:0">États</h3>
+  <div class="states tk" id="states"></div>
+
+  <h3 class="sec">Dans l'app</h3>
+  <div class="app tk" id="app"></div>
+  <p class="hint">À essayer : survolez et tabulez sur les boutons ; cliquez sur le bouton liste en haut à droite (bascule du panneau de détail) ; survolez une ligne pour voir ses actions ; regardez le bouton isolé au coin de la carte avec « Variante avec fond » sur Oui puis Non.</p>
+</div>
+
+<div class="tip tk" id="tip" role="tooltip"></div>
+
+<script>
+(function(){
+  var state = {size:'a', radius:'md', filled:'no', touch:'no', mode:'light', density:'web', detail:true};
+  var P = {
+    panel:'<rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 3v18"/>', left:'<path d="m15 18-6-6 6-6"/>', right:'<path d="m9 18 6-6-6-6"/>',
+    search:'<circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/>', plus:'<path d="M5 12h14M12 5v14"/>',
+    list:'<path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/>', more:'<circle cx="5" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/>',
+    x:'<path d="M18 6 6 18M6 6l12 12"/>', pencil:'<path d="M21.17 6.81a1 1 0 0 0-3.99-3.99L3.84 16.17a2 2 0 0 0-.5.83l-1.32 4.35a.5.5 0 0 0 .62.62l4.35-1.32a2 2 0 0 0 .83-.5z"/>',
+    trash:'<path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>',
+    expand:'<path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/>', file:'<path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/>',
+    gear:'<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09a1.65 1.65 0 0 0-1.08-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09a1.65 1.65 0 0 0 1.51-1.08 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>'
+  };
+  function ic(n){ return '<svg class="ic" viewBox="0 0 24 24" aria-hidden="true">'+P[n]+'</svg>'; }
+  function ib(n, label, extra){ extra = extra || {};
+    return '<button class="ib'+(extra.cls?' '+extra.cls:'')+'" aria-label="'+label+'" data-tip="'+label+'"'+(extra.kbd?' data-kbd="'+extra.kbd+'"':'')+(extra.pressed!==undefined?' aria-pressed="'+extra.pressed+'"':'')+(extra.disabled?' disabled':'')+(extra.id?' id="'+extra.id+'"':'')+'>'+ic(n)+'</button>'; }
+
+  var app = document.getElementById('app'), states = document.getElementById('states'), tip = document.getElementById('tip');
+  var DOCS = ['Rapport trimestriel des ventes','Budget 2027','Compte rendu de la réunion d\'équipe','Contrat cadre fournisseur'];
+  function render(){
+    app.className = 'app tk' + (state.detail ? '' : ' nodetail');
+    app.innerHTML =
+      '<div class="bar-side"><div class="group">'+ib('panel','Replier la sidebar',{kbd:'B'})+'</div><span class="sp"></span><div class="group">'+ib('left','Précédent')+ib('right','Suivant',{disabled:true})+'</div></div>'
+      + '<div class="bar"><span class="ptitle">Documents</span><span class="sp"></span><div class="group">'+ib('search','Rechercher',{kbd:'K'})+ib('plus','Nouveau document')+ib('list','Panneau de détail',{kbd:'.',pressed:state.detail,id:'det'})+ib('more','Plus d\'actions')+'</div></div>'
+      + '<nav class="side"><div class="it on">'+ic('file')+'Documents</div><div class="it">'+ic('file')+'Modèles</div><span class="grow"></span><div class="foot"><span class="av">CM</span><span class="who">Camille Martin</span>'+ib('gear','Réglages',{kbd:','})+'</div></nav>'
+      + '<main class="main"><div class="rows">'+DOCS.map(function(d){ return '<div class="row"><span class="t">'+d+'</span><span class="acts group">'+ib('pencil','Modifier')+ib('trash','Supprimer')+'</span></div>'; }).join('')+'</div>'
+      + '<div class="card"><p>Aperçu du document</p><span class="corner">'+ib('expand','Agrandir l\'aperçu',{cls:'filled'})+'</span></div></main>'
+      + '<aside class="detail"><div class="d-head">Détail<span class="sp"></span>'+ib('x','Fermer le détail')+'</div><div class="d-body">Propriétés du document sélectionné.</div></aside>';
+    states.innerHTML = [['Par défaut',''],['Survol','f-hover'],['Pressé','f-press'],['Focus','f-focus'],['Sélectionné','sel'],['Sélectionné + survol','selh'],['Désactivé','dis']].map(function(s){
+      var b = s[1]==='sel' ? ib('list','Exemple',{pressed:true}) : s[1]==='selh' ? ib('list','Exemple',{pressed:true,cls:'f-hover'}) : s[1]==='dis' ? ib('trash','Exemple',{disabled:true}) : ib('search','Exemple',{cls:s[1]});
+      return '<div>'+b.replace('data-tip="Exemple"','tabindex="-1"')+'<span class="l">'+s[0]+'</span></div>'; }).join('');
+    document.getElementById('det').addEventListener('click', function(){ state.detail = !state.detail; hide(); render(); });
+    app.querySelectorAll('.d-head .ib').forEach(function(b){ b.addEventListener('click', function(){ state.detail = false; hide(); render(); }); });
+    apply();
+  }
+
+  /* Info-bulle : D-030 à D-033 */
+  var timer = null, current = null, lastHide = 0, keyboard = false;
+  function show(el, now){
+    if (state.touch === 'yes') return;
+    clearTimeout(timer);
+    var go = function(){
+      current = el; var k = el.getAttribute('data-kbd');
+      tip.innerHTML = ''; tip.appendChild(document.createTextNode(el.getAttribute('data-tip')));
+      if (k){ var kb = document.createElement('kbd'); kb.textContent = '⌘'+k; tip.appendChild(kb); }
+      var a = el.getBoundingClientRect(), b = app.getBoundingClientRect();
+      var w = tip.offsetWidth, h = tip.offsetHeight;
+      var top = a.bottom + 6 + h <= b.bottom - 8 ? a.bottom + 6 : a.top - 6 - h;
+      var left = Math.max(b.left + 8, Math.min(a.left + a.width/2 - w/2, b.right - 8 - w));
+      tip.style.left = left+'px'; tip.style.top = top+'px'; tip.classList.add('show');
+    };
+    if (now || current || Date.now() - lastHide < 600) go(); else timer = setTimeout(go, 500);
+  }
+  function hide(){ clearTimeout(timer); if (current) lastHide = Date.now(); current = null; tip.classList.remove('show'); }
+  app.addEventListener('pointerover', function(e){ var el = e.target.closest('[data-tip]'); if (el && !el.disabled && el !== current) show(el, false); });
+  app.addEventListener('pointerout', function(e){ var el = e.target.closest('[data-tip]'); if (el && !(e.relatedTarget && el.contains(e.relatedTarget))) hide(); });
+  document.addEventListener('keydown', function(e){ keyboard = true; if (e.key === 'Escape') hide(); }, true);
+  document.addEventListener('pointerdown', function(){ keyboard = false; hide(); }, true);
+  app.addEventListener('focusin', function(e){ var el = e.target.closest('[data-tip]'); if (el && keyboard) show(el, true); });
+  app.addEventListener('focusout', hide);
+  window.addEventListener('scroll', hide, true);
+
+  function apply(){
+    [app, states, tip].forEach(function(n){
+      n.classList.toggle('dark', state.mode==='dark'); n.classList.toggle('desktop', state.density==='desktop');
+      n.classList.toggle('size-b', state.size==='b'); n.classList.toggle('round', state.radius==='round');
+      n.classList.toggle('no-filled', state.filled==='no'); n.classList.toggle('touch', state.touch==='yes');
+    });
+    document.documentElement.setAttribute('data-theme', state.mode);
+  }
+  document.querySelectorAll('.seg').forEach(function(seg){
+    seg.addEventListener('click', function(e){
+      var b = e.target.closest('button'); if (!b) return;
+      seg.querySelectorAll('button').forEach(function(x){ x.setAttribute('aria-pressed', String(x===b)); });
+      state[seg.getAttribute('data-k')] = b.getAttribute('data-v'); hide(); apply();
+    });
+  });
+  render();
+})();
+</script>
+</body>
+</html>

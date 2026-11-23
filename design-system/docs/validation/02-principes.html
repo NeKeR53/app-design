@@ -1,0 +1,497 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Principes — validation</title>
+<style>
+/* ---------- Page de validation (hors design system) ---------- */
+:root{
+  --pg-bg:#f6f6f4; --pg-fg:#1d1d1b; --pg-muted:#6b6b66; --pg-line:#e2e1dd; --pg-card:#ffffff;
+  --pg-badge:#fff4d6; --pg-badge-fg:#7a5a00; --pg-reco:#e7f0ff; --pg-reco-fg:#1d4ed8;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --pg-bg:#141413; --pg-fg:#ecebe8; --pg-muted:#9a9993; --pg-line:#2e2e2b; --pg-card:#1c1c1a;
+    --pg-badge:#3a2f10; --pg-badge-fg:#f3d27a; --pg-reco:#16233d; --pg-reco-fg:#9cc0ff;
+  }
+}
+:root[data-theme="dark"]{
+  --pg-bg:#141413; --pg-fg:#ecebe8; --pg-muted:#9a9993; --pg-line:#2e2e2b; --pg-card:#1c1c1a;
+  --pg-badge:#3a2f10; --pg-badge-fg:#f3d27a; --pg-reco:#16233d; --pg-reco-fg:#9cc0ff;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--pg-bg);color:var(--pg-fg);font:15px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif}
+.pg{max-width:1280px;margin:0 auto;padding:24px 16px 64px}
+.pg h1{font-size:22px;font-weight:600;margin:0 0 4px;display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.pg .sub{color:var(--pg-muted);margin:0 0 20px}
+.badge{font-size:12px;font-weight:600;letter-spacing:.04em;padding:3px 8px;border-radius:6px;background:var(--pg-badge);color:var(--pg-badge-fg)}
+.boxes{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px}
+@media (max-width:760px){.boxes{grid-template-columns:1fr}}
+.box{background:var(--pg-card);border:1px solid var(--pg-line);border-radius:10px;padding:14px 16px}
+.box h2{font-size:14px;margin:0 0 8px;font-weight:600}
+.box ul,.box ol{margin:0;padding-left:20px}
+.box li{margin:4px 0}
+.box .muted{color:var(--pg-muted)}
+.toolbar{position:sticky;top:0;z-index:50;background:var(--pg-bg);padding:10px 0;border-bottom:1px solid var(--pg-line);margin-bottom:20px;display:flex;flex-wrap:wrap;gap:16px;align-items:center}
+.seg{display:inline-flex;border:1px solid var(--pg-line);border-radius:8px;overflow:hidden;background:var(--pg-card)}
+.seg button{border:0;background:transparent;color:var(--pg-fg);padding:6px 12px;font:inherit;font-size:13px;cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--pg-fg);color:var(--pg-bg)}
+.seg button:focus-visible{outline:2px solid #3b82f6;outline-offset:-2px}
+.tlabel{font-size:12px;color:var(--pg-muted);margin-right:6px}
+.option{margin:0 0 36px}
+.option-head{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;margin-bottom:10px}
+.option-head h3{margin:0;font-size:17px}
+.option-head p{margin:0;color:var(--pg-muted)}
+.reco{font-size:12px;font-weight:600;padding:2px 8px;border-radius:6px;background:var(--pg-reco);color:var(--pg-reco-fg)}
+.frame-wrap{border:1px solid var(--pg-line);border-radius:12px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,.06)}
+.notes{font-size:13px;color:var(--pg-muted);margin-top:8px}
+
+/* ---------- Tokens des trois directions ---------- */
+.app{
+  /* commun */
+  --font: -apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;
+  --accent:#2f6fea; --accent-fg:#fff;
+  --ok:#1f9d55; --warn:#c27c0e; --err:#d4483b;
+}
+/* A — Sobre fidèle */
+.app.dir-a{ --s-main:#ffffff; --s-side:#efeeec; --s-sel:#dcdbd8; --s-hover:#e5e4e1; --s-field:#f2f1ef; --s-raised:#f4f3f1;
+  --line:#e6e5e2; --fg:#1f1e1d; --fg2:#6f6d69; --fg3:#9a9893; --radius:10px; --radius-sm:7px; --gap:1; }
+.app.dir-a.dark{ --s-main:#1b1b1a; --s-side:#272624; --s-sel:#3f3d3b; --s-hover:#33312f; --s-field:#2c2b29; --s-raised:#2a2928;
+  --line:#353431; --fg:#ecebe7; --fg2:#a3a19c; --fg3:#76746f; --accent:#5b8ef5; }
+/* B — Compact technique */
+.app.dir-b{ --s-main:#ffffff; --s-side:#f3f4f6; --s-sel:#e3e6ea; --s-hover:#eaecef; --s-field:#f3f4f6; --s-raised:#f6f7f8;
+  --line:#e3e5e8; --fg:#16181b; --fg2:#5f6670; --fg3:#8d949e; --radius:6px; --radius-sm:4px; --gap:.82; }
+.app.dir-b.dark{ --s-main:#151719; --s-side:#1c1f22; --s-sel:#2c3035; --s-hover:#25292d; --s-field:#22262a; --s-raised:#202327;
+  --line:#2b2f34; --fg:#e8eaed; --fg2:#9aa1aa; --fg3:#6b727b; --accent:#5b8ef5; }
+/* C — Doux aéré */
+.app.dir-c{ --s-main:#fdfcfa; --s-side:#f4f1ec; --s-sel:#e6e1d8; --s-hover:#ece8e1; --s-field:#f1eee8; --s-raised:#f6f3ee;
+  --line:#e9e4dc; --fg:#25221e; --fg2:#77716a; --fg3:#a39d95; --radius:14px; --radius-sm:10px; --gap:1.12; }
+.app.dir-c.dark{ --s-main:#1d1b19; --s-side:#292623; --s-sel:#413c37; --s-hover:#35312d; --s-field:#2f2b28; --s-raised:#2c2926;
+  --line:#3a3632; --fg:#efebe5; --fg2:#a9a29a; --fg3:#7a746c; --accent:#6a95f0; }
+
+/* Densités : web confortable / desktop compacte */
+.app{ --row:34px; --row2:52px; --pad:16px; --fs:14px; --fs-sm:12.5px; --bar:44px; --side-w:264px; --detail-w:280px; }
+.app.desktop{ --row:30px; --row2:46px; --pad:12px; --fs:13px; --fs-sm:11.5px; --bar:40px; --side-w:240px; --detail-w:260px; }
+
+/* ---------- AppShell ---------- */
+.app{container-type:inline-size;position:relative;height:600px;background:var(--s-main);color:var(--fg);font-family:var(--font);font-size:var(--fs);line-height:1.4;display:grid;grid-template-rows:var(--bar) 1fr auto;overflow:hidden}
+.app *{box-sizing:border-box}
+.app button{font:inherit;color:inherit}
+.app :focus-visible{outline:2px solid var(--accent);outline-offset:1px;border-radius:var(--radius-sm)}
+.ic{width:16px;height:16px;flex:none;stroke:currentColor;fill:none;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+.bar{display:grid;grid-template-columns:var(--side-w) 1fr auto;align-items:center;border-bottom:1px solid var(--line)}
+.app.collapsed .bar{grid-template-columns:auto 1fr auto}
+.bar-side{display:flex;align-items:center;gap:2px;padding:0 calc(var(--pad)*.6);height:100%;background:var(--s-side)}
+.app.collapsed .bar-side{background:transparent}
+.ibtn{width:calc(var(--row) - 4px);height:calc(var(--row) - 4px);min-width:24px;min-height:24px;display:inline-grid;place-items:center;border:0;background:transparent;border-radius:var(--radius-sm);color:var(--fg2);cursor:pointer;position:relative}
+.ibtn:hover{background:var(--s-hover);color:var(--fg)}
+.ibtn[aria-pressed="true"]{background:var(--s-sel);color:var(--fg)}
+.tip{position:absolute;top:calc(100% + 6px);left:0;white-space:nowrap;background:#1f1f1f;color:#f2f2f2;font-size:12px;padding:4px 8px;border-radius:6px;pointer-events:none;opacity:0;transition:opacity .12s;z-index:30}
+.tip kbd{font:inherit;color:#a8a8a8;margin-left:6px}
+.ibtn:hover .tip,.nav-act:hover .tip{opacity:1}
+.right .tip{left:auto;right:0}
+.bar-title{display:flex;align-items:center;gap:6px;padding:0 var(--pad);font-weight:500;min-width:0}
+.bar-title span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bar-actions{display:flex;gap:2px;padding:0 calc(var(--pad)*.6)}
+.body{display:grid;grid-template-columns:var(--side-w) 1fr var(--detail-w);min-height:0}
+.app.collapsed .body{grid-template-columns:0 1fr var(--detail-w)}
+.app.nodetail .body{grid-template-columns:var(--side-w) 1fr 0}
+.app.collapsed.nodetail .body{grid-template-columns:0 1fr 0}
+.body>.side{grid-column:1;grid-row:1}
+.body>.main{grid-column:2;grid-row:1}
+.body>.detail{grid-column:3;grid-row:1}
+
+/* Sidebar */
+.side{background:var(--s-side);border-right:1px solid var(--line);display:flex;flex-direction:column;min-height:0;overflow:hidden}
+.app.collapsed .side{border-right:0}
+.side.overlay{position:absolute;top:var(--bar);left:0;bottom:0;width:var(--side-w);z-index:20;border-right:1px solid var(--line);box-shadow:4px 0 16px rgba(0,0,0,.08)}
+.side-scroll{flex:1;overflow:auto;padding:calc(var(--pad)*.5) calc(var(--pad)*.5)}
+.nav{display:flex;align-items:center;gap:10px;height:var(--row);padding:0 10px;border-radius:var(--radius-sm);color:var(--fg);cursor:pointer;position:relative;border:0;background:transparent;width:100%;text-align:left}
+.nav:hover{background:var(--s-hover)}
+.nav[aria-current="page"]{background:var(--s-sel)}
+.nav .ic{color:var(--fg2)}
+.nav-act{margin-left:auto;opacity:0;display:inline-grid;place-items:center;width:22px;height:22px;border-radius:5px;color:var(--fg2);position:relative}
+.nav:hover .nav-act,.nav:focus-visible .nav-act{opacity:1}
+.nav-act:hover{background:var(--s-sel)}
+.sec{margin-top:calc(var(--pad)*1.1)}
+.sec-h{display:flex;align-items:center;gap:4px;font-size:var(--fs-sm);color:var(--fg3);padding:4px 10px;border:0;background:transparent;cursor:pointer;border-radius:var(--radius-sm)}
+.sec-h:hover{color:var(--fg2)}
+.sec-h .ic{width:12px;height:12px;transition:transform .15s}
+.sec[data-open="false"] .sec-h .ic{transform:rotate(-90deg)}
+.sec[data-open="false"] .sec-b{display:none}
+.it{display:block;width:100%;text-align:left;border:0;background:transparent;padding:calc(var(--row2)*.14) 10px;border-radius:var(--radius);cursor:pointer;position:relative}
+.it:hover{background:var(--s-hover)}
+.it[aria-current="true"]{background:var(--s-sel)}
+.it-l1,.it-l2{display:flex;align-items:center;gap:6px;min-width:0}
+.it-t{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.it-l2{color:var(--fg2);font-size:var(--fs-sm);margin-top:1px}
+.it-s{flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.it-meta{margin-left:auto;color:var(--fg3);font-size:var(--fs-sm);white-space:nowrap}
+.it-state{margin-left:auto;color:var(--warn)}
+.it-more{margin-left:auto;opacity:0;color:var(--fg2)}
+.it:hover .it-more,.it[aria-current="true"] .it-more{opacity:1}
+.chev{width:12px;height:12px;color:var(--fg3);transition:transform .15s}
+.it[aria-expanded="true"] .chev{transform:rotate(90deg)}
+.kids{position:relative;margin-left:18px;padding-left:12px}
+.kids::before{content:"";position:absolute;left:0;top:0;bottom:calc(var(--row2)*.5);border-left:1px solid var(--line)}
+.kids .it::before{content:"";position:absolute;left:-12px;top:calc(var(--row2)*.5 - 6px);width:10px;height:8px;border-left:1px solid var(--line);border-bottom:1px solid var(--line);border-bottom-left-radius:8px;display:none}
+.kids .it:last-child::before{display:block}
+.kids[hidden]{display:none}
+.summary{display:flex;align-items:center;gap:6px;font-size:var(--fs-sm);color:var(--fg2);padding:2px 10px 6px 22px;border:0;background:transparent;cursor:pointer}
+.summary b{font-weight:400;color:var(--accent)}
+.side-foot{border-top:1px solid var(--line);display:flex;align-items:center;gap:8px;padding:8px calc(var(--pad)*.75);height:calc(var(--bar) + 4px)}
+.avatar{width:22px;height:22px;border-radius:50%;background:var(--accent);color:var(--accent-fg);display:grid;place-items:center;font-size:11px;font-weight:600}
+.who{display:flex;align-items:center;gap:4px;min-width:0}
+.who small{color:var(--fg3)}
+
+/* Contenu */
+.main{overflow:auto;min-width:0}
+.main-in{max-width:760px;margin:0 auto;padding:calc(var(--pad)*1.5) calc(var(--pad)*1.5)}
+.main h4{margin:0 0 4px;font-size:calc(var(--fs) + 5px);font-weight:600}
+.main .lead{color:var(--fg2);margin:0 0 calc(var(--pad)*1.2)}
+.filters{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:calc(var(--pad)*.8)}
+.field{display:flex;align-items:center;gap:8px;height:var(--row);padding:0 10px;background:var(--s-field);border-radius:var(--radius-sm);color:var(--fg3);flex:1;min-width:160px}
+.chip{height:var(--row);padding:0 12px;border-radius:var(--radius-sm);border:0;background:var(--s-field);color:var(--fg2);cursor:pointer}
+.chip[aria-pressed="true"]{background:var(--fg);color:var(--s-main)}
+.list{border-top:1px solid var(--line)}
+.row{display:grid;grid-template-columns:1fr auto auto;gap:12px;align-items:center;padding:calc(var(--row2)*.2) 6px;border-bottom:1px solid var(--line);cursor:pointer;border-radius:0}
+.row:hover{background:var(--s-raised)}
+.row[aria-selected="true"]{background:var(--s-hover)}
+.row .r-t{font-weight:500}
+.row .r-s{color:var(--fg2);font-size:var(--fs-sm)}
+.row .r-d{color:var(--fg3);font-size:var(--fs-sm);white-space:nowrap}
+.pill{font-size:var(--fs-sm);padding:2px 8px;border-radius:999px;background:var(--s-field);color:var(--fg2);white-space:nowrap;display:inline-flex;gap:5px;align-items:center}
+.dot{width:7px;height:7px;border-radius:50%}
+.btn{height:var(--row);padding:0 14px;border-radius:var(--radius-sm);border:0;cursor:pointer;font-weight:500}
+.app .btn-p{background:var(--fg);color:var(--s-main)}
+.app .btn-s{background:var(--s-field);color:var(--fg)}
+.actions{display:flex;gap:8px;margin-top:calc(var(--pad)*1.2);justify-content:flex-end}
+
+/* Panneau de détail */
+.detail{border-left:1px solid var(--line);overflow:auto;padding:calc(var(--pad)*1.1) var(--pad)}
+.app.nodetail .detail{display:none}
+.d-sec{padding-bottom:calc(var(--pad)*.8);margin-bottom:calc(var(--pad)*.8);border-bottom:1px solid var(--line)}
+.d-sec:last-child{border-bottom:0}
+.d-h{font-weight:500;margin-bottom:8px}
+.prop{display:flex;align-items:center;gap:10px;min-height:var(--row)}
+.prop .ic{color:var(--fg2)}
+.prop .v{margin-left:auto;color:var(--fg2);font-size:var(--fs-sm)}
+.prop a{margin-left:auto;color:var(--fg);font-size:var(--fs-sm)}
+.sw{margin-left:auto;width:32px;height:18px;border-radius:999px;background:var(--s-sel);border:0;position:relative;cursor:pointer;padding:0}
+.sw::after{content:"";position:absolute;top:2px;left:2px;width:14px;height:14px;border-radius:50%;background:#fff;transition:left .15s;box-shadow:0 1px 2px rgba(0,0,0,.2)}
+.sw[aria-checked="true"]{background:var(--accent)}
+.sw[aria-checked="true"]::after{left:16px}
+.meter{width:28px;height:6px;border-radius:3px;background:var(--s-sel);overflow:hidden;display:inline-block;margin-left:6px;vertical-align:middle}
+.meter i{display:block;height:100%;width:34%;background:var(--accent)}
+
+/* Fenêtre étroite (aperçu des formats tablette / mobile) */
+@container (max-width: 980px){
+  .body{grid-template-columns:var(--side-w) 1fr 0}
+  .app.collapsed .body{grid-template-columns:0 1fr 0}
+  .detail{display:none}
+}
+@container (max-width: 640px){
+  .bar{grid-template-columns:auto 1fr auto}
+  .bar-side{background:transparent}
+  .body,.app.collapsed .body{grid-template-columns:0 1fr 0}
+  .side:not(.overlay){display:none}
+  .bar-actions .hide-sm{display:none}
+  .row{grid-template-columns:1fr auto}
+  .row .r-d{display:none}
+}
+.tabbar{display:none}
+.scrim{display:none}
+.tab{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;border:0;background:transparent;color:var(--fg2);font-size:11px;cursor:pointer;min-height:48px;border-radius:var(--radius-sm)}
+.tab .ic{width:20px;height:20px}
+.tab[aria-current="page"]{color:var(--fg)}
+.tab[aria-current="page"] .tab-ic{background:var(--s-sel)}
+.tab-ic{display:grid;place-items:center;width:44px;height:28px;border-radius:999px}
+.app.nav-fab .tab-new .tab-ic{width:44px;height:44px;border-radius:50%;background:var(--fg);color:var(--s-main)}
+.app.nav-fab .tab-new span:last-child{display:none}
+.sheet-handle{display:none}
+@container (max-width: 640px){
+  .tabbar{display:flex;grid-row:3;border-top:1px solid var(--line);background:var(--s-side);padding:4px 6px}
+  .bar .js-toggle,.bar .js-next{display:none}
+  .app.sheet .side{display:flex;position:absolute;left:0;right:0;top:18%;bottom:0;width:auto;z-index:25;border:1px solid var(--line);border-bottom:0;border-radius:16px 16px 0 0;box-shadow:0 -8px 24px rgba(0,0,0,.15)}
+  .app.sheet .sheet-handle{display:block;width:36px;height:4px;border-radius:2px;background:var(--fg3);opacity:.5;margin:8px auto 0}
+  .app.sheet .scrim{display:block;position:absolute;inset:0;background:rgba(0,0,0,.25);z-index:24}
+}
+.app.w-tablet{max-width:820px;margin:0 auto}
+.app.w-mobile{max-width:390px;margin:0 auto}
+</style>
+</head>
+<body>
+<div class="pg">
+  <h1>Étape 2 — Principes <span class="badge" id="status">VALIDÉ le 2026-11-21</span></h1>
+  <p class="sub">Le même écran de travail rendu selon trois directions. Toutes reprennent la structure de l'app desktop Claude. Elles ne diffèrent que par le ton : gris, rayons, densité, respiration.</p>
+
+  <div class="boxes">
+    <div class="box">
+      <h2>Déjà décidé</h2>
+      <ul>
+        <li>Apps de travail web (bureau, tablette, mobile) et desktop Tauri.</li>
+        <li>Structure inspirée de l'app desktop Claude : sidebar repliable avec overlay, sections repliables, éléments imbriqués, en-tête minimaliste, panneau de détail.</li>
+        <li>Style neutre, avec une seule couleur d'accent configurable par app. Ici, un bleu de démonstration.</li>
+        <li>Mode clair et mode sombre.</li>
+        <li><b>D-001</b> : ton A, « sobre fidèle ».</li>
+        <li><b>D-002</b> : une section de sidebar peut contenir des éléments de navigation (section « Favoris ») ou des éléments sur deux lignes avec enfants (« À traiter », « En cours »).</li>
+        <li><b>D-003</b> : sur mobile, barre d'onglets en bas avec « Plus », qui ouvre le menu complet dans une feuille.</li>
+        <li><b>D-004</b> : deux densités, web confortable et desktop compact.</li>
+        <li><b>D-005</b> : le mode suit le système, avec un choix manuel dans les réglages.</li>
+        <li><b>D-006</b> : raccourcis « Mod » (⌘ sur macOS, Ctrl sur Windows), palette de commandes Mod+K.</li>
+        <li><b>D-007</b> : actions au survol, application immédiate, bonnes valeurs par défaut, confirmation seulement pour l'irréversible.</li>
+        <li>WCAG 2.2 AA. Français, composants prêts pour d'autres langues.</li>
+      </ul>
+    </div>
+    <div class="box">
+      <h2>À décider</h2>
+      <ol>
+        <li><s>Ton visuel</s> : A retenu (D-001).</li>
+        <li><s>Densité</s> : deux densités (D-004).</li>
+        <li><s>Mode par défaut</s> : suivre le système (D-005).</li>
+        <li><s>Navigation mobile</s> : M1 retenue (D-003).</li>
+        <li><s>Clavier / souris</s> : raccourcis « Mod » et palette Mod+K (D-006).</li>
+        <li><s>Réduction des clics</s> : quatre règles (D-007).</li>
+      </ol>
+      <p class="muted" style="margin:8px 0 0">À essayer dans chaque cadre : survolez le bouton de repli une fois la sidebar repliée, survolez « Documents » ou « Rapports » pour voir leur action, repliez une section, dépliez un élément, sélectionnez une ligne, puis naviguez avec Tab.</p>
+    </div>
+  </div>
+
+  <div class="toolbar" role="toolbar" aria-label="Bascules d'aperçu">
+    <span><span class="tlabel">Mode</span><span class="seg" data-k="mode"><button aria-pressed="true" data-v="light">Clair</button><button aria-pressed="false" data-v="dark">Sombre</button></span></span>
+    <span><span class="tlabel">Densité</span><span class="seg" data-k="density"><button aria-pressed="true" data-v="web">Web</button><button aria-pressed="false" data-v="desktop">Desktop</button></span></span>
+    <span><span class="tlabel">Largeur</span><span class="seg" data-k="width"><button aria-pressed="true" data-v="full">Bureau</button><button aria-pressed="false" data-v="tablet">Tablette</button><button aria-pressed="false" data-v="mobile">Mobile</button></span></span>
+    <span><span class="tlabel">Nav mobile</span><span class="seg" data-k="mnav"><button aria-pressed="true" data-v="plus">M1 · Onglets + Plus (retenu)</button><button aria-pressed="false" data-v="fab">M2 · Action centrale</button></span></span>
+    <span><span class="tlabel">Sidebar</span><span class="seg" data-k="side"><button aria-pressed="true" data-v="open">Dépliée</button><button aria-pressed="false" data-v="collapsed">Repliée</button></span></span>
+  </div>
+
+  <section class="option">
+    <div class="option-head"><h3>A — Sobre fidèle</h3><span class="reco">Retenu — D-001</span><p>Au plus près de l'inspiration : gris légèrement chauds, rayons moyens (10 px), respiration confortable.</p></div>
+    <div class="frame-wrap"><div class="app dir-a" data-frame></div></div>
+    <p class="notes">Pourquoi je le recommande : c'est la direction que vous avez décrite. Elle reste neutre, l'accent ne sert qu'à porter un sens, et elle tient bien dans les deux densités.</p>
+  </section>
+
+  <section class="option">
+    <div class="option-head"><h3>B — Compact technique</h3><span class="badge">Écarté</span><p>Gris froids, petits rayons (6 px), espacements serrés : plus d'information visible par écran.</p></div>
+    <div class="frame-wrap"><div class="app dir-b" data-frame></div></div>
+    <p class="notes">Pour des écrans très chargés (tableaux, journaux). Plus austère, et la densité « web » y est déjà assez serrée.</p>
+  </section>
+
+  <section class="option">
+    <div class="option-head"><h3>C — Doux aéré</h3><span class="badge">Écarté</span><p>Fonds crème, grands rayons (14 px), plus d'air : plus chaleureux, moins d'information à l'écran.</p></div>
+    <div class="frame-wrap"><div class="app dir-c" data-frame></div></div>
+    <p class="notes">Plus accueillant, mais moins adapté à la saisie intensive. Il demande plus de place sur mobile.</p>
+  </section>
+</div>
+
+<template id="tpl">
+  <div class="bar">
+    <div class="bar-side">
+      <button class="ibtn js-toggle" aria-label="Replier la sidebar"><svg class="ic" viewBox="0 0 16 16"><rect x="2" y="3" width="12" height="10" rx="2"/><path d="M6 3v10"/></svg><span class="tip js-tip">Replier la sidebar<kbd>⌘B</kbd></span></button>
+      <button class="ibtn" aria-label="Précédent"><svg class="ic" viewBox="0 0 16 16"><path d="M10 3 5 8l5 5"/></svg></button>
+      <button class="ibtn js-next" aria-label="Suivant"><svg class="ic" viewBox="0 0 16 16"><path d="m6 3 5 5-5 5"/></svg></button>
+    </div>
+    <div class="bar-title"><span>Demandes à traiter</span><svg class="ic" viewBox="0 0 16 16" style="width:12px;height:12px;color:var(--fg3)"><path d="m4 6 4 4 4-4"/></svg></div>
+    <div class="bar-actions right">
+      <button class="ibtn js-detail" aria-pressed="true" aria-label="Panneau de détail"><svg class="ic" viewBox="0 0 16 16"><path d="M6 4h7.5M6 8h7.5M6 12h7.5"/><circle cx="2.8" cy="4" r=".6"/><circle cx="2.8" cy="8" r=".6"/><circle cx="2.8" cy="12" r=".6"/></svg><span class="tip">Panneau de détail</span></button>
+      <button class="ibtn hide-sm" aria-label="Filtrer"><svg class="ic" viewBox="0 0 16 16"><path d="M2 4h12M4.5 8h7M7 12h2"/></svg><span class="tip">Filtrer</span></button>
+      <button class="ibtn hide-sm" aria-label="Partager"><svg class="ic" viewBox="0 0 16 16"><path d="M8 2v8M5 5l3-3 3 3M3 9v4h10V9"/></svg><span class="tip">Partager</span></button>
+      <button class="ibtn" aria-label="Plus d'actions"><svg class="ic" viewBox="0 0 16 16"><circle cx="3.5" cy="8" r=".8"/><circle cx="8" cy="8" r=".8"/><circle cx="12.5" cy="8" r=".8"/></svg></button>
+    </div>
+  </div>
+  <div class="body">
+    <nav class="side" aria-label="Navigation principale">
+      <div class="sheet-handle" aria-hidden="true"></div>
+      <div class="side-scroll">
+        <button class="nav"><svg class="ic" viewBox="0 0 16 16"><path d="M8 3v10M3 8h10"/></svg>Nouveau</button>
+        <button class="nav"><svg class="ic" viewBox="0 0 16 16"><circle cx="7" cy="7" r="4.5"/><path d="m10.5 10.5 3 3"/></svg>Rechercher</button>
+        <button class="nav" aria-current="page"><svg class="ic" viewBox="0 0 16 16"><path d="M3 2.5h6l4 4v7H3z"/><path d="M9 2.5v4h4"/></svg>Documents<span class="nav-act" role="button" tabindex="-1" aria-label="Nouveau document"><svg class="ic" viewBox="0 0 16 16" style="width:14px;height:14px"><path d="M8 3v10M3 8h10"/></svg><span class="tip" style="left:auto;right:0">Nouveau document</span></span></button>
+        <button class="nav"><svg class="ic" viewBox="0 0 16 16"><circle cx="8" cy="8" r="5.5"/><path d="M8 5v3l2 1.5"/></svg>Planifié</button>
+        <button class="nav"><svg class="ic" viewBox="0 0 16 16"><path d="M6 2v3M10 2v3M4 5h8v3a4 4 0 0 1-8 0zM8 12v2"/></svg>Extensions</button>
+
+        <div class="sec" data-open="true">
+          <button class="sec-h js-sec" aria-expanded="true">Favoris <svg class="ic" viewBox="0 0 16 16"><path d="m4 6 4 4 4-4"/></svg></button>
+          <div class="sec-b">
+            <button class="nav"><svg class="ic" viewBox="0 0 16 16"><path d="M3 13V8M8 13V3M13 13V6"/></svg>Rapports<span class="nav-act" role="button" tabindex="-1" aria-label="Nouveau rapport"><svg class="ic" viewBox="0 0 16 16" style="width:14px;height:14px"><path d="M8 3v10M3 8h10"/></svg><span class="tip" style="left:auto;right:0">Nouveau rapport</span></span></button>
+            <button class="nav"><svg class="ic" viewBox="0 0 16 16"><circle cx="6" cy="6" r="2.5"/><path d="M1.5 13a4.5 4.5 0 0 1 9 0M11 4a2.3 2.3 0 0 1 0 4.5M12.5 13a4 4 0 0 0-2-3.4"/></svg>Clients</button>
+            <button class="nav"><svg class="ic" viewBox="0 0 16 16"><rect x="2.5" y="2.5" width="11" height="11" rx="2"/><path d="M2.5 6.5h11M6.5 6.5v7"/></svg>Modèles</button>
+          </div>
+        </div>
+
+        <div class="sec" data-open="true">
+          <button class="sec-h js-sec" aria-expanded="true">À traiter <svg class="ic" viewBox="0 0 16 16"><path d="m4 6 4 4 4-4"/></svg></button>
+          <div class="sec-b">
+            <button class="it js-it" aria-expanded="false">
+              <span class="it-l1"><span class="it-t">Relance fournisseur</span><svg class="ic chev" viewBox="0 0 16 16"><path d="m6 4 4 4-4 4"/></svg><svg class="ic it-state" viewBox="0 0 16 16" aria-label="Bloqué"><path d="M8 2.5 14 13H2z"/><path d="M8 6.5v3M8 11.2v.1"/></svg></span>
+              <span class="it-l2"><span class="it-s">Validation du devis attendue</span><span class="it-meta">Achats</span></span>
+            </button>
+            <button class="summary js-sum">╰ 4 éléments · <b>2 non lus</b></button>
+            <div class="kids" hidden>
+              <button class="it"><span class="it-l1"><span class="it-t">Comparer les offres</span></span><span class="it-l2"><span class="it-s">3 réponses reçues</span><span class="it-meta">Achats</span></span></button>
+              <button class="it"><span class="it-l1"><span class="it-t">Vérifier les délais</span></span><span class="it-l2"><span class="it-s">En attente du transporteur</span><span class="it-meta">Logistique</span></span></button>
+            </div>
+          </div>
+        </div>
+
+        <div class="sec" data-open="true">
+          <button class="sec-h js-sec" aria-expanded="true">En cours <svg class="ic" viewBox="0 0 16 16"><path d="m4 6 4 4 4-4"/></svg></button>
+          <div class="sec-b">
+            <button class="it js-sel" aria-current="true"><span class="it-l1"><span class="it-t">Demandes à traiter</span><svg class="ic it-more" viewBox="0 0 16 16"><circle cx="3.5" cy="8" r=".8"/><circle cx="8" cy="8" r=".8"/><circle cx="12.5" cy="8" r=".8"/></svg></span><span class="it-l2"><span class="it-s">12 demandes, 3 urgentes</span><span class="it-meta">Support</span></span></button>
+            <button class="it js-sel"><span class="it-l1"><span class="it-t">Inventaire trimestriel</span></span><span class="it-l2"><span class="it-s">Saisie des quantités</span><span class="it-meta">Stock</span></span></button>
+            <button class="it js-sel"><span class="it-l1"><span class="it-t">Plan de formation</span></span><span class="it-l2"><span class="it-s">Brouillon partagé</span><span class="it-meta">RH</span></span></button>
+          </div>
+        </div>
+      </div>
+      <div class="side-foot">
+        <span class="avatar">M</span><span class="who"><span>Marie</span><small>· Équipe</small></span>
+        <button class="ibtn" style="margin-left:auto" aria-label="Réglages" title="Réglages"><svg class="ic" viewBox="0 0 16 16" style="stroke-width:1.3"><path d="M12.97 6.46 L14.52 6.95 L14.52 9.05 L12.97 9.54 L12.60 10.43 L13.35 11.86 L11.86 13.35 L10.43 12.60 L9.54 12.97 L9.05 14.52 L6.95 14.52 L6.46 12.97 L5.57 12.60 L4.14 13.35 L2.65 11.86 L3.40 10.43 L3.03 9.54 L1.48 9.05 L1.48 6.95 L3.03 6.46 L3.40 5.57 L2.65 4.14 L4.14 2.65 L5.57 3.40 L6.46 3.03 L6.95 1.48 L9.05 1.48 L9.54 3.03 L10.43 3.40 L11.86 2.65 L13.35 4.14 L12.60 5.57Z"/><circle cx="8" cy="8" r="2.2"/></svg></button>
+      </div>
+    </nav>
+
+    <main class="main">
+      <div class="main-in">
+        <h4>Demandes à traiter</h4>
+        <p class="lead">Les demandes ouvertes de l'équipe, triées par urgence.</p>
+        <div class="filters">
+          <span class="field"><svg class="ic" viewBox="0 0 16 16"><circle cx="7" cy="7" r="4.5"/><path d="m10.5 10.5 3 3"/></svg>Rechercher une demande</span>
+          <button class="chip js-chip" aria-pressed="true">Toutes</button>
+          <button class="chip js-chip" aria-pressed="false">Urgentes</button>
+          <button class="chip js-chip" aria-pressed="false">À moi</button>
+        </div>
+        <div class="list" role="listbox" aria-label="Demandes">
+          <div class="row js-row" role="option" tabindex="0" aria-selected="true"><div><div class="r-t">Accès refusé à l'espace partagé</div><div class="r-s">Signalé par l'équipe Comptabilité</div></div><span class="pill"><span class="dot" style="background:var(--err)"></span>Urgent</span><span class="r-d">il y a 2 h</span></div>
+          <div class="row js-row" role="option" tabindex="0" aria-selected="false"><div><div class="r-t">Export mensuel incomplet</div><div class="r-s">Colonnes manquantes depuis la mise à jour</div></div><span class="pill"><span class="dot" style="background:var(--warn)"></span>En attente</span><span class="r-d">hier</span></div>
+          <div class="row js-row" role="option" tabindex="0" aria-selected="false"><div><div class="r-t">Nouveau poste à configurer</div><div class="r-s">Arrivée prévue lundi</div></div><span class="pill"><span class="dot" style="background:var(--ok)"></span>Planifié</span><span class="r-d">mar.</span></div>
+          <div class="row js-row" role="option" tabindex="0" aria-selected="false"><div><div class="r-t">Modèle de facture à revoir</div><div class="r-s">Mentions légales à jour</div></div><span class="pill"><span class="dot" style="background:var(--fg3)"></span>Ouvert</span><span class="r-d">12 nov.</span></div>
+        </div>
+        <div class="actions"><button class="btn btn-s">Archiver</button><button class="btn btn-p">Traiter la demande</button></div>
+      </div>
+    </main>
+
+    <aside class="detail" aria-label="Détail">
+      <div class="d-sec">
+        <div class="d-h">Détail</div>
+        <div class="prop"><svg class="ic" viewBox="0 0 16 16"><circle cx="8" cy="6" r="2.5"/><path d="M3.5 13.5a4.5 4.5 0 0 1 9 0"/></svg>Demandeur<span class="v">Comptabilité</span></div>
+        <div class="prop"><svg class="ic" viewBox="0 0 16 16"><rect x="2.5" y="3.5" width="11" height="10" rx="1.5"/><path d="M2.5 6.5h11M5.5 2v3M10.5 2v3"/></svg>Échéance<span class="v">aujourd'hui</span></div>
+        <div class="prop"><svg class="ic" viewBox="0 0 16 16"><path d="M3 8h10M8 3v10"/></svg>Priorité<a href="#" onclick="return false">Modifier</a></div>
+      </div>
+      <div class="d-sec">
+        <div class="prop">Suivi automatique<button class="sw js-sw" role="switch" aria-checked="true" aria-label="Suivi automatique"></button></div>
+        <div class="prop">Avancement<span class="v">34 %<span class="meter"><i></i></span></span></div>
+      </div>
+      <div class="d-sec">
+        <div class="d-h">Pièces jointes</div>
+        <div class="prop"><svg class="ic" viewBox="0 0 16 16"><path d="M3 2.5h6l4 4v7H3z"/></svg>capture-erreur.png<span class="v">240 Ko</span></div>
+        <div style="margin-top:8px"><button class="btn btn-s" style="width:100%">Ajouter un fichier</button></div>
+      </div>
+    </aside>
+  </div>
+  <nav class="tabbar" aria-label="Navigation mobile">
+    <button class="tab js-tab" aria-current="page"><span class="tab-ic"><svg class="ic" viewBox="0 0 16 16"><path d="M3 2.5h6l4 4v7H3z"/><path d="M9 2.5v4h4"/></svg></span><span>Documents</span></button>
+    <button class="tab js-tab"><span class="tab-ic"><svg class="ic" viewBox="0 0 16 16"><circle cx="7" cy="7" r="4.5"/><path d="m10.5 10.5 3 3"/></svg></span><span>Rechercher</span></button>
+    <button class="tab tab-new" aria-label="Nouveau"><span class="tab-ic"><svg class="ic" viewBox="0 0 16 16"><path d="M8 3v10M3 8h10"/></svg></span><span>Nouveau</span></button>
+    <button class="tab js-tab"><span class="tab-ic"><svg class="ic" viewBox="0 0 16 16"><circle cx="8" cy="8" r="5.5"/><path d="M8 5v3l2 1.5"/></svg></span><span>Planifié</span></button>
+    <button class="tab js-more" aria-haspopup="dialog" aria-expanded="false"><span class="tab-ic"><svg class="ic" viewBox="0 0 16 16"><path d="M2.5 4h11M2.5 8h11M2.5 12h11"/></svg></span><span>Plus</span></button>
+  </nav>
+  <div class="scrim js-scrim"></div>
+</template>
+
+<script>
+(function(){
+  var tpl = document.getElementById('tpl');
+  var frames = Array.prototype.slice.call(document.querySelectorAll('[data-frame]'));
+  var state = {mode:'light', density:'web', width:'full', side:'open', mnav:'plus'};
+
+  var isMac = /Mac|iPhone|iPad/.test(navigator.platform || navigator.userAgent);
+  frames.forEach(function(app){
+    app.appendChild(tpl.content.cloneNode(true));
+    if (!isMac) app.querySelectorAll('kbd').forEach(function(k){ k.textContent = k.textContent.replace('⌘','Ctrl+'); });
+    var side = app.querySelector('.side');
+    var toggle = app.querySelector('.js-toggle');
+    var tip = app.querySelector('.js-tip');
+    var overlayTimer = null;
+
+    function setCollapsed(c){
+      app.classList.toggle('collapsed', c);
+      side.classList.remove('overlay');
+      toggle.setAttribute('aria-label', c ? 'Afficher la sidebar' : 'Replier la sidebar');
+      tip.firstChild.nodeValue = c ? 'Afficher la sidebar' : 'Replier la sidebar';
+    }
+    app._setCollapsed = setCollapsed;
+    toggle.addEventListener('click', function(){
+      setCollapsed(!app.classList.contains('collapsed') && !side.classList.contains('overlay') ? true : false);
+    });
+    // Overlay au survol du bouton quand la sidebar est repliée (ou en fenêtre étroite)
+    function narrow(){ return app.getBoundingClientRect().width <= 640; }
+    toggle.addEventListener('mouseenter', function(){
+      if (app.classList.contains('collapsed') && !narrow()){ clearTimeout(overlayTimer); side.classList.add('overlay'); }
+    });
+    function leave(){ overlayTimer = setTimeout(function(){ side.classList.remove('overlay'); }, 250); }
+    toggle.addEventListener('mouseleave', leave);
+    side.addEventListener('mouseenter', function(){ clearTimeout(overlayTimer); });
+    side.addEventListener('mouseleave', function(){ if (side.classList.contains('overlay')) leave(); });
+    var more = app.querySelector('.js-more');
+    function setSheet(o){ app.classList.toggle('sheet', o); more.setAttribute('aria-expanded', String(o)); }
+    more.addEventListener('click', function(){ setSheet(!app.classList.contains('sheet')); });
+    app.querySelector('.js-scrim').addEventListener('click', function(){ setSheet(false); });
+    app.querySelectorAll('.js-tab').forEach(function(t){ t.addEventListener('click', function(){ app.querySelectorAll('.js-tab').forEach(function(x){ x.removeAttribute('aria-current'); }); t.setAttribute('aria-current','page'); setSheet(false); }); });
+    app.addEventListener('keydown', function(e){ if (e.key === 'Escape'){ side.classList.remove('overlay'); setSheet(false); } });
+
+    app.querySelectorAll('.js-sec').forEach(function(b){
+      b.addEventListener('click', function(){
+        var sec = b.closest('.sec'); var open = sec.getAttribute('data-open') !== 'true';
+        sec.setAttribute('data-open', String(open)); b.setAttribute('aria-expanded', String(open));
+      });
+    });
+    var it = app.querySelector('.js-it'), sum = app.querySelector('.js-sum'), kids = app.querySelector('.kids');
+    function toggleKids(){ var o = it.getAttribute('aria-expanded') !== 'true'; it.setAttribute('aria-expanded', String(o)); kids.hidden = !o; sum.hidden = o; }
+    it.addEventListener('click', toggleKids); sum.addEventListener('click', toggleKids);
+
+    app.querySelectorAll('.js-sel').forEach(function(b){
+      b.addEventListener('click', function(){ app.querySelectorAll('.js-sel').forEach(function(x){ x.removeAttribute('aria-current'); }); b.setAttribute('aria-current','true'); });
+    });
+    var rows = Array.prototype.slice.call(app.querySelectorAll('.js-row'));
+    function pick(r){ rows.forEach(function(x){ x.setAttribute('aria-selected','false'); }); r.setAttribute('aria-selected','true'); }
+    rows.forEach(function(r, i){
+      r.addEventListener('click', function(){ pick(r); });
+      r.addEventListener('keydown', function(e){
+        if (e.key === 'ArrowDown' && rows[i+1]){ e.preventDefault(); rows[i+1].focus(); pick(rows[i+1]); }
+        if (e.key === 'ArrowUp' && rows[i-1]){ e.preventDefault(); rows[i-1].focus(); pick(rows[i-1]); }
+      });
+    });
+    app.querySelectorAll('.js-chip').forEach(function(c){
+      c.addEventListener('click', function(){ app.querySelectorAll('.js-chip').forEach(function(x){ x.setAttribute('aria-pressed','false'); }); c.setAttribute('aria-pressed','true'); });
+    });
+    app.querySelectorAll('.js-sw').forEach(function(s){
+      s.addEventListener('click', function(){ s.setAttribute('aria-checked', String(s.getAttribute('aria-checked') !== 'true')); });
+    });
+    var det = app.querySelector('.js-detail');
+    det.addEventListener('click', function(){ var on = det.getAttribute('aria-pressed') !== 'true'; det.setAttribute('aria-pressed', String(on)); app.classList.toggle('nodetail', !on); });
+  });
+
+  function apply(){
+    frames.forEach(function(app){
+      app.classList.toggle('dark', state.mode === 'dark');
+      app.classList.toggle('desktop', state.density === 'desktop');
+      app.classList.toggle('w-tablet', state.width === 'tablet');
+      app.classList.toggle('w-mobile', state.width === 'mobile');
+      app.classList.toggle('nav-fab', state.mnav === 'fab');
+      if (state.width !== 'mobile') app.classList.remove('sheet');
+      app._setCollapsed(state.side === 'collapsed');
+    });
+  }
+  document.querySelectorAll('.seg').forEach(function(seg){
+    seg.addEventListener('click', function(e){
+      var b = e.target.closest('button'); if (!b) return;
+      seg.querySelectorAll('button').forEach(function(x){ x.setAttribute('aria-pressed', String(x === b)); });
+      state[seg.getAttribute('data-k')] = b.getAttribute('data-v');
+      apply();
+    });
+  });
+  apply();
+})();
+</script>
+</body>
+</html>

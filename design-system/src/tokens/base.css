@@ -1,0 +1,163 @@
+/*
+ * Tokens de base du design system — jeu T2 « neutre pur » (D-012).
+ * Les tokens nomment des rôles, pas des clartés : la hiérarchie s'inverse en sombre.
+ * Mode : suit le système par défaut ; data-theme="light" ou "dark" force un mode (D-005).
+ * Accent : redéfinissable par app en surchargeant --accent, --accent-fg et --accent-text.
+ */
+
+:root {
+  /* ---------- Couleurs, mode clair ---------- */
+  --surface: #ffffff;          /* contenu principal */
+  --surface-side: #f3f3f3;     /* surface secondaire : sidebar, barre d'onglets */
+  --surface-raised: #ffffff;   /* ce qui flotte : menus, notifications, modales */
+  --field: #f2f2f2;            /* champs, boutons secondaires, contrôles segmentés */
+  --hover: #e9e9e9;
+  --selected: #dedede;         /* sur ce fond, le texte tertiaire passe en --fg-2 (AA) */
+  --line: #e4e4e4;
+  --line-strong: #cfcfcf;      /* trait marqué : bord des champs (D-073) */
+  --tree-line: var(--line-strong); /* trait qui relie les enfants au parent (D-042) */
+
+  --fg: #1a1a1a;
+  --fg-2: #5c5c5c;             /* texte secondaire */
+  --fg-3: #6b6b6b;             /* texte tertiaire : méta, sections */
+  --scrim: rgb(0 0 0 / 0.25);
+
+  --accent: #1d4ed8;
+  --accent-fg: #ffffff;        /* texte sur fond accent */
+  --accent-text: #1d4ed8;      /* accent utilisé comme texte : liens, non-lus */
+
+  --success: #15803d;
+  --warning: #b45309;
+  --danger: #c62828;
+  --info: #1d4ed8;
+
+  /* Info-bulle : sombre dans les deux modes (D-030) */
+  --tip-bg: #1f1f1f;
+  --tip-fg: #f2f2f2;
+  --tip-fg-2: #a8a8a8;         /* raccourci clavier */
+  --tip-line: transparent;
+
+  /* ---------- Typographie ---------- */
+  --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+  --font-mono: ui-monospace, "SF Mono", "Cascadia Code", Consolas, monospace;
+  --fw-regular: 400;
+  --fw-medium: 500;
+  --fw-semibold: 600;
+  /* Tailles : définies par la densité (themes/web.css, themes/desktop.css). */
+
+  /* ---------- Espacements (base 4 px) ---------- */
+  --sp-1: 4px;
+  --sp-1-5: 6px;
+  --sp-2: 8px;
+  --sp-3: 12px;
+  --sp-4: 16px;
+  --sp-5: 20px;
+  --sp-6: 24px;
+  --sp-8: 32px;
+  --sp-10: 40px;
+  --sp-12: 48px;
+
+  /* ---------- Rayons ---------- */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-full: 999px;
+
+  /* ---------- Bordures, focus, ombres ---------- */
+  --line-w: 1px;
+  --focus-w: 2px;
+  --focus-offset: 1px;
+  --shadow-sm: 0 1px 2px rgb(0 0 0 / 0.12);
+  --shadow-md: 0 6px 20px rgb(0 0 0 / 0.10);
+  --shadow-lg: 0 12px 32px rgb(0 0 0 / 0.14);
+
+  /* ---------- Icônes (D-011) ---------- */
+  --icon: 16px;
+  --icon-lg: 20px;             /* barre d'onglets mobile */
+  --icon-stroke: 1.6;
+
+  /* ---------- Mouvement (D-014) ---------- */
+  --ease: cubic-bezier(0.2, 0, 0, 1);
+  --dur-fast: 120ms;
+  --dur-base: 180ms;
+  --dur-slow: 260ms;
+
+  /* ---------- Points de rupture (D-013), pour référence ---------- */
+  /* mobile ≤ 640px · tablette 641–1024px · bureau > 1024px */
+  --bp-mobile: 640px;
+  --bp-tablet: 1024px;
+
+  color-scheme: light;
+}
+
+/* ---------- Mode sombre ---------- */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --surface: #181818;
+    --surface-side: #222222;
+    --surface-raised: #262626;
+    --field: #2a2a2a;
+    --hover: #303030;
+    --selected: #3d3d3d;
+    --line: #333333;
+    --line-strong: #4a4a4a;
+    --fg: #ececec;
+    --fg-2: #ababab;
+    --fg-3: #8f8f8f;
+    --scrim: rgb(0 0 0 / 0.5);
+    --accent: #5b8def;
+    --accent-fg: #0b1630;
+    --accent-text: #7da4f2;
+    --success: #5cc98a;
+    --warning: #e0a24a;
+    --danger: #f07167;
+    --info: #5b8def;
+    --tip-bg: #3a3a3a;
+    --tip-fg: #f2f2f2;
+    --tip-fg-2: #b5b5b5;
+    --tip-line: #4a4a4a;
+    --shadow-sm: 0 1px 2px rgb(0 0 0 / 0.5);
+    --shadow-md: 0 6px 20px rgb(0 0 0 / 0.5);
+    --shadow-lg: 0 12px 32px rgb(0 0 0 / 0.6);
+    color-scheme: dark;
+  }
+}
+
+:root[data-theme="dark"] {
+  --surface: #181818;
+  --surface-side: #222222;
+  --surface-raised: #262626;
+  --field: #2a2a2a;
+  --hover: #303030;
+  --selected: #3d3d3d;
+  --line: #333333;
+  --line-strong: #4a4a4a;
+  --fg: #ececec;
+  --fg-2: #ababab;
+  --fg-3: #8f8f8f;
+  --scrim: rgb(0 0 0 / 0.5);
+  --accent: #5b8def;
+  --accent-fg: #0b1630;
+  --accent-text: #7da4f2;
+  --success: #5cc98a;
+  --warning: #e0a24a;
+  --danger: #f07167;
+  --info: #5b8def;
+  --tip-bg: #3a3a3a;
+  --tip-fg: #f2f2f2;
+  --tip-fg-2: #b5b5b5;
+  --tip-line: #4a4a4a;
+  --shadow-sm: 0 1px 2px rgb(0 0 0 / 0.5);
+  --shadow-md: 0 6px 20px rgb(0 0 0 / 0.5);
+  --shadow-lg: 0 12px 32px rgb(0 0 0 / 0.6);
+  color-scheme: dark;
+}
+
+/* ---------- Animations réduites (D-014) ---------- */
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --dur-fast: 0ms;
+    --dur-base: 0ms;
+    --dur-slow: 0ms;
+  }
+}

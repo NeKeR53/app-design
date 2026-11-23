@@ -1,0 +1,37 @@
+/* Densité « web », confortable (D-004). Par défaut pour les apps web. */
+:root,
+[data-density="web"] {
+  --fs-xs: 11.5px;
+  --fs-sm: 12.5px;
+  --fs-md: 14px;
+  --fs-lg: 16px;
+  --fs-xl: 20px;
+  --fs-2xl: 24px;
+  --lh: 1.45;
+
+  --row-h: 34px;          /* ligne d'une ligne : navigation, champ, bouton */
+  --row2-h: 52px;         /* élément sur deux lignes */
+  --bar-h: 44px;          /* barre supérieure */
+  --pad: 16px;            /* marge intérieure d'une zone */
+  --side-w: 264px;        /* sidebar */
+  --detail-w: 300px;      /* panneau de détail */
+  --target-min: 24px;     /* cible minimale (AA) */
+  --icon-btn: 28px;       /* bouton-icône (D-035) */
+}
+
+/* Sur mobile, cibles tactiles plus grandes. */
+@media (max-width: 640px) {
+  :root,
+  [data-density="web"] {
+    --target-min: 44px;
+  }
+}
+
+/* Écran tactile : bouton-icône de 44 px, quelle que soit la densité (D-035). */
+@media (pointer: coarse) {
+  :root,
+  [data-density="web"],
+  [data-density="desktop"] {
+    --icon-btn: 44px;
+  }
+}

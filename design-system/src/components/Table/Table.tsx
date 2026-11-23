@@ -1,0 +1,307 @@
+/*
+ * Adapté du starter Tailwind de React Aria (adobe/react-spectrum, starters/tailwind),
+ * licence Apache 2.0. Spec : Table.spec.md. Décisions : D-062 à D-067, D-084 à D-087.
+ */
+import { useState, type MouseEvent, type ReactNode } from "react";
+import type { Key, Selection, SortDescriptor } from "react-aria-components";
+import { Cell, Column, ColumnResizer, ResizableTableContainer, Row, Table as RACTable, TableBody, TableHeader } from "react-aria-components/Table";
+import { Button } from "react-aria-components/Button";
+import { Checkbox } from "react-aria-components/Checkbox";
+import { useMessages, useStoredState } from "../../provider/SocleProvider";
+import { buttonReset, cx, focusRing } from "../../lib/cx";
+import { ErrorBanner, highlight, LoadError, NoResults, ReloadBar, type ResultsStateProps } from "../../lib/results";
+import { ArrowDown, ArrowUp, Check, Minus } from "../../icons";
+import { Menu } from "../Menu/Menu";
+import { Tooltip } from "../Tooltip/Tooltip";
+import { OverflowTooltip } from "../Tooltip/OverflowTooltip";
+
+export interface TableColumn {
+  id: string;
+  label: string;
+  /** `end` pour les nombres : alignés à droite, chiffres de largeur égale. */
+  align?: "start" | "end";
+  /** Largeur par défaut en px ; la première colonne prend la place restante. */
+  width?: number;
+  sortable?: boolean;
+}
+
+export interface TableRowAction {
+  icon: ReactNode;
+  label: string;
+  onPress?: () => void;
+  /** Si fourni, l'action ouvre ce menu ; le clic droit sur la ligne l'ouvre aussi (D-066). */
+  menu?: ReactNode;
+}
+
+export interface TableProps<T extends { id: string }> extends ResultsStateProps {
+  /** Nom accessible du tableau. */
+  label: string;
+  columns: TableColumn[];
+  rows: T[];
+  /** Contenu d'une cellule. Défaut : la valeur texte de `row[columnId]`. */
+  renderCell?: (row: T, columnId: string) => ReactNode;
+  /** Icône facultative de la colonne principale. */
+  rowIcon?: (row: T) => ReactNode;
+  selectionMode?: "none" | "single" | "multiple";
+  selectedKeys?: Iterable<Key>;
+  onSelectionChange?: (keys: Set<Key>) => void;
+  sortDescriptor?: SortDescriptor;
+  onSortChange?: (d: SortDescriptor) => void;
+  /** Ouverture d'une ligne (double-clic ou Entrée), dans une vue fermable (D-021). */
+  onAction?: (id: string) => void;
+  /** Deux actions au plus, au survol (D-066). */
+  rowActions?: (row: T) => TableRowAction[];
+  /** Identifiant de mémorisation des largeurs et du tri. Défaut : `label`. */
+  storageId?: string;
+}
+
+const MIN_W = 80;
+const MAX_W = 480;
+
+const checkboxClass = cx(
+  "group/cb inline-grid size-4 cursor-default place-items-center rounded-sm border-[1.5px] border-fg-3 bg-surface text-accent-fg",
+  "data-selected:border-accent data-selected:bg-accent data-indeterminate:border-accent data-indeterminate:bg-accent",
+  focusRing,
+);
+
+function Box({ isSelected, isIndeterminate }: { isSelected: boolean; isIndeterminate: boolean }) {
+  return isIndeterminate ? <Minus size={12} /> : isSelected ? <Check size={12} /> : null;
+}
+
+export function Table<T extends { id: string }>({
+  label,
+  columns,
+  rows,
+  renderCell,
+  rowIcon,
+  selectionMode = "single",
+  selectedKeys,
+  onSelectionChange,
+  sortDescriptor,
+  onSortChange,
+  onAction,
+  rowActions,
+  storageId,
+  isLoading,
+  hasError,
+  onRetry,
+  searchTerms,
+  onClearSearch,
+}: TableProps<T>) {
+  const m = useMessages();
+  const key = storageId ?? label;
+  // Largeurs mémorisées par tableau (D-067) ; un double-clic sur la poignée rend la largeur par défaut.
+  const [widths, setWidths] = useStoredState<Record<string, number>>(`table:${key}:widths`, {});
+  const [version, setVersion] = useState(0);
+  // Tri mémorisé par tableau (D-007) ; l'app trie ses données (souvent par son API).
+  const [storedSort, setStoredSort] = useStoredState<SortDescriptor | null>(`table:${key}:sort`, null);
+  const sort = sortDescriptor ?? storedSort ?? undefined;
+  const multiple = selectionMode === "multiple";
+  const [checkedCount, setCheckedCount] = useState(0);
+  const withActions = Boolean(rowActions);
+
+  const onContextMenu = (e: MouseEvent) => {
+    const btn = (e.target as HTMLElement).closest('[role="row"]')?.querySelector<HTMLElement>("[data-row-menu]");
+    if (btn) {
+      e.preventDefault();
+      btn.click();
+    }
+  };
+
+  const terms = searchTerms?.filter(Boolean) ?? [];
+  const firstLoad = isLoading && rows.length === 0;
+  const empty = !isLoading && !hasError && rows.length === 0 && terms.length > 0;
+
+  return (
+    <div className="socle-box relative flex min-h-0 flex-1 flex-col font-sans text-md text-fg" onContextMenu={onContextMenu}>
+      {isLoading && rows.length > 0 && <ReloadBar />}
+      {hasError && rows.length > 0 && <ErrorBanner onRetry={onRetry} />}
+      {hasError && rows.length === 0 ? (
+        <LoadError onRetry={onRetry} />
+      ) : (
+        <ResizableTableContainer
+          key={version}
+          className="relative min-h-0 flex-1 overflow-auto"
+          onResizeEnd={(map) => {
+            const next = { ...widths };
+            const resizable = new Set(columns.slice(1).map((c) => c.id));
+            map.forEach((v, k) => {
+              if (typeof v === "number" && resizable.has(String(k))) next[String(k)] = Math.round(v);
+            });
+            setWidths(next);
+          }}
+        >
+          <RACTable
+            aria-label={label}
+            aria-busy={isLoading || undefined}
+            selectionMode={selectionMode}
+            selectionBehavior="replace"
+            {...(selectedKeys ? { selectedKeys } : {})}
+            onSelectionChange={(keys: Selection) => {
+              const set = keys === "all" ? new Set<Key>(rows.map((r) => r.id)) : keys;
+              setCheckedCount(set.size);
+              onSelectionChange?.(set);
+            }}
+            {...(sort ? { sortDescriptor: sort } : {})}
+            onSortChange={(d: SortDescriptor) => {
+              setStoredSort(d);
+              onSortChange?.(d);
+            }}
+            {...(onAction ? { onRowAction: (k: Key) => onAction(String(k)) } : {})}
+            className={cx("w-full border-separate border-spacing-0 outline-none", multiple && checkedCount > 1 && "socle-has-checked")}
+          >
+            <TableHeader className="sticky top-0 z-[2] bg-surface">
+              {multiple && (
+                <Column width={40} minWidth={40} className="h-(--row-h) border-b border-line px-3 text-start">
+                  <Checkbox slot="selection" aria-label={m.selectAll} className={checkboxClass}>
+                    {({ isSelected, isIndeterminate }) => <Box isSelected={isSelected} isIndeterminate={isIndeterminate} />}
+                  </Checkbox>
+                </Column>
+              )}
+              {columns.map((col, i) => (
+                <Column
+                  key={col.id}
+                  id={col.id}
+                  isRowHeader={i === 0}
+                  allowsSorting={Boolean(col.sortable)}
+                  {...(i === 0 ? { minWidth: 160 } : { defaultWidth: widths[col.id] ?? col.width ?? 140, minWidth: MIN_W, maxWidth: MAX_W })}
+                  className={cx(
+                    "group/col relative h-(--row-h) cursor-default border-b border-line px-2.5 text-sm font-medium text-fg-2 outline-none data-hovered:text-fg",
+                    col.align === "end" ? "text-end" : "text-start",
+                    focusRing,
+                    "data-focus-visible:-outline-offset-2",
+                  )}
+                >
+                  {({ allowsSorting, sortDirection }) => (
+                    <span className={cx("flex items-center gap-1", col.align === "end" && "justify-end")}>
+                      <span className="truncate">{col.label}</span>
+                      {allowsSorting && <span className="inline-grid w-3 place-items-center">{sortDirection === "ascending" ? <ArrowUp size={12} /> : sortDirection === "descending" ? <ArrowDown size={12} /> : null}</span>}
+                      {i > 0 && (
+                        <span
+                          className="absolute top-1.5 right-0 bottom-1.5"
+                          onDoubleClick={() => {
+                            const next = { ...widths };
+                            delete next[col.id];
+                            setWidths(next);
+                            setVersion((v) => v + 1);
+                          }}
+                        >
+                          <ColumnResizer
+                            aria-label={m.columnWidth(col.label)}
+                            className={cx("block h-full w-1.5 cursor-col-resize border-r border-line outline-none data-hovered:border-fg-3 data-resizing:border-accent", focusRing)}
+                          />
+                        </span>
+                      )}
+                    </span>
+                  )}
+                </Column>
+              ))}
+              {withActions && <Column width={72} minWidth={72} aria-label={m.rowActions} className="h-(--row-h) border-b border-line" />}
+            </TableHeader>
+            <TableBody
+              items={firstLoad ? [] : rows}
+              renderEmptyState={() =>
+                firstLoad ? <Skeleton cols={columns.length} /> : empty ? <NoResults terms={terms} onClearSearch={onClearSearch} /> : null
+              }
+            >
+              {(row) => (
+                <Row
+                  id={row.id}
+                  className={cx(
+                    "group/row cursor-default outline-none",
+                    "data-hovered:[&>td]:bg-hover data-selected:[&>td]:bg-selected data-selected:data-hovered:[&>td]:bg-selected",
+                    focusRing,
+                    "data-focus-visible:-outline-offset-2",
+                  )}
+                >
+                  {multiple && (
+                    <Cell className="h-(--row-h) border-b border-line px-3">
+                      <Checkbox slot="selection" className={cx(checkboxClass, "invisible group-data-hovered/row:visible group-data-focus-visible/row:visible data-selected:visible [.socle-has-checked_&]:visible pointer-coarse:visible")}>
+                        {({ isSelected, isIndeterminate }) => <Box isSelected={isSelected} isIndeterminate={isIndeterminate} />}
+                      </Checkbox>
+                    </Cell>
+                  )}
+                  {columns.map((col, i) => {
+                    const raw = renderCell ? renderCell(row, col.id) : (row as Record<string, unknown>)[col.id];
+                    const isEmpty = raw === undefined || raw === null || raw === "";
+                    // Texte coupé : texte complet dans l'info-bulle Socle (Table.spec.md, Contenu).
+                    const content = isEmpty ? "—" : typeof raw === "string" ? <OverflowTooltip text={raw} textClass="block min-w-0 truncate">{highlight(raw, terms)}</OverflowTooltip> : (raw as ReactNode);
+                    return (
+                      <Cell
+                        key={col.id}
+                        className={cx(
+                          "h-(--row-h) max-w-0 truncate border-b border-line px-2.5 whitespace-nowrap",
+                          i === 0 ? "text-fg" : "text-fg-2",
+                          isEmpty && "text-fg-3",
+                          col.align === "end" && "text-end tabular-nums",
+                        )}
+                      >
+                        {i === 0 && rowIcon ? (
+                          <span className="flex min-w-0 items-center gap-2">
+                            <span className="inline-grid shrink-0 text-fg-2">{rowIcon(row)}</span>
+                            <span className="min-w-0 flex-1">{content}</span>
+                          </span>
+                        ) : (
+                          content
+                        )}
+                      </Cell>
+                    );
+                  })}
+                  {withActions && (
+                    <Cell className="h-(--row-h) border-b border-line pr-2">
+                      <RowActions actions={rowActions!(row).slice(0, 2)} />
+                    </Cell>
+                  )}
+                </Row>
+              )}
+            </TableBody>
+          </RACTable>
+        </ResizableTableContainer>
+      )}
+    </div>
+  );
+}
+
+/** Actions au survol, au focus et sur la ligne sélectionnée (D-066). */
+function RowActions({ actions }: { actions: TableRowAction[] }) {
+  return (
+    <span className="invisible flex justify-end gap-0.5 group-data-focus-visible/row:visible group-data-hovered/row:visible group-data-selected/row:visible">
+      {actions.map((a) => {
+        const button = (
+          <Tooltip content={a.label}>
+            <Button
+              aria-label={a.label}
+              {...(a.menu ? { "data-row-menu": "" } : {})}
+              {...(a.onPress ? { onPress: a.onPress } : {})}
+              className={cx(buttonReset, "inline-grid size-6 place-items-center rounded-sm text-fg-2 data-hovered:bg-selected data-hovered:text-fg [&>svg]:size-3.5", focusRing)}
+            >
+              {a.icon}
+            </Button>
+          </Tooltip>
+        );
+        return a.menu ? (
+          <Menu key={a.label} label={a.label} placement="bottom end" trigger={button}>
+            {a.menu}
+          </Menu>
+        ) : (
+          <span key={a.label}>{button}</span>
+        );
+      })}
+    </span>
+  );
+}
+
+/** 6 lignes squelettes au premier chargement (D-084). */
+function Skeleton({ cols }: { cols: number }) {
+  return (
+    <div aria-hidden>
+      {Array.from({ length: 6 }, (_, i) => (
+        <div key={i} className="flex h-(--row-h) items-center gap-6 border-b border-line px-2.5">
+          {Array.from({ length: Math.min(cols, 4) }, (_, j) => (
+            <i key={j} className="block h-2.5 rounded-sm bg-field" style={{ width: j === 0 ? `${38 + ((i * 7) % 20)}%` : "12%" }} />
+          ))}
+        </div>
+      ))}
+    </div>
+  );
+}

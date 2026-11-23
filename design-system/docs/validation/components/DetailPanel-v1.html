@@ -1,0 +1,226 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DetailPanel — validation v1</title>
+<style>
+/* ---------- Page de validation ---------- */
+:root{--pg-bg:#f6f6f6;--pg-fg:#1a1a1a;--pg-muted:#5c5c5c;--pg-line:#e2e2e2;--pg-card:#fff;--pg-badge:#fff4d6;--pg-badge-fg:#7a5a00;--pg-reco:#e7f0ff;--pg-reco-fg:#1d4ed8}
+:root[data-theme="dark"]{--pg-bg:#121212;--pg-fg:#ececec;--pg-muted:#9a9a9a;--pg-line:#2c2c2c;--pg-card:#1b1b1b;--pg-badge:#3a2f10;--pg-badge-fg:#f3d27a;--pg-reco:#16233d;--pg-reco-fg:#9cc0ff}
+*{box-sizing:border-box}html,body{margin:0}
+body{background:var(--pg-bg);color:var(--pg-fg);font:15px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif}
+.pg{max-width:1100px;margin:0 auto;padding:24px 16px 64px}
+h1{font-size:22px;font-weight:600;margin:0 0 4px;display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.lead{color:var(--pg-muted);margin:0 0 20px}
+.badge{font-size:12px;font-weight:600;letter-spacing:.04em;padding:3px 8px;border-radius:6px;background:var(--pg-badge);color:var(--pg-badge-fg)}
+.boxes{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px}
+@media (max-width:760px){.boxes{grid-template-columns:1fr}}
+.box{background:var(--pg-card);border:1px solid var(--pg-line);border-radius:10px;padding:14px 16px;font-size:14px}
+.box h2{font-size:14px;margin:0 0 8px;font-weight:600}.box ul,.box ol{margin:0;padding-left:20px}.box li{margin:5px 0}
+.reco{font-size:11.5px;font-weight:600;padding:1px 6px;border-radius:5px;background:var(--pg-reco);color:var(--pg-reco-fg);margin-left:4px}
+.toolbar{position:sticky;top:0;z-index:100;background:var(--pg-bg);padding:10px 0;border-bottom:1px solid var(--pg-line);margin-bottom:16px;display:flex;flex-wrap:wrap;gap:10px 16px;align-items:center}
+.seg{display:inline-flex;border:1px solid var(--pg-line);border-radius:8px;overflow:hidden;background:var(--pg-card)}
+.seg button{border:0;background:transparent;color:var(--pg-fg);padding:5px 10px;font:inherit;font-size:13px;cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--pg-fg);color:var(--pg-bg)}
+.tlabel{font-size:12px;color:var(--pg-muted);margin-right:6px}
+.hint{margin:8px 0 0;color:var(--pg-muted);font-size:13px}
+
+/* ---------- Tokens T2 (copie de src/tokens) ---------- */
+.tk{--surface:#fff;--surface-side:#f3f3f3;--surface-raised:#fff;--field:#f2f2f2;--hover:#e9e9e9;--selected:#dedede;--line:#e4e4e4;--fg:#1a1a1a;--fg-2:#5c5c5c;--fg-3:#6b6b6b;
+  --accent:#1d4ed8;--accent-fg:#fff;--accent-text:#1d4ed8;--warning:#b45309;--font-sans:-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;
+  --radius-sm:4px;--radius-md:8px;--radius-lg:12px;--shadow-md:0 6px 20px rgb(0 0 0/.10);
+  --icon:16px;--icon-stroke:1.6;--fs-xs:11.5px;--fs-sm:12.5px;--fs-md:14px;--lh:1.45;--row-h:34px;--bar-h:44px;--pad:16px;--side-w:220px;--detail-w:320px;--icon-btn:28px}
+.tk.dark{--surface:#181818;--surface-side:#222;--surface-raised:#262626;--field:#2a2a2a;--hover:#303030;--selected:#3d3d3d;--line:#333;--fg:#ececec;--fg-2:#ababab;--fg-3:#8f8f8f;
+  --accent:#5b8def;--accent-fg:#0b1630;--accent-text:#7da4f2;--warning:#e0a24a;--shadow-md:0 6px 20px rgb(0 0 0/.5)}
+.tk.desktop{--fs-xs:10.5px;--fs-sm:11.5px;--fs-md:13px;--lh:1.4;--row-h:28px;--bar-h:38px;--pad:12px;--detail-w:300px;--icon-btn:24px}
+
+/* ---------- Mini AppShell ---------- */
+.app{position:relative;height:640px;border:1px solid var(--pg-line);border-radius:12px;overflow:hidden;background:var(--surface);color:var(--fg);font-family:var(--font-sans);font-size:var(--fs-md);line-height:var(--lh);display:grid;grid-template-columns:var(--side-w) minmax(0,1fr) var(--detail-w);grid-template-rows:var(--bar-h) 1fr}
+.app *{box-sizing:border-box}.app button{font:inherit;color:inherit}
+.app :focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+.ic{width:var(--icon);height:var(--icon);flex:none;stroke:currentColor;fill:none;stroke-width:var(--icon-stroke);stroke-linecap:round;stroke-linejoin:round}
+.bar-side{background:var(--surface-side);border-right:1px solid var(--line)}
+.bar{grid-column:2/4;display:flex;align-items:center;padding:0 16px;border-bottom:1px solid var(--line);font-weight:600}
+.side{background:var(--surface-side);border-right:1px solid var(--line);padding:6px}
+.it{display:flex;align-items:center;gap:8px;height:var(--row-h);padding:0 8px;border-radius:var(--radius-md);color:var(--fg-2)}
+.it.on{background:var(--selected);color:var(--fg)}
+.main{padding:16px;overflow:auto;min-width:0}
+.row{display:flex;align-items:center;height:44px;padding:0 12px;border-bottom:1px solid var(--line);border-radius:var(--radius-md);cursor:default}
+.row.on{background:var(--selected)}
+.detail{border-left:1px solid var(--line);overflow:auto}
+
+/* ---------- DetailPanel ---------- */
+.sec{padding:12px var(--pad) 10px;border-bottom:1px solid var(--line)}
+.sec:last-child{border-bottom:0}
+.sec-h{display:flex;align-items:center;gap:4px;font-size:var(--fs-sm);color:var(--fg-3);margin:0 0 4px;border:0;background:transparent;padding:0;height:24px;width:100%;text-align:left}
+.sec-h .ic{width:12px;height:12px}
+.tk.sec-fold .sec-h{cursor:default;border-radius:var(--radius-sm)}
+.tk.sec-fold .sec-h:hover{color:var(--fg-2)}
+.tk:not(.sec-fold) .sec-h .ic{display:none}
+.sec-h[aria-expanded="false"] .ic{transform:rotate(-90deg)}
+dl{margin:0}
+.pr{display:flex;align-items:center;gap:8px;min-height:var(--row-h);padding:4px 0;margin:0 calc(var(--pad) * -1 + 8px);padding-left:calc(var(--pad) - 8px);padding-right:calc(var(--pad) - 8px);border-radius:var(--radius-md)}
+.pr .slot{width:var(--icon);flex:none;display:inline-grid;place-items:center;color:var(--fg-2);align-self:flex-start;margin-top:3px}
+.pr dt{color:var(--fg-2);flex:none;min-width:0}
+.pr dd{margin:0;color:var(--fg);min-width:0;overflow-wrap:break-word;hyphens:auto}
+.pr dd.empty{color:var(--fg-3)}
+.pr .act{margin-left:auto;flex:none;display:flex;align-items:center}
+/* Disposition A : valeur à droite */
+.tk.lay-a .pr dt{flex:1}.tk.lay-a .pr dd{text-align:right;max-width:60%}
+.tk.lay-a .pr .act{margin-left:4px}
+/* Disposition B : deux colonnes alignées */
+.tk.lay-b .pr{align-items:flex-start}.tk.lay-b .pr .act{align-self:flex-start;height:calc(4px + var(--fs-md) * var(--lh))}.tk.lay-b .pr dt{width:96px;padding-top:2px}.tk.lay-b .pr dd{flex:1;padding-top:2px}
+/* Disposition C : valeur sous le libellé */
+.tk.lay-c .pr{align-items:flex-start;flex-wrap:wrap;row-gap:0}
+.tk.lay-c .pr .txt{display:flex;flex-direction:column;flex:1;min-width:0}
+.tk.lay-c .pr dt{font-size:var(--fs-sm)}
+.pr .txt{display:contents}
+.tk.lay-c .pr .txt{display:flex}
+.pr.click:hover{background:var(--hover)}
+.chev{color:var(--fg-3);display:inline-grid;place-items:center}
+.chev .ic{width:14px;height:14px}
+.pr[aria-expanded="true"] .chev .ic{transform:rotate(90deg)}
+.sublist{margin:2px 0 6px 24px;font-size:var(--fs-sm);color:var(--fg-2)}
+.sublist div{display:flex;justify-content:space-between;height:26px;align-items:center}
+.pill{display:inline-flex;align-items:center;gap:6px}
+.pill i{width:8px;height:8px;border-radius:50%;background:var(--warning);display:inline-block}
+.app .lnk{color:var(--accent-text);border:0;background:transparent;padding:2px 4px;border-radius:var(--radius-sm);font-size:var(--fs-sm)}
+.lnk:hover{text-decoration:underline}
+.btn2{height:26px;padding:0 10px;border:0;border-radius:var(--radius-md);background:var(--field);font-size:var(--fs-sm)}
+.btn2:hover{background:var(--hover)}
+.sfoot{padding:6px 0 2px}
+.ib{width:22px;height:22px;display:inline-grid;place-items:center;border:0;background:transparent;color:var(--fg-2);border-radius:var(--radius-sm)}
+.ib .ic{width:14px;height:14px}.ib:hover{background:var(--hover);color:var(--fg)}
+.sw{width:30px;height:18px;border-radius:9px;background:var(--selected);border:0;position:relative;padding:0}
+.sw::after{content:"";position:absolute;top:2px;left:2px;width:14px;height:14px;border-radius:50%;background:#fff;box-shadow:0 1px 2px rgb(0 0 0/.25)}
+.sw[aria-checked="true"]{background:var(--accent)}.sw[aria-checked="true"]::after{left:14px}
+.back{display:flex;align-items:center;gap:6px;height:var(--bar-h);padding:0 8px;border-bottom:1px solid var(--line);font-weight:600}
+.back button{width:28px;height:28px;display:inline-grid;place-items:center;border:0;background:transparent;border-radius:var(--radius-md);color:var(--fg-2)}
+.back button:hover{background:var(--hover)}
+.subpage{padding:8px var(--pad)}
+.subpage .pr{margin:0}
+</style>
+</head>
+<body>
+<div class="pg">
+  <h1>DetailPanel — v1 <span class="badge" id="status">VALIDÉ le 2026-11-21</span></h1>
+  <p class="lead">Spec : src/patterns/DetailPanel/DetailPanel.spec.md. Contenu du panneau de détail d'AppShell : sections et lignes de propriété.</p>
+
+  <div class="boxes">
+    <div class="box">
+      <h2>Déjà décidé</h2>
+      <ul>
+        <li>Colonne sur bureau, overlay sur tablette, plein écran sur mobile ; largeur réglable (D-018, D-025).</li>
+        <li>Sections titrées, séparées par un trait ; pas d'ombre (layout-rules).</li>
+        <li>Un réglage s'applique tout de suite (D-007) ; pas d'animation (D-026).</li>
+        <li>Valeur vide : « — » en gris. Pas de champ de saisie dans une ligne.</li>
+      </ul>
+    </div>
+    <div class="box">
+      <h2>À décider</h2>
+      <ol>
+        <li><b>Icônes des lignes</b> : A facultatives, alignées par section (si une ligne de la section en a une, les autres gardent la place) ; B jamais ; C obligatoires. Choix : A (D-057). <span class="reco">validé</span></li>
+        <li><b>Disposition</b> : A libellé à gauche, valeur à droite ; B deux colonnes alignées (libellé de 96 px, puis valeur) ; C valeur sous le libellé. Choix : B (D-058). <span class="reco">validé</span></li>
+        <li><b>Action à droite</b> : une seule par ligne, parmi trois : lien court (un mot), interrupteur, bouton-icône (qui peut ouvrir un menu). Un bouton à texte (« Exporter l'historique ») ne va pas dans la ligne : il va en pied de section, pour laisser la place à la valeur (D-059). <span class="reco">validé</span></li>
+        <li><b>Ligne qui s'ouvre</b> (« › ») : dépliage sur place ; ou sous-niveau dans le panneau, avec retour. Choix : sur place (D-060). <span class="reco">validé</span></li>
+        <li><b>Sections repliables</b>, état mémorisé. Choix : oui (D-061). <span class="reco">validé</span></li>
+      </ol>
+    </div>
+  </div>
+
+  <div class="toolbar">
+    <span><span class="tlabel">Icônes</span><span class="seg" data-k="icons"><button aria-pressed="true" data-v="a">A</button><button aria-pressed="false" data-v="b">B</button><button aria-pressed="false" data-v="c">C</button></span></span>
+    <span><span class="tlabel">Disposition</span><span class="seg" data-k="lay"><button aria-pressed="false" data-v="a">A</button><button aria-pressed="true" data-v="b">B</button><button aria-pressed="false" data-v="c">C</button></span></span>
+    <span><span class="tlabel">Bouton à texte</span><span class="seg" data-k="btn"><button aria-pressed="false" data-v="row">Dans la ligne</button><button aria-pressed="true" data-v="foot">Pied de section</button></span></span>
+    <span><span class="tlabel">Ligne qui s'ouvre</span><span class="seg" data-k="open"><button aria-pressed="true" data-v="inline">Sur place</button><button aria-pressed="false" data-v="sub">Sous-niveau</button></span></span>
+    <span><span class="tlabel">Sections repliables</span><span class="seg" data-k="fold"><button aria-pressed="true" data-v="yes">Oui</button><button aria-pressed="false" data-v="no">Non</button></span></span>
+    <span><span class="tlabel">Mode</span><span class="seg" data-k="mode"><button aria-pressed="true" data-v="light">Clair</button><button aria-pressed="false" data-v="dark">Sombre</button></span></span>
+    <span><span class="tlabel">Densité</span><span class="seg" data-k="density"><button aria-pressed="true" data-v="web">Web</button><button aria-pressed="false" data-v="desktop">Desktop</button></span></span>
+  </div>
+  <div class="app tk" id="app"></div>
+  <p class="hint">À essayer : changez de document dans la liste ; cliquez « Pièces jointes » (ligne qui s'ouvre) ; activez « Lien public » ; repliez une section par son titre ; comparez les dispositions et les icônes. Dans « Partage », une ligne n'a pas d'icône : avec A, sa place reste vide.</p>
+</div>
+
+<script>
+(function(){
+  var state = {btn:'foot', icons:'a', lay:'b', open:'inline', fold:'yes', mode:'light', density:'web'};
+  var P = {
+    status:'<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="3"/>', user:'<circle cx="12" cy="8" r="4"/><path d="M4 21v-1a8 8 0 0 1 16 0v1"/>',
+    cal:'<rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 10h18M8 2v4M16 2v4"/>', tag:'<path d="M20.6 13.4 13.4 20.6a2 2 0 0 1-2.8 0L3 13V3h10l7.6 7.6a2 2 0 0 1 0 2.8z"/><circle cx="7.5" cy="7.5" r="1"/>',
+    clock:'<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>', link:'<path d="M10 13a5 5 0 0 0 7.5.5l3-3a5 5 0 0 0-7-7l-1.7 1.7"/><path d="M14 11a5 5 0 0 0-7.5-.5l-3 3a5 5 0 0 0 7 7l1.7-1.7"/>',
+    users:'<circle cx="9" cy="8" r="4"/><path d="M2 21v-1a6 6 0 0 1 12 0v1M16 4a4 4 0 0 1 0 8M22 21v-1a6 6 0 0 0-4-5.6"/>', clip:'<path d="m21.4 11-9.2 9.2a6 6 0 0 1-8.5-8.5l9.2-9.2a4 4 0 0 1 5.7 5.7l-9.2 9.2a2 2 0 0 1-2.8-2.8l8.5-8.5"/>',
+    db:'<ellipse cx="12" cy="5" rx="8" ry="3"/><path d="M4 5v14c0 1.7 3.6 3 8 3s8-1.3 8-3V5M4 12c0 1.7 3.6 3 8 3s8-1.3 8-3"/>', copy:'<rect x="8" y="8" width="13" height="13" rx="2"/><path d="M4 16V5a2 2 0 0 1 2-2h11"/>',
+    right:'<path d="m9 18 6-6-6-6"/>', left:'<path d="m15 18-6-6 6-6"/>', down:'<path d="m6 9 6 6 6-6"/>', dot:'<circle cx="12" cy="12" r="1.5"/>', file:'<path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/>'
+  };
+  function ic(n){ return '<svg class="ic" viewBox="0 0 24 24" aria-hidden="true">'+P[n]+'</svg>'; }
+  var DOCS = [
+    {t:'Rapport trimestriel des ventes', status:'En relecture', owner:'Camille Martin', due:'30 nov. 2026', tags:'Ventes, Région Sud-Ouest, Trimestriel', created:'3 nov. 2026', pub:false, people:'3 personnes', files:[['synthese.pdf','1,8 Mo'],['annexes.xlsx','2,4 Mo']], size:'4,2 Mo'},
+    {t:'Budget 2027', status:'Brouillon', owner:'Louis Bernard', due:'', tags:'Finance', created:'12 oct. 2026', pub:true, people:'Toute l\'équipe', files:[['budget.xlsx','860 Ko']], size:'860 Ko'}];
+  var sel = 0, fold = {}, openRow = false, sub = false;
+  var app = document.getElementById('app');
+  function row(o){
+    var showIcon = state.icons==='c' ? (o.i||'dot') : state.icons==='a' ? o.i : null;
+    var reserve = state.icons==='a' && o.secHasIcon;
+    var slot = showIcon ? '<span class="slot">'+ic(showIcon)+'</span>' : reserve ? '<span class="slot"></span>' : '';
+    var val = o.v===''||o.v==null ? '<dd class="empty">—</dd>' : '<dd>'+o.v+'</dd>';
+    return '<div class="pr'+(o.click?' click':'')+'"'+(o.click?' role="button" tabindex="0" data-row="'+o.click+'" aria-expanded="'+(state.open==='inline'&&openRow)+'"':'')+'>'+slot+'<span class="txt"><dt>'+o.l+'</dt>'+val+'</span>'+(o.a?'<span class="act">'+o.a+'</span>':'')+'</div>';
+  }
+  function section(id, title, rows, foot){
+    var anyIcon = rows.some(function(r){ return r.i; });
+    rows.forEach(function(r){ r.secHasIcon = anyIcon; });
+    var o = !(state.fold==='yes' && fold[id]);
+    return '<section class="sec" aria-labelledby="h-'+id+'"><button class="sec-h" id="h-'+id+'" '+(state.fold==='yes'?'aria-expanded="'+o+'" data-fold="'+id+'"':'tabindex="-1"')+'>'+title+' '+ic('down')+'</button>'
+      + (o ? '<dl>'+rows.map(row).join('')+(id==='files' && openRow && state.open==='inline' ? '<div class="sublist">'+cur().files.map(function(f){ return '<div><span>'+f[0]+'</span><span>'+f[1]+'</span></div>'; }).join('')+'</div>' : '')+'</dl>'+(foot||'') : '')+'</section>';
+  }
+  function cur(){ return DOCS[sel]; }
+  function detailHTML(){
+    var d = cur();
+    if (sub) return '<div class="back"><button data-back aria-label="Retour au détail">'+ic('left')+'</button>Pièces jointes</div><div class="subpage"><dl>'
+      + d.files.map(function(f){ return row({i:'file',l:f[0],v:f[1],secHasIcon:true}); }).join('')+'</dl></div>';
+    return section('props','Propriétés',[
+        {i:'status',l:'Statut',v:'<span class="pill"><i></i>'+d.status+'</span>',a:'<button class="ib" aria-label="Changer le statut">'+ic('down')+'</button>'},
+        {i:'user',l:'Responsable',v:d.owner},{i:'cal',l:'Échéance',v:d.due,a:'<button class="lnk">Modifier</button>'},
+        {i:'tag',l:'Étiquettes',v:d.tags},{i:'clock',l:'Créé le',v:d.created}])
+      + section('share','Partage',[
+        {i:'link',l:'Lien public',v:d.pub?'Activé':'Désactivé',a:'<button class="sw" role="switch" aria-checked="'+d.pub+'" aria-label="Lien public" data-sw></button>'},
+        {i:'users',l:'Accès',v:d.people,a:'<button class="lnk">Gérer</button>'},
+        {l:'Identifiant',v:'DOC-2026-0412',a:'<button class="ib" aria-label="Copier l\'identifiant">'+ic('copy')+'</button>'}])
+      + section('files','Fichiers',[
+        {i:'clip',l:'Pièces jointes',v:d.files.length+' fichier'+(d.files.length>1?'s':''),click:'files',a:'<span class="chev">'+ic('right')+'</span>'},
+        {i:'db',l:'Taille',v:d.size}])
+      + section('act','Activité',[{i:'clock',l:'Historique',v:'14 modifications',a:state.btn==='row'?'<button class="btn2">Exporter</button>':''}], state.btn==='foot'?'<div class="sfoot"><button class="btn2">Exporter l\'historique</button></div>':'');
+  }
+  function render(){
+    app.innerHTML = '<div class="bar-side"></div><div class="bar">Documents</div>'
+      + '<nav class="side"><div class="it on">'+ic('file')+'Documents</div></nav>'
+      + '<main class="main">'+DOCS.map(function(d,i){ return '<div class="row'+(i===sel?' on':'')+'" data-doc="'+i+'">'+d.t+'</div>'; }).join('')+'</main>'
+      + '<aside class="detail" aria-label="Détail">'+detailHTML()+'</aside>';
+    apply();
+  }
+  app.addEventListener('click', function(e){
+    var d = e.target.closest('[data-doc]'); if (d){ sel = +d.getAttribute('data-doc'); openRow = false; sub = false; render(); return; }
+    var f = e.target.closest('[data-fold]'); if (f){ var id = f.getAttribute('data-fold'); fold[id] = !fold[id]; render(); return; }
+    var s = e.target.closest('[data-sw]'); if (s){ cur().pub = !cur().pub; render(); return; }
+    if (e.target.closest('[data-back]')){ sub = false; render(); return; }
+    var r = e.target.closest('[data-row]'); if (r){ if (state.open==='inline') openRow = !openRow; else sub = true; render(); }
+  });
+  app.addEventListener('keydown', function(e){ var r = e.target.closest('[data-row]'); if (r && (e.key==='Enter'||e.key===' ')){ e.preventDefault(); r.click(); } });
+  function apply(){
+    app.classList.toggle('dark', state.mode==='dark'); app.classList.toggle('desktop', state.density==='desktop');
+    ['lay-a','lay-b','lay-c'].forEach(function(c){ app.classList.remove(c); }); app.classList.add('lay-'+state.lay);
+    app.classList.toggle('sec-fold', state.fold==='yes');
+    document.documentElement.setAttribute('data-theme', state.mode);
+  }
+  document.querySelectorAll('.seg').forEach(function(seg){
+    seg.addEventListener('click', function(e){
+      var b = e.target.closest('button'); if (!b) return;
+      seg.querySelectorAll('button').forEach(function(x){ x.setAttribute('aria-pressed', String(x===b)); });
+      state[seg.getAttribute('data-k')] = b.getAttribute('data-v'); sub = false; render();
+    });
+  });
+  render();
+})();
+</script>
+</body>
+</html>
