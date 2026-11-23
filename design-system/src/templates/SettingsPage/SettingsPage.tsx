@@ -180,22 +180,31 @@ function useApplied<T>(value: T, onChange: Apply<T>) {
   const notify = useNotify();
   const [shown, setShown] = useState(value);
   const [source, setSource] = useState(value);
+  // Dernière valeur enregistrée, et numéro du dernier envoi : les réponses peuvent
+  // arriver dans le désordre quand l'utilisateur change vite plusieurs fois.
+  const saved = useRef(value);
+  const sent = useRef(0);
+  const settled = useRef(0);
   if (!Object.is(value, source)) {
     setSource(value);
-    setShown(value);
+    saved.current = value;
+    // Pendant un envoi, la valeur affichée reste celle que l'utilisateur a choisie.
+    if (settled.current === sent.current) setShown(value);
   }
-  const latest = useRef(shown);
-  latest.current = shown;
   const apply = async (next: T) => {
-    const before = latest.current;
+    const id = ++sent.current;
     setShown(next);
     try {
       await onChange(next);
+      if (id === sent.current) saved.current = next;
     } catch (error) {
-      setShown(before);
+      // Seul l'échec du dernier envoi rétablit la dernière valeur enregistrée.
+      if (id === sent.current) setShown(saved.current);
       const description = errorText(error);
       notify({ tone: "danger", title: m.settingNotSaved, ...(description ? { description } : {}) });
       return false;
+    } finally {
+      settled.current = Math.max(settled.current, id);
     }
     return true;
   };

@@ -7,6 +7,7 @@ import { Popover } from "react-aria-components/Popover";
 import { useMessages, useSocle } from "../../provider/SocleProvider";
 import { buttonReset, cx } from "../../lib/cx";
 import { ariaShortcut, formatShortcut } from "../../lib/shortcut";
+import { TruncatedText } from "../../lib/truncated";
 import { Search, X } from "../../icons";
 import { popoverClass } from "../Menu/Menu";
 
@@ -273,9 +274,8 @@ export function SearchField({ label, onChange, tagMode = false, tags: tagsProp, 
                 armed && i === shown.length - 1 && "outline-2 outline-accent outline-solid",
               )}
             >
-              <span className="truncate" title={t.label}>
-                {t.label}
-              </span>
+              {/* Coupée à 160 px : info-bulle au survol, ou tout de suite si mise en avant au clavier. */}
+              <TruncatedText text={t.label} textClass="truncate" highlighted={armed && i === shown.length - 1} />
               <button
                 type="button"
                 tabIndex={-1}
@@ -317,9 +317,13 @@ export function SearchField({ label, onChange, tagMode = false, tags: tagsProp, 
         }}
         className="h-[calc(var(--row-h)-2px)] min-w-20 flex-1 border-0 bg-transparent p-0 px-0.5 font-[inherit] text-[length:inherit] text-fg outline-none placeholder:text-fg-3"
       />
-      {sugg.status === "loading" && open && (
-        <span role="status" aria-label={m.searching} className="socle-spin size-3.5 shrink-0 rounded-full border-2 border-line-strong border-t-fg-2" />
+      {/* Zone d'état toujours présente, texte masqué : l'annonce « Recherche en cours » est fiable. */}
+      {suggestions && (
+        <span role="status" className="sr-only">
+          {sugg.status === "loading" && open ? m.searching : ""}
+        </span>
       )}
+      {sugg.status === "loading" && open && <span aria-hidden="true" className="socle-spin size-3.5 shrink-0 rounded-full border-2 border-line-strong border-t-fg-2" />}
       {!filled && !focused && (
         <kbd className="mr-1 shrink-0 rounded-sm border border-line-strong px-1.5 font-sans text-xs leading-4 text-fg-3">{formatShortcut("Mod+F", isMac, m)}</kbd>
       )}
@@ -344,8 +348,9 @@ export function SearchField({ label, onChange, tagMode = false, tags: tagsProp, 
             <>
               {sugg.status !== "done" || options.length > 0 ? <div className="px-2.5 pt-1.5 pb-0.5 text-sm text-fg-3">{m.elements}</div> : null}
               {sugg.status === "loading" && (
-                <div role="status" className="flex h-(--row-h) items-center gap-2 px-2.5 text-sm text-fg-3">
-                  <span className="socle-spin size-3.5 rounded-full border-2 border-line-strong border-t-fg-2" />
+                // Pas de role="status" ici : la zone d'état du champ annonce déjà « Recherche en cours ».
+                <div className="flex h-(--row-h) items-center gap-2 px-2.5 text-sm text-fg-3">
+                  <span aria-hidden="true" className="socle-spin size-3.5 rounded-full border-2 border-line-strong border-t-fg-2" />
                   {m.searchingRow}
                 </div>
               )}

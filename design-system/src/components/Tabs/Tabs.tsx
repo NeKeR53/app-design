@@ -2,7 +2,17 @@
  * Adapté du starter Tailwind de React Aria (adobe/react-spectrum, starters/tailwind),
  * licence Apache 2.0. Spec : Tabs.spec.md.
  */
-import { useEffect, useRef, useState, type KeyboardEvent, type MouseEvent, type ReactElement } from "react";
+import {
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+  useSyncExternalStore,
+  type HTMLAttributes,
+  type KeyboardEvent,
+  type MouseEvent,
+  type ReactElement,
+} from "react";
 import { Tab, TabList, Tabs as RACTabs } from "react-aria-components/Tabs";
 import { Button } from "react-aria-components/Button";
 import { Dialog, DialogTrigger } from "react-aria-components/Dialog";
@@ -31,6 +41,61 @@ export interface TabsProps {
   onClose?: (id: string) => void;
   /** Nom de la page, pour le nom accessible : « Vues de la page Documents ». */
   pageTitle: string;
+  /**
+   * Relie les onglets à la zone de contenu : même valeur que `tabs` sur `TabPanel`.
+   * Sans lui, pas de lien `aria-controls` / `aria-labelledby`.
+   */
+  id?: string;
+}
+
+/*
+ * Lien entre Tabs et TabPanel (rôle `tabpanel`, Tabs.spec.md). Les onglets sont dans la
+ * barre supérieure et le contenu dans `main` : pas de parent commun pour un contexte.
+ * Tabs publie les identifiants que React Aria donne à l'onglet actif (son `id` et son
+ * `aria-controls`) ; TabPanel les reprend.
+ */
+interface PanelLink {
+  tab: string;
+  panel: string;
+}
+const links = new Map<string, PanelLink>();
+const listeners = new Set<() => void>();
+function publish(key: string, link: PanelLink | undefined) {
+  const old = links.get(key);
+  if (old?.tab === link?.tab && old?.panel === link?.panel) return;
+  if (link) links.set(key, link);
+  else links.delete(key);
+  listeners.forEach((l) => l());
+}
+function subscribe(l: () => void) {
+  listeners.add(l);
+  return () => {
+    listeners.delete(l);
+  };
+}
+
+export interface TabPanelProps extends Omit<HTMLAttributes<HTMLDivElement>, "role" | "id" | "aria-labelledby"> {
+  /** Valeur de `id` sur le `Tabs` qui pilote ce contenu. */
+  tabs: string;
+}
+
+/**
+ * Attributs de la zone de contenu de la vue active (rôle `tabpanel`, nommée par l'onglet
+ * actif), à poser sur l'élément qui l'affiche. Sans `tabs`, ne rend rien.
+ */
+export function useTabPanelProps(tabs: string | undefined): HTMLAttributes<HTMLElement> {
+  const link = useSyncExternalStore(subscribe, () => (tabs ? links.get(tabs) : undefined), () => undefined);
+  if (!tabs) return {};
+  return { role: "tabpanel", ...(link ? { id: link.panel, "aria-labelledby": link.tab } : {}) };
+}
+
+/** Zone de contenu de la vue active, quand l'app n'a pas d'élément à elle où poser `useTabPanelProps`. */
+export function TabPanel({ tabs, children, ...rest }: TabPanelProps) {
+  return (
+    <div {...rest} {...useTabPanelProps(tabs)}>
+      {children}
+    </div>
+  );
 }
 
 /** Onglet : rayon 8 px (D-040), fond plein fixe quand il est actif (D-038, D-039). */
@@ -42,7 +107,7 @@ const tabClass = cx(
   "data-focus-visible:-outline-offset-2",
 );
 
-export function Tabs({ items, selectedId, onSelectionChange, onClose, pageTitle }: TabsProps) {
+export function Tabs({ items, selectedId, onSelectionChange, onClose, pageTitle, id }: TabsProps) {
   const { isMac } = useSocle();
   const m = useMessages();
   const listRef = useRef<HTMLDivElement>(null);
@@ -58,6 +123,25 @@ export function Tabs({ items, selectedId, onSelectionChange, onClose, pageTitle 
     ro.observe(el);
     return () => ro.disconnect();
   }, [items.length]);
+
+  // Publie l'onglet actif pour TabPanel : son id et le contenu qu'il contrôle.
+  // React Aria rend les onglets après un premier passage : on suit le DOM de la liste.
+  useLayoutEffect(() => {
+    const el = listRef.current;
+    if (!id || !el) return;
+    const sync = () => {
+      const tab = el.querySelector<HTMLElement>('[role="tab"][aria-selected="true"]');
+      const panel = tab?.getAttribute("aria-controls");
+      publish(id, tab?.id && panel ? { tab: tab.id, panel } : undefined);
+    };
+    sync();
+    const mo = new MutationObserver(sync);
+    mo.observe(el, { subtree: true, childList: true, attributes: true, attributeFilter: ["aria-selected", "aria-controls", "id"] });
+    return () => {
+      mo.disconnect();
+      publish(id, undefined);
+    };
+  }, [id]);
 
   // L'onglet actif reste toujours visible (D-027).
   useEffect(() => {

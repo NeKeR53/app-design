@@ -4,6 +4,29 @@ Versions selon semver (règle 6 du skill design) : une nouvelle option facultati
 
 ## [Non publié]
 
+Mise en conformité avec les specs existantes, après une revue UX comparée à React Bits. Pas de nouvelle décision de design.
+
+### Ajouté
+- `TabPanel` et `useTabPanelProps` : la zone de contenu reçoit le rôle `tabpanel`, nommée par l'onglet actif ; option facultative `id` sur `Tabs`. `AppShell` les relie tout seul quand il a des vues (Tabs.spec.md).
+- Libellés internes `rowAction` et `moreActionsFor`.
+
+### Corrigé
+- Toast : au retour sur la fenêtre, la minuterie ne repart plus si la souris ou le focus sont sur un toast (D-153). Échap ferme aussi le toast depuis son action ou sa croix.
+- FormattedValue : une valeur négative arrondie à zéro s'affiche « 0 », pas « -0 » (`number`, `money`, `percent`).
+- SettingsPage : quand les réponses arrivent dans le désordre, l'échec d'un ancien envoi ne rétablit plus une valeur dépassée (D-204).
+- Appui long au doigt ou au stylet (500 ms) : il ouvre le menu « … » des lignes de `List`, `Table`, `TreeView` et `Sidebar`, et le menu de `useContextMenu` (D-007). iOS Safari n'envoie pas `contextmenu`.
+- Sidebar : Maj+F10 et la touche Menu ouvrent le menu « … » de l'élément. Table et List : Maj+F10 aussi. Ouvert au clavier, le menu prend toujours le focus.
+- AppShell : l'overlay de la sidebar repliée reste ouvert tant que le focus clavier est dedans.
+- List : lignes de 44 px au toucher (List.spec.md).
+- Table : les actions de ligne sont nommées avec la ligne, « Archiver Budget 2027 », « Plus d'actions pour Budget 2027 » (Table.spec.md).
+- StepList : le focus reste sur l'étape après un clic ; sous 380 px, une étape garde son nom accessible.
+- DocumentViewer, LogViewer, DiffView : leur barre d'outils se parcourt avec les flèches (Toolbar de React Aria) ; dans un champ texte, les flèches déplacent le curseur.
+- Select : info-bulle sur une option ou une valeur coupée. SearchField : info-bulle sur une étiquette coupée, au survol et au clavier, à la place de `title`. Annonce « Recherche en cours » fiable, sans doublon.
+- FormattedValue : exemple de statut « En cours » en ton `info` (D-161) ; spec alignée sur le texte masqué de « — ».
+
+### Interne
+- `tsconfig.json` : types `ES2023.Intl`.
+
 ## [0.3.0] — 2026-11-23
 
 Lots 2 à 5 de la migration d'Alfred : gabarits de page (ListPage, DetailPanel déclaratif, FormPage, SettingsPage, DetailPage et Page), coquille (actions de page, pied de Sidebar, largeurs du détail, résumé et état), composants spécialisés (TreeView, tableau dense, Terminal, LogViewer, DiffView, Markdown, DocumentViewer, HtmlContent, Disclosure, InlineEdit, StepList, Popover) et garde-fous Biome (décisions D-170 à D-335). Version mineure : tout est nouveau ou facultatif ; les petits changements de l'existant sont listés sous « Modifié ».

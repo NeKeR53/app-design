@@ -9,7 +9,7 @@ import { useMessages, useStoredState } from "../../provider/SocleProvider";
 import { buttonReset, cx, focusRing } from "../../lib/cx";
 import { AlertTriangle, ChevronDown, ChevronRight, ChevronsUpDown, ExternalArrow, Lock, MoreHorizontal, Settings } from "../../icons";
 import { IconButton } from "../../components/IconButton/IconButton";
-import { Menu } from "../../components/Menu/Menu";
+import { Menu, useRowMenu } from "../../components/Menu/Menu";
 import { Tooltip } from "../../components/Tooltip/Tooltip";
 import { Avatar } from "../../components/Avatar/Avatar";
 import { HintTooltip, OverflowTooltip } from "../../components/Tooltip/OverflowTooltip";
@@ -138,6 +138,8 @@ const SECTION_MARK = Symbol("SidebarSection");
 /* ---------- Sidebar ---------- */
 export function Sidebar({ selectedId, onSelectionChange, account, footer, workspace, children }: SidebarProps) {
   const m = useMessages();
+  // Clic droit, appui long sur tactile, Maj+F10 ou touche Menu : menu « … » de l'élément (D-007, D-053).
+  const { rowMenuProps, onKey: onRowMenuKey } = useRowMenu();
   // Ce que l'utilisateur a déplié ou replié est mémorisé (D-007, D-043, D-056) ;
   // les sections sont dépliées par défaut, les éléments repliés.
   const [open, setOpen] = useStoredState<Record<string, boolean>>("sidebar:open", {});
@@ -215,7 +217,12 @@ export function Sidebar({ selectedId, onSelectionChange, account, footer, worksp
 
   return (
     <SidebarCtx.Provider value={ctx}>
-      <nav aria-label={m.mainNavigation} className="flex h-full min-h-0 flex-col bg-surface-side font-sans text-md text-fg">
+      <nav
+        aria-label={m.mainNavigation}
+        className="flex h-full min-h-0 flex-col bg-surface-side font-sans text-md text-fg"
+        {...rowMenuProps}
+        onKeyDownCapture={(e) => onRowMenuKey(e)}
+      >
         <Tree {...treeProps} aria-label={m.mainNavigation} className="min-h-0 flex-1 overflow-auto p-1.5 outline-none">
           {children}
         </Tree>
@@ -271,12 +278,16 @@ function withDepth(children: ReactNode, depth: number) {
   ));
 }
 
+/** Visibles aussi tant que leur menu est ouvert : il reste ancré à son bouton (appui long, Maj+F10). */
 function Actions({ actions }: { actions: SidebarAction[] }) {
+  const shown = actions.slice(0, 2);
+  // Le dernier menu (en général « … ») s'ouvre aussi au clic droit, à l'appui long et à Maj+F10.
+  const rowMenu = shown.map((a) => Boolean(a.menu)).lastIndexOf(true);
   return (
-    <span className="hidden items-center gap-0.5 group-data-focus-visible:flex group-data-hovered:flex group-data-selected:flex">
-      {actions.slice(0, 2).map((a) =>
+    <span className="hidden items-center gap-0.5 group-data-focus-visible:flex group-data-hovered:flex group-data-selected:flex group-has-[[aria-haspopup][aria-expanded=true]]:flex">
+      {shown.map((a, i) =>
         a.menu ? (
-          <Menu key={a.label} label={a.label} placement="bottom end" trigger={<SmallAction action={a} />}>
+          <Menu key={a.label} label={a.label} placement="bottom end" trigger={<SmallAction action={a} rowMenu={i === rowMenu} />}>
             {a.menu}
           </Menu>
         ) : (
@@ -288,11 +299,12 @@ function Actions({ actions }: { actions: SidebarAction[] }) {
 }
 
 /** Action imbriquée : 22 px, rayon 4 px (D-040, D-053). */
-function SmallAction({ action }: { action: SidebarAction }) {
+function SmallAction({ action, rowMenu }: { action: SidebarAction; rowMenu?: boolean }) {
   return (
     <Tooltip content={action.label}>
       <Button
         aria-label={action.label}
+        {...(rowMenu ? { "data-row-menu": "" } : {})}
         {...(action.onPress ? { onPress: action.onPress } : {})}
         className={cx(buttonReset, "inline-grid size-[22px] place-items-center rounded-sm text-fg-2 data-hovered:bg-selected data-hovered:text-fg", focusRing)}
       >
@@ -336,7 +348,7 @@ function Item({ id, icon, label, count, indicator, actions, children }: SidebarI
               </HintTooltip>
             )}
             {count !== undefined && !ind && (
-              <span className={cx("px-1 text-sm text-fg-3 tabular-nums group-data-selected:text-fg-2", Boolean(actions?.length) && "group-data-focus-visible:hidden group-data-hovered:hidden group-data-selected:hidden")}>
+              <span className={cx("px-1 text-sm text-fg-3 tabular-nums group-data-selected:text-fg-2", Boolean(actions?.length) && "group-data-focus-visible:hidden group-data-hovered:hidden group-data-selected:hidden group-has-[[aria-haspopup][aria-expanded=true]]:hidden")}>
                 {count > 99 ? "99+" : count}
               </span>
             )}
@@ -379,8 +391,8 @@ function TwoLine({ id, title, subtitle, meta, status, unread, actions, children 
                   </span>
                 )}
                 {actions && (
-                  <span className="hidden group-data-focus-visible:inline-flex group-data-hovered:inline-flex group-data-selected:inline-flex">
-                    <Menu label={m.actionsOn(title)} placement="bottom end" trigger={<SmallAction action={{ icon: <MoreHorizontal />, label: m.actionsOn(title) }} />}>
+                  <span className="hidden group-data-focus-visible:inline-flex group-data-hovered:inline-flex group-data-selected:inline-flex group-has-[[aria-haspopup][aria-expanded=true]]:inline-flex">
+                    <Menu label={m.actionsOn(title)} placement="bottom end" trigger={<SmallAction action={{ icon: <MoreHorizontal />, label: m.actionsOn(title) }} rowMenu />}>
                       {actions}
                     </Menu>
                   </span>

@@ -146,6 +146,13 @@ export const Accessibilite: Story = {
     const toolbar = within(canvasElement).getByRole("toolbar", { name: "Affichage des différences" });
     await expect(toolbar.textContent).toContain("5 lignes ajoutées, 3 retirées");
     await expect(scroller(canvasElement)).toHaveAccessibleDescription(/F7/);
+    // Barre d'outils : les flèches passent d'un contrôle à l'autre (Toolbar React Aria).
+    const [first, second] = within(toolbar).getAllByRole("button");
+    first!.focus();
+    await userEvent.keyboard("{ArrowRight}");
+    await expect(second).toHaveFocus();
+    await userEvent.keyboard("{ArrowLeft}");
+    await expect(first).toHaveFocus();
   },
 };
 

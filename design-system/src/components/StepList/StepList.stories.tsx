@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { useState } from "react";
-import { expect, fn, userEvent, within } from "storybook/test";
+import { expect, fn, userEvent, waitFor, within } from "storybook/test";
 import { StepList, type StepItem } from "./StepList";
 import { Button } from "../Button/Button";
 
@@ -71,8 +71,22 @@ export const Etroit: Story = {
     const c = within(canvasElement);
     await expect(c.getAllByText("Serveur et clé")[0]).not.toBeVisible();
     const narrow = c.getByRole("list", { name: "Étapes (étroit)" });
-    await expect(within(narrow).getByText("Compte", { exact: false })).not.toBeVisible();
+    // Titre masqué à l'œil (1 px, rogné) mais toujours lu : « Compte (fait) » (StepList.spec.md).
+    const hidden = within(narrow).getByText("Compte", { exact: false });
+    await expect(hidden.getBoundingClientRect().width).toBeLessThanOrEqual(1);
+    await expect(within(narrow).getAllByRole("listitem")[0]).toHaveTextContent("Compte (fait)");
     await expect(within(narrow).getByText("Connexion")).toBeVisible();
+  },
+};
+
+/** Étroit et cliquable : chaque bouton garde son nom accessible (« Compte (fait) »). */
+export const EtroitCliquable: Story = {
+  args: { onSelect: fn(), current: "import" },
+  render: (args) => <div className="w-[340px]"><StepList {...args} /></div>,
+  play: async ({ canvasElement }) => {
+    const c = within(canvasElement);
+    await expect(c.getByRole("button", { name: "Compte (fait)" })).toBeInTheDocument();
+    await expect(c.getByRole("button", { name: "Connexion (fait)" })).toBeInTheDocument();
   },
 };
 
@@ -96,5 +110,24 @@ export const DansUnAssistant: Story = {
     await expect(c.getAllByRole("listitem")[2]).toHaveAttribute("aria-current", "step");
     await userEvent.click(c.getByRole("button", { name: /Compte/ }));
     await expect(c.getAllByRole("listitem")[0]).toHaveAttribute("aria-current", "step");
+  },
+};
+
+/** Retour au clavier : le focus reste sur l'étape, devenue l'étape en cours (pas sur `body`). */
+export const RetourClavierGardeLeFocus: Story = {
+  render: (args) => {
+    const [cur, setCur] = useState("import");
+    return <StepList {...args} current={cur} onSelect={setCur} />;
+  },
+  play: async ({ canvasElement }) => {
+    const c = within(canvasElement);
+    c.getByRole("button", { name: /Connexion/ }).focus();
+    await userEvent.keyboard("{Enter}");
+    const item = c.getAllByRole("listitem")[1]!;
+    await expect(item).toHaveAttribute("aria-current", "step");
+    await waitFor(() => expect(item.firstElementChild).toHaveFocus());
+    // Tab repart de là : l'étape faite avant elle reste atteignable en arrière.
+    await userEvent.tab({ shift: true });
+    await expect(c.getByRole("button", { name: /Compte/ })).toHaveFocus();
   },
 };

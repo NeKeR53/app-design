@@ -14,6 +14,7 @@ import {
   useRef,
   useState,
 } from "react";
+import { Toolbar } from "react-aria-components/Toolbar";
 import { ChevronDown, ChevronUp, Columns, UnfoldVertical } from "../../icons";
 import type { SocleMessages } from "../../i18n/messages";
 import { cx } from "../../lib/cx";
@@ -438,8 +439,8 @@ export function DiffView({
 
   return (
     <div className={cx("socle-diff", `socle-diff--${mode}`, fill && "socle-diff--fill")}>
-      <div
-        role="toolbar"
+      {/* Toolbar React Aria : les flèches passent d'un contrôle à l'autre. */}
+      <Toolbar
         aria-label={m.diffToolbar}
         className="flex min-h-(--bar-h) flex-none flex-wrap items-center gap-x-2 gap-y-1 border-b border-line bg-surface-side py-1 pr-1.5 pl-3 text-sm"
       >
@@ -456,7 +457,7 @@ export function DiffView({
         <span className="sr-only" aria-live="polite">
           {announce}
         </span>
-      </div>
+      </Toolbar>
       {identical ? (
         <EmptyState size="compact" title={m.diffNone} description={m.diffNoneText} />
       ) : (

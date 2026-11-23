@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { useState } from "react";
 import { expect, userEvent, waitFor, within } from "storybook/test";
-import { Tabs, type TabItem } from "./Tabs";
+import { TabPanel, Tabs, type TabItem } from "./Tabs";
 
 const meta: Meta<typeof Tabs> = {
   title: "Composants/Tabs",
@@ -46,6 +46,31 @@ export const Selection: Story = {
     await userEvent.keyboard("{End}");
     await expect(sel(canvasElement)).toBe("r1");
     await expect(c.getByRole("tablist")).toHaveAccessibleName("Vues de la page Documents");
+  },
+};
+
+/** Contenu relié aux onglets : rôle `tabpanel`, nommé par l'onglet actif, cible de `aria-controls`. */
+export const AvecTabPanel: Story = {
+  render: () => {
+    const [sel, setSel] = useState(BASE[0]!.id);
+    return (
+      <div className="flex flex-col gap-2">
+        <Tabs id="vues-documents" pageTitle="Documents" items={BASE} selectedId={sel} onSelectionChange={setSel} />
+        <TabPanel tabs="vues-documents" className="text-sm text-fg-2">Contenu de la vue {sel}</TabPanel>
+      </div>
+    );
+  },
+  play: async ({ canvasElement }) => {
+    const c = within(canvasElement);
+    const check = async (name: RegExp) => {
+      const tab = c.getByRole("tab", { name });
+      const panel = c.getByRole("tabpanel");
+      await waitFor(() => expect(panel).toHaveAccessibleName(tab.textContent ?? ""));
+      await expect(tab).toHaveAttribute("aria-controls", panel.id);
+    };
+    await check(/Tous les documents/);
+    await userEvent.click(c.getByRole("tab", { name: /Archives/ }));
+    await check(/Archives/);
   },
 };
 

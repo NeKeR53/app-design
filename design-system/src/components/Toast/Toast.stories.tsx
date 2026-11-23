@@ -122,6 +122,9 @@ export const Pause: Story = {
     current.notify({ title: "Enregistré", duration: 5000 });
     const toast = await waitFor(() => body().getByRole("alertdialog", { name: /Enregistré/ }));
     await userEvent.hover(toast);
+    // La fenêtre perd puis reprend le focus : la souris est encore dessus, la minuterie reste arrêtée.
+    window.dispatchEvent(new Event("blur"));
+    window.dispatchEvent(new Event("focus"));
     await new Promise((r) => setTimeout(r, 5600));
     await expect(body().getByRole("alertdialog", { name: /Enregistré/ })).toBeInTheDocument();
     await userEvent.unhover(toast);
@@ -199,5 +202,12 @@ export const Clavier: Story = {
     await userEvent.keyboard("{Escape}");
     await waitFor(() => expect(toasts()).toHaveLength(0));
     await waitFor(() => expect(within(canvasElement).getByRole("button", { name: "Avant" })).toHaveFocus());
+
+    // Échap ferme aussi le toast depuis son action.
+    current.notify({ title: "Copié", duration: null, action: { label: "Annuler", onAction: () => {} } });
+    const second = await waitFor(() => body().getByRole("alertdialog", { name: /Copié/ }));
+    within(second).getByRole("button", { name: "Annuler" }).focus();
+    await userEvent.keyboard("{Escape}");
+    await waitFor(() => expect(toasts()).toHaveLength(0));
   },
 };

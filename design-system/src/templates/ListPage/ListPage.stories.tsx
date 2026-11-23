@@ -301,7 +301,7 @@ export const ActionsDeLigne: Story = {
     const c = within(canvasElement);
     const row = c.getByRole("row", { name: /Accès au VPN/ });
     await userEvent.hover(row);
-    await userEvent.click(within(row).getByRole("button", { name: "Plus d'actions" }));
+    await userEvent.click(within(row).getByRole("button", { name: /^Plus d'actions pour Accès au VPN/ }));
     await waitFor(() => expect(body().getByRole("menuitem", { name: "Supprimer D-1001" })).toBeVisible());
     await expect(body().getByRole("menuitem", { name: "Clore" })).toBeVisible();
     await userEvent.keyboard("{Escape}");

@@ -320,6 +320,36 @@ export const Echec: Story = {
   },
 };
 
+/** Réponses dans le désordre : un ancien échec ne rétablit pas une valeur dépassée (D-204). */
+export const OrdreDesReponses: Story = {
+  render: () => {
+    const notifications = useMemo(() => createNotifications(), []);
+    const groups = useMemo(() => {
+      let calls = 0;
+      // Premier envoi : échec lent ; les suivants : réussite rapide.
+      const sounds = () => (++calls === 1 ? wait(300).then(() => Promise.reject(new Error("Délai dépassé."))) : wait(20));
+      return sampleGroups({ sounds });
+    }, []);
+    return (
+      <SocleProvider notifications={notifications} storageKey="storybook-ordre">
+        <Box>
+          <SettingsPage groups={groups} selectedId="general" />
+        </Box>
+      </SocleProvider>
+    );
+  },
+  play: async ({ canvasElement }) => {
+    const sounds = within(canvasElement).getByRole("switch", { name: "Sons" });
+    await expect(sounds).toBeChecked();
+    await userEvent.click(sounds);
+    await userEvent.click(sounds);
+    await userEvent.click(sounds);
+    await expect(sounds).not.toBeChecked();
+    await waitFor(() => expect(body().getByText("Délai dépassé.")).toBeInTheDocument());
+    await expect(sounds).not.toBeChecked();
+  },
+};
+
 /** Réglage « action » : bouton secondaire ; danger confirmé (D-205). */
 export const Action: Story = {
   render: (args) => {

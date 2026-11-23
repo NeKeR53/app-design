@@ -14,6 +14,15 @@ export default meta;
 type Story = StoryObj<typeof List>;
 const body = () => within(document.body);
 
+/** Appui long au doigt : `pointerdown` tactile, 600 ms d'attente, puis `pointerup` (D-007). */
+async function longPress(el: Element) {
+  const r = el.getBoundingClientRect();
+  const init = { bubbles: true, cancelable: true, pointerId: 7, pointerType: "touch", isPrimary: true, button: 0, clientX: r.left + 10, clientY: r.top + r.height / 2 };
+  el.dispatchEvent(new PointerEvent("pointerdown", { ...init, buttons: 1 }));
+  await new Promise((done) => setTimeout(done, 600));
+  el.dispatchEvent(new PointerEvent("pointerup", init));
+}
+
 const ini = (n: string) => n.split(" ").map((p) => p[0]).join("").slice(0, 2).toUpperCase();
 const mk = (id: string, title: string, who: string, meta: string, extra: Partial<ListItemData> = {}): ListItemData => ({
   id,
@@ -82,6 +91,22 @@ export const Actions: Story = {
     await waitFor(() => expect(within(row).getByRole("button", { name: "Plus d'actions" })).toBeVisible());
     row.dispatchEvent(new MouseEvent("contextmenu", { bubbles: true, cancelable: true }));
     await waitFor(() => expect(body().getByRole("menuitem", { name: "Archiver" })).toBeVisible());
+    await userEvent.keyboard("{Escape}");
+  },
+};
+
+/** Tactile : un appui long ouvre le menu « … » de la ligne, sans l'ouvrir ni la sélectionner (D-007). */
+export const AppuiLong: Story = {
+  render: () => <Demo />,
+  play: async ({ canvasElement }) => {
+    const c = within(canvasElement);
+    const row = c.getByRole("row", { name: /Remboursement de frais/ });
+    onOpen.mockClear();
+    await longPress(within(row).getByText("Remboursement de frais de déplacement"));
+    await waitFor(() => expect(body().getByRole("menuitem", { name: "Archiver" })).toBeVisible());
+    await new Promise((done) => setTimeout(done, 150));
+    await expect(row).not.toHaveAttribute("aria-selected", "true");
+    await expect(onOpen).not.toHaveBeenCalled();
     await userEvent.keyboard("{Escape}");
   },
 };

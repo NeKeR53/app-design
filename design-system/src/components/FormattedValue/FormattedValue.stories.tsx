@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect, within } from "storybook/test";
-import { FormattedValue, valueLayout, valueSortKey, type ValueFormat } from "./FormattedValue";
+import { FormattedValue, formatValue, valueLayout, valueSortKey, type ValueFormat } from "./FormattedValue";
 
 const meta: Meta<typeof FormattedValue> = {
   title: "Composants/FormattedValue",
@@ -107,5 +107,11 @@ export const TriEtColonnes: Story = {
     await expect(valueSortKey(null, { type: "number" })).toBeNull();
     await expect(valueLayout("money")).toEqual({ align: "end", width: 130 });
     await expect(valueLayout("text")).toEqual({ align: "start" });
+    // Une petite valeur négative arrondie à zéro s'affiche sans signe moins.
+    const m = { locale: "fr-FR", yes: "Oui", no: "Non", justNow: "à l'instant" };
+    await expect(formatValue(-0.001, { type: "number" }, m)).toBe("0");
+    await expect(formatValue(-0.001, { type: "money" }, m)).toMatch(/^0,00\s€$/);
+    await expect(formatValue(-0.0001, { type: "percent" }, m)).toMatch(/^0\s%$/);
+    await expect(formatValue(-2, { type: "number" }, m)).toBe("-2");
   },
 };

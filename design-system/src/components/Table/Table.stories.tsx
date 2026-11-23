@@ -19,6 +19,15 @@ export default meta;
 type Story = StoryObj;
 const body = () => within(document.body);
 
+/** Appui long au doigt : `pointerdown` tactile, 600 ms d'attente, puis `pointerup` (D-007). */
+async function longPress(el: Element) {
+  const r = el.getBoundingClientRect();
+  const init = { bubbles: true, cancelable: true, pointerId: 7, pointerType: "touch", isPrimary: true, button: 0, clientX: r.left + 10, clientY: r.top + r.height / 2 };
+  el.dispatchEvent(new PointerEvent("pointerdown", { ...init, buttons: 1 }));
+  await new Promise((done) => setTimeout(done, 600));
+  el.dispatchEvent(new PointerEvent("pointerup", init));
+}
+
 interface Docu { id: string; name: string; owner: string; date: string; size: number }
 const ROWS: Docu[] = [
   ["Rapport trimestriel des ventes de la région Sud-Ouest et analyse des écarts", "Camille Martin", "2026-11-21", 4200],
@@ -117,6 +126,34 @@ export const ActionsDeLigne: Story = {
     const cell = within(c.getByRole("row", { name: /Budget 2027/ })).getAllByRole("rowheader")[0]!;
     cell.dispatchEvent(new MouseEvent("contextmenu", { bubbles: true, cancelable: true }));
     await waitFor(() => expect(body().getByRole("menuitem", { name: "Renommer" })).toBeVisible());
+    await userEvent.keyboard("{Escape}");
+  },
+};
+
+/** Les actions de ligne sont nommées avec la ligne ; Maj+F10 ouvre le menu « … » (Table.spec.md). */
+export const ActionsAuClavier: Story = {
+  render: () => <Demo />,
+  play: async ({ canvasElement }) => {
+    const c = within(canvasElement);
+    const row = c.getByRole("row", { name: /Budget 2027/ });
+    await userEvent.click(within(row).getAllByRole("rowheader")[0]!);
+    await expect(within(row).getByRole("button", { name: "Plus d'actions pour Budget 2027" })).toBeVisible();
+    await userEvent.keyboard("{Shift>}{F10}{/Shift}");
+    await waitFor(() => expect(body().getByRole("menuitem", { name: "Renommer" })).toBeVisible());
+    await userEvent.keyboard("{Escape}");
+  },
+};
+
+/** Tactile : un appui long ouvre le menu « … » de la ligne, sans l'ouvrir (D-066, D-007). */
+export const AppuiLong: Story = {
+  render: () => <Demo />,
+  play: async ({ canvasElement }) => {
+    const c = within(canvasElement);
+    onOpen.mockClear();
+    await longPress(within(c.getByRole("row", { name: /Budget 2027/ })).getAllByRole("rowheader")[0]!);
+    await waitFor(() => expect(body().getByRole("menuitem", { name: "Renommer" })).toBeVisible());
+    await new Promise((done) => setTimeout(done, 150));
+    await expect(onOpen).not.toHaveBeenCalled();
     await userEvent.keyboard("{Escape}");
   },
 };

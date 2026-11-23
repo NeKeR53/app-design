@@ -2,6 +2,7 @@
  * Étapes numérotées d'un parcours. Spec : StepList.spec.md.
  * Décisions : D-325 (anatomie, quatre états), D-326 (retour en arrière, largeur étroite).
  */
+import { useEffect, useRef } from "react";
 import { Button } from "react-aria-components/Button";
 import { useMessages } from "../../provider/SocleProvider";
 import { buttonReset, cx, focusRing } from "../../lib/cx";
@@ -54,6 +55,16 @@ const titleClass: Record<StepStatus, string> = {
 export function StepList({ label, steps, current, onSelect, orientation = "horizontal" }: StepListProps) {
   const m = useMessages();
   const vertical = orientation === "vertical";
+  // Retour à une étape : le bouton cliqué devient l'étape en cours (un simple texte) ;
+  // le focus irait sur `body`. On le pose sur l'étape en cours pour garder la place au clavier.
+  const refocus = useRef(false);
+  const currentRef = useRef<HTMLSpanElement>(null);
+  useEffect(() => {
+    if (!refocus.current) return;
+    refocus.current = false;
+    const active = document.activeElement;
+    if (!active || active === document.body || !active.isConnected) currentRef.current?.focus();
+  });
   return (
     <ol
       aria-label={label}
@@ -74,8 +85,9 @@ export function StepList({ label, steps, current, onSelect, orientation = "horiz
             <span
               className={cx(
                 "flex min-w-0 flex-col",
-                // Sous 380 px, seul le titre de l'étape en cours reste (D-326).
-                !vertical && status !== "current" && "@max-[380px]:hidden",
+                // Sous 380 px, seul le titre de l'étape en cours reste visible (D-326) ;
+                // les autres restent lus par les lecteurs d'écran (nom du bouton, « (fait) »).
+                !vertical && status !== "current" && "@max-[380px]:sr-only",
               )}
             >
               <span className={cx("truncate", status === "current" ? "font-medium" : "", titleClass[status])}>
@@ -105,11 +117,26 @@ export function StepList({ label, steps, current, onSelect, orientation = "horiz
             )}
           >
             {clickable ? (
-              <Button onPress={() => onSelect?.(step.id)} className={cx(buttonReset, itemClass, "cursor-pointer data-hovered:bg-hover", focusRing)}>
+              <Button
+                onPress={() => {
+                  refocus.current = true;
+                  onSelect?.(step.id);
+                }}
+                className={cx(buttonReset, itemClass, "cursor-pointer data-hovered:bg-hover", focusRing)}>
                 {content}
               </Button>
             ) : (
-              <span className={itemClass}>{content}</span>
+              <span
+                ref={status === "current" ? currentRef : undefined}
+                tabIndex={status === "current" ? -1 : undefined}
+                className={cx(
+                  itemClass,
+                  // Même anneau que focusRing, sur :focus-visible (élément sans React Aria).
+                  "outline-none focus-visible:outline-2 focus-visible:outline-solid focus-visible:outline-accent focus-visible:outline-offset-1",
+                )}
+              >
+                {content}
+              </span>
             )}
           </li>
         );

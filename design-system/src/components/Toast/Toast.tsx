@@ -2,7 +2,7 @@
  * Région des toasts, sur le Toast de React Aria (D-150). Spec : Toast.spec.md.
  * Rendue une seule fois par `SocleProvider` quand il reçoit `notifications`.
  */
-import { useEffect, type KeyboardEvent, type ReactNode } from "react";
+import { useEffect, useRef, type KeyboardEvent, type ReactNode } from "react";
 import {
   UNSTABLE_Toast as RACToast,
   UNSTABLE_ToastContent as RACToastContent,
@@ -47,11 +47,19 @@ const toastClass = cx(
 export function ToastRegion({ notifications }: { notifications: Notifications }) {
   const m = useMessages();
   const queue = notifications.toastQueue;
+  const root = useRef<HTMLDivElement>(null);
+  const hovered = useRef(false);
 
   // La minuterie s'arrête quand la fenêtre perd le focus (D-153).
+  // Au retour, elle ne repart pas si la souris ou le focus sont sur un toast :
+  // React Aria la relancera quand ils le quitteront.
   useEffect(() => {
     const pause = () => queue.pauseAll();
-    const resume = () => queue.resumeAll();
+    const resume = () => {
+      const el = root.current;
+      if (hovered.current || el?.contains(document.activeElement)) return;
+      queue.resumeAll();
+    };
     window.addEventListener("blur", pause);
     window.addEventListener("focus", resume);
     return () => {
@@ -60,17 +68,28 @@ export function ToastRegion({ notifications }: { notifications: Notifications })
     };
   }, [queue]);
 
-  // Échap ferme le toast qui a le focus (les événements clavier remontent jusqu'ici).
+  // Échap ferme le toast qui a le focus, même depuis son action ou sa croix
+  // (les événements clavier remontent jusqu'ici). Sur la croix, un premier Échap
+  // ferme d'abord son info-bulle (React Aria).
   const onKeyDown = (e: KeyboardEvent<HTMLDivElement>) => {
-    const target = e.target as HTMLElement;
-    if (e.key === "Escape" && target.getAttribute("role") === "alertdialog" && target.dataset.key) {
+    if (e.key !== "Escape") return;
+    const card = (e.target as HTMLElement).closest<HTMLElement>('[role="alertdialog"][data-key]');
+    if (card?.dataset.key) {
       e.preventDefault();
-      queue.close(target.dataset.key);
+      queue.close(card.dataset.key);
     }
   };
 
   return (
-    <div className="contents" onKeyDown={onKeyDown}>
+    <div
+      ref={root}
+      className="contents"
+      onKeyDown={onKeyDown}
+      onPointerOver={() => (hovered.current = true)}
+      onPointerOut={(e) => {
+        if (!root.current?.contains(e.relatedTarget as Node | null)) hovered.current = false;
+      }}
+    >
     <RACToastRegion
       queue={queue}
       aria-label={m.notifications}

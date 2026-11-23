@@ -12,6 +12,7 @@ import {
   useState,
   type KeyboardEvent,
   type MouseEvent,
+  type PointerEvent,
   type ReactElement,
   type ReactNode,
   type RefObject,
@@ -170,14 +171,118 @@ function AnchoredMenu({
   );
 }
 
-/* ---------- Menu contextuel : clic droit, Maj+F10, touche Menu (D-327) ---------- */
-export interface ContextMenuTargetProps {
+/* ---------- Appui long sur tactile (D-007) ---------- */
+const LONG_PRESS_MS = 500;
+const LONG_PRESS_SLOP = 8;
+
+export interface LongPressProps {
+  onPointerDownCapture: (e: PointerEvent<Element>) => void;
+  onPointerMoveCapture: (e: PointerEvent<Element>) => void;
+  onPointerUpCapture: () => void;
+  onPointerCancelCapture: () => void;
+  onClickCapture: (e: MouseEvent<Element>) => void;
+}
+
+/**
+ * Appui long au doigt ou au stylet : 500 ms sans bouger de plus de 8 px.
+ * iOS Safari n'envoie pas `contextmenu` : cet appui long le remplace.
+ * `onLongPress` rend `false` s'il n'a rien ouvert ; sinon l'appui en cours est annulé
+ * (pas de sélection ni de clic au relâcher).
+ */
+export function useTouchLongPress(onLongPress: (target: Element, point: MenuPoint) => boolean | void): LongPressProps {
+  const timer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+  const start = useRef<MenuPoint | null>(null);
+  const swallowClick = useRef(false);
+  useEffect(() => () => clearTimeout(timer.current), []);
+  const cancel = () => {
+    clearTimeout(timer.current);
+    start.current = null;
+  };
+  return {
+    onPointerDownCapture: (e) => {
+      cancel();
+      swallowClick.current = false;
+      // Souris exclue ; un appui venu d'un portail (le menu ouvert) ne compte pas.
+      if (e.pointerType === "mouse" || e.button !== 0 || !e.currentTarget.contains(e.target as Node)) return;
+      const point = { x: e.clientX, y: e.clientY };
+      const target = e.target as Element;
+      const { pointerId, pointerType } = e;
+      start.current = point;
+      timer.current = setTimeout(() => {
+        start.current = null;
+        if (onLongPress(target, point) === false) return;
+        swallowClick.current = true;
+        // Annule l'appui React Aria en cours : le relâcher ne sélectionne pas la ligne.
+        target.ownerDocument.dispatchEvent(new globalThis.PointerEvent("pointercancel", { bubbles: true, pointerId, pointerType }));
+      }, LONG_PRESS_MS);
+    },
+    onPointerMoveCapture: (e) => {
+      const s = start.current;
+      if (s && Math.hypot(e.clientX - s.x, e.clientY - s.y) > LONG_PRESS_SLOP) cancel();
+    },
+    onPointerUpCapture: cancel,
+    onPointerCancelCapture: cancel,
+    onClickCapture: (e) => {
+      if (!swallowClick.current) return;
+      swallowClick.current = false;
+      e.preventDefault();
+      e.stopPropagation();
+    },
+  };
+}
+
+/** Maj+F10 ou la touche Menu (D-327). */
+export const isContextMenuKey = (e: KeyboardEvent<Element>) => (e.key === "F10" && e.shiftKey) || e.key === "ContextMenu";
+
+export interface RowMenuProps extends LongPressProps {
+  onContextMenu: (e: MouseEvent<Element>) => void;
+}
+
+/**
+ * Menu « … » d'une ligne (D-066) : clic droit, appui long, et `onKey` pour Maj+F10 ou la touche Menu.
+ * Cherche le déclencheur `selector` dans la ligne (`role="row"`) visée et le presse.
+ */
+export function useRowMenu(selector = "[data-row-menu]"): { rowMenuProps: RowMenuProps; onKey: (e: KeyboardEvent<Element>) => boolean } {
+  const open = (from: EventTarget | null) => {
+    const row = from instanceof Element ? from.closest('[role="row"]') : null;
+    const trigger = row?.querySelector<HTMLElement>(selector);
+    if (!trigger) return false;
+    // Déjà ouvert (Android envoie aussi `contextmenu` après un appui long) : on ne le referme pas.
+    if (trigger.getAttribute("aria-expanded") !== "true") trigger.click();
+    return true;
+  };
+  const longPress = useTouchLongPress((target) => open(target));
+  return {
+    rowMenuProps: {
+      ...longPress,
+      onContextMenu: (e) => {
+        if (open(e.target)) e.preventDefault();
+      },
+    },
+    onKey: (e) => {
+      if (!isContextMenuKey(e) || !open(e.target)) return false;
+      e.preventDefault();
+      e.stopPropagation();
+      // Ouvert au clavier, le menu doit avoir le focus (Échap le ferme) : si la ligne l'a
+      // repris, on le rend à la première entrée.
+      const doc = (e.target as Element).ownerDocument;
+      requestAnimationFrame(() => {
+        if (doc.activeElement?.closest('[role="menu"]')) return;
+        doc.querySelector<HTMLElement>('[role="menu"] [role="menuitem"]:not([aria-disabled="true"])')?.focus();
+      });
+      return true;
+    },
+  };
+}
+
+/* ---------- Menu contextuel : clic droit, appui long, Maj+F10, touche Menu (D-327, D-007) ---------- */
+export interface ContextMenuTargetProps extends LongPressProps {
   onContextMenu: (e: MouseEvent<Element>) => void;
   onKeyDown: (e: KeyboardEvent<Element>) => void;
 }
 
 export interface ContextMenuState {
-  /** À poser sur la zone : clic droit, Maj+F10 et touche Menu ouvrent le menu. */
+  /** À poser sur la zone : clic droit, appui long, Maj+F10 et touche Menu ouvrent le menu. */
   targetProps: ContextMenuTargetProps;
   /** À poser sur `Menu` : `anchor`, `isOpen`, `onOpenChange`. */
   menuProps: { anchor: MenuPoint; isOpen: boolean; onOpenChange: (isOpen: boolean) => void };
@@ -186,19 +291,21 @@ export interface ContextMenuState {
 }
 
 /**
- * Branche un menu contextuel sur une zone : le menu s'ouvre au point du clic droit,
- * ou sous la zone avec Maj+F10 ou la touche Menu (D-327).
+ * Branche un menu contextuel sur une zone : le menu s'ouvre au point du clic droit ou de l'appui long,
+ * ou sous la zone avec Maj+F10 ou la touche Menu (D-327, D-007).
  */
 export function useContextMenu(): ContextMenuState {
   const [point, setPoint] = useState<MenuPoint | null>(null);
+  const longPress = useTouchLongPress((_, p) => setPoint(p));
   return {
     targetProps: {
+      ...longPress,
       onContextMenu: (e) => {
         e.preventDefault();
         setPoint({ x: e.clientX, y: e.clientY });
       },
       onKeyDown: (e) => {
-        if (!((e.key === "F10" && e.shiftKey) || e.key === "ContextMenu")) return;
+        if (!isContextMenuKey(e)) return;
         e.preventDefault();
         const r = e.currentTarget.getBoundingClientRect();
         setPoint({ x: r.left + 8, y: r.bottom });

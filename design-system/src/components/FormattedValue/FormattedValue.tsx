@@ -28,7 +28,7 @@ export type ValueType =
   | "code"
   | "tags";
 
-/** Clé enregistrée → libellé et ton : `{ en_cours: { label: "En cours", tone: "pending" } }`. */
+/** Clé enregistrée → libellé et ton : `{ en_cours: { label: "En cours", tone: "info" } }`. */
 export type StatusMap = Readonly<Record<string, { label: string; tone: StatusTone }>>;
 
 /** Comment lire et écrire une donnée. Partagé par les colonnes de ListPage et les propriétés de DetailPanel. */
@@ -147,15 +147,16 @@ export function formatValue(value: unknown, format: ValueFormat, m: FormatMessag
     if (n === null) return raw;
     switch (type) {
       case "money":
-        return new Intl.NumberFormat(locale, { style: "currency", currency: format.currency ?? "EUR", ...(format.decimals !== undefined ? fixed(format.decimals, 2) : {}) }).format(n);
+        return new Intl.NumberFormat(locale, { style: "currency", currency: format.currency ?? "EUR", signDisplay: "negative", ...(format.decimals !== undefined ? fixed(format.decimals, 2) : {}) }).format(n);
       case "percent":
-        return new Intl.NumberFormat(locale, { style: "percent", ...fixed(format.decimals, 1) }).format(n);
+        return new Intl.NumberFormat(locale, { style: "percent", signDisplay: "negative", ...fixed(format.decimals, 1) }).format(n);
       case "bytes":
         return bytesText(n, locale, format.decimals);
       case "duration":
         return durationText(n, format.durationUnit, locale);
       default:
-        return new Intl.NumberFormat(locale, fixed(format.decimals, 2)).format(n);
+        // Une valeur arrondie à zéro s'affiche « 0 », pas « -0 ».
+        return new Intl.NumberFormat(locale, { signDisplay: "negative", ...fixed(format.decimals, 2) }).format(n);
     }
   }
   if (TEMPORAL.has(type)) {

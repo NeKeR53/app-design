@@ -56,6 +56,10 @@ export interface SocleMessages {
   selectAll: string;
   columnWidth: (label: string) => string;
   rowActions: string;
+  /** Nom d'une action de ligne : « Archiver Rapport trimestriel » (Table.spec.md). */
+  rowAction: (action: string, row: string) => string;
+  /** Nom du bouton « … » d'une ligne. */
+  moreActionsFor: (row: string) => string;
   groupCount: (n: number) => string;
   showMore: string;
   countOf: (n: number, total: number) => string;
@@ -356,6 +360,8 @@ export const frenchMessages: SocleMessages = {
   selectAll: "Tout sélectionner",
   columnWidth: (l) => `Largeur de la colonne ${l}`,
   rowActions: "Actions",
+  rowAction: (a, r) => `${a} ${r}`,
+  moreActionsFor: (r) => `Plus d'actions pour ${r}`,
   groupCount: (n) => `${n} ligne${n > 1 ? "s" : ""}`,
   showMore: "Afficher plus",
   countOf: (n, t) => `${n} sur ${t}`,

@@ -51,6 +51,27 @@ export const Statique: Story = {
   },
 };
 
+/** Barre d'outils au clavier : flèches entre les contrôles ; dans la recherche, elles restent au curseur. */
+export const BarreAuClavier: Story = {
+  render: () => <LogViewer label="Journal" lines={makeLines(50)} />,
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    const toolbar = canvas.getByRole("toolbar", { name: "Outils du journal" });
+    const wrap = within(toolbar).getByRole("button", { name: "Retour à la ligne" });
+    wrap.focus();
+    await userEvent.keyboard("{ArrowRight}");
+    await expect(wrap).not.toHaveFocus();
+    await expect(toolbar).toContainElement(document.activeElement as HTMLElement);
+    await userEvent.keyboard("{ArrowLeft}");
+    await expect(wrap).toHaveFocus();
+    const search = canvas.getByRole("combobox", { name: "Rechercher dans le journal" });
+    await userEvent.type(search, "ab");
+    await userEvent.keyboard("{ArrowLeft}");
+    await expect(search).toHaveFocus();
+    await expect((search as HTMLInputElement).selectionStart).toBe(1);
+  },
+};
+
 /** Les couleurs ANSI viennent des tokens `--ansi-n` (D-281) ; les séquences ne produisent jamais de HTML. */
 export const CouleursAnsi: Story = {
   render: () => (

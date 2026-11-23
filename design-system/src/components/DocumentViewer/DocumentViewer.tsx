@@ -3,6 +3,7 @@
  * Spec : DocumentViewer.spec.md (D-310 à D-316). Repris de DocumentViewer d'Alfred.
  */
 import { useEffect, useLayoutEffect, useRef, useState, type KeyboardEvent, type RefObject } from "react";
+import { Toolbar } from "react-aria-components/Toolbar";
 import { Download, FitWidth, ChevronLeft, ChevronRight, ZoomIn, ZoomOut } from "../../icons";
 import { cx } from "../../lib/cx";
 import { useMessages } from "../../provider/SocleProvider";
@@ -191,7 +192,8 @@ function Bar({
   );
   const end = onDownload !== undefined || actions.some((a) => !a.isHidden);
   return (
-    <div role="toolbar" aria-label={m.documentToolbar} className="flex h-(--bar-h) shrink-0 items-center gap-0.5 border-b border-line pr-1.5 pl-3 text-sm">
+    // Toolbar React Aria : les flèches passent d'un contrôle à l'autre.
+    <Toolbar aria-label={m.documentToolbar} className="flex h-(--bar-h) shrink-0 items-center gap-0.5 border-b border-line pr-1.5 pl-3 text-sm">
       <span aria-live="polite" className="mr-auto min-w-0 truncate text-fg-2 tabular-nums">
         {position}
       </span>
@@ -213,7 +215,7 @@ function Bar({
       )}
       {onDownload && <IconButton icon={<Download />} label={m.download} onPress={onDownload} />}
       {actions.length > 0 && <ActionBar actions={actions} zone="toolbar" subject={subject} />}
-    </div>
+    </Toolbar>
   );
 }
 

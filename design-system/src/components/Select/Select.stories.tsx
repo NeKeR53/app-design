@@ -82,3 +82,31 @@ export const Verification: Story = {
     await waitFor(() => expect(c.getByText("Choisissez une option.")).toBeVisible());
   },
 };
+
+const LONG = "Établissement secondaire de Clermont-Ferrand, service des achats et de la comptabilité fournisseurs";
+
+/** Option ou valeur trop longue : ellipse, info-bulle avec le texte complet, seulement si le texte est coupé. */
+export const TexteLong: Story = {
+  args: {
+    label: "Établissement",
+    description: "Lieu de facturation.",
+    options: [
+      { id: "siege", label: "Siège" },
+      { id: "long", label: LONG },
+    ],
+  },
+  play: async () => {
+    await userEvent.tab();
+    await userEvent.keyboard("{ArrowDown}");
+    const list = await waitFor(() => body().getByRole("listbox"));
+    await waitFor(() => expect(within(list).getByRole("option", { name: "Siège" })).toHaveAttribute("data-focused", "true"));
+    await new Promise((r) => setTimeout(r, 50));
+    await expect(body().queryByRole("tooltip")).toBeNull();
+    await userEvent.keyboard("{ArrowDown}");
+    await waitFor(() => expect(body().getByRole("tooltip")).toHaveTextContent(LONG));
+    await userEvent.keyboard("{Enter}");
+    await waitFor(() => expect(body().queryByRole("listbox")).toBeNull());
+    // Le focus revient au cadre : la valeur coupée a aussi son info-bulle.
+    await waitFor(() => expect(body().getByRole("tooltip")).toHaveTextContent(LONG));
+  },
+};

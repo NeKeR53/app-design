@@ -2,11 +2,12 @@
  * Arbre de nœuds dépliables, dans le contenu d'une page. Spec : TreeView.spec.md (D-260 à D-268).
  * Repose sur React Aria `Tree` (clavier, sélection, recherche par frappe) et `useDragAndDrop`.
  */
-import { useCallback, useEffect, useMemo, useRef, useState, type KeyboardEvent, type MouseEvent, type ReactNode } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type KeyboardEvent, type ReactNode } from "react";
 import { Button, Tree, TreeItem, TreeItemContent, TreeLoadMoreItem, type Key, type Selection } from "react-aria-components/Tree";
 import { DropIndicator, useDragAndDrop } from "react-aria-components/useDragAndDrop";
 import { ActionBar, type Action } from "../../patterns/ActionBar/ActionBar";
 import { EmptyState } from "../EmptyState/EmptyState";
+import { useRowMenu } from "../Menu/Menu";
 import { Link } from "../Link/Link";
 import { OverflowTooltip } from "../Tooltip/OverflowTooltip";
 import { ChevronDown, ChevronRight } from "../../icons";
@@ -266,16 +267,8 @@ export function TreeView({
     },
   });
 
-  /** Clic droit ou Maj+F10 : menu « … » de la ligne (D-265, D-066). */
-  const openRowMenu = (row: Element | null) => {
-    const trigger = row?.querySelector<HTMLElement>("[data-tree-actions] [aria-haspopup]");
-    if (!trigger) return false;
-    trigger.click();
-    return true;
-  };
-  const onContextMenu = (e: MouseEvent) => {
-    if (openRowMenu((e.target as HTMLElement).closest('[role="row"]'))) e.preventDefault();
-  };
+  /** Clic droit, appui long sur tactile, Maj+F10 ou touche Menu : menu « … » de la ligne (D-265, D-066, D-007). */
+  const { rowMenuProps, onKey: onRowMenuKey } = useRowMenu("[data-tree-actions] [aria-haspopup]");
   const onKeyDown = (e: KeyboardEvent) => {
     // Flèche droite sur un nœud déplié : premier enfant (motif tree de l'ARIA, D-264).
     const target = e.target as HTMLElement;
@@ -289,12 +282,7 @@ export function TreeView({
       }
       return;
     }
-    if ((e.key === "F10" && e.shiftKey) || e.key === "ContextMenu") {
-      if (openRowMenu((e.target as HTMLElement).closest('[role="row"]'))) {
-        e.preventDefault();
-        e.stopPropagation();
-      }
-    }
+    onRowMenuKey(e);
   };
 
   /* ---------- Rendu ---------- */
@@ -420,13 +408,14 @@ export function TreeView({
     <div
       ref={box}
       className="socle-box flex min-h-0 flex-1 flex-col font-sans text-md text-fg"
-      onContextMenu={onContextMenu}
+      {...rowMenuProps}
       onKeyDownCapture={(e) => {
         shift.current = e.shiftKey;
         onKeyDown(e);
       }}
       onPointerDownCapture={(e) => {
         shift.current = e.shiftKey;
+        rowMenuProps.onPointerDownCapture(e);
       }}
     >
       <Tree

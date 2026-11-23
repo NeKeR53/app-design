@@ -79,6 +79,10 @@ export const SuggestionsApi: Story = {
     const c = within(canvasElement);
     await userEvent.type(c.getByRole("combobox"), "acc");
     await waitFor(() => expect(body().getByText("Recherche…")).toBeVisible());
+    // Une seule zone d'état, avec un texte : « Recherche en cours » (pas d'annonce en double).
+    // (le <output> de la démo a lui aussi le rôle status : on l'écarte)
+    const zones = () => body().getAllByRole("status").filter((z) => z.tagName !== "OUTPUT");
+    await waitFor(() => expect(zones().map((z) => z.textContent)).toEqual(["Recherche en cours"]));
     await waitFor(() => expect(body().getAllByRole("option")).toHaveLength(4), { timeout: 2000 });
     await userEvent.keyboard("{ArrowDown}{Enter}");
     await expect(c.getByRole("group", { name: "Critères de recherche" })).toHaveTextContent("Demande d'accès au dossier Clients");
@@ -115,5 +119,24 @@ export const Debordement: Story = {
     const field = c.getByRole("search");
     await expect(Math.round(field.getBoundingClientRect().width)).toBe(320);
     await waitFor(() => expect(c.getByRole("button", { name: /autres critères/ })).toBeVisible());
+  },
+};
+
+/** Étiquette trop longue : coupée à 160 px, info-bulle au survol ou mise en avant au clavier. */
+export const EtiquetteLongue: Story = {
+  render: () => <Demo withSuggestions={false} />,
+  play: async ({ canvasElement }) => {
+    const input = within(canvasElement).getByRole("combobox");
+    const long = "Remboursement des frais de déplacement";
+    await userEvent.type(input, "hugo{Enter}");
+    await userEvent.keyboard("{Backspace}");
+    await new Promise((r) => setTimeout(r, 50));
+    await expect(body().queryByRole("tooltip")).toBeNull(); // « hugo » n'est pas coupée
+    await userEvent.keyboard("{Escape}");
+    await userEvent.click(input);
+    await userEvent.type(input, `${long}{Enter}`);
+    await userEvent.keyboard("{Backspace}");
+    await waitFor(() => expect(body().getByRole("tooltip")).toHaveTextContent(long));
+    await expect(within(canvasElement).getByText(long)).not.toHaveAttribute("title");
   },
 };

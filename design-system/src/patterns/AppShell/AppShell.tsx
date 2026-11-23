@@ -2,7 +2,7 @@
  * Cadre commun de toutes les apps. Spec : AppShell.spec.md.
  * Décisions : D-003, D-016 à D-021, D-025 à D-027, D-220 à D-222, D-240 à D-242, D-250 à D-252.
  */
-import { Children, isValidElement, useEffect, useRef, useState, type PointerEvent as ReactPointerEvent, type ReactElement, type ReactNode } from "react";
+import { Children, isValidElement, useEffect, useId, useRef, useState, type PointerEvent as ReactPointerEvent, type ReactElement, type ReactNode } from "react";
 import { Button } from "react-aria-components/Button";
 import { Dialog } from "react-aria-components/Dialog";
 import { Modal, ModalOverlay } from "react-aria-components/Modal";
@@ -10,7 +10,7 @@ import { useMessages, useSocle, useStoredState } from "../../provider/SocleProvi
 import { buttonReset, cx, focusRing } from "../../lib/cx";
 import { ChevronLeft, ChevronRight, ListDetail, Maximize, Minimize, MoreHorizontal, PanelLeft, X } from "../../icons";
 import { IconButton } from "../../components/IconButton/IconButton";
-import { Tabs, type TabItem } from "../../components/Tabs/Tabs";
+import { Tabs, useTabPanelProps, type TabItem } from "../../components/Tabs/Tabs";
 import { Menu } from "../../components/Menu/Menu";
 import { Tooltip } from "../../components/Tooltip/Tooltip";
 import { OverflowTooltip } from "../../components/Tooltip/OverflowTooltip";
@@ -96,6 +96,10 @@ export function AppShell({ pageTitle, pageSummary, pageStatus, views, activeView
   const m = useMessages();
   const isMobile = useMedia("(max-width: 640px)");
   const isTablet = useMedia("(min-width: 641px) and (max-width: 1024px)");
+  // Les vues (Tabs) et le contenu (main) sont reliés : rôle `tabpanel` sur main (Tabs.spec.md).
+  const viewsId = useId();
+  const hasViews = Boolean(views && views.length > 0 && activeView && onViewChange);
+  const panelProps = useTabPanelProps(hasViews ? viewsId : undefined);
 
   // Sidebar dépliée par défaut, état mémorisé (D-016).
   const [collapsed, setCollapsed] = useStoredState("shell:sidebar-collapsed", false);
@@ -139,14 +143,37 @@ export function AppShell({ pageTitle, pageSummary, pageStatus, views, activeView
   });
 
   // Overlay de la sidebar repliée : au survol du bouton, fermeture 250 ms après la sortie (D-017).
+  // Tant que le focus clavier est dedans (menu « … » compris), il reste ouvert ;
+  // il se ferme quand le focus en sort et que la souris est dehors.
+  const overlayHover = useRef(false);
+  const overlayFocus = useRef(false);
+  const keyboardFocusInside = () => overlayFocus.current && Boolean(document.activeElement?.matches(":focus-visible"));
   const enterOverlay = () => {
+    overlayHover.current = true;
     clearTimeout(closeTimer.current);
     if (collapsed && !isMobile) setOverlay(true);
   };
   const leaveOverlay = () => {
+    overlayHover.current = false;
     clearTimeout(closeTimer.current);
-    closeTimer.current = setTimeout(() => setOverlay(false), OVERLAY_CLOSE_DELAY);
+    closeTimer.current = setTimeout(() => {
+      if (!keyboardFocusInside()) setOverlay(false);
+    }, OVERLAY_CLOSE_DELAY);
   };
+  // Focus et blur React remontent aussi des portails : un menu ouvert depuis l'overlay compte comme dedans.
+  const focusOverlay = () => {
+    overlayFocus.current = true;
+  };
+  const blurOverlay = () => {
+    overlayFocus.current = false;
+    clearTimeout(closeTimer.current);
+    closeTimer.current = setTimeout(() => {
+      if (!overlayHover.current && !keyboardFocusInside()) setOverlay(false);
+    }, 0);
+  };
+  useEffect(() => {
+    if (!overlay) overlayFocus.current = false;
+  }, [overlay]);
   useEffect(() => () => clearTimeout(closeTimer.current), []);
 
   // Barre d'onglets mobile : 4 entrées au plus, puis « Plus » (D-003, D-019).
@@ -205,7 +232,7 @@ export function AppShell({ pageTitle, pageSummary, pageStatus, views, activeView
           {views && views.length > 0 && activeView && onViewChange && (
             <>
               <span aria-hidden className="h-4 w-px shrink-0 bg-line max-tablet:hidden" />
-              <Tabs pageTitle={pageTitle} items={views} selectedId={activeView} onSelectionChange={onViewChange} {...(onViewClose ? { onClose: onViewClose } : {})} />
+              <Tabs id={viewsId} pageTitle={pageTitle} items={views} selectedId={activeView} onSelectionChange={onViewChange} {...(onViewClose ? { onClose: onViewClose } : {})} />
             </>
           )}
           {/* Actions de la page (D-222) : le slot prend la place libre, sans dépendre de son contenu ;
@@ -228,13 +255,15 @@ export function AppShell({ pageTitle, pageSummary, pageStatus, views, activeView
           <aside
             onPointerEnter={enterOverlay}
             onPointerLeave={leaveOverlay}
+            onFocus={focusOverlay}
+            onBlur={blurOverlay}
             className="absolute top-0 bottom-0 left-0 z-40 box-border w-(--side-w) border-r border-line shadow-lg"
           >
             {sidebar}
           </aside>
         )}
         {/* Panneau large : le contenu garde au moins 360 px (D-241). */}
-        <main className={cx("min-w-0 flex-1 overflow-auto", wide && showDetail && "min-w-[360px]")}>{children}</main>
+        <main {...panelProps} className={cx("min-w-0 flex-1 overflow-auto", wide && showDetail && "min-w-[360px]")}>{children}</main>
         {detail && showDetail && (
           <DetailColumn
             floating={floating}

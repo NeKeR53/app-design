@@ -19,6 +19,7 @@ import {
 import { type AnsiSegment, type AnsiStyle, parseAnsi } from "../../lib/ansi";
 import { copyText } from "../../lib/clipboard";
 import { cx } from "../../lib/cx";
+import { Toolbar } from "react-aria-components/Toolbar";
 import { ArrowDownToLine, Check, ChevronDown, ChevronUp, Clock, Copy, ListX, WrapText } from "../../icons";
 import { useMessages } from "../../provider/SocleProvider";
 import { type Action, ActionBar } from "../../patterns/ActionBar/ActionBar";
@@ -100,6 +101,17 @@ const BG = [
   "bg-(--ansi-0)", "bg-(--ansi-1)", "bg-(--ansi-2)", "bg-(--ansi-3)", "bg-(--ansi-4)", "bg-(--ansi-5)", "bg-(--ansi-6)", "bg-(--ansi-7)",
   "bg-(--ansi-8)", "bg-(--ansi-9)", "bg-(--ansi-10)", "bg-(--ansi-11)", "bg-(--ansi-12)", "bg-(--ansi-13)", "bg-(--ansi-14)", "bg-(--ansi-15)",
 ];
+
+/** Gauche et droite dans un champ texte de la barre : le curseur bouge, la Toolbar ne prend pas la main. */
+function keepArrowsInTextField(event: KeyboardEvent<HTMLElement>) {
+  if (event.key !== "ArrowLeft" && event.key !== "ArrowRight") return;
+  const target = event.target as HTMLElement;
+  const text =
+    target.isContentEditable ||
+    target.tagName === "TEXTAREA" ||
+    (target instanceof HTMLInputElement && !["button", "checkbox", "radio", "range", "color", "file", "submit", "reset", "image"].includes(target.type));
+  if (text) event.stopPropagation();
+}
 
 function pad(value: number, size = 2) {
   return String(value).padStart(size, "0");
@@ -579,7 +591,11 @@ export function LogViewer({
         fill ? "min-h-0 flex-1" : "h-[min(560px,max(280px,calc(100dvh-240px)))]",
       )}
     >
-      <div role="toolbar" aria-label={m.logTools} className="flex flex-none flex-wrap items-center gap-1.5 border-b border-solid border-line px-2 py-1.5">
+      {/* Toolbar React Aria : les flèches passent d'un contrôle à l'autre. Dans un champ texte
+          (recherche, outils fournis), gauche et droite restent au curseur : l'enveloppe arrête
+          l'événement avant la Toolbar, sans bloquer le déplacement natif du curseur. */}
+      <div className="contents" onKeyDownCapture={keepArrowsInTextField}>
+      <Toolbar aria-label={m.logTools} className="flex flex-none flex-wrap items-center gap-1.5 border-b border-solid border-line px-2 py-1.5">
         {tools}
         {levelInfo ? (
           <Menu label={m.logLevel(levelName)} trigger={<Button size="sm">{m.logLevel(levelName)}</Button>}>
@@ -622,6 +638,7 @@ export function LogViewer({
           {copied === "idle" ? "" : copyLabel}
         </span>
         {pageActions.length ? <ActionBar actions={pageActions} zone="toolbar" subject={label} /> : null}
+      </Toolbar>
       </div>
       {isEmpty ? (
         <div className="grid min-h-0 flex-1 place-items-center">

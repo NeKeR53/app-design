@@ -95,7 +95,7 @@ Hérite de la taille du texte autour. Rien ne dépend de la densité.
 Seuls `email` et `url` reçoivent le focus (ce sont des liens).
 
 ## Accessibilité
-Les dates sont dans `<time datetime>`. Le statut a toujours un libellé (D-160). « — » est lu « vide » (`aria-label`).
+Les dates sont dans `<time datetime>`. Le statut a toujours un libellé (D-160). « — » est lu « vide » (texte masqué à l'écran).
 
 ## Taille d'écran
 Sans objet : la valeur suit la place que lui donne son conteneur.

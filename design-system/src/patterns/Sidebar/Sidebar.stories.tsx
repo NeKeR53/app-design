@@ -18,6 +18,15 @@ export default meta;
 type Story = StoryObj<typeof Sidebar>;
 const body = () => within(document.body);
 
+/** Appui long au doigt : `pointerdown` tactile, 600 ms d'attente, puis `pointerup` (D-007). */
+async function longPress(el: Element) {
+  const r = el.getBoundingClientRect();
+  const init = { bubbles: true, cancelable: true, pointerId: 7, pointerType: "touch", isPrimary: true, button: 0, clientX: r.left + 10, clientY: r.top + r.height / 2 };
+  el.dispatchEvent(new PointerEvent("pointerdown", { ...init, buttons: 1 }));
+  await new Promise((done) => setTimeout(done, 600));
+  el.dispatchEvent(new PointerEvent("pointerup", init));
+}
+
 const Doc = () => (
   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" aria-hidden>
     <path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z" />
@@ -147,6 +156,34 @@ export const ActionsAuSurvol: Story = {
     // L'indicateur a son info-bulle (D-055).
     await userEvent.hover(lock);
     await waitFor(() => expect(body().getByRole("tooltip")).toHaveTextContent("Lecture seule"), { timeout: 1500 });
+  },
+};
+
+/** Maj+F10 et la touche Menu ouvrent le menu « … » de l'élément ; appui long sur tactile (Sidebar.spec.md). */
+export const MenuAuClavierEtAppuiLong: Story = {
+  render: () => <Demo />,
+  play: async ({ canvasElement }) => {
+    const c = within(canvasElement);
+    await userEvent.click(c.getByRole("row", { name: /^Documents/ }));
+    await userEvent.keyboard("{Shift>}{F10}{/Shift}");
+    await waitFor(() => expect(body().getByRole("menuitem", { name: "Importer" })).toBeVisible());
+    // Le menu ouvert au clavier prend le focus ; Échap le ferme.
+    await waitFor(() => expect(body().getByRole("menu")).toContainElement(document.activeElement as HTMLElement));
+    await userEvent.keyboard("{Escape}");
+    await waitFor(() => expect(body().queryByRole("menuitem", { name: "Importer" })).toBeNull());
+    // TreeItem : menu « Actions sur … ».
+    await userEvent.click(within(c.getByRole("row", { name: /^Relance fournisseur/ })).getByText("Relance fournisseur"));
+    await userEvent.keyboard("{ContextMenu}");
+    await waitFor(() => expect(body().getByRole("menuitem", { name: "Archiver" })).toBeVisible());
+    await waitFor(() => expect(body().getByRole("menu")).toContainElement(document.activeElement as HTMLElement));
+    await userEvent.keyboard("{Escape}");
+    await waitFor(() => expect(body().queryByRole("menuitem", { name: "Archiver" })).toBeNull());
+    // Appui long : le menu s'ouvre, la page ne change pas.
+    await longPress(within(c.getByRole("row", { name: /^Relance fournisseur/ })).getByText("Relance fournisseur"));
+    await waitFor(() => expect(body().getByRole("menuitem", { name: "Archiver" })).toBeVisible());
+    await new Promise((done) => setTimeout(done, 150));
+    await expect(c.getByTestId("sel")).toHaveTextContent("t1");
+    await userEvent.keyboard("{Escape}");
   },
 };
 

@@ -2,7 +2,7 @@
  * Adapté du starter Tailwind de React Aria (adobe/react-spectrum, starters/tailwind),
  * licence Apache 2.0. Spec : List.spec.md. Décisions : D-068 à D-070, D-084 à D-087.
  */
-import type { MouseEvent, ReactNode } from "react";
+import type { ReactNode } from "react";
 import type { Key, Selection } from "react-aria-components";
 import { GridList, GridListHeader, GridListItem, GridListSection } from "react-aria-components/GridList";
 import { Button } from "react-aria-components/Button";
@@ -10,7 +10,7 @@ import { Checkbox } from "react-aria-components/Checkbox";
 import { buttonReset, cx, focusRing } from "../../lib/cx";
 import { ErrorBanner, highlight, LoadError, NoResults, ReloadBar, RetryButton, type ResultsStateProps } from "../../lib/results";
 import { Check } from "../../icons";
-import { Menu } from "../Menu/Menu";
+import { Menu, useRowMenu } from "../Menu/Menu";
 import { useMessages } from "../../provider/SocleProvider";
 import { Tooltip } from "../Tooltip/Tooltip";
 import { StatusBadge, type StatusTone } from "../StatusBadge/StatusBadge";
@@ -89,13 +89,8 @@ export function List({
   const firstLoad = isLoading && all.length === 0;
   const empty = !isLoading && !hasError && all.length === 0 && terms.length > 0;
 
-  const onContextMenu = (e: MouseEvent) => {
-    const btn = (e.target as HTMLElement).closest('[role="row"]')?.querySelector<HTMLElement>("[data-row-menu]");
-    if (btn) {
-      e.preventDefault();
-      btn.click();
-    }
-  };
+  // Clic droit ou appui long sur tactile : le menu « … » de la ligne (D-066, D-007).
+  const { rowMenuProps } = useRowMenu();
 
   const renderItem = (it: ListItemData) => (
     <GridListItem
@@ -106,6 +101,8 @@ export function List({
         // Traits horizontaux, sans rayon (D-068) ; sélection fixe au survol (D-039).
         "group/item flex cursor-default items-center gap-3 border-b border-line px-3 outline-none",
         twoLines ? "min-h-(--row2-h) py-1.5" : "min-h-(--row-h)",
+        // Sur tactile, 44 px au moins (List.spec.md, Taille d'écran).
+        "pointer-coarse:min-h-11",
         "data-hovered:bg-hover data-selected:bg-selected data-selected:data-hovered:bg-selected",
         focusRing,
         "data-focus-visible:-outline-offset-2",
@@ -127,7 +124,7 @@ export function List({
             {highlight(it.title, terms)}
           </OverflowTooltip>
           {it.meta && (
-            <span className={cx("shrink-0 text-sm text-fg-3 tabular-nums group-data-selected/item:text-fg-2", itemActions && "group-data-focus-visible/item:hidden group-data-hovered/item:hidden group-data-selected/item:hidden")}>
+            <span className={cx("shrink-0 text-sm text-fg-3 tabular-nums group-data-selected/item:text-fg-2", itemActions && "group-data-focus-visible/item:hidden group-data-hovered/item:hidden group-data-selected/item:hidden group-has-[[aria-haspopup][aria-expanded=true]]/item:hidden")}>
               {it.meta}
             </span>
           )}
@@ -150,7 +147,7 @@ export function List({
   );
 
   return (
-    <div className="socle-box relative flex min-h-0 flex-1 flex-col font-sans text-md text-fg" onContextMenu={onContextMenu}>
+    <div className="socle-box relative flex min-h-0 flex-1 flex-col font-sans text-md text-fg" {...rowMenuProps}>
       {isLoading && all.length > 0 && <ReloadBar />}
       {hasError && all.length > 0 && <ErrorBanner onRetry={onRetry} />}
       {hasError && all.length === 0 ? (
@@ -193,7 +190,8 @@ export function List({
 
 function ItemActions({ actions }: { actions: TableRowAction[] }) {
   return (
-    <span className="hidden shrink-0 gap-0.5 group-data-focus-visible/item:flex group-data-hovered/item:flex group-data-selected/item:flex">
+    // Visibles aussi tant que leur menu est ouvert : il reste ancré à « … » (appui long, clic droit).
+    <span className="hidden shrink-0 gap-0.5 group-data-focus-visible/item:flex group-data-hovered/item:flex group-data-selected/item:flex group-has-[[aria-haspopup][aria-expanded=true]]/item:flex">
       {actions.map((a) => {
         const button = (
           <Tooltip content={a.label}>

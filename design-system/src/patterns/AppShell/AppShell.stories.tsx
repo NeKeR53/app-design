@@ -101,6 +101,26 @@ export const SidebarOverlay: Story = {
   },
 };
 
+/** Overlay : reste ouvert tant que le focus clavier est dedans ; se ferme quand le focus en sort, souris dehors. */
+export const SidebarOverlayFocus: Story = {
+  render: () => <Demo />,
+  play: async ({ canvasElement }) => {
+    const c = within(canvasElement);
+    await userEvent.click(c.getByRole("button", { name: "Replier la sidebar" }));
+    await userEvent.hover(c.getByRole("button", { name: "Déplier la sidebar" }));
+    const nav = await waitFor(() => c.getByRole("navigation", { name: "Navigation principale" }));
+    // Modalité clavier, puis focus sur un élément de l'overlay.
+    await userEvent.keyboard("{Shift}");
+    within(nav).getAllByRole("row")[0]!.focus();
+    await userEvent.unhover(c.getByRole("button", { name: "Déplier la sidebar" }));
+    await new Promise((done) => setTimeout(done, 600));
+    await expect(c.getByRole("navigation", { name: "Navigation principale" })).toBeVisible();
+    // Le focus sort, la souris est dehors : l'overlay se ferme.
+    c.getByRole("button", { name: "Panneau de détail" }).focus();
+    await waitFor(() => expect(c.queryByRole("navigation", { name: "Navigation principale" })).toBeNull(), { timeout: 1000 });
+  },
+};
+
 /** Panneau de détail : bascule par le bouton et Mod+. ; état mémorisé (D-018). */
 export const PanneauDetail: Story = {
   render: () => <Demo />,
@@ -139,6 +159,10 @@ export const OngletsDeVues: Story = {
     const c = within(canvasElement);
     await userEvent.click(c.getByRole("tab", { name: /Créer un rapport/ }));
     await expect(c.getByRole("heading", { name: "Créer un rapport" })).toBeVisible();
+    // Le contenu est le tabpanel de la vue active, relié par aria-controls.
+    const tab = c.getByRole("tab", { name: /Créer un rapport/ });
+    const panel = await waitFor(() => c.getByRole("tabpanel", { name: /Créer un rapport/ }));
+    await expect(tab).toHaveAttribute("aria-controls", panel.id);
     await userEvent.click(c.getByRole("row", { name: /Planning/ }));
     await expect(c.getAllByRole("tab")).toHaveLength(3);
   },

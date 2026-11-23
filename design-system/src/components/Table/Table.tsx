@@ -2,7 +2,7 @@
  * Adapté du starter Tailwind de React Aria (adobe/react-spectrum, starters/tailwind),
  * licence Apache 2.0. Spec : Table.spec.md. Décisions : D-062 à D-067, D-084 à D-087, D-270 à D-277.
  */
-import { useLayoutEffect, useRef, useState, type KeyboardEvent, type MouseEvent, type ReactNode } from "react";
+import { useLayoutEffect, useRef, useState, type KeyboardEvent, type ReactNode } from "react";
 import type { Key, Selection, SortDescriptor } from "react-aria-components";
 import { Cell, Column, ColumnResizer, ResizableTableContainer, Row, Table as RACTable, TableBody, TableHeader } from "react-aria-components/Table";
 import { Button } from "react-aria-components/Button";
@@ -11,7 +11,7 @@ import { useMessages, useStoredState } from "../../provider/SocleProvider";
 import { buttonReset, cx, focusRing } from "../../lib/cx";
 import { ErrorBanner, highlight, LoadError, NoResults, ReloadBar, type ResultsStateProps } from "../../lib/results";
 import { ArrowDown, ArrowUp, Check, ChevronDown, Minus } from "../../icons";
-import { Menu } from "../Menu/Menu";
+import { Menu, useRowMenu } from "../Menu/Menu";
 import { Tooltip } from "../Tooltip/Tooltip";
 import { Skeleton as Bar, SkeletonGroup } from "../Skeleton/Skeleton";
 import { OverflowTooltip } from "../Tooltip/OverflowTooltip";
@@ -134,15 +134,17 @@ export function Table<T extends { id: string }>({
   // En compact, l'interligne serré garde la ligne à 25 px même avec une pastille de 24 px.
   const padX = compact ? "px-2 py-0 leading-tight [&>*]:align-top" : "px-2.5";
 
-  const onContextMenu = (e: MouseEvent) => {
-    const btn = (e.target as HTMLElement).closest('[role="row"]')?.querySelector<HTMLElement>("[data-row-menu]");
-    if (btn) {
-      e.preventDefault();
-      btn.click();
-    }
-  };
+  // Clic droit, appui long sur tactile, Maj+F10 ou touche Menu : le menu « … » de la ligne (D-066, D-007).
+  const { rowMenuProps, onKey: onRowMenuKey } = useRowMenu();
 
   const terms = searchTerms?.filter(Boolean) ?? [];
+  // Titre de la ligne, pour nommer ses actions : texte de la colonne principale (la première).
+  const rowTitle = (row: T) => {
+    const first = columns[0];
+    if (!first) return undefined;
+    const raw = renderCell ? renderCell(row, first.id) : (row as Record<string, unknown>)[first.id];
+    return typeof raw === "string" || typeof raw === "number" ? String(raw) : undefined;
+  };
   const firstLoad = isLoading && rows.length === 0;
   // React Aria ne pose `aria-expanded` que dans un arbre : on le pose sur chaque ligne de groupe,
   // à chaque changement des lignes (React Aria les monte dans un second temps).
@@ -166,7 +168,7 @@ export function Table<T extends { id: string }>({
 
   // Espace replie aussi la ligne de groupe ; Entrée passe par `onAction` de la ligne (D-272).
   const onKeyDown = (e: KeyboardEvent) => {
-    if (e.key !== " ") return;
+    if (onRowMenuKey(e) || e.key !== " " || !groupBy) return;
     const g = (e.target as HTMLElement).closest<HTMLElement>("[data-group]")?.dataset.group;
     if (g !== undefined) {
       e.preventDefault();
@@ -180,8 +182,8 @@ export function Table<T extends { id: string }>({
     <div
       ref={boxRef}
       className={cx("socle-box relative flex min-h-0 flex-1 flex-col font-sans text-md text-fg", compact && "[--row-h:25px]")}
-      onContextMenu={onContextMenu}
-      onKeyDownCapture={groupBy ? onKeyDown : undefined}
+      {...rowMenuProps}
+      onKeyDownCapture={onKeyDown}
     >
       {isLoading && rows.length > 0 && <ReloadBar />}
       {hasError && rows.length > 0 && <ErrorBanner onRetry={onRetry} />}
@@ -342,7 +344,7 @@ export function Table<T extends { id: string }>({
                   })}
                   {withActions && (
                     <Cell className={cx(rowH, "border-b border-line pr-2")}>
-                      <RowActions actions={rowActions!(row).slice(0, 2)} />
+                      <RowActions actions={rowActions!(row).slice(0, 2)} rowTitle={rowTitle(row)} />
                     </Cell>
                   )}
                 </Row>
@@ -397,15 +399,20 @@ function GroupRow({ item, colCount, isCollapsed, onToggle, countLabel }: { item:
   );
 }
 
-/** Actions au survol, au focus et sur la ligne sélectionnée (D-066). */
-function RowActions({ actions }: { actions: TableRowAction[] }) {
+/**
+ * Actions au survol, au focus et sur la ligne sélectionnée (D-066) ; visibles aussi tant que leur menu est ouvert.
+ * Leur nom reprend la ligne : « Archiver Rapport trimestriel », « Plus d'actions pour Rapport trimestriel ».
+ */
+function RowActions({ actions, rowTitle }: { actions: TableRowAction[]; rowTitle: string | undefined }) {
+  const m = useMessages();
+  const name = (label: string) => (!rowTitle ? label : label === m.moreActions ? m.moreActionsFor(rowTitle) : m.rowAction(label, rowTitle));
   return (
-    <span className="invisible flex justify-end gap-0.5 group-data-focus-visible/row:visible group-data-hovered/row:visible group-data-selected/row:visible">
+    <span className="invisible flex justify-end gap-0.5 group-data-focus-visible/row:visible group-data-hovered/row:visible group-data-selected/row:visible group-has-[[aria-haspopup][aria-expanded=true]]/row:visible">
       {actions.map((a) => {
         const button = (
           <Tooltip content={a.label}>
             <Button
-              aria-label={a.label}
+              aria-label={name(a.label)}
               {...(a.menu ? { "data-row-menu": "" } : {})}
               {...(a.onPress ? { onPress: a.onPress } : {})}
               className={cx(buttonReset, "inline-grid size-6 place-items-center rounded-sm text-fg-2 data-hovered:bg-selected data-hovered:text-fg [&>svg]:size-3.5", focusRing)}
