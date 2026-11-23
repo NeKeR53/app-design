@@ -91,6 +91,7 @@ export { LoginPage } from "./templates/LoginPage/LoginPage";
 export type { LoginPageProps, LoginValues, LoginProvider, LoginResult } from "./templates/LoginPage/LoginPage";
 export { FormPage } from "./templates/FormPage/FormPage";
 export type { FormPageProps, FormSection } from "./templates/FormPage/FormPage";
+export type { FormStep } from "./templates/FormPage/FormPage";
 export { useOpenForm } from "./templates/FormDialog/FormDialog";
 export type { OpenFormOptions, OpenFormFunction } from "./templates/FormDialog/FormDialog";
 export type {
@@ -269,3 +270,15 @@ export { Spinner } from "./components/Spinner/Spinner";
 export type { SpinnerProps, SpinnerSize } from "./components/Spinner/Spinner";
 export { Card } from "./components/Card/Card";
 export type { CardProps, CardDefaultProps, CardMetricProps, CardDelta, CardDeltaTone, CardHeadingLevel } from "./components/Card/Card";
+/* Nouveaux composants P4 (SplitButton, Slider, ColorPicker ; D-365 à D-367). */
+export { SplitButton } from "./components/SplitButton/SplitButton";
+export type { SplitButtonProps, SplitButtonItem, SplitButtonVariant } from "./components/SplitButton/SplitButton";
+export { Slider } from "./components/Slider/Slider";
+export type { SliderProps, SliderValue } from "./components/Slider/Slider";
+export { ColorPicker, defaultColors } from "./components/ColorPicker/ColorPicker";
+export type { ColorPickerProps, ColorOption } from "./components/ColorPicker/ColorPicker";
+/* Nouveaux composants P4 (Tag, CodeField ; D-362, D-363). */
+export { Tag, TagGroup } from "./components/Tag/Tag";
+export type { TagProps, TagGroupProps } from "./components/Tag/Tag";
+export { CodeField } from "./components/CodeField/CodeField";
+export type { CodeFieldProps } from "./components/CodeField/CodeField";

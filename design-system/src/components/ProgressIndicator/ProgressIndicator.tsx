@@ -1,6 +1,7 @@
 /*
  * Étapes numérotées d'un parcours. Spec : ProgressIndicator.spec.md.
- * Décisions : D-325 (anatomie, quatre états), D-326 (retour en arrière, largeur étroite).
+ * Décisions : D-325 (anatomie, quatre états), D-326 (retour en arrière, largeur étroite) ;
+ * D-364 (l'étape en cours peut être en erreur ; une étape après elle n'est jamais un bouton).
  */
 import { useEffect, useRef } from "react";
 import { Button } from "react-aria-components/Button";
@@ -25,7 +26,7 @@ export interface ProgressIndicatorProps {
   steps: readonly StepItem[];
   /** Étape en cours : les précédentes sont faites, les suivantes à faire. */
   current: string;
-  /** Rend cliquables les étapes faites ou en erreur, pour y revenir (D-326). */
+  /** Rend cliquables les étapes faites ou en erreur avant l'étape en cours, pour y revenir (D-326). */
   onSelect?: (id: string) => void;
   orientation?: "horizontal" | "vertical";
 }
@@ -59,6 +60,7 @@ export function ProgressIndicator({ label, steps, current, onSelect, orientation
   // le focus irait sur `body`. On le pose sur l'étape en cours pour garder la place au clavier.
   const refocus = useRef(false);
   const currentRef = useRef<HTMLSpanElement>(null);
+  const at = steps.findIndex((s) => s.id === current);
   useEffect(() => {
     if (!refocus.current) return;
     refocus.current = false;
@@ -73,7 +75,9 @@ export function ProgressIndicator({ label, steps, current, onSelect, orientation
     >
       {steps.map((step, i) => {
         const status = stepStatus(steps, current, i);
-        const clickable = Boolean(onSelect) && (status === "done" || status === "error");
+        // L'étape en cours reste l'étape en cours, même en erreur (D-364) ; on ne revient qu'en arrière (D-326).
+        const isCurrent = i === at;
+        const clickable = Boolean(onSelect) && i < at && (status === "done" || status === "error");
         const content = (
           <>
             <span
@@ -87,10 +91,10 @@ export function ProgressIndicator({ label, steps, current, onSelect, orientation
                 "flex min-w-0 flex-col",
                 // Sous 380 px, seul le titre de l'étape en cours reste visible (D-326) ;
                 // les autres restent lus par les lecteurs d'écran (nom du bouton, « (fait) »).
-                !vertical && status !== "current" && "@max-[380px]:sr-only",
+                !vertical && !isCurrent && "@max-[380px]:sr-only",
               )}
             >
-              <span className={cx("truncate", status === "current" ? "font-medium" : "", titleClass[status])}>
+              <span className={cx("truncate", isCurrent ? "font-medium" : "", titleClass[status])}>
                 {step.title}
                 {status === "done" && <span className="sr-only"> ({m.stepDone})</span>}
                 {status === "error" && <span className="sr-only"> ({m.stepError})</span>}
@@ -105,7 +109,7 @@ export function ProgressIndicator({ label, steps, current, onSelect, orientation
         return (
           <li
             key={step.id}
-            aria-current={status === "current" ? "step" : undefined}
+            aria-current={isCurrent ? "step" : undefined}
             className={cx(
               "flex min-w-0",
               vertical ? "flex-col" : "items-center",
@@ -127,8 +131,8 @@ export function ProgressIndicator({ label, steps, current, onSelect, orientation
               </Button>
             ) : (
               <span
-                ref={status === "current" ? currentRef : undefined}
-                tabIndex={status === "current" ? -1 : undefined}
+                ref={isCurrent ? currentRef : undefined}
+                tabIndex={isCurrent ? -1 : undefined}
                 className={cx(
                   itemClass,
                   // Même anneau que focusRing, sur :focus-visible (élément sans React Aria).

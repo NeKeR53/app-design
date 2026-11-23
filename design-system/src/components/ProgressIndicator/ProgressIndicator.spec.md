@@ -29,7 +29,7 @@ Ne pas l'utiliser pour :
 | `label` | `string` | — (obligatoire) | Nom de la liste. |
 | `steps` | `{ id, title, description?, status? }[]` | — (obligatoire) | Étapes. `status` impose un état, sinon il vient de `current`. |
 | `current` | `string` | — (obligatoire) | Étape en cours. |
-| `onSelect` | `(id) => void` | aucune | Rend cliquables les étapes faites ou en erreur (D-326). |
+| `onSelect` | `(id) => void` | aucune | Rend cliquables les étapes faites ou en erreur placées avant l'étape en cours (D-326, D-364). |
 | `orientation` | `"horizontal" \| "vertical"` | `"horizontal"` | Sens de la liste. |
 
 ## Exclus
@@ -52,7 +52,8 @@ Ne pas l'utiliser pour :
 | Règle | Niveau de réglage | Test (story) |
 |---|---|---|
 | États déduits de `current`, sauf `status` donné (D-325) | réglable par l'app (`status`) | `ParDefaut`, `Erreur` |
-| Avec `onSelect`, une étape faite ou en erreur est un bouton ; une étape à faire ne l'est jamais (D-326) | verrouillé | `RetourArriere` |
+| Avec `onSelect`, une étape faite ou en erreur avant l'étape en cours est un bouton ; une étape à faire, ou après l'étape en cours, ne l'est jamais (D-326, D-364) | verrouillé | `RetourArriere`, `ErreurEnCours` |
+| L'étape en cours peut porter `status: "error"` : pastille d'erreur, mais elle garde `aria-current` et n'est pas un bouton (D-364) | verrouillé | `ErreurEnCours` |
 | Sans `onSelect`, la liste n'a aucun bouton | verrouillé | `ParDefaut` |
 | Horizontal : aide masquée sous 560 px ; sous 380 px, seul le titre de l'étape en cours (D-326) | verrouillé | `Etroit` |
 | Changement d'étape sans animation (D-026) | verrouillé | `DansUnAssistant` |
@@ -86,7 +87,7 @@ En haut du contenu d'un assistant (au-dessus du formulaire de l'étape), ou à g
 Contient un `Button` de React Aria et l'icône interne `Check`.
 
 ## Décisions
-D-026, D-102, D-325, D-326
+D-026, D-102, D-325, D-326, D-364
 
 ## Questions ouvertes
 Aucune.

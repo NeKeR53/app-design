@@ -1,7 +1,7 @@
 /*
  * Formulaire déclaratif : modèle de champ, valeurs, envoi et rendu des champs.
  * Partagé par FormPage et le formulaire en modale (useOpenForm). Spec : templates/FormPage/FormPage.spec.md.
- * Décisions : D-190 à D-192, D-196 ; D-341 (récapitulatif des erreurs) et D-344 (message d'obligation).
+ * Décisions : D-190 à D-192, D-196 ; D-341 (récapitulatif des erreurs), D-344 (message d'obligation) ; D-364 (étapes).
  * Module interne : seuls les types sont exportés par index.ts.
  */
 import { useCallback, useEffect, useId, useMemo, useRef, useState, type KeyboardEvent, type ReactNode } from "react";
@@ -251,6 +251,8 @@ export interface FormModel {
   summaryRef: React.RefObject<HTMLDivElement | null>;
   /** Place le focus dans le champ `name`. */
   focusField: (name: string) => void;
+  /** Retire le récapitulatif des erreurs (changement d'étape, D-364). */
+  clearSummary: () => void;
   /** Mod+Entrée envoie de partout (D-196). */
   onKeyDown: (e: KeyboardEvent<HTMLElement>) => void;
 }
@@ -281,6 +283,11 @@ const SUMMARY_MIN = 2;
 export interface FormModelOptions {
   /** Récapitulatif des erreurs en haut du formulaire, à partir de 2 erreurs (FormPage, D-341). */
   summary?: boolean;
+  /**
+   * Erreurs rendues par `onSubmit`, par champ, dans l'ordre du formulaire. Appelé avant le rendu :
+   * l'app peut changer d'étape et rend les champs à montrer et à focaliser (FormPage en étapes, D-364).
+   */
+  onSubmitErrors?: (names: string[]) => string[];
 }
 
 export function useFormModel(all: readonly FormField[], initialValues: object | undefined, onSubmit: FormSubmit | undefined, options: FormModelOptions = {}): FormModel {
@@ -302,6 +309,8 @@ export function useFormModel(all: readonly FormField[], initialValues: object | 
   const busy = useRef(false);
   const submitRef = useRef(onSubmit);
   submitRef.current = onSubmit;
+  const routeRef = useRef(options.onSubmitErrors);
+  routeRef.current = options.onSubmitErrors;
 
   const dirty = !same(raw, baseline);
 
@@ -368,6 +377,7 @@ export function useFormModel(all: readonly FormField[], initialValues: object | 
   }, [withSummary, showSummary]);
 
   const focusField = useCallback((name: string) => focusFieldIn(formRef.current, name), []);
+  const clearSummary = useCallback(() => setSummary(null), []);
 
   const submit = useCallback(async () => {
     if (busy.current) return null;
@@ -383,7 +393,9 @@ export function useFormModel(all: readonly FormField[], initialValues: object | 
         setErrors(errs);
         setMessage(result.message ?? m.fixErrors);
         setStatus("error");
-        if (!showSummary(fields.filter((f) => f.name in errs).map((f) => f.name))) setFocusErrors((n) => n + 1);
+        const names = fields.filter((f) => f.name in errs).map((f) => f.name);
+        const shown = routeRef.current?.(names) ?? names;
+        if (!showSummary(shown)) setFocusErrors((n) => n + 1);
         return null;
       }
       setSummary(null);
@@ -426,6 +438,7 @@ export function useFormModel(all: readonly FormField[], initialValues: object | 
     summary,
     summaryRef,
     focusField,
+    clearSummary,
     onKeyDown,
   };
 }

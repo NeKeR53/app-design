@@ -295,6 +295,10 @@ export interface SocleMessages {
   editValue: (label: string) => string;
   stepDone: string;
   stepError: string;
+  /* FormPage en étapes (D-364) */
+  formSteps: string;
+  recapStep: string;
+  edit: string;
   /* Markdown et MarkdownEditor (D-303 à D-309) */
   copyBlock: string;
   blockCopied: string;
@@ -390,6 +394,16 @@ export interface SocleMessages {
   retryFile: (name: string) => string;
   /* Card (Nouveaux P2-P3, C1) : ton d'une évolution, lu après le texte. */
   cardDeltaTone: (tone: "positive" | "negative") => string;
+  /* SplitButton, Slider, ColorPicker (Nouveaux P4 ; D-365 à D-367). */
+  splitMoreOptions: (label: string) => string;
+  sliderMinimum: string;
+  sliderMaximum: string;
+  colorHex: string;
+  colorName: (key: "blue" | "orange" | "green" | "yellow" | "pink" | "darkGreen" | "violet" | "red") => string;
+  colorLowContrast: (ratio: string) => string;
+  /* CodeField (Nouveaux P4, K1) : avancement lu poliment, code incomplet. */
+  codeProgress: (filled: number, total: number) => string;
+  codeIncomplete: (length: number, numeric: boolean) => string;
 }
 
 const s = (n: number) => (n > 1 ? "s" : "");
@@ -661,6 +675,9 @@ export const frenchMessages: SocleMessages = {
   editValue: (l) => `Modifier « ${l} »`,
   stepDone: "fait",
   stepError: "erreur",
+  formSteps: "Étapes du formulaire",
+  recapStep: "Récapitulatif",
+  edit: "Modifier",
   copyBlock: "Copier le bloc",
   blockCopied: "Bloc copié",
   table: "Tableau",
@@ -742,4 +759,13 @@ export const frenchMessages: SocleMessages = {
   fileAnnounce: (n, status) => `${n} : ${status}`,
   retryFile: (n) => `Réessayer ${n}`,
   cardDeltaTone: (t) => (t === "positive" ? "favorable" : "défavorable"),
+  splitMoreOptions: (l) => `Plus d'options pour ${l}`,
+  sliderMinimum: "Minimum",
+  sliderMaximum: "Maximum",
+  colorHex: "Code hexadécimal",
+  colorName: (k) =>
+    ({ blue: "Bleu", orange: "Orange", green: "Vert", yellow: "Jaune", pink: "Rose", darkGreen: "Vert foncé", violet: "Violet", red: "Rouge" })[k],
+  colorLowContrast: (r) => `Contraste trop faible avec le texte : ${r} pour 1, 4,5 pour 1 au moins.`,
+  codeProgress: (n, total) => `${n} sur ${total}`,
+  codeIncomplete: (n, numeric) => `Saisissez les ${n} ${numeric ? "chiffres" : "caractères"} du code.`,
 };

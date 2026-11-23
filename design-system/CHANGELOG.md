@@ -42,6 +42,15 @@ Mise en conformité avec les specs existantes, après une revue UX comparée à 
 - `Card` : conteneur neutre, variante `metric`, carte cliquable avec « … » hors de la cible (D-361).
 - Icônes internes : calendrier et types de fichier, remplaçables par un thème (D-338).
 
+### Ajouté — lot 4
+- `TagGroup` et `Tag` : étiquettes neutres à retirer (croix, Suppr, Retour arrière) ou à choisir pour filtrer ; un seul arrêt de Tab (D-362).
+- `CodeField` : code à usage unique de 4 à 8 cases sur un seul vrai champ (`one-time-code`) ; collage, flèches, `onComplete`, code vidé sur une nouvelle erreur, « n sur N » annoncé (D-363).
+- FormPage : mode en étapes (`steps`) : ProgressIndicator, « Précédent » et « Suivant », vérification par étape, récapitulatif avec « Modifier », erreurs du serveur renvoyées à leur étape (D-364). ProgressIndicator : l'étape en cours peut être en erreur ; une étape à venir n'est jamais un bouton. Type `FormStep`.
+- `SplitButton` : action par défaut et menu des variantes (D-365).
+- `Slider` : une ou deux poignées, valeur formatée, Page ×10, `onChangeEnd` au relâché (D-366).
+- `ColorPicker` : nuancier prédéfini, choix aux flèches, saisie hexadécimale en option, alerte de contraste (D-367).
+- Pas de fil d'Ariane : D-211 est confirmé.
+
 ### Ajouté — revue UX, groupe B (options facultatives, défaut inchangé sauf mention)
 - `disabledReason` sur Button, IconButton, `DropdownMenu.Item` et `Action` : contrôle focusable, raison en info-bulle et en description (D-340). Tooltip : option `description`.
 - FormPage : récapitulatif des erreurs à partir de 2 erreurs, avec un lien par champ (D-341).

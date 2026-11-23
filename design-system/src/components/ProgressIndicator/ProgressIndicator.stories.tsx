@@ -56,6 +56,27 @@ export const RetourArriere: Story = {
   },
 };
 
+/**
+ * Erreur sur l'étape en cours et après elle (FormPage en étapes, D-364) : l'étape en cours garde
+ * `aria-current` et n'est pas un bouton ; une étape après elle n'est jamais un bouton (D-326).
+ */
+export const ErreurEnCours: Story = {
+  args: {
+    onSelect: fn(),
+    current: "connexion",
+    steps: steps.map((s) => (s.id === "connexion" || s.id === "verification" ? { ...s, status: "error" as const } : s)),
+  },
+  play: async ({ canvasElement }) => {
+    const c = within(canvasElement);
+    const items = c.getAllByRole("listitem");
+    await expect(items[1]).toHaveAttribute("aria-current", "step");
+    await expect(items[1]).toHaveTextContent("Connexion (erreur)");
+    await expect(items[3]).toHaveTextContent("Vérification (erreur)");
+    await expect(c.getAllByRole("button")).toHaveLength(1);
+    await expect(c.getByRole("button", { name: /^Compte \(fait\)/ })).toBeInTheDocument();
+  },
+};
+
 /** Vertical : pour une liste de configuration sur le côté. */
 export const Vertical: Story = { args: { orientation: "vertical" }, render: (args) => <div className="w-64"><ProgressIndicator {...args} /></div> };
 

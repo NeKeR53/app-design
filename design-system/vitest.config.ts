@@ -68,6 +68,10 @@ export default defineConfig({
       "@internationalized/date",
       "react-aria-components/DropZone",
       "react-aria-components/FileTrigger",
+      "react-aria-components/Slider",
+      "react-aria-components/ColorSwatch",
+      "react-aria-components/ColorSwatchPicker",
+      "react-aria-components/ColorField",
     ],
   },
   test: {

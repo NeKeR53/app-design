@@ -2509,3 +2509,51 @@
 - Raison : les ombres restent réservées à ce qui flotte (D-001) ; une seule cible principale au nom court.
 - Options écartées : carte avec ombre ; lien seulement dans la carte.
 - Validation : choix de l'utilisateur, 2026-11-23 — docs/validation/components/Nouveaux-P2-P3-v1.html
+
+## D-362 — Tag et TagGroup
+- Date : 2026-11-23
+- Portée : Tag, TagGroup
+- Décision : étiquette interactive en pastille neutre (fond `--field`, texte `--fg`, rayon 4 px, hauteur `--btn-h-sm`), dans un TagGroup de React Aria : un seul arrêt de Tab, flèches entre étiquettes ; Suppr ou Retour arrière retire, comme la croix « Retirer <nom> » (présente seulement avec `onRemove`, hors de l'ordre de Tab) ; sélection simple ou multiple en option pour filtrer : fond `--selected`, coche, `aria-selected`. Une étiquette n'est jamais un bouton.
+- Raison : Badge reste un statut statique (D-160) ; la couleur ne porte que du sens (D-001) ; le motif grille de React Aria donne le clavier et l'annonce.
+- Options écartées : couleur par catégorie ; croix tabulable (deux arrêts par étiquette).
+- Validation : choix de l'utilisateur, 2026-11-23 — docs/validation/components/Nouveaux-P4-v1.html
+
+## D-363 — CodeField
+- Date : 2026-11-23
+- Portée : CodeField
+- Décision : un seul vrai champ (`autocomplete="one-time-code"`, `inputmode` numérique ou texte, 4 à 8 caractères, 6 par défaut), transparent, posé sur des cases dessinées. Le collage remplit tout ; Retour arrière recule ; flèches, Origine et Fin déplacent la case active ; `onComplete` part quand le code est plein ; une nouvelle erreur vide le code et ramène le focus au début (`clearOnError`) ; « n sur N » est lu poliment. Anatomie de Field.
+- Raison : un seul champ garde le collage, le remplissage automatique du code reçu par SMS et la lecture par le lecteur d'écran.
+- Options écartées : un champ par case ; curseur bloqué à la fin.
+- Validation : choix de l'utilisateur, 2026-11-23 — docs/validation/components/Nouveaux-P4-v1.html
+
+## D-364 — FormPage en étapes
+- Date : 2026-11-23
+- Portée : FormPage, ProgressIndicator
+- Décision : option `steps: { id, title, description?, fields }[]`, à la place de `sections` (l'un ou l'autre). ProgressIndicator en haut (étapes de l'app, puis « Récapitulatif ») ; une étape à la fois, dessinée comme une section ; pied : « Annuler », « Précédent » (absent à l'étape 1), « Suivant » (`primary`). « Suivant » ne vérifie que l'étape en cours, avec les règles et le récapitulatif des erreurs de D-341 ; s'il reste une erreur, on reste sur l'étape. Après un changement d'étape, le focus va au titre de l'étape. On revient en arrière par une étape faite, jamais en avant (D-326). Dernière étape : les valeurs en lecture seule, groupées par étape, chacune avec « Modifier », puis l'action (`submitLabel`). Les valeurs restent d'une étape à l'autre ; `onSubmit` les reçoit toutes. Erreurs rendues par `onSubmit` : retour à la première étape en erreur, étapes en erreur marquées dans ProgressIndicator ; l'étape en cours peut être en erreur et garde `aria-current`. Sur mobile, les boutons du pied se partagent la largeur.
+- Raison : une longue saisie guidée reste lisible ; une seule action principale par zone (D-100) ; la vérification par étape trouve l'erreur là où elle est.
+- Options écartées : sections repliables sur une page ; `sections` dans chaque étape ; saut vers une étape à venir.
+- Validation : choix de l'utilisateur, 2026-11-23 — docs/validation/components/Nouveaux-P4-v1.html
+
+## D-365 — SplitButton
+- Date : 2026-11-23
+- Portée : SplitButton
+- Décision : un Button (action par défaut) accolé à un chevron qui ouvre un DropdownMenu des variantes. Deux cibles, deux noms ; le chevron s'appelle « Plus d'options pour <libellé> » et a une info-bulle. Même hauteur que Button, variantes `primary` et `secondary`, rayon sur les coins extérieurs, séparateur de 1 px (absent en signature `outline`). En attente ou inactif (`disabledReason`), les deux parties ignorent les clics et le menu ne s'ouvre pas.
+- Raison : une action fréquente garde un seul clic (D-007) ; ses variantes restent à côté.
+- Options écartées : bouton et « … » séparés.
+- Validation : choix de l'utilisateur, 2026-11-23 — docs/validation/components/Nouveaux-P4-v1.html
+
+## D-366 — Slider
+- Date : 2026-11-23
+- Portée : Slider
+- Décision : curseur pour les réglages approximatifs. Libellé au-dessus, valeur formatée à droite, piste de 4 px en `--field`, partie remplie en `--primary`, poignée de 16 px, zone cliquable de 16 px. Flèches : un pas ; Page : dix pas ; Origine et Fin : minimum et maximum. `onChange` suit le geste ; `onChangeEnd` enregistre au relâché. Deux poignées en option. Pour une valeur exacte : NumberField.
+- Raison : un réglage approximatif se fait plus vite en glissant ; enregistrer au relâché évite une requête par pixel.
+- Options écartées : ne pas l'ajouter.
+- Validation : choix de l'utilisateur, 2026-11-23 — docs/validation/components/Nouveaux-P4-v1.html
+
+## D-367 — ColorPicker
+- Date : 2026-11-23
+- Portée : ColorPicker
+- Décision : nuancier de 8 à 12 couleurs, fournies par l'app ou tirées de la palette des graphiques (valeurs claires de `--chart-1` à `--chart-8`). Choix exclusif aux flèches, un seul arrêt de Tab ; chaque couleur est nommée (lue et en info-bulle) ; pastilles de 24 px ; la pastille choisie a un anneau `--fg` de 2 px. Saisie hexadécimale en option (`allowsCustom`). Avec `contrastWith`, une alerte en `--warning` signale un contraste sous 4,5:1. Valeurs en hexadécimal à l'API.
+- Raison : un nuancier fermé garde des couleurs cohérentes et nommées ; l'alerte protège la lisibilité du texte posé sur la couleur.
+- Options écartées : ne pas l'ajouter ; sélecteur libre (roue, zone de teinte).
+- Validation : choix de l'utilisateur, 2026-11-23 — docs/validation/components/Nouveaux-P4-v1.html

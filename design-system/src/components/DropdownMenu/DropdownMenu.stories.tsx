@@ -47,7 +47,8 @@ export const Ouverture: Story = {
     await expect(within(menu).getAllByRole("menuitem").length).toBeGreaterThan(3);
     await userEvent.keyboard("{Escape}");
     await waitFor(() => expect(body().queryByRole("menu")).toBeNull());
-    await expect(document.activeElement).toBe(button);
+    // React Aria rend le focus au bouton juste après la fermeture : on l'attend.
+    await waitFor(() => expect(document.activeElement).toBe(button));
   },
 };
 

@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect, fn, userEvent, waitFor, within } from "storybook/test";
-import { FormPage, type FormPageProps, type FormSection } from "./FormPage";
+import { FormPage, type FormPageProps, type FormSection, type FormStep } from "./FormPage";
 import type { FormValues } from "../../lib/form";
 
 /* ---------- Données factices génériques ---------- */
@@ -373,5 +373,276 @@ export const RecapitulatifServeur: Story = {
     await waitFor(() => expect(summary).toHaveFocus());
     await expect(within(summary).getAllByRole("link").map((l) => l.textContent)).toEqual(["Nom", "Code"]);
     await expect(c.getByText("Ce code est déjà pris.")).toBeVisible();
+  },
+};
+
+/* ---------- Formulaire en étapes (D-364) ---------- */
+
+const PRODUCTS = [
+  { id: "carnet", label: "Carnet A5" },
+  { id: "agenda", label: "Agenda 2027" },
+];
+
+const orderSteps: FormStep[] = [
+  {
+    id: "client",
+    title: "Client",
+    description: "Qui commande",
+    fields: [
+      { type: "text", name: "name", label: "Nom", isRequired: true },
+      { type: "email", name: "email", label: "Adresse e-mail", isRequired: true },
+    ],
+  },
+  {
+    id: "commande",
+    title: "Commande",
+    description: "Quoi et combien",
+    fields: [
+      { type: "select", name: "product", label: "Article", isRequired: true, width: "md", options: PRODUCTS, defaultValue: "carnet" },
+      { type: "number", name: "quantity", label: "Quantité", isRequired: true, min: 1 },
+      {
+        type: "radio",
+        name: "delivery",
+        label: "Livraison",
+        defaultValue: "standard",
+        orientation: "horizontal",
+        options: [
+          { value: "standard", label: "Standard" },
+          { value: "express", label: "Express" },
+        ],
+      },
+      { type: "checkbox", name: "gift", label: "Paquet cadeau" },
+      { type: "textarea", name: "notes", label: "Remarques" },
+    ],
+  },
+];
+
+/** Les props d'une story en étapes : seules les fonctions viennent des `args`. */
+function StepsFrame({ onSubmit, onCancel, onDirtyChange, initialValues }: Partial<FormPageProps>) {
+  return (
+    <Frame
+      title="Nouvelle commande"
+      description="Trois temps : le client, la commande, puis la vérification."
+      steps={orderSteps}
+      submitLabel="Commander"
+      onSubmit={onSubmit ?? (() => undefined)}
+      {...(onCancel ? { onCancel } : {})}
+      {...(onDirtyChange ? { onDirtyChange } : {})}
+      {...(initialValues ? { initialValues } : {})}
+    />
+  );
+}
+
+const fillClient = async (c: ReturnType<typeof within>) => {
+  await userEvent.type(c.getByRole("textbox", { name: "Nom" }), "Camille Martin");
+  await userEvent.type(c.getByRole("textbox", { name: "Adresse e-mail" }), "camille@exemple.fr");
+};
+
+/** En étapes : ProgressIndicator en haut, une étape à la fois, « Suivant » dans le pied (D-364). */
+export const Etapes: Story = {
+  render: (args) => <StepsFrame {...args} />,
+  play: async ({ canvasElement }) => {
+    const c = within(canvasElement);
+    const list = c.getByRole("list", { name: "Étapes du formulaire" });
+    const items = within(list).getAllByRole("listitem");
+    await expect(items.map((i) => i.textContent)).toEqual(["1ClientQui commande", "2CommandeQuoi et combien", "3Récapitulatif"]);
+    await expect(items[0]).toHaveAttribute("aria-current", "step");
+    // Étape 1 : pas de « Précédent » ; « Suivant » est l'action principale.
+    await expect(c.queryByRole("button", { name: "Précédent" })).toBeNull();
+    await expect(c.getByRole("button", { name: "Suivant" })).toBeVisible();
+    await expect(c.queryByRole("textbox", { name: /Quantité/ })).toBeNull();
+  },
+};
+
+/** Avancer, revenir (pied ou ProgressIndicator) : le focus va au titre de l'étape ; les valeurs restent (D-326, D-364). */
+export const EtapesNavigation: Story = {
+  render: (args) => <StepsFrame {...args} />,
+  play: async ({ canvasElement }) => {
+    const c = within(canvasElement);
+    await fillClient(c);
+    await userEvent.click(c.getByRole("button", { name: "Suivant" }));
+    await waitFor(() => expect(c.getByRole("heading", { name: "Commande" })).toHaveFocus());
+    await expect(c.getAllByRole("listitem")[1]).toHaveAttribute("aria-current", "step");
+    // Pas de saut en avant : le récapitulatif n'est pas un bouton.
+    await expect(c.queryByRole("button", { name: /Récapitulatif/ })).toBeNull();
+    await userEvent.type(c.getByRole("textbox", { name: /Quantité/ }), "3");
+    await userEvent.click(c.getByRole("radio", { name: "Express" }));
+    // Retour par le pied : les valeurs de l'étape 1 sont toujours là.
+    await userEvent.click(c.getByRole("button", { name: "Précédent" }));
+    await waitFor(() => expect(c.getByRole("heading", { name: "Client" })).toHaveFocus());
+    await expect(c.getByRole("textbox", { name: "Nom" })).toHaveValue("Camille Martin");
+    await userEvent.click(c.getByRole("button", { name: "Suivant" }));
+    await expect(c.getByRole("textbox", { name: /Quantité/ })).toHaveValue("3");
+    await expect(c.getByRole("radio", { name: "Express" })).toBeChecked();
+    // Retour par ProgressIndicator : une étape faite est un bouton.
+    await userEvent.click(c.getByRole("button", { name: /^Client \(fait\)/ }));
+    await waitFor(() => expect(c.getByRole("heading", { name: "Client" })).toHaveFocus());
+    await expect(c.getAllByRole("listitem")[0]).toHaveAttribute("aria-current", "step");
+  },
+};
+
+/** « Suivant » ne vérifie que l'étape en cours, avec les règles et le récapitulatif de D-341 ; on reste sur l'étape (D-364). */
+export const EtapesVerification: Story = {
+  render: (args) => <StepsFrame {...args} />,
+  play: async ({ canvasElement, args }) => {
+    const c = within(canvasElement);
+    await userEvent.click(c.getByRole("button", { name: "Suivant" }));
+    const summary = await c.findByRole("alert", { name: "2 erreurs à corriger" });
+    await waitFor(() => expect(summary).toHaveFocus());
+    await expect(within(summary).getAllByRole("link").map((l) => l.textContent)).toEqual(["Nom", "Adresse e-mail"]);
+    await expect(c.getAllByRole("listitem")[0]).toHaveAttribute("aria-current", "step");
+    // Une seule erreur : focus sur le champ, plus d'encart.
+    await userEvent.type(c.getByRole("textbox", { name: "Nom" }), "Camille Martin");
+    await userEvent.click(c.getByRole("button", { name: "Suivant" }));
+    await waitFor(() => expect(c.getByRole("textbox", { name: "Adresse e-mail" })).toHaveFocus());
+    await expect(c.queryByText(/erreurs à corriger/)).toBeNull();
+    await userEvent.type(c.getByRole("textbox", { name: "Adresse e-mail" }), "camille@exemple.fr");
+    await userEvent.click(c.getByRole("button", { name: "Suivant" }));
+    // Étape 2 : ses champs seulement ; la quantité manque.
+    await waitFor(() => expect(c.getByRole("heading", { name: "Commande" })).toHaveFocus());
+    await userEvent.click(c.getByRole("button", { name: "Suivant" }));
+    await waitFor(() => expect(c.getByText("Renseignez « Quantité ».")).toBeVisible());
+    await expect(c.getAllByRole("listitem")[1]).toHaveAttribute("aria-current", "step");
+    await expect(args.onSubmit).not.toHaveBeenCalled();
+  },
+};
+
+/** Dernière étape : récapitulatif des valeurs par étape, « Modifier » y ramène, puis l'action (D-364). */
+export const EtapesRecapitulatif: Story = {
+  render: (args) => <StepsFrame {...args} />,
+  play: async ({ canvasElement, args }) => {
+    const c = within(canvasElement);
+    await fillClient(c);
+    await userEvent.click(c.getByRole("button", { name: "Suivant" }));
+    await userEvent.type(c.getByRole("textbox", { name: /Quantité/ }), "3");
+    await userEvent.click(c.getByRole("radio", { name: "Express" }));
+    await userEvent.click(c.getByRole("button", { name: "Suivant" }));
+    await waitFor(() => expect(c.getByRole("heading", { name: "Récapitulatif" })).toHaveFocus());
+    const client = c.getByRole("region", { name: "Client" });
+    await expect(client).toHaveTextContent("NomCamille Martin");
+    await expect(client).toHaveTextContent("Adresse e-mailcamille@exemple.fr");
+    const order = c.getByRole("region", { name: "Commande" });
+    // Libellés des options, « Non » pour une case vide, « — » lu « vide » pour un champ vide.
+    await expect(order).toHaveTextContent("ArticleCarnet A5");
+    await expect(order).toHaveTextContent("Quantité3");
+    await expect(order).toHaveTextContent("LivraisonExpress");
+    await expect(order).toHaveTextContent("Paquet cadeauNon");
+    await expect(order).toHaveTextContent("Remarques—vide");
+    // « Modifier » ramène à l'étape ; on revient au récapitulatif par « Suivant ».
+    await userEvent.click(within(client).getByRole("button", { name: "Modifier « Client »" }));
+    await waitFor(() => expect(c.getByRole("heading", { name: "Client" })).toHaveFocus());
+    const name = c.getByRole("textbox", { name: "Nom" });
+    await userEvent.clear(name);
+    await userEvent.type(name, "Sam Leroy");
+    await userEvent.click(c.getByRole("button", { name: "Suivant" }));
+    await userEvent.click(c.getByRole("button", { name: "Suivant" }));
+    await expect(c.getByRole("region", { name: "Client" })).toHaveTextContent("NomSam Leroy");
+    // L'action : `onSubmit` reçoit toutes les valeurs.
+    await userEvent.click(c.getByRole("button", { name: "Commander" }));
+    await waitFor(() => expect(c.getByText("Enregistré")).toBeVisible());
+    await expect((args.onSubmit as ReturnType<typeof fn>).mock.calls[0]?.[0]).toEqual({
+      name: "Sam Leroy",
+      email: "camille@exemple.fr",
+      product: "carnet",
+      quantity: 3,
+      delivery: "express",
+      gift: false,
+      notes: "",
+    });
+  },
+};
+
+/** Erreurs du serveur : retour à la première étape en erreur ; les étapes en erreur sont marquées (D-364). */
+export const EtapesErreurServeur: Story = {
+  args: {
+    initialValues: { name: "Camille Martin", email: "pris@exemple.fr", quantity: 500 },
+    onSubmit: fn(async (values: FormValues) =>
+      values.email === "pris@exemple.fr" ? { errors: { quantity: "Stock insuffisant.", email: "Cette adresse a déjà un compte." } } : undefined,
+    ),
+  },
+  render: (args) => <StepsFrame {...args} />,
+  play: async ({ canvasElement, args }) => {
+    const c = within(canvasElement);
+    await userEvent.click(c.getByRole("button", { name: "Suivant" }));
+    await userEvent.click(c.getByRole("button", { name: "Suivant" }));
+    await userEvent.click(c.getByRole("button", { name: "Commander" }));
+    // Première étape en erreur : une seule erreur sur l'étape, le focus va au champ.
+    const email = c.getByRole("textbox", { name: "Adresse e-mail" });
+    await waitFor(() => expect(email).toHaveFocus());
+    await expect(c.getByText("Cette adresse a déjà un compte.")).toBeVisible();
+    await expect(c.getByRole("alert")).toHaveTextContent("Corrigez les champs signalés.");
+    const items = c.getAllByRole("listitem");
+    await expect(items[0]).toHaveAttribute("aria-current", "step");
+    await expect(items[0]).toHaveTextContent("Client (erreur)");
+    await expect(items[1]).toHaveTextContent("Commande (erreur)");
+    // Une étape en erreur après l'étape en cours n'est pas un bouton (D-326).
+    await expect(c.queryByRole("button", { name: /Commande/ })).toBeNull();
+    // Corriger l'étape : sa marque disparaît ; l'étape suivante montre son erreur.
+    await userEvent.clear(email);
+    await userEvent.type(email, "camille@exemple.fr");
+    await expect(c.getAllByRole("listitem")[0]).not.toHaveTextContent("(erreur)");
+    await userEvent.click(c.getByRole("button", { name: "Suivant" }));
+    await expect(c.getByText("Stock insuffisant.")).toBeVisible();
+    const quantity = c.getByRole("textbox", { name: /Quantité/ });
+    await userEvent.clear(quantity);
+    await userEvent.type(quantity, "5");
+    await userEvent.click(c.getByRole("button", { name: "Suivant" }));
+    await userEvent.click(c.getByRole("button", { name: "Commander" }));
+    await waitFor(() => expect(c.getByText("Enregistré")).toBeVisible());
+    await expect(args.onSubmit).toHaveBeenCalledTimes(2);
+  },
+};
+
+/** Erreurs du serveur sur 2 champs de la même étape : le récapitulatif de D-341, limité à l'étape (D-364). */
+export const EtapesErreurServeurRecapitulatif: Story = {
+  args: {
+    initialValues: { name: "Camille Martin", email: "camille@exemple.fr", quantity: 2 },
+    onSubmit: fn(async () => ({ errors: { quantity: "Stock insuffisant.", product: "Article retiré." } })),
+  },
+  render: (args) => <StepsFrame {...args} />,
+  play: async ({ canvasElement }) => {
+    const c = within(canvasElement);
+    await userEvent.click(c.getByRole("button", { name: "Suivant" }));
+    await userEvent.click(c.getByRole("button", { name: "Suivant" }));
+    await userEvent.click(c.getByRole("button", { name: "Commander" }));
+    const summary = await c.findByRole("alert", { name: "2 erreurs à corriger" });
+    await waitFor(() => expect(summary).toHaveFocus());
+    await expect(within(summary).getAllByRole("link").map((l) => l.textContent)).toEqual(["Article", "Quantité"]);
+    await expect(c.getAllByRole("listitem")[1]).toHaveAttribute("aria-current", "step");
+    // Étape 1 sans erreur : faite, cliquable.
+    await expect(c.getByRole("button", { name: /^Client \(fait\)/ })).toBeInTheDocument();
+  },
+};
+
+/** « Annuler » après une saisie, à n'importe quelle étape : confirmation (D-195). */
+export const EtapesAnnuler: Story = {
+  args: { onDirtyChange: fn() },
+  render: (args) => <StepsFrame {...args} />,
+  play: async ({ canvasElement, args }) => {
+    const c = within(canvasElement);
+    await fillClient(c);
+    await waitFor(() => expect(args.onDirtyChange).toHaveBeenLastCalledWith(true));
+    await userEvent.click(c.getByRole("button", { name: "Suivant" }));
+    await userEvent.click(c.getByRole("button", { name: "Annuler" }));
+    const dialog = await body().findByRole("alertdialog", { name: "Abandonner les modifications ?" });
+    await userEvent.click(within(dialog).getByRole("button", { name: "Abandonner" }));
+    await waitFor(() => expect(args.onCancel).toHaveBeenCalledTimes(1));
+  },
+};
+
+/** Sur mobile : ProgressIndicator resserré (D-326), boutons du pied qui se partagent la largeur. */
+export const EtapesMobile: Story = {
+  render: (args) => (
+    <div className="w-[375px]">
+      <StepsFrame {...args} initialValues={{ name: "Camille Martin", email: "camille@exemple.fr" }} />
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    const c = within(canvasElement);
+    await userEvent.click(c.getByRole("button", { name: "Suivant" }));
+    // Sous 380 px, seul le titre de l'étape en cours reste visible.
+    const list = c.getByRole("list", { name: "Étapes du formulaire" });
+    await expect(within(list).getByText("Commande")).toBeVisible();
+    await expect(c.getByRole("button", { name: /^Client \(fait\)/ }).getBoundingClientRect().width).toBeLessThan(40);
   },
 };
