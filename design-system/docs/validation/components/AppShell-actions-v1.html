@@ -48,7 +48,7 @@ h2.sec{font-size:16px;margin:28px 0 8px}
 .ib{width:var(--row-h);height:var(--row-h);border:0;background:transparent;border-radius:var(--radius-md);display:inline-grid;place-items:center;color:var(--fg-2);cursor:pointer;flex:none;position:relative}
 .ib:hover{background:var(--hover);color:var(--fg)}.ib[aria-pressed="true"]{background:var(--selected);color:var(--fg)}
 .btn{height:var(--row-h);padding:0 12px;border:0;border-radius:var(--radius-md);background:var(--field);font-size:var(--fs-md);font-weight:500;cursor:pointer;white-space:nowrap;flex:none}
-.btn:hover{background:var(--hover)}.btn.primary{background:var(--accent);color:#fff}.tk.dark .btn.primary{color:#0b1630}
+.btn:hover{background:var(--hover)}.btn.primary{background:var(--fg);color:var(--surface)}
 .btn[disabled]{opacity:.4;cursor:default}
 .body{display:flex;min-height:0;min-width:0}
 .side{width:var(--side-w);flex:none;background:var(--surface-side);border-right:1px solid var(--line);display:flex;flex-direction:column;min-height:0}
@@ -113,7 +113,7 @@ h2.sec{font-size:16px;margin:28px 0 8px}
 </div>
 <h2 class="sec">Comportement</h2>
 <div class="box"><ul>
-<li>Ordre : icônes, « … », action principale à texte, puis la cloche, puis le bouton du détail.</li>
+<li>Ordre : la cloche, puis les actions de la page (icônes, « … », action principale à texte), puis le bouton du détail.</li>
 <li>La place se mesure en continu. Rien ne bouge tant que tout tient. Aucune animation (D-026).</li>
 <li>Une icône repliée garde son ordre : elle passe <i>avant</i> les entrées déjà dans « … ». Le texte replié passe en tête.</li>
 <li>Attente : le bouton à texte montre l'attente (D-116) ; désactivé : opacité 40 %.</li>
@@ -155,12 +155,12 @@ function arrange(avail){
 function render(){
   var app=document.getElementById('app');document.getElementById('frame').style.width=st.w+'px';document.getElementById('t-wv').textContent=st.w+' px';
   var narrow=st.w<640;
-  app.innerHTML='<header class="top">'+(narrow?'':leadHTML())+'<div class="rest"><h1>Documents</h1><span class="vsep"></span><div class="tabs" id="tabs"><span class="tab on">Tous les documents</span><span class="tab">Partagés</span><span class="tab">Brouillons</span></div><div id="slot" style="flex:1 1 0;min-width:var(--row-h);display:flex;justify-content:flex-end;align-items:center;gap:2px"></div>'+ib('bell','Notifications')+ib('list','Panneau de détail','aria-pressed="true"')+'</div></header><div class="body">'+(narrow?'':sideHTML('docs'))+'<main class="main">'+listHTML()+'</main>'+(st.w>=1024?'<aside class="detail">'+detailHTML()+'</aside>':'')+'</div>';
-  var slot=document.getElementById('slot');var avail=slot.clientWidth;
+  app.innerHTML='<header class="top">'+(narrow?'':leadHTML())+'<div class="rest"><h1>Documents</h1><span class="vsep"></span><div class="tabs" id="tabs"><span class="tab on">Tous les documents</span><span class="tab">Partagés</span><span class="tab">Brouillons</span></div><div id="slot" style="flex:1 1 0;min-width:calc(var(--row-h)*2 + 2px);display:flex;justify-content:flex-end;align-items:center;gap:2px"></div>'+ib('list','Panneau de détail','aria-pressed="true"')+'</div></header><div class="body">'+(narrow?'':sideHTML('docs'))+'<main class="main">'+listHTML()+'</main>'+(st.w>=1024?'<aside class="detail">'+detailHTML()+'</aside>':'')+'</div>';
+  var slot=document.getElementById('slot');var avail=slot.clientWidth-(parseFloat(getComputedStyle(app).getPropertyValue('--row-h'))+2);
   var r=arrange(narrow?Math.min(avail,0+ (r0()) ):avail);
   function r0(){return 9999;}
   if(narrow){r.menu=r.icons.concat(r.menu);r.icons=[];}
-  var h=r.icons.map(function(a){return ib(a.icon,a.label);}).join('');
+  var h=ib('bell','Notifications')+r.icons.map(function(a){return ib(a.icon,a.label);}).join('');
   if(r.menu.length+r.danger.length)h+='<span style="position:relative">'+ib('more','Plus d’actions','id="more"')+'</span>';
   if(r.text)h+='<span style="margin-left:6px;display:inline-flex"><button class="btn primary" '+(st.state==='disabled'?'disabled':'')+'>'+(st.state==='pending'?'<span aria-busy="true">…</span> ':'')+r.text.label+'</button></span>';
   slot.innerHTML=h;
