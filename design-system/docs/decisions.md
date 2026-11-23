@@ -757,3 +757,47 @@
 - Raison : plus de 40 libellés ; une app les traduit une seule fois, au même endroit, et l'API des composants reste simple.
 - Options écartées : une prop par libellé dans chaque composant.
 - Validation : aucune page (règle technique).
+
+## D-130 — Champs : surface et bord marqué ; libellé, aide et erreur
+- Date : 2026-11-23
+- Portée : Field (TextField, TextArea, Select, ComboBox)
+- Décision :
+  - Le cadre d'un champ a le fond `--surface` et un bord de 1 px `--line-strong` ; au survol, le bord passe en `--fg-3` ; au focus, anneau `--accent` de 2 px (comme la barre de recherche, D-073). En erreur, le bord passe en `--danger`.
+  - Le libellé est en `--fs-sm`, `--fw-medium`, `--fg`. L'aide est en `--fs-sm`, `--fg-3`. L'erreur est en `--fs-sm`, `--danger`, et prend la place de l'aide : une seule ligne sous le champ.
+- Raison : un champ se distingue d'un bouton secondaire (fond `--field`) et garde la forme de la barre de recherche ; un libellé net mais discret.
+- Options écartées : fond `--field` sans bord (ressemble à un bouton) ; fond `--field` et bord `--line` (contraste du bord sous 3:1) ; libellé `--fs-md` en `--fg-2` ; aide gardée sous l'erreur.
+- Validation : docs/validation/components/FormFields-v1.html
+
+## D-131 — Champs : lecture seule en cadre gris, avec cadenas
+- Date : 2026-11-23
+- Portée : Field (TextField, TextArea, Select, ComboBox)
+- Décision : un champ en lecture seule garde son cadre, avec le fond `--surface-side`, le bord `--line` et un cadenas de 14 px en `--fg-3` à droite. Le texte reste en `--fg` et se sélectionne. Il prend le focus, sans anneau de modification, et n'a pas d'état de survol.
+- Raison : on voit que c'est un champ figé, et on peut copier sa valeur.
+- Options écartées : texte nu sans cadre ; bord en pointillé.
+- Validation : docs/validation/components/FormFields-v1.html
+
+## D-132 — Champs : le composant vérifie, au moment fixé par D-022
+- Date : 2026-11-23
+- Portée : Field (TextField, TextArea, Select, ComboBox)
+- Décision : un champ accepte `isRequired` et `validate`, et vérifie seul. L'erreur s'affiche quand on quitte un champ qu'on a modifié, ou à l'envoi du formulaire ; jamais pendant la frappe. Elle se met à jour quand on quitte à nouveau le champ. À l'envoi, le focus va au premier champ en erreur. L'app peut aussi imposer une erreur (option `error`, par exemple une réponse du serveur) ; elle s'affiche tout de suite. Un champ obligatoire vide reçoit le message « Ce champ est obligatoire. » du dictionnaire (D-089). Précise D-022 : un champ quitté sans modification n'affiche pas d'erreur avant l'envoi.
+- Raison : la règle de D-022 est écrite une fois, dans Socle, au lieu d'une fois par app.
+- Options écartées : l'app seule passe le message d'erreur.
+- Validation : docs/validation/components/FormFields-v1.html
+
+## D-133 — Champs : cinq largeurs ; TextArea qui grandit
+- Date : 2026-11-23
+- Portée : Field (TextField, TextArea, Select, ComboBox)
+- Décision :
+  - Option `width` : `xs` 96 px (code, nombre), `sm` 160 px, `md` 240 px, `lg` 360 px, `full` (défaut : toute la largeur du conteneur). Un champ n'est jamais plus large que son conteneur.
+  - `TextArea` commence à 3 lignes, grandit avec le texte jusqu'à 10 lignes, puis défile. Les deux bornes sont réglables par l'app (`minRows`, `maxRows`). Pas de poignée de redimensionnement.
+- Raison : la largeur annonce la longueur attendue ; pas de défilement interne pour un texte court, pas de poignée à viser.
+- Options écartées : champs toujours pleine largeur ; TextArea de hauteur fixe avec poignée.
+- Validation : docs/validation/components/FormFields-v1.html
+
+## D-134 — Select : liste flottante au style du Menu
+- Date : 2026-11-23
+- Portée : Select (et la liste de ComboBox)
+- Décision : `Select` est un bouton au style du champ (D-130), avec la valeur à gauche et un chevron à droite, qui ouvre une liste flottante React Aria au style du Menu : rayon 12 px, éléments de `--row-h`, élément mis en avant en `--hover`, coche à droite sur la valeur choisie (D-050). La liste est au moins aussi large que le bouton. Taper des lettres saute à l'option qui commence par elles.
+- Raison : même rendu sur macOS, Windows et web ; même liste que ComboBox.
+- Options écartées : `<select>` natif (rendu propre à chaque système, peu stylable).
+- Validation : docs/validation/components/FormFields-v1.html
