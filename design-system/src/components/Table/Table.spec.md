@@ -93,7 +93,7 @@ Voir États (erreur de chargement). Une action groupée qui échoue affiche une 
 Zone `list` de `ListPage`, seul. Jamais dans le panneau de détail ni dans la sidebar.
 
 ## Composition
-Contient `Checkbox` (à spécifier), `IconButton`, `Menu`, `Tooltip` et des pastilles de statut (`Badge`, à spécifier).
+Contient `Checkbox` (à spécifier), `IconButton`, `Menu`, `Tooltip` `Skeleton` (D-165) et `EmptyState` (D-166) pour ses états (D-169). Une cellule de statut reçoit un `StatusBadge` ou un `StatusDot` (D-160, D-162).
 
 ## Décisions
 D-004, D-007, D-021, D-025, D-026, D-039, D-040, D-053, D-054, D-062, D-063, D-064, D-065, D-066, D-067, D-084, D-085, D-086, D-087

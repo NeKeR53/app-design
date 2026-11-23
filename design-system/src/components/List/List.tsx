@@ -13,6 +13,8 @@ import { Check } from "../../icons";
 import { Menu } from "../Menu/Menu";
 import { useMessages } from "../../provider/SocleProvider";
 import { Tooltip } from "../Tooltip/Tooltip";
+import { StatusBadge, type StatusTone } from "../StatusBadge/StatusBadge";
+import { Skeleton as Bar, SkeletonGroup } from "../Skeleton/Skeleton";
 import { OverflowTooltip } from "../Tooltip/OverflowTooltip";
 import type { TableRowAction } from "../Table/Table";
 
@@ -23,7 +25,7 @@ export interface ListItemData {
   /** Méta courte à droite de la ligne 1 (date, montant). */
   meta?: string;
   /** Pastille de statut à droite de la ligne 2. */
-  status?: { label: string; tone: "neutral" | "info" | "success" | "warning" | "danger" };
+  status?: { label: string; tone: StatusTone };
   /** Point de non-lu, à la place du statut (D-044). */
   unread?: boolean;
   /** Visuel : icône, initiales ou image, selon le type choisi pour la liste (D-069). */
@@ -55,14 +57,6 @@ export interface ListProps extends ResultsStateProps {
   totalCount?: number;
   onLoadMore?: () => void;
 }
-
-const TONE: Record<NonNullable<ListItemData["status"]>["tone"], string> = {
-  neutral: "bg-fg-3",
-  info: "bg-info",
-  success: "bg-success",
-  warning: "bg-warning",
-  danger: "bg-danger",
-};
 
 const VISUAL = {
   icon: "w-4 text-fg-2",
@@ -147,12 +141,7 @@ export function List({
             {it.unread ? (
               <span role="img" aria-label={m.unread} className="size-2 shrink-0 rounded-full bg-accent" />
             ) : (
-              it.status && (
-                <span className="inline-flex shrink-0 items-center gap-1.5 text-xs text-fg-2">
-                  <i className={cx("inline-block size-[7px] rounded-full", TONE[it.status.tone])} />
-                  {it.status.label}
-                </span>
-              )
+              it.status && <StatusBadge tone={it.status.tone}>{it.status.label}</StatusBadge>
             )}
           </span>
         )}
@@ -232,13 +221,13 @@ function ItemActions({ actions }: { actions: TableRowAction[] }) {
 
 function Skeleton({ twoLines }: { twoLines: boolean }) {
   return (
-    <div aria-hidden>
+    <SkeletonGroup delay={0}>
       {Array.from({ length: 6 }, (_, i) => (
         <div key={i} className={cx("flex flex-col justify-center gap-2 border-b border-line px-3", twoLines ? "min-h-(--row2-h)" : "min-h-(--row-h)")}>
-          <i className="block h-2.5 rounded-sm bg-field" style={{ width: `${40 + ((i * 7) % 25)}%` }} />
-          {twoLines && <i className="block h-2.5 rounded-sm bg-field" style={{ width: `${24 + ((i * 3) % 10)}%` }} />}
+          <Bar width={`${40 + ((i * 7) % 25)}%`} />
+          {twoLines && <Bar width={`${24 + ((i * 3) % 10)}%`} />}
         </div>
       ))}
-    </div>
+    </SkeletonGroup>
   );
 }

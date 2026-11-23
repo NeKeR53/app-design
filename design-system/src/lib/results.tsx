@@ -6,6 +6,7 @@ import { Button } from "react-aria-components/Button";
 import { AlertTriangle } from "../icons";
 import { buttonReset, cx, focusRing } from "./cx";
 import { useMessages } from "../provider/SocleProvider";
+import { EmptyState } from "../components/EmptyState/EmptyState";
 
 /** Options d'état partagées par Table et List. */
 export interface ResultsStateProps {
@@ -88,13 +89,11 @@ export function ErrorBanner({ onRetry }: { onRetry?: (() => void) | undefined })
   );
 }
 
-/** Message centré : erreur au premier chargement, ou aucun résultat (D-085, D-086). */
+/** Message centré : erreur au premier chargement, ou aucun résultat (D-085, D-086), dessiné par EmptyState sans icône (D-169). */
 export function CenterMessage({ title, text, action, alert }: { title: ReactNode; text?: string; action?: ReactNode; alert?: boolean }) {
   return (
-    <div role={alert ? "alert" : undefined} className="px-4 py-14 text-center text-fg-2">
-      <div className="mb-1 font-medium text-fg">{title}</div>
-      {text && <p className="m-0 mb-3.5 text-sm">{text}</p>}
-      {action}
+    <div role={alert ? "alert" : undefined}>
+      <EmptyState title={title} {...(text ? { description: text } : {})} {...(action ? { action } : {})} />
     </div>
   );
 }

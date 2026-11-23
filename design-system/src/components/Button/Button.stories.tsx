@@ -86,7 +86,7 @@ export const Chargement: Story = {
     await expect(button).toHaveFocus();
     await expect(button).toHaveAttribute("aria-disabled", "true");
     await expect(button).toHaveTextContent("Ajouter");
-    await expect(within(button).getByRole("progressbar", { name: "Chargement" })).toBeInTheDocument();
+    await expect(within(button).getByRole("progressbar", { name: "Chargement…" })).toBeInTheDocument();
     // Avec une icône, la largeur ne change pas.
     await expect(button.getBoundingClientRect().width).toBe(width);
     await userEvent.click(button);

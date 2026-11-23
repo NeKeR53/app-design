@@ -13,6 +13,7 @@ import { ErrorBanner, highlight, LoadError, NoResults, ReloadBar, type ResultsSt
 import { ArrowDown, ArrowUp, Check, Minus } from "../../icons";
 import { Menu } from "../Menu/Menu";
 import { Tooltip } from "../Tooltip/Tooltip";
+import { Skeleton as Bar, SkeletonGroup } from "../Skeleton/Skeleton";
 import { OverflowTooltip } from "../Tooltip/OverflowTooltip";
 
 export interface TableColumn {
@@ -294,14 +295,14 @@ function RowActions({ actions }: { actions: TableRowAction[] }) {
 /** 6 lignes squelettes au premier chargement (D-084). */
 function Skeleton({ cols }: { cols: number }) {
   return (
-    <div aria-hidden>
+    <SkeletonGroup delay={0}>
       {Array.from({ length: 6 }, (_, i) => (
         <div key={i} className="flex h-(--row-h) items-center gap-6 border-b border-line px-2.5">
           {Array.from({ length: Math.min(cols, 4) }, (_, j) => (
-            <i key={j} className="block h-2.5 rounded-sm bg-field" style={{ width: j === 0 ? `${38 + ((i * 7) % 20)}%` : "12%" }} />
+            <Bar key={j} width={j === 0 ? `${38 + ((i * 7) % 20)}%` : "12%"} />
           ))}
         </div>
       ))}
-    </div>
+    </SkeletonGroup>
   );
 }

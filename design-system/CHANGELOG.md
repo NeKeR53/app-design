@@ -10,6 +10,21 @@ Versions selon semver (règle 6 du skill design) : une nouvelle option facultati
 - Tokens `--btn-h-sm` (26 px web, 24 px desktop) et `--danger-fg` (D-101, D-104).
 - Libellé interne `loading` (« Chargement ») dans le dictionnaire `messages`.
 
+### Ajouté — petits éléments d'affichage (D-160 à D-169)
+- `StatusBadge` (point et libellé, sans fond) et `StatusDot` (point seul, nom obligatoire, info-bulle) ; six tons, dont `pending` à point creux (D-160 à D-162). Type `StatusTone`.
+- `Avatar` : image ou initiales sur fond neutre, 24, 32 ou 40 px ; les initiales remplacent une image en erreur (D-163).
+- `ProgressBar` : rail de 4 px, libellé au-dessus, valeur à droite, tons `warning` et `danger`, mode indéterminé (D-164).
+- `Skeleton` et `SkeletonGroup` : formes immobiles, groupe nommé « Chargement… », affiché après 200 ms (D-165).
+- `EmptyState` : icône de 32 px, titre, phrase, action principale ; taille `compact` (D-166).
+- `Link` : toujours souligné ; lien externe avec flèche et texte caché ; bouton d'apparence lien sans `href` (D-167).
+- `Code` (en ligne ou en bloc) et `Divider` (horizontal ou vertical) (D-168).
+- Libellés `loading`, `codeSample` et `progressOf` dans le dictionnaire `messages` (D-089).
+
+### Modifié
+- `List` affiche son statut avec `StatusBadge` ; `ListItemData.status.tone` accepte aussi `pending` (D-169).
+- `List` et `Table` dessinent leurs squelettes avec `Skeleton` et leurs messages centrés avec `EmptyState`, sans changement de rendu ; le groupe de squelettes est désormais annoncé « Chargement… » (D-169).
+- `Sidebar.Account` dessine l'avatar par défaut avec `Avatar`, masqué aux lecteurs d'écran (le nom est écrit à côté). Les initiales prennent le premier et le dernier mot du nom, au lieu des deux premiers (D-163, D-169).
+
 ## [0.1.0] — 2026-11-22
 
 Première version de Socle, issue de l'init (décisions D-001 à D-089, dans docs/decisions.md).
