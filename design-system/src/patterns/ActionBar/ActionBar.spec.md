@@ -100,7 +100,7 @@ Aucune règle propre : `Button`, `IconButton` et `Menu` suivent les tokens de de
 Tab passe d'un bouton à l'autre, dans l'ordre visuel. « … » s'ouvre avec Entrée, Espace ou flèche bas (spec Menu). Après la confirmation ou la fermeture du menu, le focus revient au bouton qui a lancé l'action.
 
 ## Accessibilité
-- Groupe `role="toolbar"` nommé « Actions », ou « Actions sur {subject} » si `subject` est fourni (dictionnaire `messages`, D-089), sauf en `empty` (un seul bouton). Le lecteur d'écran annonce ce nom en entrant dans le groupe : « Modifier » se lit donc avec son objet.
+- Groupe `role="group"` (Tab passe d'un bouton à l'autre) nommé « Actions », ou « Actions sur {subject} » si `subject` est fourni (dictionnaire `messages`, D-089), sauf en `empty` (un seul bouton). Le lecteur d'écran annonce ce nom en entrant dans le groupe : « Modifier » se lit donc avec son objet.
 - Nom accessible d'un bouton-icône : `label` (le même texte que l'info-bulle). Le bouton « … » : « Plus d'actions ».
 - L'attente est annoncée par `Button` et `IconButton` (`aria-busy`, D-105, D-107).
 

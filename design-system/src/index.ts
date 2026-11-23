@@ -34,3 +34,5 @@ export { List } from "./components/List/List";
 export type { ListProps, ListItemData, ListGroup } from "./components/List/List";
 export { SearchField } from "./components/SearchField/SearchField";
 export type { SearchFieldProps, SearchCriteria, SearchSuggestion, SearchTag } from "./components/SearchField/SearchField";
+export { ActionBar, arrangeActions } from "./patterns/ActionBar/ActionBar";
+export type { Action, ActionZone, ActionBarProps, ArrangedActions } from "./patterns/ActionBar/ActionBar";
