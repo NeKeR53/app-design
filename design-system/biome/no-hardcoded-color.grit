@@ -1,0 +1,8 @@
+// socle-ui/biome — couleur en dur dans une chaîne du code (JS, TS, JSX).
+// Même motif que la règle ESLint `socle/no-hardcoded-color`.
+language js
+
+or { JsStringLiteralExpression(), JsxString(), JsTemplateChunkElement() } as $text where {
+  $text <: r"(?s).*(?:#(?:[0-9a-fA-F]{3,4}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})\b|\b(?:rgba?|hsla?|oklch|oklab)\s*\().*",
+  register_diagnostic(span=$text, message="Couleur en dur : utilisez un token Socle (var(--fg), bg-surface…).")
+}

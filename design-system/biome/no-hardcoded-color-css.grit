@@ -1,0 +1,8 @@
+// socle-ui/biome — couleur en dur dans le CSS de l'app.
+// Même motif que `socle-check-css`.
+language css
+
+CssDeclaration() as $decl where {
+  $decl <: r"(?s).*(?:#(?:[0-9a-fA-F]{3,4}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})\b|\b(?:rgba?|hsla?|oklch|oklab)\s*\().*",
+  register_diagnostic(span=$decl, message="Couleur en dur : utilisez un token Socle (var(--fg), --surface…).")
+}

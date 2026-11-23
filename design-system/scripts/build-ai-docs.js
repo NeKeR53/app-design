@@ -50,7 +50,9 @@ Ce fichier est livré avec le package. Il décrit la version installée : lis-le
 ## Mise en place
 1. À la racine de l'app : \`import "${pkg.name}/styles.css";\` puis envelopper l'app dans \`<SocleProvider>\` (accent, densité, plateforme, préfixe de mémorisation, libellés traduits avec \`messages\`).
 2. Avec Tailwind, dans le CSS principal : \`@import "tailwindcss";\` puis \`@import "${pkg.name}/theme.css";\` (seules les couleurs Socle existent).
-3. Garde-fous : \`import socle from "${pkg.name}/eslint-config";\` dans \`eslint.config.js\`, et \`npx socle-check-css "src/**/*.css"\` pour le CSS.
+3. Garde-fous, selon le linter de l'app :
+   - **Biome** (2.6 ou plus récent) : \`"extends": ["${pkg.name}/biome"]\` dans \`biome.json\`. \`biome lint\` (ou \`biome check\`) signale les imports interdits (librairie headless, chemins internes de \`${pkg.name}\`), \`style\` et \`className\` sur un composant Socle, et les couleurs en dur dans le code et le CSS. Limite : la règle reconnaît un composant Socle par son nom ; un import renommé (\`Button as B\`) lui échappe. Une exception justifiée : \`// biome-ignore lint/plugin: <raison>\`.
+   - **ESLint** : \`import socle from "${pkg.name}/eslint-config";\` dans \`eslint.config.js\`, et \`npx socle-check-css "src/**/*.css"\` pour le CSS.
 
 ## Exports
 | Nom | Type | Rôle | Spec |

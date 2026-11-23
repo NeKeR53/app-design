@@ -1,7 +1,7 @@
 import tseslint from "typescript-eslint";
 
 export default tseslint.config(
-  { ignores: ["dist", "storybook-static", "node_modules", "docs/validation"] },
+  { ignores: ["dist", "storybook-static", "node_modules", "docs/validation", "scripts/biome-fixtures"] },
   ...tseslint.configs.recommended,
   {
     files: ["src/**/*.{ts,tsx}"],

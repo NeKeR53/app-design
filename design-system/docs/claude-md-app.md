@@ -26,7 +26,7 @@ Le dossier `ai/` est généré par `npm run build` (`scripts/build-ai-docs.js`) 
 
 Le mode `/design install` pose la question de la source :
 - `npm` : le package est publié sur un registre (public ou privé) ; la CI de l'app peut l'installer.
-- `yalc` : le dépôt de référence est sur la même machine et le package n'est pas publié. Dans ce dépôt : `npm run build` puis `npx yalc publish --private` (le package est marqué `private`) ; dans l'app : `npx yalc add socle-ui` puis `npm install`, et `.yalc` et `yalc.lock` dans le `.gitignore` de l'app. Ensuite, après chaque changement du design system : `npm run publish:local` (build, puis `yalc push --private --update` : la copie arrive dans le `.yalc` de chaque app, puis leur gestionnaire de paquets la réinstalle).
+- `yalc` : le dépôt de référence est sur la même machine et le package n'est pas publié. Marche à suivre : section « Installer dans une app par yalc » du [README](../README.md).
 - `git` : un tag de version (`git+<url>#v<version>`).
 
 Pas de `file:` ni de `npm link` : les liens symboliques font charger deux copies de React.
@@ -40,9 +40,15 @@ Pas de `file:` ni de `npm link` : les liens symboliques font charger deux copies
    @import "tailwindcss";
    @import "socle-ui/theme.css";
    ```
-4. Garde-fous dans `eslint.config.js` :
-   ```js
-   import socle from "socle-ui/eslint-config";
-   export default [...socle /* , config de l'app */];
-   ```
-5. CSS de l'app : `npx socle-check-css "src/**/*.css"`.
+4. Garde-fous, selon le linter de l'app.
+   - Avec Biome (2.6 ou plus récent), dans `biome.json` :
+     ```json
+     { "extends": ["socle-ui/biome"] }
+     ```
+     `biome lint` vérifie aussi le CSS : `socle-check-css` n'est pas utile. Une exception justifiée s'écrit `// biome-ignore lint/plugin: <raison>`.
+   - Avec ESLint, dans `eslint.config.js` :
+     ```js
+     import socle from "socle-ui/eslint-config";
+     export default [...socle /* , config de l'app */];
+     ```
+     Puis, pour le CSS de l'app : `npx socle-check-css "src/**/*.css"`.
