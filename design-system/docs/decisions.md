@@ -1365,7 +1365,7 @@
 ## D-182 — DetailPanel : champ typé
 - Date : 2026-11-23
 - Portée : DetailPanel
-- Décision : un champ = `{ id?, label, value, type?, hideEmpty?, icon?, action?, details? }`, plus les options de format des valeurs typées de ListPage (P8). La valeur est rendue par le même formateur que les colonnes de ListPage : un type rend la même chose dans une liste et dans le panneau. Valeur vide : « — » (D-058), ou ligne masquée avec `hideEmpty`. `icon`, `action` (un des trois types de D-059) et `details` (ligne qui s'ouvre, D-060) sont ceux de `PropertyRow`. Le champ devient une `PropertyRow`.
+- Décision : un champ = `{ id?, label, value, type?, hideEmpty?, icon?, action?, details? }`, plus les options de format `ValueFormat` (D-170). La valeur est rendue par `FormattedValue`, comme les colonnes de ListPage : un type rend la même chose dans une liste et dans le panneau. Valeur vide : « — » (D-058), ou ligne masquée avec `hideEmpty`. `icon`, `action` (un des trois types de D-059) et `details` (ligne qui s'ouvre, D-060) sont ceux de `PropertyRow`. Le champ devient une `PropertyRow`.
 - Raison : une seule définition des types pour tout le design system ; aucune mise en forme dans l'app. Validation : par délégation de l'utilisateur, 2026-11-23.
 - Options écartées : formateur propre au panneau ; valeur `ReactNode` seule (l'app formate elle-même).
 - Validation : docs/validation/components/DetailPanel-v2.html

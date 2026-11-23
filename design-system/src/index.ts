@@ -32,6 +32,7 @@ export { AppShell } from "./patterns/AppShell/AppShell";
 export type { AppShellProps, TabbarEntry } from "./patterns/AppShell/AppShell";
 export { DetailPanel, PropertyRow } from "./patterns/DetailPanel/DetailPanel";
 export type { DetailPanelProps, DetailPanelSectionProps, PropertyRowProps, PropertyAction } from "./patterns/DetailPanel/DetailPanel";
+export type { DetailPanelComposedProps, DetailPanelDeclarativeProps, DetailHeader, DetailSection, DetailField, SectionSummary } from "./patterns/DetailPanel/DetailPanel";
 export { Table } from "./components/Table/Table";
 export type { TableProps, TableColumn, TableRowAction } from "./components/Table/Table";
 export { List } from "./components/List/List";

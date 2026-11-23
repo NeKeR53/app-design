@@ -15,6 +15,12 @@ Versions selon semver (règle 6 du skill design) : une nouvelle option facultati
 ### Interne
 - `ActionBar` : la logique de lancement (confirmation, attente, `onDone`, `onError`) passe dans un hook interne `useActionRunner`, réutilisé par les actions de ligne de `ListPage`. Rendu et API inchangés.
 
+### Ajouté
+- `DetailPanel` : forme déclarative, facultative (D-180). L'app passe `header` (titre, sous-titre, statut, actions ; D-181) et `sections` (champs typés rendus par `FormattedValue`, contenu libre, texte vide ; D-182, D-183). Le panneau gère le chargement, l'erreur, l'élément introuvable et le vide (`isLoading`, `hasError`, `onRetry`, `isNotFound`, `emptyMessage` ; D-184). Actions d'en-tête et de section par `ActionBar`, règle de la zone `section` ; `onActionDone` et `onActionError`. Types exportés : `DetailHeader`, `DetailSection`, `DetailField`, `SectionSummary`, `DetailPanelComposedProps`, `DetailPanelDeclarativeProps`.
+- `DetailPanel.Section` : options facultatives `summary` (état court lisible même repliée), `actions` et `defaultCollapsed` (D-183).
+- `DetailPanel` (forme à composants) : option facultative `emptyMessage`.
+- Libellés internes `detailLoadErrorTitle`, `detailLoadErrorText`, `detailNotUpdated`, `detailNotFoundTitle`, `detailNotFoundText`, `detailSectionEmpty`.
+
 ## [0.2.0] — 2026-11-23
 
 Lot 1 de la migration d'Alfred : bouton à texte, actions, modale, champs, ComboBox, notifications et petits éléments d'affichage (décisions D-100 à D-169). Version mineure : tout est nouveau ou facultatif, rien ne casse.
