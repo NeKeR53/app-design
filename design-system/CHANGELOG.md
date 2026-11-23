@@ -4,6 +4,18 @@ Versions selon semver (règle 6 du skill design) : une nouvelle option facultati
 
 ## [Non publié]
 
+### Ajouté (lot 4 : Disclosure, InlineEdit, StepList, menu contextuel, Popover — D-320 à D-329)
+- `Disclosure` : bloc repliable avec un titre, même forme que les sections de `Sidebar` et `DetailPanel` ; replié par défaut, contenu créé à l'ouverture, état mémorisé avec `id` (D-320, D-321).
+- `InlineEdit` : texte modifiable sur place, sur une ou plusieurs lignes ; fin contour au survol (D-322) ; clic, Entrée ou F2 ouvrent, Entrée (ou Mod+Entrée) et clic à côté enregistrent, Échap annule ; promesse rejetée : saisie gardée avec un message (D-323) ; `isRequired`, `validate`, `placeholder`, `isEditing` (D-324).
+- `StepList` : étapes numérotées, quatre états (à faire, en cours, fait, erreur), horizontal ou vertical ; retour aux étapes passées avec `onSelect` ; resserrement sous 560 et 380 px (D-325, D-326). Fonction `stepStatus` interne.
+- `Popover` : volet flottant ancré à un bouton, sans voile ; titre facultatif avec × ; largeurs `sm`, `md`, `lg` ; placements `bottom start`, `bottom end`, `right start` ; fermeture et focus de la modale, rebond après saisie, `isBusy` (D-328, D-329).
+- `Menu` : options facultatives `title`, `anchor` (point ou élément), `isOpen`, `onOpenChange` ; `trigger` devient facultatif avec `anchor`. Crochet `useContextMenu()` : clic droit, Maj+F10 et touche Menu ; un menu ouvert à un point se ferme au défilement (D-327).
+- Libellés internes `editValue`, `stepDone`, `stepError` dans le dictionnaire `messages`.
+- `DetailPanel` (spec) : la valeur d'une `PropertyRow` peut être un `InlineEdit` (D-324) ; `Disclosure` permis dans une section (D-321).
+
+### Modifié
+- `Dialog` : `useEscapeFlag` et `FocusFirstField` sont exportés du module (interne, non exporté par `index.ts`) pour `Popover`. Aucun changement de comportement.
+
 ## [0.2.0] — 2026-11-23
 
 Lot 1 de la migration d'Alfred : bouton à texte, actions, modale, champs, ComboBox, notifications et petits éléments d'affichage (décisions D-100 à D-169). Version mineure : tout est nouveau ou facultatif, rien ne casse.

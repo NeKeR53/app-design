@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from "@storybook/react-vite";
 import { useState } from "react";
 import type { Key } from "react-aria-components";
 import { expect, fn, userEvent, waitFor, within } from "storybook/test";
-import { Menu } from "./Menu";
+import { Menu, useContextMenu } from "./Menu";
 import { IconButton } from "../IconButton/IconButton";
 import { MoreHorizontal, Plus, Search, Settings } from "../../icons";
 
@@ -111,5 +111,98 @@ export const Placement: Story = {
     await expect(items.find((i) => /Nouveau/.test(i.textContent ?? ""))).toHaveAttribute("aria-keyshortcuts");
     const menu = body().getByRole("menu").getBoundingClientRect();
     await expect(menu.right).toBeLessThanOrEqual(window.innerWidth);
+  },
+};
+
+/* ---------- Ouverture à un point, au clic droit (D-327) ---------- */
+const onOpenRow = fn();
+const rows = ["Refonte du site", "Application mobile", "Rapport annuel"];
+
+function RowsWithContextMenu() {
+  const { targetProps, menuProps } = useContextMenu();
+  const [target, setTarget] = useState(rows[0]!);
+  return (
+    <div className="w-80 border border-line">
+      {rows.map((name) => (
+        <div
+          key={name}
+          tabIndex={0}
+          className="flex h-(--row-h) items-center border-b border-line px-3 outline-none last:border-b-0 focus-visible:bg-hover"
+          onContextMenu={(e) => {
+            setTarget(name);
+            targetProps.onContextMenu(e);
+          }}
+          onKeyDown={(e) => {
+            setTarget(name);
+            targetProps.onKeyDown(e);
+          }}
+        >
+          {name}
+        </div>
+      ))}
+      <Menu label={`Actions sur « ${target} »`} title={target} {...menuProps}>
+        <Menu.Item label="Ouvrir" onAction={() => onOpenRow(target)} />
+        <Menu.Item label="Renommer…" />
+        <Menu.Separator />
+        <Menu.Item label="Supprimer…" danger />
+      </Menu>
+    </div>
+  );
+}
+
+/** Clic droit : le menu s'ouvre au point du clic, avec l'objet en titre ; un choix le ferme (D-327). */
+export const ClicDroit: Story = {
+  render: () => <RowsWithContextMenu />,
+  play: async ({ canvasElement }) => {
+    const row = within(canvasElement).getByText("Application mobile");
+    const r = row.getBoundingClientRect();
+    await userEvent.pointer({ keys: "[MouseRight]", target: row, coords: { clientX: r.left + 40, clientY: r.top + 10 } });
+    const menu = await waitFor(() => body().getByRole("menu", { name: "Actions sur « Application mobile »" }));
+    const box = menu.getBoundingClientRect();
+    await expect(Math.abs(box.left - (r.left + 40))).toBeLessThan(12);
+    await expect(body().getAllByText("Application mobile").length).toBe(2);
+    await waitFor(() => expect(document.activeElement).toHaveTextContent("Ouvrir"));
+    await userEvent.keyboard("{Enter}");
+    await expect(onOpenRow).toHaveBeenCalledWith("Application mobile");
+    await waitFor(() => expect(body().queryByRole("menu")).toBeNull());
+  },
+};
+
+/** Maj+F10 sur la ligne : le menu s'ouvre sous elle ; Échap le ferme (D-327). */
+export const ClavierContextuel: Story = {
+  render: () => <RowsWithContextMenu />,
+  play: async () => {
+    await userEvent.tab();
+    await userEvent.keyboard("{Shift>}{F10}{/Shift}");
+    await waitFor(() => body().getByRole("menu", { name: "Actions sur « Refonte du site »" }));
+    await userEvent.keyboard("{Escape}");
+    await waitFor(() => expect(body().queryByRole("menu")).toBeNull());
+  },
+};
+
+/** Ouvert à un point : un défilement le ferme (D-327). */
+export const FermeAuDefilement: Story = {
+  render: () => <RowsWithContextMenu />,
+  play: async ({ canvasElement }) => {
+    const row = within(canvasElement).getByText("Rapport annuel");
+    await userEvent.pointer({ keys: "[MouseRight]", target: row });
+    await waitFor(() => body().getByRole("menu"));
+    window.dispatchEvent(new Event("scroll"));
+    await waitFor(() => expect(body().queryByRole("menu")).toBeNull());
+  },
+};
+
+/** Titre facultatif sur un menu à bouton. */
+export const AvecTitre: Story = {
+  render: () => (
+    <Menu label="Actions sur rapport.pdf" title="rapport.pdf" trigger={<IconButton icon={<MoreHorizontal />} label="Plus d'actions" />}>
+      <Menu.Item label="Ouvrir" />
+      <Menu.Item label="Télécharger" />
+    </Menu>
+  ),
+  play: async ({ canvasElement }) => {
+    await userEvent.click(within(canvasElement).getByRole("button", { name: "Plus d'actions" }));
+    await waitFor(() => expect(body().getByText("rapport.pdf")).toBeVisible());
+    await userEvent.keyboard("{Escape}");
   },
 };

@@ -1,13 +1,13 @@
 # Menu
-Statut : validé (2026-11-21) — Version : depuis 0.1.0
-Validation : docs/validation/components/Menu-v1.html
+Statut : validé (2026-11-21) — Version : depuis 0.1.0 ; ouverture à un point et titre depuis la version qui suit 0.2.0
+Validation : docs/validation/components/Menu-v1.html ; docs/validation/components/Divers-v1.html (D-327, par délégation de l'utilisateur, 2026-11-23)
 
 ## Rôle
-Liste d'actions ou de choix qui s'ouvre depuis un bouton : « … » d'un élément, « Plus d'actions », menu du compte, liste « Toutes les vues ».
+Liste d'actions ou de choix qui s'ouvre depuis un bouton : « … » d'un élément, « Plus d'actions », menu du compte, liste « Toutes les vues ». Il s'ouvre aussi au clic droit sur une zone (menu contextuel), au point du clic (D-327).
 Ne pas l'utiliser pour :
 - choisir une valeur dans un formulaire : prendre `Select` ;
 - naviguer entre les pages : prendre la `Sidebar` ;
-- un contenu riche (texte, champ, aperçu) : prendre `Popover`.
+- un contenu riche (texte, champ, aperçu) : prendre `Popover` (D-328).
 
 ## Anatomie
 1. Conteneur flottant (obligatoire) : fond `--surface-raised`, bord `--line`, ombre `--shadow-md`, rayon de 12 px (D-040), marge intérieure de 4 px.
@@ -19,6 +19,7 @@ Ne pas l'utiliser pour :
    5. chevron « › », s'il ouvre un sous-menu, sur un seul niveau (D-051).
 3. Séparateur (facultatif) : trait `--line` entre deux groupes.
 4. Titre de groupe (facultatif) : texte `--fs-sm`, `--fg-3`, non cliquable.
+5. Titre du menu (facultatif, `title`) : l'objet visé (« rapport.pdf »), en tête, même style que le titre de groupe ; coupé avec une ellipse (D-327).
 
 ## Variantes
 Aucune variante du conteneur. Élément danger (option `danger`) : libellé et icône en `--danger`, toujours en dernier après un séparateur, réservé aux actions destructrices, avec confirmation (D-049).
@@ -26,7 +27,7 @@ Aucune variante du conteneur. Élément danger (option `danger`) : libellé et i
 ## Options
 | Option | Type | Défaut | Description |
 |---|---|---|---|
-| `trigger` | élément focusable | — (obligatoire) | Bouton qui ouvre le menu, le plus souvent un `IconButton`. |
+| `trigger` | élément focusable | — (obligatoire sans `anchor`) | Bouton qui ouvre le menu, le plus souvent un `IconButton`. |
 | `items` | `Menu.Item`, `Menu.Section`, `Menu.Separator` | — (obligatoire) | Contenu du menu. |
 | `Menu.Item` : `label`, `onAction` | — | — (obligatoires) | Élément d'action. |
 | `Menu.Item` : `icon` | `ReactNode` | aucune | Icône facultative ; place réservée si une autre icône existe dans le menu (D-047). |
@@ -35,6 +36,10 @@ Aucune variante du conteneur. Élément danger (option `danger`) : libellé et i
 | `Menu.Item` : `isDisabled` | `boolean` | `false` | Élément désactivé. |
 | `Menu.Section` : `title`, `selectionMode` | `string`, `"single" \| "multiple"` | aucun | Groupe d'éléments ; avec `selectionMode`, les éléments sont des choix cochables. |
 | `placement` | `"bottom start" \| "bottom end" \| "top start" \| "top end"` | `"bottom start"` | Côté préféré ; il change si la place manque. |
+| `title` | `string` | aucun | Titre en tête du menu : l'objet visé (D-327). |
+| `anchor` | `{ x, y }` ou référence d'élément | aucune | Ouvre le menu à un point ou contre un élément, sans `trigger` (D-327). Avec `isOpen` et `onOpenChange`. |
+| `isOpen`, `onOpenChange` | `boolean`, `(v) => void` | aucun | Ouverture pilotée par l'app. |
+| `useContextMenu()` | crochet | — | Rend `targetProps` (à poser sur la zone : clic droit, Maj+F10, touche Menu) et `menuProps` (à poser sur `Menu`) (D-327). |
 
 ## Exclus
 - Pas de deuxième ligne de description dans un élément dans cette version.
@@ -60,6 +65,10 @@ Aucune variante du conteneur. Élément danger (option `danger`) : libellé et i
 | Se place du côté où il y a de la place ; jamais coupé par un bord (layout-rules) | verrouillé | `Placement` |
 | Ouverture et fermeture sans animation (D-026) | verrouillé | `Ouverture` |
 | Sous-menu : au survol après 200 ms, au clic ou avec flèche droite ; à droite, ou à gauche si la place manque ; un seul niveau (D-051) | verrouillé | `SousMenu` |
+| Clic droit sur une zone branchée par `useContextMenu` : le menu s'ouvre au point du clic, focus sur le premier élément (D-327) | verrouillé | `ClicDroit` |
+| Maj+F10 ou touche Menu sur la zone : le menu s'ouvre sous elle (D-327) | verrouillé | `ClavierContextuel` |
+| Ouvert à un point : un défilement ou un redimensionnement le ferme (D-327) | verrouillé | `FermeAuDefilement` |
+| Titre facultatif en tête du menu (D-327) | réglable par l'app (`title`) | `AvecTitre` |
 
 ## Contenu
 - Libellé : un verbe à l'infinitif pour une action (« Renommer »), un nom pour un choix (« Date de modification »). Pas de point de suspension, sauf si l'action ouvre une fenêtre qui demande encore une saisie (« Renommer… »).
@@ -69,7 +78,7 @@ Aucune variante du conteneur. Élément danger (option `danger`) : libellé et i
 Hauteur d'élément `--row-h` (34 px en web, 28 px en desktop). Texte `--fs-md`.
 
 ## Clavier
-Flèches haut et bas : élément suivant ou précédent, en boucle. Origine et Fin. Une lettre : premier élément qui commence par elle. Entrée ou Espace : action. Échap : ferme. Sous-menu : flèche droite l'ouvre, flèche gauche ou Échap le referme et rend le focus à l'élément parent (D-051).
+Flèches haut et bas : élément suivant ou précédent, en boucle. Origine et Fin. Une lettre : premier élément qui commence par elle. Entrée ou Espace : action. Échap : ferme. Sur une zone branchée par `useContextMenu` : Maj+F10 ou touche Menu ouvrent le menu (D-327). Sous-menu : flèche droite l'ouvre, flèche gauche ou Échap le referme et rend le focus à l'élément parent (D-051).
 
 ## Accessibilité
 - Rôles `menu`, `menuitem`, `menuitemcheckbox` ou `menuitemradio` (React Aria `Menu`).
@@ -84,13 +93,13 @@ Sur mobile, le menu reste un menu flottant ; ses éléments passent à 44 px de 
 Sans objet.
 
 ## Placement
-Ouvert depuis un `IconButton`, un `Button` ou un élément de `Sidebar`. Jamais ouvert au survol seul.
+Ouvert depuis un `IconButton`, un `Button` ou un élément de `Sidebar`, ou au clic droit sur une ligne, un élément ou une zone de travail (D-327). Un menu contextuel reprend les actions du « … » de l'élément : jamais d'action qu'on ne trouve qu'au clic droit. Jamais ouvert au survol seul.
 
 ## Composition
 Contient `Separator` et, au besoin, un sous-menu d'un seul niveau (D-051). Utilisé par `Tabs` (toutes les vues), `Sidebar` (« … », compte) et `AppShell` (« Plus d'actions »).
 
 ## Décisions
-D-006, D-026, D-032, D-040, D-047, D-048, D-049, D-050, D-051
+D-006, D-026, D-032, D-040, D-047, D-048, D-049, D-050, D-051, D-327
 
 ## Questions ouvertes
 Aucune.

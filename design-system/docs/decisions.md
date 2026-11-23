@@ -1273,3 +1273,83 @@
 - Raison : comportements montrés dans la page de validation v1 et repris de la barre de recherche (D-071) et du Menu, pour un seul clavier dans le design system.
 - Options écartées : liste ouverte au focus (Alfred) ; champ sans chevron (Combobox d'Alfred).
 - Validation : docs/validation/components/ComboBox-v1.html
+
+## D-320 — Disclosure : même titre que les sections, contenu créé à l'ouverture
+- Date : 2026-11-23
+- Portée : Disclosure
+- Décision : `Disclosure` est un bloc repliable avec un titre : texte `--fs-sm` en `--fg-3`, puis chevron vers le bas, tourné vers la droite une fois replié ; même forme que les sections de `Sidebar` et de `DetailPanel` (D-061). Un clic, Entrée ou Espace sur le titre replie ou déplie ; replié par défaut ; aucune animation (D-026). Le contenu n'est créé qu'à l'ouverture. Avec un `id`, l'état est mémorisé (comme D-061).
+- Raison : choix par délégation de l'utilisateur ; une seule forme de repli dans le design system.
+- Options écartées : chevron devant et titre plein (forme d'Alfred) ; bloc encadré ; apparence `subtle` ; élément natif `<details>`.
+- Validation : docs/validation/components/Divers-v1.html (par délégation de l'utilisateur, 2026-11-23)
+
+## D-321 — Disclosure : un bloc dans un contenu, pas une section
+- Date : 2026-11-23
+- Portée : Disclosure, Sidebar, DetailPanel
+- Décision : `Sidebar.Section` et `DetailPanel.Section` restent les sections repliables de leur zone. `Disclosure` sert un bloc secondaire dans une section ou dans un contenu : « Options avancées » d'un formulaire, détails d'une erreur, éléments repliés d'un panneau. Pas de Disclosure à la place d'une section, ni de Disclosure dans un Disclosure.
+- Raison : éviter deux façons de découper le même panneau.
+- Options écartées : remplacer les sections par Disclosure.
+- Validation : docs/validation/components/Divers-v1.html (par délégation de l'utilisateur, 2026-11-23)
+
+## D-322 — InlineEdit : fin contour au survol, sans icône
+- Date : 2026-11-23
+- Portée : InlineEdit
+- Décision : une valeur modifiable sur place garde son texte et sa taille. Au survol, un bord de 1 px `--line-strong` l'entoure (rayon 8 px, D-040) ; au focus clavier, l'anneau accent. Ni fond, ni icône, ni curseur changé. À l'ouverture, le cadre du champ (D-130) prend la même place : le texte ne bouge pas. Valeur vide : texte d'invite en `--fg-3`.
+- Raison : choix par délégation de l'utilisateur ; un panneau de propriétés reste calme au repos.
+- Options écartées : fond et crayon au survol ; souligné pointillé permanent.
+- Validation : docs/validation/components/Divers-v1.html (par délégation de l'utilisateur, 2026-11-23)
+
+## D-323 — InlineEdit : ouvrir, enregistrer, annuler
+- Date : 2026-11-23
+- Portée : InlineEdit
+- Décision : un clic, Entrée ou F2 ouvre la saisie (un bouton caché « Modifier « libellé » » porte le clavier). Entrée enregistre (Mod+Entrée en plusieurs lignes, où Entrée passe à la ligne). Un clic à côté ou Tab enregistre aussi. Échap annule. Une valeur inchangée ferme sans appeler `onSave`. Pendant la promesse de `onSave`, le champ passe en lecture seule. Une promesse rejetée laisse la saisie ouverte, avec sa valeur et le message `actionFailed` sous le champ. La vérification (`isRequired`, `validate`) bloque l'enregistrement et s'affiche sous le champ (D-132). Après Entrée ou Échap, le focus revient à la valeur.
+- Raison : même clavier que les champs et les tableurs ; on ne perd jamais une saisie.
+- Options écartées : bouton « Enregistrer » et « Annuler » à côté du champ ; clic à côté qui annule.
+- Validation : docs/validation/components/Divers-v1.html (par délégation de l'utilisateur, 2026-11-23)
+
+## D-324 — InlineEdit : du texte seulement ; place dans le panneau de détail
+- Date : 2026-11-23
+- Portée : InlineEdit, DetailPanel
+- Décision : InlineEdit modifie un texte, sur une ligne (`mode="line"`) ou plusieurs (`mode="multiline"`, de 2 à 10 lignes). Un choix dans une liste reste une action de ligne avec menu (D-059). Dans `DetailPanel`, la valeur d'une `PropertyRow` peut être un `InlineEdit` : c'est la seule saisie permise dans une ligne.
+- Raison : test du générique ; un éditeur libre (`renderEditor` d'Alfred, zone de mentions) n'a pas de forme commune à toutes les apps.
+- Options écartées : éditeur libre fourni par l'app (solution locale dans Alfred).
+- Validation : docs/validation/components/Divers-v1.html (par délégation de l'utilisateur, 2026-11-23)
+
+## D-325 — StepList : pastilles rondes reliées par un trait ; quatre états
+- Date : 2026-11-23
+- Portée : StepList
+- Décision : chaque étape est une pastille ronde de 22 px, puis un titre et une aide facultative (`--fs-sm`, `--fg-3`). Un trait de 1 px `--line-strong` relie les étapes. États : à faire (bord `--line-strong`, numéro `--fg-3`, titre `--fg-2`) ; en cours (pastille pleine `--fg`, numéro `--surface`, titre `--fg`, comme le bouton principal D-102) ; fait (bord et coche `--success`) ; erreur (pastille pleine `--danger`, « ! », titre `--danger`). Les états viennent de `current`, sauf un `status` donné par étape. Deux orientations : `horizontal` (défaut) et `vertical`.
+- Raison : choix par délégation de l'utilisateur ; sobre, et l'état reste lisible sans couleur grâce à la coche et au « ! ».
+- Options écartées : cartes encadrées (forme d'Alfred) ; texte seul.
+- Validation : docs/validation/components/Divers-v1.html (par délégation de l'utilisateur, 2026-11-23)
+
+## D-326 — StepList : on revient en arrière, on n'avance pas ; largeur étroite
+- Date : 2026-11-23
+- Portée : StepList
+- Décision : avec `onSelect`, une étape faite ou en erreur devient un bouton pour y revenir. Une étape à faire n'est jamais cliquable : on avance par les boutons du parcours. Sans `onSelect`, la liste n'est qu'un repère. En horizontal, l'aide disparaît sous 560 px de large ; sous 380 px, seul le titre de l'étape en cours reste, les autres gardent leur pastille.
+- Raison : un parcours vérifie chaque étape avant la suivante ; la règle remplace l'option `isAvailable` d'Alfred.
+- Options écartées : `isAvailable` par étape ; saut vers une étape à faire.
+- Validation : docs/validation/components/Divers-v1.html (par délégation de l'utilisateur, 2026-11-23)
+
+## D-327 — Menu : ouverture à un point ou au clic droit, titre facultatif
+- Date : 2026-11-23
+- Portée : Menu
+- Décision : pas de nouveau composant de menu. `Menu` reçoit des options facultatives : `title` (l'objet visé, en tête du menu, `--fs-sm`, `--fg-3`), `isOpen` et `onOpenChange` (ouverture pilotée), `anchor` (un point `{ x, y }` ou un élément) ; avec `anchor`, `trigger` n'est plus utile. Le crochet `useContextMenu()` branche le clic droit et Maj+F10 (ou la touche Menu) sur une zone : le menu s'ouvre au point du clic, ou sous l'élément au clavier. Un menu ouvert à un point se ferme au défilement et au redimensionnement. Le reste suit la spec du Menu (D-047 à D-051).
+- Raison : choix par délégation de l'utilisateur ; un seul menu dans le design system ; React Aria place, focalise et ferme déjà.
+- Options écartées : composant `ContextMenu` à part ; reprise d'`AnchoredMenu` et de son placement maison (largeur fixe de 252 px, `data-menu-anchor`).
+- Validation : docs/validation/components/Divers-v1.html (par délégation de l'utilisateur, 2026-11-23)
+
+## D-328 — Popover : volet flottant ancré, sans voile
+- Date : 2026-11-23
+- Portée : Popover
+- Décision : `Popover` est un volet flottant ouvert depuis un bouton : la page reste visible autour ; un clic à côté ferme d'abord le volet (D-329). Surface `--surface-raised`, bord `--line`, ombre `--shadow-md`, rayon 12 px (D-040). Titre facultatif, avec × quand il est là. Trois largeurs : `sm` 280 px, `md` 360 px (défaut), `lg` 440 px ; jamais plus large que la fenêtre moins 16 px. Placement : sous le bouton, aligné au début ou à la fin, au-dessus si la place manque, ou à droite (`right start`) pour un bouton de la sidebar. Ouverture et fermeture sans animation (D-026).
+- Raison : choix par délégation de l'utilisateur ; les specs de Menu, Tooltip et Dialog citent déjà un Popover pour le contenu riche.
+- Options écartées : reprise d'`AnchoredPanel` (placement maison) ; voile sur la page.
+- Validation : docs/validation/components/Divers-v1.html (par délégation de l'utilisateur, 2026-11-23)
+
+## D-329 — Popover : fermeture et focus de la modale
+- Date : 2026-11-23
+- Portée : Popover
+- Décision : Échap, le × et un clic à côté ferment le Popover. Après une saisie, un clic à côté est refusé : le volet rebondit (D-122). Échap ferme toujours. `isBusy` refuse toute fermeture. À l'ouverture, le focus va au premier champ, sinon au volet ; à la fermeture, il revient au bouton.
+- Raison : une seule règle de fermeture pour les surfaces qui contiennent une saisie.
+- Options écartées : clic à côté qui ferme toujours.
+- Validation : docs/validation/components/Divers-v1.html (par délégation de l'utilisateur, 2026-11-23)

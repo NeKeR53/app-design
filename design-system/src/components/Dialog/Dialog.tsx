@@ -106,7 +106,7 @@ export function useAriaBusy(busy: boolean) {
 }
 
 /** Vrai pendant la frappe d'Échap : écouté en capture, remis à faux juste après. */
-function useEscapeFlag(open: boolean) {
+export function useEscapeFlag(open: boolean) {
   const flag = useRef(false);
   useEffect(() => {
     if (!open) return;
@@ -124,7 +124,7 @@ function useEscapeFlag(open: boolean) {
 const FIELD = "input:not([type=hidden]):not(:disabled), textarea:not(:disabled), select:not(:disabled), [role=combobox]:not([aria-disabled=true])";
 
 /** Focus à l'ouverture (D-125) : `autoFocus` (déjà posé), sinon le premier champ du corps ; sinon React Aria focalise la modale. */
-function FocusFirstField({ body }: { body: RefObject<HTMLDivElement | null> }) {
+export function FocusFirstField({ body }: { body: RefObject<HTMLDivElement | null> }) {
   useEffect(() => {
     const el = body.current;
     if (!el) return;

@@ -114,6 +114,10 @@ export interface SocleMessages {
   typeMoreChars: (n: number) => string;
   resultsUnavailable: string;
   noResults: string;
+  /* InlineEdit, StepList (D-323, D-325) */
+  editValue: (label: string) => string;
+  stepDone: string;
+  stepError: string;
 }
 
 const s = (n: number) => (n > 1 ? "s" : "");
@@ -217,4 +221,7 @@ export const frenchMessages: SocleMessages = {
   typeMoreChars: (n) => `Tapez au moins ${n} caractères.`,
   resultsUnavailable: "Résultats indisponibles",
   noResults: "Aucun résultat",
+  editValue: (l) => `Modifier « ${l} »`,
+  stepDone: "fait",
+  stepError: "erreur",
 };
