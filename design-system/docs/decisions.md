@@ -1273,3 +1273,67 @@
 - Raison : comportements montrés dans la page de validation v1 et repris de la barre de recherche (D-071) et du Menu, pour un seul clavier dans le design system.
 - Options écartées : liste ouverte au focus (Alfred) ; champ sans chevron (Combobox d'Alfred).
 - Validation : docs/validation/components/ComboBox-v1.html
+
+## D-270 — Table dense : des options de Table, pas de second composant
+- Date : 2026-11-23
+- Portée : Table
+- Décision : le tableau dense d'Alfred (`DataGrid`, `DataTable`) devient un jeu d'options facultatives de `Table` : `density` (D-271), `groupBy` (D-272), `rowDescription` (D-273). Deux corrections s'y ajoutent : largeur étroite respectée (D-274) et info-bulle d'en-tête (D-275). Les cases de sélection (D-065), les séparateurs d'en-tête (D-067) et l'absence de cadre (D-062) existent déjà. Sans ces options, `Table` ne change pas. L'édition dans la case, les colonnes figées et la virtualisation restent exclues.
+- Raison : un seul tableau à apprendre et à maintenir ; les besoins d'Alfred sont des réglages, pas un autre composant.
+- Options écartées : un composant `DataGrid` séparé ; une variante `appearance="plain"` (c'est déjà le seul rendu).
+- Validation : par délégation de l'utilisateur, 2026-11-23 — docs/validation/components/Table-v2.html
+
+## D-271 — Table : densité compacte
+- Date : 2026-11-23
+- Portée : Table
+- Décision : `density="compact"` donne des lignes de 25 px, un en-tête de 28 px et une marge de case de 8 px, en web comme en desktop. Le texte garde sa taille (`--fs-md`, en-tête `--fs-sm`). Par défaut (`"default"`), la ligne reste à `--row-h` (D-063).
+- Raison : journaux, variables et inventaires montrent beaucoup de lignes ; 25 px reste lisible et cliquable à la souris.
+- Options écartées : réduire aussi le texte ; une densité par plateforme seulement.
+- Validation : par délégation de l'utilisateur, 2026-11-23 — docs/validation/components/Table-v2.html
+
+## D-272 — Table : lignes de groupe en texte, repliables
+- Date : 2026-11-23
+- Portée : Table
+- Décision : `groupBy(row)` range les lignes sous une ligne de groupe, dans l'ordre de leur première apparition ; l'ordre des lignes dans un groupe suit `rows` (l'app trie). La ligne de groupe occupe toute la largeur : chevron de 12 px en `--fg-3`, nom en `--fw-semibold`, puis « · n lignes » en `--fg-3`, sans fond (D-064). Clic, Entrée ou Espace replient ou déplient le groupe, sans animation (D-026). Un groupe replié garde sa ligne de titre. `defaultCollapsedGroups` replie des groupes au départ ; l'état replié est mémorisé par tableau (D-007). La ligne de groupe ne se sélectionne pas et ne s'ouvre pas.
+- Raison : forme A de la page de validation ; le chevron montre qu'on peut replier, sans fond de ligne.
+- Options écartées : B, bande teintée (fond de ligne, contre D-064) ; C, texte sans chevron (Alfred : rien n'indique le repli).
+- Validation : par délégation de l'utilisateur, 2026-11-23 — docs/validation/components/Table-v2.html
+
+## D-273 — Table : lignes doubles
+- Date : 2026-11-23
+- Portée : Table
+- Décision : `rowDescription(row)` ajoute une précision sous le nom, dans la colonne principale, en `--fs-sm` et `--fg-3`, coupée par « … » avec info-bulle. Toutes les lignes passent alors à `--row-h` + 12 px (46 px web, 40 px desktop, 37 px compact). Les autres colonnes restent sur une ligne, centrées en hauteur.
+- Raison : nom et courriel, fichier et chemin : deux informations d'un même élément, sans colonne de plus.
+- Options écartées : deux lignes dans n'importe quelle case (Alfred) ; hauteur double fixe de 44 px.
+- Validation : par délégation de l'utilisateur, 2026-11-23 — docs/validation/components/Table-v2.html
+
+## D-274 — Table : une largeur étroite déclarée est respectée
+- Date : 2026-11-23
+- Portée : Table
+- Décision : une colonne déclarée sous 80 px (une pastille de statut, par exemple) garde sa largeur : sa largeur minimale devient sa largeur déclarée, sans descendre sous 32 px. Les autres règles de largeur ne changent pas (D-067).
+- Raison : une colonne de pastilles à 80 px gaspille la place d'un tableau dense.
+- Options écartées : des largeurs fixes, non redimensionnables.
+- Validation : par délégation de l'utilisateur, 2026-11-23 — docs/validation/components/Table-v2.html
+
+## D-275 — Table : en-tête coupé, libellé en info-bulle
+- Date : 2026-11-23
+- Portée : Table
+- Décision : un libellé d'en-tête trop long se coupe par « … » ; le libellé complet s'affiche en info-bulle au survol (500 ms, D-031) et au focus clavier, seulement s'il est coupé. C'est la règle « Contenu » de la spec, appliquée aussi à l'en-tête.
+- Raison : correction ; sans elle, une colonne étroite cache son nom.
+- Options écartées : libellé sur deux lignes.
+- Validation : par délégation de l'utilisateur, 2026-11-23 — docs/validation/components/Table-v2.html
+
+## D-276 — Table : pas de case teintée
+- Date : 2026-11-23
+- Portée : Table
+- Décision : `Table` ne teinte pas le fond d'une case selon sa ligne. Une case qui signale un état reçoit un `StatusDot` ou un `StatusBadge` par `renderCell` (D-160).
+- Raison : un fond de couleur par case contredit D-064 et la règle « la couleur sert aux pastilles ».
+- Options écartées : `tone` avec `fill` ou `frame` (Alfred).
+- Validation : par délégation de l'utilisateur, 2026-11-23 — docs/validation/components/Table-v2.html
+
+## D-277 — Table : pas de menu propre à une case
+- Date : 2026-11-23
+- Portée : Table
+- Décision : un clic de case n'ouvre pas de menu. Les actions d'un élément passent par le menu « … » de la ligne et le clic droit (D-066). Une matrice d'actions (une case = un objet) est une solution locale de l'app.
+- Raison : échoue au test du générique : propre à la matrice de déploiement d'Alfred ; une ligne a déjà son menu.
+- Options écartées : `column.menu` (Alfred).
+- Validation : par délégation de l'utilisateur, 2026-11-23 — docs/validation/components/Table-v2.html

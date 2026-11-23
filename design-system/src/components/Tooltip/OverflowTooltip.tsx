@@ -10,7 +10,7 @@ import { useEffect, useMemo, useRef, useState, type ReactNode, type RefObject } 
 import { Tooltip as RACTooltip, TooltipTriggerStateContext, type TooltipTriggerState } from "react-aria-components/Tooltip";
 import { TOOLTIP_CLASS, TOOLTIP_DELAY } from "./Tooltip";
 
-const HOST = '[role="tab"],[role="row"],[role="gridcell"],[role="menuitem"],[role="menuitemradio"],button,a';
+const HOST = '[role="tab"],[role="row"],[role="columnheader"],[role="gridcell"],[role="menuitem"],[role="menuitemradio"],button,a';
 
 function useHoverTooltip(ref: RefObject<HTMLElement | null>, onlyIfCut: boolean) {
   const [open, setOpen] = useState(false);

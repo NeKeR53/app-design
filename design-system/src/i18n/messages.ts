@@ -45,6 +45,7 @@ export interface SocleMessages {
   selectAll: string;
   columnWidth: (label: string) => string;
   rowActions: string;
+  groupCount: (n: number) => string;
   showMore: string;
   countOf: (n: number, total: number) => string;
   loadingResults: string;
@@ -155,6 +156,7 @@ export const frenchMessages: SocleMessages = {
   selectAll: "Tout sélectionner",
   columnWidth: (l) => `Largeur de la colonne ${l}`,
   rowActions: "Actions",
+  groupCount: (n) => `${n} ligne${n > 1 ? "s" : ""}`,
   showMore: "Afficher plus",
   countOf: (n, t) => `${n} sur ${t}`,
   loadingResults: "Chargement des résultats",

@@ -1,0 +1,252 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Table dense — validation v2</title>
+<style>
+/* ---------- Page de validation ---------- */
+:root{--pg-bg:#f6f6f6;--pg-fg:#1a1a1a;--pg-muted:#5c5c5c;--pg-line:#e2e2e2;--pg-card:#fff;--pg-badge:#e3f5e8;--pg-badge-fg:#166534;--pg-reco:#e7f0ff;--pg-reco-fg:#1d4ed8;--pg-off:#fdecec;--pg-off-fg:#a12020}
+:root[data-theme="dark"]{--pg-bg:#121212;--pg-fg:#ececec;--pg-muted:#9a9a9a;--pg-line:#2c2c2c;--pg-card:#1b1b1b;--pg-badge:#12321d;--pg-badge-fg:#8fe0a8;--pg-reco:#16233d;--pg-reco-fg:#9cc0ff;--pg-off:#3a1616;--pg-off-fg:#f5a3a3}
+*{box-sizing:border-box}html,body{margin:0}
+body{background:var(--pg-bg);color:var(--pg-fg);font:15px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif}
+.pg{max-width:1180px;margin:0 auto;padding:24px 16px 64px}
+h1{font-size:22px;font-weight:600;margin:0 0 4px;display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+h2.sec{font-size:16px;margin:28px 0 8px}
+.intro{color:var(--pg-muted);margin:0 0 20px}
+.badge{font-size:12px;font-weight:600;letter-spacing:.04em;padding:3px 8px;border-radius:6px;background:var(--pg-badge);color:var(--pg-badge-fg)}
+.boxes{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px}
+@media (max-width:760px){.boxes{grid-template-columns:1fr}}
+.box{background:var(--pg-card);border:1px solid var(--pg-line);border-radius:10px;padding:14px 16px;font-size:14px}
+.box h2{font-size:14px;margin:0 0 8px;font-weight:600}.box ul,.box ol{margin:0;padding-left:20px}.box li{margin:5px 0}
+.reco{font-size:11.5px;font-weight:600;padding:1px 6px;border-radius:5px;background:var(--pg-reco);color:var(--pg-reco-fg);margin-left:4px}
+.off{font-size:11.5px;font-weight:600;padding:1px 6px;border-radius:5px;background:var(--pg-off);color:var(--pg-off-fg);margin-left:4px}
+.toolbar{position:sticky;top:0;z-index:100;background:var(--pg-bg);padding:10px 0;border-bottom:1px solid var(--pg-line);margin-bottom:16px;display:flex;flex-wrap:wrap;gap:10px 16px;align-items:center}
+.seg{display:inline-flex;border:1px solid var(--pg-line);border-radius:8px;overflow:hidden;background:var(--pg-card)}
+.seg button{border:0;background:transparent;color:var(--pg-fg);padding:5px 10px;font:inherit;font-size:13px;cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--pg-fg);color:var(--pg-bg)}
+.tlabel{font-size:12px;color:var(--pg-muted);margin-right:6px}
+.hint{margin:8px 0 0;color:var(--pg-muted);font-size:13px}
+.cmp{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+@media (max-width:760px){.cmp{grid-template-columns:1fr}}
+.opt{background:var(--pg-card);border:1px solid var(--pg-line);border-radius:10px;padding:12px 14px;font-size:13px;min-width:0}
+.opt h3{margin:0 0 2px;font-size:13px}.opt p{margin:0 0 10px;color:var(--pg-muted)}
+.verdict{width:100%;border-collapse:collapse;font-size:13.5px;background:var(--pg-card);border:1px solid var(--pg-line);border-radius:10px;overflow:hidden}
+.verdict th,.verdict td{padding:7px 10px;border-bottom:1px solid var(--pg-line);text-align:left;vertical-align:top;white-space:normal;height:auto}
+.verdict th{font-weight:600;font-size:12.5px;color:var(--pg-muted)}
+
+/* ---------- Tokens (copie de src/tokens) ---------- */
+.tk{--surface:#fff;--surface-side:#f3f3f3;--field:#f2f2f2;--hover:#e9e9e9;--selected:#dedede;--line:#e4e4e4;--fg:#1a1a1a;--fg-2:#5c5c5c;--fg-3:#6b6b6b;
+  --accent:#1d4ed8;--success:#15803d;--warning:#b45309;--danger:#c62828;
+  --font-sans:-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;
+  --radius-sm:4px;--radius-md:8px;--icon:16px;--fs-sm:12.5px;--fs-md:14px;--lh:1.45;--row-h:34px;--bar-h:44px;--side-w:200px;
+  background:var(--surface);color:var(--fg);font-family:var(--font-sans);font-size:var(--fs-md);line-height:var(--lh)}
+.tk.dark{--surface:#181818;--surface-side:#222;--field:#2a2a2a;--hover:#303030;--selected:#3d3d3d;--line:#333;--fg:#ececec;--fg-2:#ababab;--fg-3:#8f8f8f;--accent:#5b8def;--success:#5cc98a;--warning:#e0a24a;--danger:#f07167}
+.tk.desktop{--fs-sm:11.5px;--fs-md:13px;--lh:1.4;--row-h:28px;--bar-h:38px;--side-w:190px}
+/* Densité compacte du tableau (D-271) : la ligne passe à 25 px, l'en-tête à 28 px. */
+.tk .compact{--row-h:25px;--head-h:28px}
+.tk .tbl{--head-h:var(--row-h)}
+
+/* ---------- Mini AppShell ---------- */
+.app{position:relative;height:560px;border:1px solid var(--pg-line);border-radius:12px;overflow:hidden;display:grid;grid-template-columns:var(--side-w) minmax(0,1fr);grid-template-rows:var(--bar-h) 1fr}
+@media (max-width:760px){.app{grid-template-columns:minmax(0,1fr)}.side,.bar-side{display:none}}
+.app *{box-sizing:border-box}.app button{font:inherit;color:inherit}
+.ic{width:var(--icon);height:var(--icon);flex:none;stroke:currentColor;fill:none;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+.bar-side{background:var(--surface-side);border-right:1px solid var(--line)}
+.bar{display:flex;align-items:center;gap:10px;padding:0 16px;border-bottom:1px solid var(--line);font-weight:600}
+.side{background:var(--surface-side);border-right:1px solid var(--line);padding:6px;display:flex;flex-direction:column;gap:1px}
+.nav{display:flex;align-items:center;gap:8px;height:var(--row-h);padding:0 8px;border-radius:var(--radius-md);color:var(--fg-2)}
+.nav.on{background:var(--selected);color:var(--fg)}
+.main{display:flex;flex-direction:column;min-width:0;min-height:0}
+.tools{display:flex;align-items:center;gap:8px;padding:10px 16px}
+.btn{height:var(--row-h);padding:0 12px;border:0;border-radius:var(--radius-md);background:var(--field);font-size:var(--fs-sm);cursor:pointer}
+.scroll{flex:1;min-height:0;overflow:auto;padding:0 16px}
+
+/* ---------- Table ---------- */
+table{border-collapse:separate;border-spacing:0;width:100%;table-layout:fixed}
+th,td{padding:0 10px;text-align:left;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;border-bottom:1px solid var(--line)}
+.compact th,.compact td{padding:0 8px}
+td{height:var(--row-h)}
+th{height:var(--head-h);font-size:var(--fs-sm);font-weight:500;color:var(--fg-2);position:sticky;top:0;background:var(--surface);z-index:1}
+th .h{display:block;overflow:hidden;text-overflow:ellipsis;padding-right:6px}
+th:not(:last-child):not(.sel)::after{content:"";position:absolute;right:0;top:6px;bottom:6px;border-right:1px solid var(--line)}
+td.main-col{color:var(--fg)}td{color:var(--fg-2)}
+td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
+th.sel,td.sel{width:40px;padding:0 12px}
+tbody tr.r:hover td{background:var(--hover)}
+tbody tr.r.on td{background:var(--selected)}
+.cb{display:inline-grid;place-items:center;width:16px;height:16px;border:1.5px solid var(--fg-3);border-radius:var(--radius-sm);vertical-align:middle}
+.cb.on{background:var(--accent);border-color:var(--accent);color:#fff}
+tr.r .cb:not(.on){visibility:hidden}tr.r:hover .cb{visibility:visible}
+.has-checked tr.r .cb{visibility:visible}
+.d2 td{height:calc(var(--row-h) + 12px)}
+.two{display:flex;flex-direction:column;min-width:0;line-height:1.25}
+.two span{overflow:hidden;text-overflow:ellipsis}
+.two .sub{font-size:var(--fs-sm);color:var(--fg-3)}
+.dot{display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:6px;vertical-align:middle;background:var(--fg-3)}
+.dot.success{background:var(--success)}.dot.warning{background:var(--warning)}.dot.danger{background:var(--danger)}
+/* Lignes de groupe */
+tr.g td{cursor:default;font-weight:600;color:var(--fg);padding-top:6px;vertical-align:bottom}
+tr.g td .gt{display:inline-flex;align-items:center;gap:4px}
+tr.g .cnt{font-weight:400;color:var(--fg-3)}
+tr.g .chev{transition:none;color:var(--fg-3)}
+tr.g.closed .chev{transform:rotate(-90deg)}
+tr.g:hover td{background:var(--hover)}
+tr.g:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
+.gB tr.g td{background:var(--field)}
+.gC tr.g .chev{display:none}
+.tip{position:fixed;z-index:200;background:#1a1a1a;color:#fff;font-size:12px;padding:4px 8px;border-radius:6px;pointer-events:none;display:none;max-width:280px}
+.ruled td.tA{background:color-mix(in oklch,var(--danger) 10%,transparent);color:var(--danger)}
+</style>
+</head>
+<body>
+<div class="pg">
+<h1>Table dense <span class="badge">VALIDÉ le 2026-11-23</span></h1>
+<p class="intro">Besoin d'Alfred (P18) : un tableau dense, comme son <code>DataGrid</code> et son <code>DataTable</code>. Proposition : pas de second composant. <code>Table</code> reçoit des options facultatives. Sans ces options, <code>Table</code> ne change pas. Validation : par délégation de l'utilisateur, 2026-11-23.</p>
+
+<div class="boxes">
+  <div class="box"><h2>Déjà décidé</h2><ul>
+    <li>Tableau sans cadre, sur toute la largeur (D-062). Traits horizontaux seulement, pas de zébrage (D-064).</li>
+    <li>Lignes de <code>--row-h</code> : 34 px web, 28 px desktop (D-063).</li>
+    <li>Cases de sélection au survol, toutes visibles dès qu'une est cochée (D-065).</li>
+    <li>Colonnes redimensionnables ; la poignée dessine déjà le séparateur d'en-tête (D-067).</li>
+    <li>La couleur sert seulement aux pastilles de statut (<code>StatusBadge</code>, <code>StatusDot</code>, D-160).</li>
+  </ul></div>
+  <div class="box"><h2>Décidé dans cette page</h2><ul>
+    <li>D-270 : options de <code>Table</code>, pas de second composant.</li>
+    <li>D-271 : <code>density="compact"</code> : lignes de 25 px, en-tête de 28 px.</li>
+    <li>D-272 : <code>groupBy</code> : lignes de groupe en texte, avec chevron, repliables (option A).</li>
+    <li>D-273 : <code>rowDescription</code> : lignes doubles, nom et précision dessous.</li>
+    <li>D-274 : une largeur déclarée sous 80 px est respectée.</li>
+    <li>D-275 : en-tête coupé par « … », libellé complet en info-bulle.</li>
+    <li>D-276 : cases teintées écartées : une pastille de statut dans la case.</li>
+    <li>D-277 : menu de case écarté : le menu de ligne suffit.</li>
+  </ul></div>
+</div>
+
+<div class="toolbar" role="toolbar" aria-label="Bascules">
+  <span><span class="tlabel">Thème</span><span class="seg" data-k="theme"><button aria-pressed="true" data-v="light">Clair</button><button aria-pressed="false" data-v="dark">Sombre</button></span></span>
+  <span><span class="tlabel">Plateforme</span><span class="seg" data-k="plat"><button aria-pressed="true" data-v="web">Web</button><button aria-pressed="false" data-v="desktop">Desktop</button></span></span>
+  <span><span class="tlabel">Densité</span><span class="seg" data-k="density"><button aria-pressed="false" data-v="default">Par défaut</button><button aria-pressed="true" data-v="compact">Compacte</button></span></span>
+  <span><span class="tlabel">Groupes</span><span class="seg" data-k="groups"><button aria-pressed="true" data-v="on">Oui</button><button aria-pressed="false" data-v="off">Non</button></span></span>
+  <span><span class="tlabel">Lignes</span><span class="seg" data-k="double"><button aria-pressed="true" data-v="single">Simples</button><button aria-pressed="false" data-v="double">Doubles</button></span></span>
+</div>
+
+<h2 class="sec">Dans l'écran : liste de variables d'un service</h2>
+<div class="tk" id="tk">
+<div class="app">
+  <div class="bar-side"></div>
+  <div class="bar">Variables</div>
+  <nav class="side">
+    <div class="nav">Services</div><div class="nav on">Variables</div><div class="nav">Journal</div><div class="nav">Réglages</div>
+  </nav>
+  <div class="main">
+    <div class="tools"><button class="btn" id="selbar">Ajouter une variable</button></div>
+    <div class="scroll"><div id="grid"></div></div>
+  </div>
+</div>
+</div>
+<p class="hint">Jouable : clic ou Entrée sur une ligne de groupe pour la replier ; flèches haut et bas pour passer d'une ligne à l'autre ; survol d'un en-tête coupé (« Dernière modific… ») pour voir l'info-bulle ; cases au survol.</p>
+
+<h2 class="sec">Ligne de groupe : trois formes</h2>
+<div class="cmp">
+  <div class="opt"><h3>A. Texte et chevron <span class="reco">recommandé</span></h3><p>Titre en gras, « · n lignes » atténué, petit chevron. Pas de fond : respecte D-064. Le chevron montre qu'on peut replier.</p><div class="tk" data-mini="A"></div></div>
+  <div class="opt"><h3>B. Bande teintée</h3><p>Fond <code>--field</code> sur toute la ligne. Plus visible, mais c'est un fond de ligne, que D-064 écarte.</p><div class="tk gB" data-mini="B"></div></div>
+  <div class="opt"><h3>C. Texte sans chevron (Alfred)</h3><p>Le plus sobre. Rien n'indique que le clic replie le groupe.</p><div class="tk gC" data-mini="C"></div></div>
+</div>
+
+<h2 class="sec">Test du générique, besoin par besoin</h2>
+<table class="verdict">
+  <thead><tr><th style="width:26%">Besoin d'Alfred</th><th style="width:16%">Verdict</th><th>Raison et réponse</th></tr></thead>
+  <tbody>
+    <tr><td>Densité compacte (25 px)</td><td>Gardé <span class="reco">D-271</span></td><td>Journaux, variables, inventaires : toute app d'outillage en a besoin. <code>density="compact"</code>.</td></tr>
+    <tr><td>Lignes de groupe repliables</td><td>Gardé <span class="reco">D-272</span></td><td>Regrouper par dossier, par service, par mois : générique. <code>groupBy</code>, forme A.</td></tr>
+    <tr><td>Lignes doubles (titre + sous-titre)</td><td>Gardé <span class="reco">D-273</span></td><td>Nom et courriel, fichier et chemin : générique. <code>rowDescription</code> sur la colonne principale.</td></tr>
+    <tr><td>Largeurs de colonnes respectées</td><td>Gardé <span class="reco">D-274</span></td><td>Déjà vrai de 80 à 480 px (D-067). Ajout : une colonne étroite déclarée (une pastille, 48 px) garde sa largeur.</td></tr>
+    <tr><td>En-têtes coupés par « … » avec info-bulle</td><td>Gardé <span class="reco">D-275</span></td><td>Correction : la règle « Contenu » de la spec vaut aussi pour l'en-tête.</td></tr>
+    <tr><td>Cases de sélection</td><td>Déjà là</td><td><code>selectionMode="multiple"</code> (D-065).</td></tr>
+    <tr><td>Séparateurs d'en-tête</td><td>Déjà là</td><td>La poignée de largeur dessine le trait (D-067).</td></tr>
+    <tr><td>Variante sans cadre</td><td>Déjà là</td><td>C'est le seul rendu de <code>Table</code> (D-062).</td></tr>
+    <tr><td>Cases teintées par ligne (ton)</td><td>Écarté <span class="off">D-276</span></td><td>Un fond de couleur par case contredit D-064 et la règle « la couleur sert aux pastilles ». Réponse : <code>StatusDot</code> ou <code>StatusBadge</code> dans <code>renderCell</code>.</td></tr>
+    <tr><td>Clic de case qui ouvre un menu</td><td>Écarté <span class="off">D-277</span></td><td>Une case de matrice d'actions est propre à Alfred. Réponse : le menu « … » de la ligne et le clic droit (D-066). Solution locale dans Alfred sinon.</td></tr>
+    <tr><td>Édition dans la case, colonnes figées, lignes virtualisées</td><td>Hors périmètre</td><td>Restent dans « Exclus » de la spec. Aucun écran d'Alfred n'utilise la grille aujourd'hui.</td></tr>
+  </tbody>
+</table>
+
+<h2 class="sec">Écarté : case teintée contre pastille</h2>
+<div class="cmp">
+  <div class="opt"><h3>Case teintée <span class="off">écarté</span></h3><p>Fond rouge dans la case : contredit D-064.</p><div class="tk ruled"><table class="compact"><tbody><tr><td class="main-col">API_KEY</td><td class="tA">Manquant</td></tr><tr><td class="main-col">DB_URL</td><td>Défini</td></tr></tbody></table></div></div>
+  <div class="opt"><h3>Pastille <span class="reco">retenu</span></h3><p><code>StatusDot</code> et texte, dans <code>renderCell</code>.</p><div class="tk"><table class="compact"><tbody><tr><td class="main-col">API_KEY</td><td><span class="dot danger"></span>Manquant</td></tr><tr><td class="main-col">DB_URL</td><td><span class="dot success"></span>Défini</td></tr></tbody></table></div></div>
+</div>
+
+<h2 class="sec">API ajoutée (toutes facultatives, version mineure)</h2>
+<pre style="background:var(--pg-card);border:1px solid var(--pg-line);border-radius:10px;padding:12px;overflow:auto;font-size:13px">&lt;Table
+  label="Variables"
+  columns={[{ id: "name", label: "Nom" }, { id: "state", label: "État", width: 48 }, …]}
+  rows={rows}
+  density="compact"                       // D-271
+  groupBy={(r) =&gt; r.service}              // D-272
+  defaultCollapsedGroups={["Archives"]}
+  rowDescription={(r) =&gt; r.path}          // D-273
+/&gt;</pre>
+
+<div class="tip" id="tip"></div>
+</div>
+<script>
+const st={theme:"light",plat:"web",density:"compact",groups:"on",double:"single"};
+const closed=new Set();
+const ROWS=[
+ ["Paiements","API_KEY","sk-…41","Manquant","danger","il y a 2 h","config/paiements.env"],
+ ["Paiements","WEBHOOK_SECRET","whsec-…9a","Défini","success","hier","config/paiements.env"],
+ ["Paiements","TIMEOUT_MS","3000","Défini","success","12 nov.","config/paiements.env"],
+ ["Courriels","SMTP_HOST","smtp.exemple.fr","Défini","success","3 nov.","config/courriels.env"],
+ ["Courriels","SMTP_PASSWORD","","Manquant","danger","3 nov.","config/courriels.env"],
+ ["Archives","LEGACY_URL","https://ancien.exemple.fr/api/v1","Obsolète","warning","2 sept.","config/archives.env"],
+];
+const sel=new Set(["r1"]);
+const chev='<svg class="ic chev" viewBox="0 0 24 24" style="width:12px;height:12px"><path d="m6 9 6 6 6-6"/></svg>';
+function table(rows,{groups=true,dbl=false,checkbox=true,mini=false}={}){
+  const cols=mini?2:6;
+  let h=`<table class="tbl ${st.density==="compact"?"compact":""} ${dbl?"d2":""} ${sel.size>1?"has-checked":""}" role="grid" aria-label="Variables"><colgroup>${checkbox&&!mini?'<col style="width:40px">':''}<col><col style="width:${mini?60:150}px">${mini?"":'<col style="width:48px"><col style="width:96px"><col style="width:96px">'}</colgroup>`;
+  if(!mini) h+=`<thead><tr>${checkbox?'<th class="sel"><span class="cb"></span></th>':''}<th><span class="h">Nom</span></th><th><span class="h">Valeur</span></th><th title=""><span class="h" data-full="État">•</span></th><th><span class="h" data-full="Dernière modification">Dernière modification</span></th><th class="num"><span class="h">Version</span></th></tr></thead>`;
+  h+="<tbody>";
+  let last=null;
+  rows.forEach((r,i)=>{
+    const id="r"+i;
+    if(groups&&r[0]!==last){last=r[0];const n=rows.filter(x=>x[0]===r[0]).length;const c=closed.has(r[0]);
+      h+=`<tr class="g ${c?"closed":""}" tabindex="0" data-g="${r[0]}" aria-expanded="${!c}"><td colspan="${mini?2:cols}"><span class="gt">${chev}${r[0]} <span class="cnt">· ${n} ligne${n>1?"s":""}</span></span></td></tr>`;}
+    if(groups&&closed.has(r[0]))return;
+    const name=dbl?`<span class="two"><span>${r[1]}</span><span class="sub">${r[6]}</span></span>`:r[1];
+    if(mini){h+=`<tr class="r" tabindex="-1"><td class="main-col">${r[1]}</td><td>${r[3]}</td></tr>`;return;}
+    h+=`<tr class="r ${sel.has(id)?"on":""}" tabindex="-1" data-id="${id}">${checkbox?`<td class="sel"><span class="cb ${sel.has(id)?"on":""}">${sel.has(id)?"✓":""}</span></td>`:""}<td class="main-col">${name}</td><td>${r[2]||'<span style="color:var(--fg-3)">—</span>'}</td><td title="${r[3]}"><span class="dot ${r[4]}"></span></td><td>${r[5]}</td><td class="num">${(i*3+1)}</td></tr>`;
+  });
+  return h+"</tbody></table>";
+}
+function render(){
+  document.documentElement.dataset.theme=st.theme;
+  document.querySelectorAll(".tk").forEach(t=>{t.classList.toggle("dark",st.theme==="dark");t.classList.toggle("desktop",st.plat==="desktop");});
+  document.getElementById("grid").innerHTML=table(ROWS,{groups:st.groups==="on",dbl:st.double==="double"});
+  document.querySelectorAll("[data-mini]").forEach(m=>m.innerHTML=table(ROWS.slice(0,4),{mini:true}));
+  bind();
+}
+function bind(){
+  document.querySelectorAll("tr.g").forEach(g=>{
+    const t=()=>{const k=g.dataset.g;closed.has(k)?closed.delete(k):closed.add(k);render();const n=document.querySelector(`#grid tr.g[data-g="${k}"]`);n&&n.focus();};
+    g.onclick=t;g.onkeydown=e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();t();}};
+  });
+  document.querySelectorAll("#grid tr.r").forEach(r=>{
+    r.onclick=e=>{const id=r.dataset.id;if(e.target.closest(".sel")){sel.has(id)?sel.delete(id):sel.add(id);}else{sel.clear();sel.add(id);}render();};
+  });
+  const rows=[...document.querySelectorAll("#grid tbody tr")];
+  rows.forEach((r,i)=>r.addEventListener("keydown",e=>{if(e.key==="ArrowDown"&&rows[i+1]){e.preventDefault();rows[i+1].tabIndex=0;rows[i+1].focus();}if(e.key==="ArrowUp"&&rows[i-1]){e.preventDefault();rows[i-1].tabIndex=0;rows[i-1].focus();}}));
+  const tip=document.getElementById("tip");
+  document.querySelectorAll("#grid th .h").forEach(h=>{
+    h.onmouseenter=()=>{const full=h.dataset.full||h.textContent;if(h.scrollWidth<=h.clientWidth+1&&!h.dataset.full)return;if(h.scrollWidth<=h.clientWidth+1&&h.dataset.full===h.textContent)return;tip.textContent=full;const b=h.getBoundingClientRect();tip.style.left=b.left+"px";tip.style.top=(b.bottom+6)+"px";tip.style.display="block";};
+    h.onmouseleave=()=>tip.style.display="none";
+  });
+}
+document.querySelectorAll(".seg").forEach(s=>s.addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;st[s.dataset.k]=b.dataset.v;s.querySelectorAll("button").forEach(x=>x.setAttribute("aria-pressed",x===b));render();}));
+render();
+</script>
+</body>
+</html>
