@@ -757,3 +757,83 @@
 - Raison : plus de 40 libellés ; une app les traduit une seule fois, au même endroit, et l'API des composants reste simple.
 - Options écartées : une prop par libellé dans chaque composant.
 - Validation : aucune page (règle technique).
+
+## D-160 — Statut : point et libellé, sans fond
+- Date : 2026-11-23
+- Portée : StatusBadge
+- Décision : un statut s'affiche avec un point de 7 px coloré par le ton, suivi de son libellé en `--fs-xs` et `--fg-2`, sans fond ni contour. C'est le dessin du statut de List (D-044), qui devient le composant `StatusBadge`. Le libellé est obligatoire : un état n'est jamais une couleur seule.
+- Raison : sobre, monochrome hors du point, et tient dans une ligne dense.
+- Options écartées : pastille neutre `--field` avec point ; pastille teintée par ton (dessin d'Alfred).
+- Validation : par délégation de l'utilisateur, 2026-11-23 — docs/validation/components/Display-v1.html
+
+## D-161 — Statut : six tons, dont « en attente » à point creux
+- Date : 2026-11-23
+- Portée : StatusBadge, StatusDot
+- Décision : six tons : `neutral` (`--fg-3`), `pending` (point creux, contour `--fg-3`), `info`, `success`, `warning`, `danger`. `pending` sert à ce qui n'a pas commencé ou reste à configurer ; `warning` est réservé à un vrai avertissement.
+- Raison : sans ton « en attente », les apps détournent `warning` pour ce qui reste simplement à faire.
+- Options écartées : cinq tons seulement.
+- Validation : par délégation de l'utilisateur, 2026-11-23 — docs/validation/components/Display-v1.html
+
+## D-162 — Point de statut seul : nom obligatoire et info-bulle
+- Date : 2026-11-23
+- Portée : StatusDot
+- Décision : `StatusDot` affiche le point seul, là où le libellé ne tient pas (colonne étroite, sidebar). Son option `label` est obligatoire : elle donne le nom accessible (`role="img"`) et le texte d'une info-bulle, montrée au survol et au focus. Le point est donc joignable au clavier, dans une cible de 24 px.
+- Raison : un état n'est jamais une couleur seule, même sans libellé visible.
+- Options écartées : point toujours décoratif ; `label` facultatif.
+- Validation : par délégation de l'utilisateur, 2026-11-23 — docs/validation/components/Display-v1.html
+
+## D-163 — Avatar : fond neutre, trois tailles
+- Date : 2026-11-23
+- Portée : Avatar
+- Décision : l'avatar est un cercle de 24, 32 ou 40 px (`sm`, `md`, `lg`, défaut `md`) : l'image fournie, ou à défaut les initiales en `--fw-semibold` sur fond neutre (`--field`, `--selected` dans la sidebar). Initiales : première lettre du premier et du dernier mot qui commencent par une lettre ; « ? » sinon. Une image qui ne charge pas laisse la place aux initiales.
+- Raison : style monochrome ; la couleur ne porte que du sens, pas l'identité d'une personne.
+- Options écartées : fond teinté calculé à partir du nom.
+- Validation : par délégation de l'utilisateur, 2026-11-23 — docs/validation/components/Display-v1.html
+
+## D-164 — Barre de progression : 4 px, libellé au-dessus
+- Date : 2026-11-23
+- Portée : ProgressBar
+- Décision : rail de 4 px en `--field`, rayon plein, remplissage `--accent`. Le libellé est au-dessus, la valeur à droite (« 60 % », ou « 18 / 30 » si `max` n'est pas 100). Ton facultatif `warning` ou `danger` pour un seuil franchi. Sans `value`, la barre est indéterminée : un segment défile, fixe à demi opaque si l'utilisateur réduit les animations (comme D-084).
+- Raison : discrète, proche de la barre de 2 px des résultats (D-084).
+- Options écartées : rail de 6 px.
+- Validation : par délégation de l'utilisateur, 2026-11-23 — docs/validation/components/Display-v1.html
+
+## D-165 — Squelette : fixe, affiché après 200 ms
+- Date : 2026-11-23
+- Portée : Skeleton
+- Décision : un squelette est une forme immobile en `--field` : ligne (10 px de haut, rayon 4 px), cercle, ou bloc (rayon 8 px). Un groupe de squelettes (`SkeletonGroup`) porte `aria-busy` et le nom « Chargement… », et n'apparaît qu'après 200 ms (option `delay`) pour éviter un clignotement quand la réponse est rapide.
+- Raison : pas d'animation de résultats (D-026, D-084) ; le délai évite un flash inutile.
+- Options écartées : pulsation douce ; affichage sans délai par défaut.
+- Validation : par délégation de l'utilisateur, 2026-11-23 — docs/validation/components/Display-v1.html
+
+## D-166 — État vide : icône de 32 px, titre, phrase, action
+- Date : 2026-11-23
+- Portée : EmptyState
+- Décision : l'état vide est centré : icône facultative de 32 px en `--fg-3`, sans fond ; titre en `--fg`, `--fw-medium` ; phrase facultative en `--fg-2`, `--fs-sm` ; action principale facultative (emplacement `action`, qui reçoit un `Button` variante `primary`). La taille `compact` retire l'icône et réduit les marges, pour un panneau. Les messages centrés de Table et List (D-085, D-086) utilisent ce composant sans icône.
+- Raison : c'est la règle `empty` de ListPage ; l'icône seule reste sobre.
+- Options écartées : icône dans un cercle `--field` de 48 px.
+- Validation : par délégation de l'utilisateur, 2026-11-23 — docs/validation/components/Display-v1.html
+
+## D-167 — Lien : toujours souligné
+- Date : 2026-11-23
+- Portée : Link
+- Décision : un lien est en `--accent-text`, souligné (1 px, 2 px au survol). Une adresse externe (`http:`, `https:`, `mailto:`) s'ouvre hors de l'app, porte une flèche de 12 px et le texte caché « S'ouvre dans le navigateur ». Sans `href`, `Link` est un bouton à l'apparence de lien, pour une action secondaire dans une phrase.
+- Raison : WCAG 1.4.1 : dans un texte, un lien ne se distingue pas par la couleur seule.
+- Options écartées : souligné au survol seulement.
+- Validation : par délégation de l'utilisateur, 2026-11-23 — docs/validation/components/Display-v1.html
+
+## D-168 — Code : fond `--field` ; séparateur d'un trait
+- Date : 2026-11-23
+- Portée : Code, Divider
+- Décision : `Code` en ligne est en `--font-mono` à 0,92 em, sur fond `--field`, rayon 4 px. En bloc (`block`), fond `--field`, rayon 8 px, retours à la ligne gardés, défilement horizontal, joignable au clavier avec un nom accessible. `Divider` est un trait `--line` de 1 px, horizontal (marges de 12 px) ou vertical, décoratif (`role="separator"`).
+- Raison : une valeur technique se distingue du texte qui l'entoure.
+- Options écartées : chasse fixe seule, sans fond ; option `plain`.
+- Validation : par délégation de l'utilisateur, 2026-11-23 — docs/validation/components/Display-v1.html
+
+## D-169 — List, Table et Sidebar reprennent ces composants
+- Date : 2026-11-23
+- Portée : List, Table, Sidebar
+- Décision : le statut de List est rendu par `StatusBadge` ; le compte de la Sidebar par `Avatar` (taille `sm`, fond `--selected`) quand l'app ne fournit pas de visuel ; les squelettes de List et Table par `Skeleton`, sans délai, comme avant (D-084) ; les messages centrés de Table et List par `EmptyState`. Le rendu ne change pas. Dans un `Table`, une cellule de statut reçoit un `StatusBadge` ou un `StatusDot`.
+- Raison : un seul dessin par élément, sans doublon.
+- Options écartées : garder des copies internes.
+- Validation : par délégation de l'utilisateur, 2026-11-23 — docs/validation/components/Display-v1.html

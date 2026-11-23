@@ -11,6 +11,7 @@ import { AlertTriangle, ChevronDown, ChevronRight, ChevronsUpDown, ExternalArrow
 import { IconButton } from "../../components/IconButton/IconButton";
 import { Menu } from "../../components/Menu/Menu";
 import { Tooltip } from "../../components/Tooltip/Tooltip";
+import { Avatar } from "../../components/Avatar/Avatar";
 import { HintTooltip, OverflowTooltip } from "../../components/Tooltip/OverflowTooltip";
 
 /* ---------- Types ---------- */
@@ -416,19 +417,17 @@ function Section({ id, title, limit = 5, children }: SidebarSectionProps) {
 (Section as unknown as Record<symbol, boolean>)[SECTION_MARK] = true;
 
 /* ---------- Sidebar.Account ---------- */
-function initials(name: string) {
-  return name
-    .split(/\s+/)
-    .slice(0, 2)
-    .map((p) => p[0]?.toUpperCase() ?? "")
-    .join("");
-}
-
 function Account({ name, detail, avatar, onSettings, menu }: SidebarAccountProps) {
   const m = useMessages();
   const who = (
     <>
-      <span className="inline-grid size-6 shrink-0 place-items-center overflow-hidden rounded-full bg-selected text-xs font-semibold text-fg">{avatar ?? initials(name)}</span>
+      {avatar ? (
+        <span className="inline-grid size-6 shrink-0 place-items-center overflow-hidden rounded-full bg-selected text-xs font-semibold text-fg">{avatar}</span>
+      ) : (
+        <span aria-hidden className="contents [--avatar-bg:var(--selected)]">
+          <Avatar name={name} size="sm" />
+        </span>
+      )}
       <span className="min-w-0 truncate text-fg">{name}</span>
       {detail && <span className="shrink-0 text-sm text-fg-3">· {detail}</span>}
     </>

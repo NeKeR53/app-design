@@ -33,6 +33,8 @@ export default defineConfig({
       "react-aria-components/Switch",
       "react-aria-components/ProgressBar",
       "react-aria-components/Separator",
+      "react-aria-components/Link",
+      "react-aria-components/Focusable",
       "react-aria-components/Dialog",
       "react-aria-components/Modal",
     ],

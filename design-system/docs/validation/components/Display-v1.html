@@ -1,0 +1,328 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Petits éléments d'affichage — validation v1</title>
+<style>
+/* ---------- Page de validation ---------- */
+:root{--pg-bg:#f6f6f6;--pg-fg:#1a1a1a;--pg-muted:#5c5c5c;--pg-line:#e2e2e2;--pg-card:#fff;--pg-badge:#fff4d6;--pg-badge-fg:#7a5a00;--pg-reco:#e7f0ff;--pg-reco-fg:#1d4ed8}
+:root[data-theme="dark"]{--pg-bg:#121212;--pg-fg:#ececec;--pg-muted:#9a9a9a;--pg-line:#2c2c2c;--pg-card:#1b1b1b;--pg-badge:#3a2f10;--pg-badge-fg:#f3d27a;--pg-reco:#16233d;--pg-reco-fg:#9cc0ff}
+*{box-sizing:border-box}html,body{margin:0}
+body{background:var(--pg-bg);color:var(--pg-fg);font:15px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif}
+.pg{max-width:1180px;margin:0 auto;padding:24px 16px 64px}
+h1{font-size:22px;font-weight:600;margin:0 0 4px;display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+h2.sec{font-size:16px;margin:28px 0 8px}
+.intro{color:var(--pg-muted);margin:0 0 20px}
+.badge{font-size:12px;font-weight:600;letter-spacing:.04em;padding:3px 8px;border-radius:6px;background:var(--pg-badge);color:var(--pg-badge-fg)}
+.boxes{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px}
+@media (max-width:760px){.boxes{grid-template-columns:1fr}}
+.box{background:var(--pg-card);border:1px solid var(--pg-line);border-radius:10px;padding:14px 16px;font-size:14px}
+.box h2{font-size:14px;margin:0 0 8px;font-weight:600}.box ul,.box ol{margin:0;padding-left:20px}.box li{margin:5px 0}
+.reco{font-size:11.5px;font-weight:600;padding:1px 6px;border-radius:5px;background:var(--pg-reco);color:var(--pg-reco-fg);margin-left:4px}
+.toolbar{position:sticky;top:0;z-index:100;background:var(--pg-bg);padding:10px 0;border-bottom:1px solid var(--pg-line);margin-bottom:16px;display:flex;flex-wrap:wrap;gap:10px 16px;align-items:center}
+.seg{display:inline-flex;border:1px solid var(--pg-line);border-radius:8px;overflow:hidden;background:var(--pg-card)}
+.seg button{border:0;background:transparent;color:var(--pg-fg);padding:5px 10px;font:inherit;font-size:13px;cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--pg-fg);color:var(--pg-bg)}
+.tlabel{font-size:12px;color:var(--pg-muted);margin-right:6px}
+.hint{margin:8px 0 0;color:var(--pg-muted);font-size:13px}
+.cmp{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+@media (max-width:760px){.cmp{grid-template-columns:1fr}}
+.opt{background:var(--pg-card);border:1px solid var(--pg-line);border-radius:10px;padding:12px 14px;font-size:13px}
+.opt h3{margin:0 0 2px;font-size:13px}.opt p{margin:0 0 10px;color:var(--pg-muted)}
+
+/* ---------- Tokens T2 (copie de src/tokens) ---------- */
+.tk{--surface:#fff;--surface-side:#f3f3f3;--field:#f2f2f2;--hover:#e9e9e9;--selected:#dedede;--line:#e4e4e4;--line-strong:#cfcfcf;--fg:#1a1a1a;--fg-2:#5c5c5c;--fg-3:#6b6b6b;
+  --accent:#1d4ed8;--accent-text:#1d4ed8;--success:#15803d;--warning:#b45309;--danger:#c62828;--info:#1d4ed8;
+  --font-sans:-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;--font-mono:ui-monospace,"SF Mono","Cascadia Code",Consolas,monospace;
+  --radius-sm:4px;--radius-md:8px;--radius-lg:12px;--icon:16px;--icon-stroke:1.6;--fs-xs:11.5px;--fs-sm:12.5px;--fs-md:14px;--fs-lg:16px;--lh:1.45;--row-h:34px;--row2-h:52px;--bar-h:44px;--side-w:220px;--detail-w:280px;
+  background:var(--surface);color:var(--fg);font-family:var(--font-sans);font-size:var(--fs-md);line-height:var(--lh)}
+.tk.dark{--surface:#181818;--surface-side:#222;--field:#2a2a2a;--hover:#303030;--selected:#3d3d3d;--line:#333;--line-strong:#4a4a4a;--fg:#ececec;--fg-2:#ababab;--fg-3:#8f8f8f;
+  --accent:#5b8def;--accent-text:#7da4f2;--success:#5cc98a;--warning:#e0a24a;--danger:#f07167;--info:#5b8def}
+.tk.desktop{--fs-xs:10.5px;--fs-sm:11.5px;--fs-md:13px;--fs-lg:15px;--lh:1.4;--row-h:28px;--row2-h:44px;--bar-h:38px;--side-w:200px;--detail-w:260px}
+
+/* ---------- Mini AppShell ---------- */
+.app{position:relative;height:620px;border:1px solid var(--pg-line);border-radius:12px;overflow:hidden;display:grid;grid-template-columns:var(--side-w) minmax(0,1fr) var(--detail-w);grid-template-rows:var(--bar-h) 1fr}
+@media (max-width:900px){.app{grid-template-columns:minmax(0,1fr);grid-template-rows:var(--bar-h) auto 1fr auto;height:auto}.side,.bar-side{display:none}}
+.app *{box-sizing:border-box}.app button{font:inherit;color:inherit}
+.ic{width:var(--icon);height:var(--icon);flex:none;stroke:currentColor;fill:none;stroke-width:var(--icon-stroke);stroke-linecap:round;stroke-linejoin:round}
+.bar-side{background:var(--surface-side);border-right:1px solid var(--line)}
+.bar{display:flex;align-items:center;gap:10px;padding:0 16px;border-bottom:1px solid var(--line);font-weight:600;grid-column:2 / span 2}
+@media (max-width:900px){.bar{grid-column:1}}
+.side{background:var(--surface-side);border-right:1px solid var(--line);padding:6px;display:flex;flex-direction:column}
+.nav{display:flex;align-items:center;gap:8px;height:var(--row-h);padding:0 8px;border-radius:var(--radius-md);color:var(--fg-2)}
+.nav.on{background:var(--selected);color:var(--fg)}
+.acc{margin-top:auto;display:flex;align-items:center;gap:8px;height:var(--row-h);padding:0 6px}
+.main{display:flex;flex-direction:column;min-width:0;min-height:0;overflow:auto}
+.detail{border-left:1px solid var(--line);padding:12px 16px;overflow:auto;font-size:var(--fs-md)}
+@media (max-width:900px){.detail{border-left:0;border-top:1px solid var(--line)}}
+.detail h4{margin:0 0 8px;font-size:var(--fs-sm);font-weight:500;color:var(--fg-3)}
+.prop{display:flex;gap:12px;padding:4px 0}.prop dt{width:84px;flex:none;color:var(--fg-3)}.prop dd{margin:0;min-width:0}
+.tools{display:flex;align-items:center;gap:8px;padding:12px 16px}
+.btn{height:var(--row-h);padding:0 12px;border:0;border-radius:var(--radius-md);background:var(--field);font-size:var(--fs-sm);cursor:pointer}
+.btn:hover{background:var(--hover)}
+.btn.primary{background:var(--accent);color:#fff}
+.tk.dark .btn.primary{color:#0b1630}
+.li{display:flex;align-items:center;gap:12px;min-height:var(--row2-h);padding:6px 16px;border-bottom:1px solid var(--line)}
+.li .txt{display:flex;flex-direction:column;min-width:0;flex:1}
+.li .l1{display:flex;gap:8px}.li .l1 span:first-child{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.li .meta{color:var(--fg-3);font-size:var(--fs-sm)}
+.li .l2{display:flex;gap:8px;align-items:center;font-size:var(--fs-sm);color:var(--fg-2)}
+.li .l2 .sub{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+table{border-collapse:separate;border-spacing:0;width:100%;table-layout:fixed}
+th,td{height:var(--row-h);padding:0 10px;text-align:left;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+th{font-size:var(--fs-sm);font-weight:500;color:var(--fg-2);border-bottom:1px solid var(--line)}
+td{border-bottom:1px solid var(--line)}
+.block{padding:12px 16px}
+
+/* ---------- StatusDot ---------- */
+.dot{display:inline-block;width:7px;height:7px;border-radius:50%;flex:none;background:var(--fg-3);vertical-align:middle;box-sizing:border-box}
+.dot.info{background:var(--info)}.dot.success{background:var(--success)}.dot.warning{background:var(--warning)}.dot.danger{background:var(--danger)}
+.dot.pending{background:transparent;border:1.5px solid var(--fg-3)}
+.dotwrap{position:relative;display:inline-grid;place-items:center;width:24px;height:24px;cursor:default}
+.dotwrap .tip{display:none;position:absolute;bottom:calc(100% + 4px);left:50%;transform:translateX(-50%);background:#1f1f1f;color:#f2f2f2;font-size:var(--fs-xs);padding:3px 7px;border-radius:var(--radius-md);white-space:nowrap;z-index:5}
+.dotwrap:hover .tip,.dotwrap:focus .tip{display:block}
+.dotwrap:focus{outline:2px solid var(--accent);outline-offset:1px;border-radius:var(--radius-sm)}
+
+/* ---------- StatusBadge : options A, B, C ---------- */
+.sb{display:inline-flex;align-items:center;gap:6px;white-space:nowrap;font-size:var(--fs-xs);color:var(--fg-2);max-width:100%}
+.sb .lbl{overflow:hidden;text-overflow:ellipsis}
+/* B : pastille neutre */
+.sbB .sb{background:var(--field);padding:1px 8px;border-radius:var(--radius-full,999px);height:20px}
+/* C : pastille teintée */
+.sbC .sb{padding:1px 8px;border-radius:999px;height:20px;background:var(--field)}
+.sbC .sb.t-success{background:color-mix(in srgb,var(--success) 14%,transparent);color:var(--success)}
+.sbC .sb.t-warning{background:color-mix(in srgb,var(--warning) 14%,transparent);color:var(--warning)}
+.sbC .sb.t-danger{background:color-mix(in srgb,var(--danger) 14%,transparent);color:var(--danger)}
+.sbC .sb.t-info{background:color-mix(in srgb,var(--info) 14%,transparent);color:var(--info)}
+.sbC .sb .dot{display:none}.sbC .sb.t-pending .dot{display:inline-block}
+
+/* ---------- Avatar ---------- */
+.av{display:inline-grid;place-items:center;flex:none;border-radius:50%;overflow:hidden;background:var(--field);color:var(--fg);font-weight:600;font-size:var(--fs-xs);user-select:none}
+.av.sm{width:24px;height:24px;font-size:10px}.av.md{width:32px;height:32px}.av.lg{width:40px;height:40px;font-size:var(--fs-sm)}
+.av img{width:100%;height:100%;object-fit:cover;display:block}
+.side .av{background:var(--selected)}
+.avB .av.c0{background:#e8eefc;color:#1e3a8a}.avB .av.c1{background:#e7f5ec;color:#14532d}.avB .av.c2{background:#fcefe3;color:#7c2d12}.avB .av.c3{background:#f3e8fc;color:#581c87}
+.tk.dark.avB .av.c0{background:#1e2a4a;color:#c7d6fb}.tk.dark.avB .av.c1{background:#173323;color:#bfe8cf}.tk.dark.avB .av.c2{background:#3a2616;color:#f5d0b0}.tk.dark.avB .av.c3{background:#2e1d3d;color:#e3cdf7}
+
+/* ---------- ProgressBar ---------- */
+.pb{display:flex;flex-direction:column;gap:4px}
+.pb .head{display:flex;justify-content:space-between;gap:8px;font-size:var(--fs-sm);color:var(--fg-2)}
+.pb .val{font-variant-numeric:tabular-nums;color:var(--fg-3)}
+.pb .track{position:relative;height:4px;border-radius:999px;background:var(--field);overflow:hidden}
+.pbB .pb .track{height:6px}
+.pb .fill{position:absolute;inset:0 auto 0 0;background:var(--accent);border-radius:999px;transition:width .26s cubic-bezier(.2,0,0,1)}
+.pb.warning .fill{background:var(--warning)}.pb.danger .fill{background:var(--danger)}.pb.success .fill{background:var(--success)}
+.pb.indet .fill{width:30%;animation:slide 1.1s cubic-bezier(.2,0,0,1) infinite}
+@keyframes slide{from{left:-30%}to{left:100%}}
+@media (prefers-reduced-motion: reduce){.pb.indet .fill{animation:none;left:0;width:100%;opacity:.5}}
+
+/* ---------- Skeleton ---------- */
+.sk{display:block;background:var(--field);border-radius:var(--radius-sm)}
+.sk.line{height:10px}.sk.circle{border-radius:50%}.sk.rect{border-radius:var(--radius-md)}
+.skPulse .sk{animation:pulse 1.6s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
+@media (prefers-reduced-motion: reduce){.skPulse .sk{animation:none}}
+
+/* ---------- EmptyState ---------- */
+.empty{display:flex;flex-direction:column;align-items:center;text-align:center;padding:56px 16px;color:var(--fg-2);max-width:420px;margin:0 auto}
+.empty .eic{color:var(--fg-3);margin-bottom:12px}
+.empty .eic .ic{width:32px;height:32px;stroke-width:1.4}
+.emB .empty .eic{display:grid;place-items:center;width:48px;height:48px;border-radius:50%;background:var(--field)}
+.emB .empty .eic .ic{width:22px;height:22px}
+.empty b{color:var(--fg);font-weight:500;margin-bottom:4px;font-size:var(--fs-md)}
+.empty p{margin:0 0 14px;font-size:var(--fs-sm)}
+.empty.compact{padding:20px 12px}.empty.compact .eic{display:none}
+
+/* ---------- Link ---------- */
+.lk{color:var(--accent-text);text-decoration:underline;text-underline-offset:2px;text-decoration-thickness:1px;cursor:pointer;border-radius:2px}
+.lk:hover{text-decoration-thickness:2px}
+.lk:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+.lkB .lk{text-decoration:none}.lkB .lk:hover{text-decoration:underline}
+.lk .ext{width:12px;height:12px;vertical-align:-1px;margin-left:2px}
+.lk.btnlink{border:0;background:none;padding:0;font:inherit}
+
+/* ---------- Code ---------- */
+code.c{font-family:var(--font-mono);font-size:.92em;background:var(--field);padding:1px 5px;border-radius:var(--radius-sm);color:var(--fg)}
+.cdB code.c{background:none;padding:0}
+pre.cb{margin:0;font-family:var(--font-mono);font-size:var(--fs-sm);background:var(--field);border-radius:var(--radius-md);padding:10px 12px;overflow:auto;white-space:pre;color:var(--fg)}
+pre.cb:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+
+/* ---------- Divider ---------- */
+hr.dv{border:0;border-top:1px solid var(--line);margin:12px 0}
+.vdv{display:inline-block;width:1px;align-self:stretch;background:var(--line);margin:6px 2px}
+
+.state-loading .data{display:none}.state-loading .skel{display:block}
+.skel{display:none}
+.state-empty .data{display:none}.state-empty .emptyzone{display:block}
+.emptyzone{display:none}
+</style>
+</head>
+<body>
+<div class="pg">
+  <h1>Petits éléments d'affichage <span class="badge" id="status">VALIDÉ le 2026-11-23</span></h1>
+  <p class="intro">Mode <code>propose</code>, besoin venu d'Alfred (proposition P7). Neuf composants génériques : StatusBadge, StatusDot, Avatar, ProgressBar, Skeleton, EmptyState, Link, Code, Divider. Toutes les options sont facultatives ; version mineure. List, Table et Sidebar dessinent déjà un statut, un avatar et des squelettes : ces composants reprennent ce dessin, et List, Table et Sidebar les utilisent ensuite (pas de doublon).</p>
+
+  <div class="boxes">
+    <div class="box">
+      <h2>Déjà décidé</h2>
+      <ul>
+        <li>Monochrome : la couleur ne porte que du sens ; succès, alerte, erreur et info ont leur couleur (principes).</li>
+        <li>Statut dans List : point de 7 px et libellé en <code>--fs-xs</code>, <code>--fg-2</code> (List.spec, D-044). Tons : neutre, info, succès, alerte, erreur.</li>
+        <li>Non-lu : point accent, à la place du statut (D-044). Il reste un usage à part, pas un ton de statut.</li>
+        <li>Avatar : 24 px dans le compte de la sidebar, 32 px dans List (D-069), initiales sur fond neutre.</li>
+        <li>Squelettes de List et Table : barres de 10 px en <code>--field</code>, rayon 4 px, sans animation (D-084, D-026).</li>
+        <li>Barre de chargement indéterminée : 2 px accent, fixe si l'utilisateur réduit les animations (D-084).</li>
+        <li>« Aucun résultat » (D-086) se distingue de l'état vide du gabarit : icône, titre, phrase, action principale (layout-rules, ListPage <code>empty</code>).</li>
+        <li>Rayons : 4, 8 ou 12 px seulement (D-040). Libellés internes par le dictionnaire <code>messages</code> (D-089).</li>
+        <li>L'action principale d'EmptyState est un emplacement : elle recevra le <code>Button</code> de P1.</li>
+      </ul>
+    </div>
+    <div class="box">
+      <h2>À décider</h2>
+      <ol>
+        <li><b>StatusBadge, dessin</b> : A point + libellé, sans fond (dessin actuel de List) ; B pastille neutre <code>--field</code> avec point ; C pastille teintée par ton (Alfred). <span class="reco">validé : A</span></li>
+        <li><b>Ton « en attente »</b> : ajouter un sixième ton <code>pending</code>, point creux, pour ce qui n'a pas commencé ? <span class="reco">validé : oui</span></li>
+        <li><b>StatusDot seul</b> : point sans libellé visible, mais avec un nom accessible obligatoire et une info-bulle ; ou point toujours décoratif, à côté d'un texte. <span class="reco">validé : nom obligatoire</span></li>
+        <li><b>Avatar</b> : A fond neutre pour tous ; B fond teinté calculé à partir du nom. Tailles 24 / 32 / 40 px. <span class="reco">validé : A</span></li>
+        <li><b>ProgressBar</b> : A barre de 4 px ; B barre de 6 px. Remplissage accent ; ton alerte ou erreur facultatif ; mode indéterminé. <span class="reco">validé : A</span></li>
+        <li><b>Skeleton</b> : A fixe, comme aujourd'hui ; B pulsation douce (coupée si animations réduites). Formes : ligne, cercle, bloc. <span class="reco">validé : A</span></li>
+        <li><b>EmptyState</b> : A icône de 32 px en <code>--fg-3</code>, seule ; B icône de 22 px dans un cercle <code>--field</code> de 48 px. Taille compacte sans icône pour les panneaux. <span class="reco">validé : A</span></li>
+        <li><b>Link</b> : A toujours souligné ; B souligné au survol seulement. <span class="reco">validé : A</span></li>
+        <li><b>Code</b> : A fond <code>--field</code> et rayon 4 px ; B chasse fixe seule, sans fond. Bloc : fond <code>--field</code>, rayon 8 px, défile, joignable au clavier. <span class="reco">validé : A</span></li>
+        <li><b>Reprise dans List, Table, Sidebar</b> : ces composants utilisent StatusBadge, Avatar, Skeleton et EmptyState, sans changer de rendu. <span class="reco">validé : oui</span></li>
+      </ol>
+    </div>
+  </div>
+
+  <div class="toolbar">
+    <span><span class="tlabel">1 Statut</span><span class="seg" data-k="sb"><button aria-pressed="true" data-v="A">A</button><button aria-pressed="false" data-v="B">B</button><button aria-pressed="false" data-v="C">C</button></span></span>
+    <span><span class="tlabel">4 Avatar</span><span class="seg" data-k="av"><button aria-pressed="true" data-v="A">A</button><button aria-pressed="false" data-v="B">B</button></span></span>
+    <span><span class="tlabel">5 Barre</span><span class="seg" data-k="pb"><button aria-pressed="true" data-v="A">4 px</button><button aria-pressed="false" data-v="B">6 px</button></span></span>
+    <span><span class="tlabel">6 Squelette</span><span class="seg" data-k="sk"><button aria-pressed="true" data-v="A">Fixe</button><button aria-pressed="false" data-v="B">Pulse</button></span></span>
+    <span><span class="tlabel">7 Vide</span><span class="seg" data-k="em"><button aria-pressed="true" data-v="A">A</button><button aria-pressed="false" data-v="B">B</button></span></span>
+    <span><span class="tlabel">8 Lien</span><span class="seg" data-k="lk"><button aria-pressed="true" data-v="A">Souligné</button><button aria-pressed="false" data-v="B">Survol</button></span></span>
+    <span><span class="tlabel">9 Code</span><span class="seg" data-k="cd"><button aria-pressed="true" data-v="A">Fond</button><button aria-pressed="false" data-v="B">Sans</button></span></span>
+    <span><span class="tlabel">État</span><span class="seg" data-k="st"><button aria-pressed="true" data-v="data">Données</button><button aria-pressed="false" data-v="loading">Chargement</button><button aria-pressed="false" data-v="empty">Vide</button></span></span>
+    <span><span class="tlabel">Mode</span><span class="seg" data-k="mode"><button aria-pressed="true" data-v="light">Clair</button><button aria-pressed="false" data-v="dark">Sombre</button></span></span>
+    <span><span class="tlabel">Densité</span><span class="seg" data-k="density"><button aria-pressed="true" data-v="web">Web</button><button aria-pressed="false" data-v="desktop">Desktop</button></span></span>
+  </div>
+
+  <div class="app tk" id="app">
+    <div class="bar-side"></div>
+    <div class="bar">Projets <span class="vdv" aria-hidden="true"></span><span style="font-weight:400;color:var(--fg-3);font-size:var(--fs-sm)">12 projets</span></div>
+    <nav class="side" aria-label="Navigation">
+      <div class="nav on"><svg class="ic" viewBox="0 0 24 24"><path d="M3 7h18M3 12h18M3 17h18"/></svg>Projets</div>
+      <div class="nav"><svg class="ic" viewBox="0 0 24 24"><circle cx="9" cy="8" r="4"/><path d="M2 21a7 7 0 0 1 14 0"/></svg>Équipe</div>
+      <div class="acc"><span class="av sm c2" role="img" aria-label="Camille Martin">CM</span><span>Camille Martin</span><span style="color:var(--fg-3);font-size:var(--fs-sm)">· Pro</span></div>
+    </nav>
+    <main class="main" id="main">
+      <div class="tools"><button class="btn primary">Nouveau projet</button><button class="btn">Statut</button></div>
+
+      <div class="skel" aria-busy="true" aria-label="Chargement…">
+        <div class="li"><span class="sk circle" style="width:32px;height:32px"></span><span class="txt" style="gap:8px"><span class="sk line" style="width:48%"></span><span class="sk line" style="width:28%"></span></span></div>
+        <div class="li"><span class="sk circle" style="width:32px;height:32px"></span><span class="txt" style="gap:8px"><span class="sk line" style="width:56%"></span><span class="sk line" style="width:24%"></span></span></div>
+        <div class="li"><span class="sk circle" style="width:32px;height:32px"></span><span class="txt" style="gap:8px"><span class="sk line" style="width:40%"></span><span class="sk line" style="width:30%"></span></span></div>
+        <div class="li"><span class="sk circle" style="width:32px;height:32px"></span><span class="txt" style="gap:8px"><span class="sk line" style="width:52%"></span><span class="sk line" style="width:22%"></span></span></div>
+      </div>
+
+      <div class="emptyzone">
+        <div class="empty">
+          <span class="eic"><svg class="ic" viewBox="0 0 24 24"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg></span>
+          <b>Aucun projet</b>
+          <p>Créez un projet pour suivre ses tâches et son équipe.</p>
+          <button class="btn primary">Nouveau projet</button>
+        </div>
+      </div>
+
+      <div class="data" id="list"></div>
+
+      <div class="data block">
+        <hr class="dv">
+        <table aria-label="Tâches">
+          <thead><tr><th style="width:24px"></th><th>Tâche</th><th style="width:120px">Responsable</th><th style="width:130px">Statut</th></tr></thead>
+          <tbody id="tbody"></tbody>
+        </table>
+        <p class="hint" style="margin-top:10px">Colonne étroite à gauche : <b>StatusDot seul</b> (question 3). Survolez ou tabulez sur un point : l'info-bulle donne son nom.</p>
+      </div>
+    </main>
+    <aside class="detail" aria-label="Détail">
+      <h4>Refonte du site</h4>
+      <dl style="margin:0">
+        <div class="prop"><dt>Statut</dt><dd><span class="sb t-warning"><i class="dot warning"></i><span class="lbl">En retard</span></span></dd></div>
+        <div class="prop"><dt>Responsable</dt><dd style="display:flex;gap:6px;align-items:center"><span class="av sm c0" role="img" aria-label="Louis Bernard">LB</span>Louis Bernard</dd></div>
+        <div class="prop"><dt>Dépôt</dt><dd><code class="c">site-web</code></dd></div>
+        <div class="prop"><dt>Doc</dt><dd><a class="lk" href="#" onclick="return false">Cahier des charges<svg class="ext ic" viewBox="0 0 24 24"><path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/></svg></a></dd></div>
+      </dl>
+      <hr class="dv">
+      <h4>Avancement</h4>
+      <div class="pb" style="margin-bottom:12px"><div class="head"><span>Tâches faites</span><span class="val">18 / 30</span></div><div class="track" role="progressbar" aria-label="Tâches faites" aria-valuemin="0" aria-valuemax="30" aria-valuenow="18" aria-valuetext="18 sur 30"><div class="fill" style="width:60%"></div></div></div>
+      <div class="pb warning" style="margin-bottom:12px"><div class="head"><span>Espace utilisé</span><span class="val">92 %</span></div><div class="track" role="progressbar" aria-label="Espace utilisé" aria-valuemin="0" aria-valuemax="100" aria-valuenow="92"><div class="fill" style="width:92%"></div></div></div>
+      <div class="pb indet" style="margin-bottom:12px"><div class="head"><span>Import des fichiers</span></div><div class="track" role="progressbar" aria-label="Import des fichiers"><div class="fill"></div></div></div>
+      <hr class="dv">
+      <h4>Commande</h4>
+      <pre class="cb" tabindex="0" aria-label="Extrait de code">npm run build -- --mode production
+git push origin main</pre>
+      <p style="font-size:var(--fs-sm);color:var(--fg-2);margin:10px 0 0">Voir la <a class="lk" href="#" onclick="return false">procédure de mise en ligne</a> ou <button class="lk btnlink" type="button">copier l'identifiant</button> <code class="c">prj_4821</code>.</p>
+      <hr class="dv">
+      <h4>Pièces jointes</h4>
+      <div class="empty compact"><b>Aucune pièce jointe</b><p style="margin:0">Déposez un fichier ici.</p></div>
+    </aside>
+  </div>
+  <p class="hint">À essayer : changez chaque option dans la barre ; passez l'état à « Chargement » puis « Vide » ; passez en sombre et en desktop ; tabulez sur les points de statut et les liens.</p>
+
+  <h2 class="sec">Tous les tons du statut (question 1 et 2)</h2>
+  <div class="cmp" id="tones"></div>
+
+  <h2 class="sec">Avatar : tailles et repli (question 4)</h2>
+  <div class="opt tk" id="avs" style="display:flex;gap:16px;align-items:center;flex-wrap:wrap"></div>
+  <p class="hint">Initiales : première lettre du premier et du dernier mot qui commencent par une lettre ; « ? » s'il n'y en a pas. Une image qui ne charge pas laisse la place aux initiales.</p>
+</div>
+
+<script>
+(function(){
+  var state = {sb:'A', av:'A', pb:'A', sk:'A', em:'A', lk:'A', cd:'A', st:'data', mode:'light', density:'web'};
+  var TONES = {neutral:'Archivé', info:'Nouveau', success:'Terminé', warning:'En retard', danger:'Bloqué', pending:'À venir'};
+  var PEOPLE = ['Inès Moreau','Hugo Petit','Sarah Lefèvre','Tom Faure','Léa Garnier'];
+  var PROJ = [['Refonte du site','Inès Moreau','warning','21 nov.'],['Application mobile','Hugo Petit','info','20 nov.'],['Migration des données','Sarah Lefèvre','success','19 nov.'],['Audit de sécurité','Tom Faure','pending','18 nov.'],['Campagne de printemps','Léa Garnier','danger','17 nov.'],['Ancien intranet','Inès Moreau','neutral','2 sept.']];
+  function ini(n){ var w = n.trim().split(/\s+/).filter(function(x){ return /^\p{L}/u.test(x); }); var l = w.length > 1 ? [w[0], w[w.length-1]] : w; return l.map(function(x){ return x[0].toUpperCase(); }).join('') || '?'; }
+  function hash(n){ var h = 0; for (var i = 0; i < n.length; i++) h = (h*31 + n.charCodeAt(i)) % 4; return h; }
+  function av(n, size){ return '<span class="av '+size+' c'+hash(n)+'" role="img" aria-label="'+n+'">'+ini(n)+'</span>'; }
+  function sb(t){ return '<span class="sb t-'+t+'"><i class="dot '+t+'"></i><span class="lbl">'+TONES[t]+'</span></span>'; }
+  document.getElementById('list').innerHTML = PROJ.map(function(p){
+    return '<div class="li">'+av(p[1],'md')+'<span class="txt"><span class="l1"><span>'+p[0]+'</span><span class="meta">'+p[3]+'</span></span><span class="l2"><span class="sub">'+p[1]+'</span>'+sb(p[2])+'</span></span></div>';
+  }).join('');
+  document.getElementById('tbody').innerHTML = PROJ.map(function(p){
+    return '<tr><td style="padding:0"><span class="dotwrap" tabindex="0" role="img" aria-label="'+TONES[p[2]]+'"><i class="dot '+p[2]+'"></i><span class="tip" aria-hidden="true">'+TONES[p[2]]+'</span></span></td><td>'+p[0]+'</td><td style="color:var(--fg-2)">'+p[1].split(' ')[0]+'</td><td>'+sb(p[2])+'</td></tr>';
+  }).join('');
+  var names = {A:'A — point + libellé', B:'B — pastille neutre', C:'C — pastille teintée'};
+  var desc = {A:'Dessin actuel de List. Sobre ; tient dans une ligne dense.', B:'Plus visible, toujours monochrome. Ajoute un fond.', C:'Repris d\'Alfred. Plus de couleur : moins sobre.'};
+  document.getElementById('tones').innerHTML = ['A','B','C'].map(function(o){
+    return '<div class="opt tk sb'+o+'" data-tone-opt><h3>'+names[o]+(o==='A'?' <span class="reco">reco</span>':'')+'</h3><p>'+desc[o]+'</p><div style="display:flex;flex-wrap:wrap;gap:10px">'+Object.keys(TONES).map(sb).join('')+'</div></div>';
+  }).join('');
+  document.getElementById('avs').innerHTML = av('Camille Martin','sm')+av('Camille Martin','md')+av('Camille Martin','lg')+av('Jean-Baptiste de la Tour','md')+av('2e étage','md')+'<span class="av md" role="img" aria-label="Photo de Hugo Petit"><img alt="" src="data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 32 32%22><rect width=%2232%22 height=%2232%22 fill=%22%2394a3b8%22/><circle cx=%2216%22 cy=%2213%22 r=%226%22 fill=%22%23e2e8f0%22/><path d=%22M5 32a11 11 0 0 1 22 0%22 fill=%22%23e2e8f0%22/></svg>"></span>';
+  var app = document.getElementById('app');
+  function apply(){
+    var all = [app].concat([].slice.call(document.querySelectorAll('.tk')));
+    all.forEach(function(el){
+      el.classList.toggle('dark', state.mode==='dark'); el.classList.toggle('desktop', state.density==='desktop');
+      if (!el.hasAttribute('data-tone-opt')) { el.classList.remove('sbA','sbB','sbC'); el.classList.add('sb'+state.sb); }
+      el.classList.toggle('avB', state.av==='B'); el.classList.toggle('pbB', state.pb==='B'); el.classList.toggle('skPulse', state.sk==='B');
+      el.classList.toggle('emB', state.em==='B'); el.classList.toggle('lkB', state.lk==='B'); el.classList.toggle('cdB', state.cd==='B');
+    });
+    app.classList.remove('state-loading','state-empty'); if (state.st!=='data') app.classList.add('state-'+state.st);
+    document.documentElement.setAttribute('data-theme', state.mode);
+  }
+  document.querySelectorAll('.seg').forEach(function(seg){
+    seg.addEventListener('click', function(e){
+      var b = e.target.closest('button'); if (!b) return;
+      state[seg.getAttribute('data-k')] = b.getAttribute('data-v');
+      seg.querySelectorAll('button').forEach(function(x){ x.setAttribute('aria-pressed', String(x===b)); });
+      apply();
+    });
+  });
+  apply();
+})();
+</script>
+</body>
+</html>
