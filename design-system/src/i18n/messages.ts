@@ -163,6 +163,13 @@ export interface SocleMessages {
   settingsLoadError: string;
   settingsLoadErrorText: string;
   loadingSettings: string;
+  /* TreeView (D-266 à D-268) */
+  childrenLoadFailed: string;
+  noItems: string;
+  /** Bouton chevron d'un nœud ; React Aria y ajoute le libellé du nœud. */
+  expand: string;
+  collapse: string;
+  moveItem: (label: string) => string;
 }
 
 const s = (n: number) => (n > 1 ? "s" : "");
@@ -311,4 +318,9 @@ export const frenchMessages: SocleMessages = {
   settingsLoadError: "Impossible de charger ces réglages",
   settingsLoadErrorText: "Le service ne répond pas. Réessayez dans un instant.",
   loadingSettings: "Chargement des réglages",
+  childrenLoadFailed: "Impossible de charger",
+  noItems: "Aucun élément",
+  expand: "Déplier",
+  collapse: "Replier",
+  moveItem: (l) => `Déplacer ${l}`,
 };
