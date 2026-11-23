@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Nouveaux composants P1 — validation</title>
+<style>
+:root {
+  --surface: #ffffff; --surface-side: #f3f3f3; --surface-raised: #ffffff; --field: #f2f2f2; --hover: #e9e9e9; --selected: #dedede;
+  --line: #e4e4e4; --line-strong: #cfcfcf; --fg: #1a1a1a; --fg-2: #5c5c5c; --fg-3: #6b6b6b;
+  --accent: #1d4ed8; --accent-fg: #ffffff; --accent-text: #1d4ed8; --danger: #c62828; --warning: #b45309; --success: #15803d; --info: #1d4ed8;
+  --page: #ebebeb; --radius-sm: 4px; --radius-md: 8px; --radius-lg: 12px; --shadow-md: 0 6px 20px rgb(0 0 0 / .10);
+}
+body:has(#m-dark:checked) {
+  --surface: #181818; --surface-side: #222222; --surface-raised: #262626; --field: #2a2a2a; --hover: #303030; --selected: #3d3d3d;
+  --line: #333333; --line-strong: #4a4a4a; --fg: #ececec; --fg-2: #ababab; --fg-3: #8f8f8f;
+  --accent: #5b8def; --accent-fg: #0b1630; --accent-text: #7da4f2; --danger: #f07167; --warning: #e0a24a; --success: #5cc98a; --info: #5b8def;
+  --page: #111111; --shadow-md: 0 6px 20px rgb(0 0 0 / .5);
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--page); color: var(--fg); font: 14px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif; }
+.wrap { max-width: 1200px; margin: 0 auto; padding: 24px 16px 64px; }
+h1 { font-size: 22px; margin: 0; } h2 { font-size: 18px; margin: 28px 0 4px; } h3 { font-size: 15px; margin: 0 0 4px; } h4 { font-size: 12px; margin: 0 0 6px; text-transform: uppercase; letter-spacing: .04em; color: var(--fg-3); }
+.muted { color: var(--fg-2); }
+.status { display: inline-block; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 999px; background: #fde68a; color: #713f12; margin-left: 8px; vertical-align: middle; }
+.boxes { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 16px 0; }
+.box, .q { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; }
+.box ul, .box ol { margin: 4px 0 0; padding-left: 20px; }
+.bar { position: sticky; top: 0; z-index: 5; background: var(--page); padding: 10px 0; }
+.seg { display: inline-flex; border: 1px solid var(--line-strong); border-radius: 8px; overflow: hidden; background: var(--surface); }
+.seg input { position: absolute; opacity: 0; } .seg label { padding: 4px 12px; cursor: pointer; }
+.seg input:checked + label { background: var(--fg); color: var(--surface); }
+.q { margin-top: 12px; }
+.cols { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 12px; margin-top: 8px; }
+.col { border: 1px solid var(--line); border-radius: 8px; padding: 10px; }
+.col.reco { outline: 2px solid #16a34a; }
+.tag { font-size: 11px; font-weight: 700; color: #15803d; margin-left: 6px; }
+.col b { display: block; margin-bottom: 4px; }
+.demo { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-md); padding: 12px; margin-top: 8px; font-size: 13px; position: relative; }
+.src { font-size: 12px; color: var(--fg-3); margin-top: 6px; }
+label.l { display: block; font-size: 12px; font-weight: 500; margin-bottom: 3px; }
+.in { height: 30px; border: 1px solid var(--line-strong); border-radius: var(--radius-md); padding: 0 8px; display: flex; align-items: center; gap: 2px; background: var(--surface); color: var(--fg); }
+.in .seg-d { padding: 1px 2px; border-radius: 3px; } .in .seg-d.f { background: var(--accent); color: var(--accent-fg); } .in .ph { color: var(--fg-3); }
+.in .sp { flex: 1; }
+.ib { width: 24px; height: 24px; border-radius: var(--radius-sm); display: grid; place-items: center; color: var(--fg-2); }
+.cal { position: absolute; top: 62px; left: 12px; width: 236px; background: var(--surface-raised); border: 1px solid var(--line); border-radius: var(--radius-lg); box-shadow: var(--shadow-md); padding: 8px; z-index: 2; }
+.cal .h { display: flex; justify-content: space-between; align-items: center; font-weight: 600; font-size: 13px; padding: 2px 4px 6px; }
+.grid7 { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; text-align: center; font-size: 12px; }
+.grid7 .w { color: var(--fg-3); font-size: 11px; }
+.grid7 span { height: 26px; display: grid; place-items: center; border-radius: var(--radius-sm); }
+.grid7 .o { color: var(--fg-3); } .grid7 .x { color: var(--fg-3); text-decoration: line-through; }
+.grid7 .t { outline: 1px solid var(--line-strong); outline-offset: -1px; font-weight: 600; }
+.grid7 .s { background: var(--accent); color: var(--accent-fg); } .grid7 .r { background: color-mix(in srgb, var(--accent) 14%, transparent); border-radius: 0; }
+.tall { padding-bottom: 260px; }
+.alert { display: grid; grid-template-columns: auto 1fr auto; gap: 10px; align-items: start; border: 1px solid var(--line); border-radius: var(--radius-md); padding: 10px 12px; background: var(--surface); }
+.alert .ic { font-weight: 700; width: 16px; text-align: center; }
+.alert.tint-warning { background: color-mix(in srgb, var(--warning) 10%, var(--surface)); border-color: color-mix(in srgb, var(--warning) 35%, var(--surface)); }
+.alert.bar-warning { border-left: 3px solid var(--warning); }
+.alert .t { font-weight: 600; } .alert .d { color: var(--fg-2); font-size: 13px; }
+.alert .act { margin-top: 6px; } .alert .x { color: var(--fg-3); }
+.btn { display: inline-flex; align-items: center; height: 26px; padding: 0 10px; border-radius: var(--radius-md); border: 0; font: inherit; font-size: 12px; font-weight: 500; background: var(--field); color: var(--fg); }
+.num { display: flex; align-items: stretch; height: 30px; border: 1px solid var(--line-strong); border-radius: var(--radius-md); overflow: hidden; background: var(--surface); width: 180px; }
+.num .v { flex: 1; display: flex; align-items: center; padding: 0 8px; font-variant-numeric: tabular-nums; justify-content: flex-end; }
+.num .u { display: flex; align-items: center; padding-right: 8px; color: var(--fg-3); }
+.num .st { display: flex; flex-direction: column; border-left: 1px solid var(--line); width: 22px; } .num .st span { flex: 1; display: grid; place-items: center; font-size: 9px; color: var(--fg-2); } .num .st span + span { border-top: 1px solid var(--line); }
+.num .pm { width: 30px; display: grid; place-items: center; color: var(--fg-2); background: var(--field); }
+@media (max-width: 800px) { .boxes { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Nouveaux composants, priorité 1 <span class="status" style="background:#bbf7d0;color:#14532d">VALIDÉ le 23/11/2026 — toutes les options A</span></h1>
+  <p class="muted">Date Picker, Alert et NumberField, ajoutés à socle-ui après la revue Component Gallery (partie C, validée). Chaque question montre les options ; la recommandation est encadrée en vert. Réponse de l'utilisateur : tout A.</p>
+
+  <div class="boxes">
+    <div class="box"><h3>Déjà décidé</h3><ul>
+      <li>D-022, D-130 à D-132 : anatomie de <code>Field</code> (libellé au-dessus, aide, erreur sous le champ, lecture seule grise avec cadenas).</li>
+      <li>D-007 : réduire les clics ; pas de bouton « Appliquer » quand un choix suffit.</li>
+      <li>D-151, D-159 : couleur de ton sur l'icône seulement ; pas de bandeau pleine largeur, un encart dans le contenu.</li>
+      <li>Saisie au clavier toujours possible (revue UX : la date se tape).</li>
+      <li>Format de la langue (<code>locale</code> du provider) ; aucun texte en dur.</li>
+    </ul></div>
+    <div class="box"><h3>À décider</h3><ol>
+      <li>D1 à D4 : Date Picker.</li>
+      <li>A1 à A3 : Alert.</li>
+      <li>N1 à N3 : NumberField.</li>
+    </ol></div>
+  </div>
+  <div class="bar"><span class="seg" role="radiogroup" aria-label="Mode"><input type="radio" name="m" id="m-light" checked><label for="m-light">Clair</label><input type="radio" name="m" id="m-dark"><label for="m-dark">Sombre</label></span></div>
+
+  <h2>Date Picker (<code>DatePicker</code>, <code>DateRangePicker</code>)</h2>
+  <div class="q"><h3>D1. Saisie</h3><div class="cols">
+    <div class="col reco"><h4>Option A <span class="tag">recommandé</span></h4><b>Champ par segments + bouton calendrier</b>JJ / MM / AAAA en segments (React Aria <code>DateField</code>) : flèches haut/bas changent la valeur, on tape les chiffres, le segment suivant prend le focus. Le bouton ouvre le calendrier.<div class="demo"><label class="l">Date de début</label><div class="in"><span class="seg-d f">24</span>/<span class="seg-d">11</span>/<span class="seg-d">2026</span><span class="sp"></span><span class="ib">▦</span></div></div><div class="src">React Aria, Carbon.</div></div>
+    <div class="col"><h4>Option B</h4><b>Champ texte libre</b>On tape « 24/11/2026 » ou « 24 nov. » ; la date est lue à la sortie du champ. Plus souple, plus d'erreurs de lecture.<div class="demo"><label class="l">Date de début</label><div class="in">24 nov.<span class="sp"></span><span class="ib">▦</span></div></div></div>
+  </div></div>
+  <div class="q"><h3>D2. Calendrier</h3><div class="cols">
+    <div class="col reco"><h4>Option A <span class="tag">recommandé</span></h4><b>Un mois, dans un volet</b>Flèches pour le mois, titre cliquable pour choisir mois et année ; aujourd'hui encadré ; jours indisponibles barrés et non choisissables ; semaine qui commence le lundi (selon la langue). Choisir un jour ferme le volet (pas de « Appliquer »).<div class="demo tall"><label class="l">Date de début</label><div class="in"><span class="seg-d">24</span>/<span class="seg-d">11</span>/<span class="seg-d">2026</span><span class="sp"></span><span class="ib">▦</span></div>
+      <div class="cal"><div class="h"><span>‹</span><span>novembre 2026</span><span>›</span></div><div class="grid7"><span class="w">L</span><span class="w">M</span><span class="w">M</span><span class="w">J</span><span class="w">V</span><span class="w">S</span><span class="w">D</span><span class="o">26</span><span class="o">27</span><span class="o">28</span><span class="o">29</span><span class="o">30</span><span class="o">31</span><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span class="x">7</span><span class="x">8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span class="x">14</span><span class="x">15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span class="x">21</span><span class="x">22</span><span class="t">23</span><span class="s">24</span><span>25</span><span>26</span><span>27</span><span class="x">28</span><span class="x">29</span><span>30</span></div></div></div></div>
+    <div class="col"><h4>Option B</h4><b>Deux mois côte à côte</b>Plus de contexte, mais un volet deux fois plus large ; utile surtout pour les plages.</div>
+  </div></div>
+  <div class="q"><h3>D3. Plage de dates</h3><div class="cols">
+    <div class="col reco"><h4>Option A <span class="tag">recommandé</span></h4><b>Un champ « début – fin », un calendrier</b>Deux groupes de segments dans un même cadre ; dans le calendrier, le premier clic fixe le début, le second la fin et ferme ; la plage est teintée.<div class="demo"><label class="l">Période</label><div class="in"><span class="seg-d">03</span>/<span class="seg-d">11</span>/<span class="seg-d">2026</span>&nbsp;–&nbsp;<span class="seg-d">24</span>/<span class="seg-d">11</span>/<span class="seg-d">2026</span><span class="sp"></span><span class="ib">▦</span></div></div><div class="src">React Aria DateRangePicker.</div></div>
+    <div class="col"><h4>Option B</h4><b>Deux champs séparés</b>« Du » et « Au », chacun avec son calendrier. Plus simple, mais deux volets.</div>
+  </div></div>
+  <div class="q"><h3>D4. Raccourcis de période</h3><div class="cols">
+    <div class="col reco"><h4>Option A <span class="tag">recommandé</span></h4><b>En option, pour les plages</b>Option <code>presets</code> : une colonne à gauche du calendrier (« 7 derniers jours », « Ce mois-ci »…), fournie par l'app. Absente par défaut.</div>
+    <div class="col"><h4>Option B</h4><b>Pas de raccourcis</b></div>
+  </div></div>
+
+  <h2>Alert (encart dans le contenu)</h2>
+  <div class="q"><h3>A1. Aspect</h3><div class="cols">
+    <div class="col reco"><h4>Option A <span class="tag">recommandé</span></h4><b>Carte neutre, icône de ton</b>Comme les toasts (D-151) : fond de la surface, trait fin, seule l'icône prend la couleur du ton. Quatre tons : information, succès, alerte, erreur.<div class="demo"><div class="alert"><span class="ic" style="color:var(--warning)">!</span><div><div class="t">Stock bas</div><div class="d">L'article A-12 sera épuisé dans 3 jours.</div><div class="act"><button class="btn">Commander</button></div></div><span class="x">✕</span></div></div></div>
+    <div class="col"><h4>Option B</h4><b>Fond teinté léger</b>Fond et trait teintés par le ton. Plus visible, moins monochrome.<div class="demo"><div class="alert tint-warning"><span class="ic" style="color:var(--warning)">!</span><div><div class="t">Stock bas</div><div class="d">L'article A-12 sera épuisé dans 3 jours.</div></div><span class="x">✕</span></div></div></div>
+    <div class="col"><h4>Option C</h4><b>Barre de ton à gauche</b>Carte neutre avec un trait de 3 px de la couleur du ton.<div class="demo"><div class="alert bar-warning"><span class="ic" style="color:var(--warning)">!</span><div><div class="t">Stock bas</div><div class="d">L'article A-12 sera épuisé dans 3 jours.</div></div><span class="x">✕</span></div></div></div>
+  </div></div>
+  <div class="q"><h3>A2. Contenu</h3><div class="cols">
+    <div class="col reco"><h4>Option A <span class="tag">recommandé</span></h4><b>Titre facultatif, texte, une action, croix facultative</b>Une seule action (bouton secondaire ou lien) ; un lien est permis dans le texte ; la croix n'existe que si l'app fournit <code>onDismiss</code> ; une alerte d'erreur n'a pas de croix.</div>
+    <div class="col"><h4>Option B</h4><b>Deux actions</b>Action principale et secondaire, comme une petite modale.</div>
+  </div></div>
+  <div class="q"><h3>A3. Annonce et placement</h3><div class="cols">
+    <div class="col reco"><h4>Option A <span class="tag">recommandé</span></h4><b>Au-dessus de ce qu'elle concerne</b>Dans le contenu, jamais en bandeau pleine largeur (D-159). Une alerte présente au chargement est un simple bloc ; une alerte qui apparaît après une action est annoncée (<code>role="status"</code>, ou <code>role="alert"</code> pour une erreur).</div>
+  </div></div>
+
+  <h2>NumberField (champ nombre)</h2>
+  <div class="q"><h3>N1. Boutons + et −</h3><div class="cols">
+    <div class="col reco"><h4>Option A <span class="tag">recommandé</span></h4><b>Flèches empilées à droite</b>Discrètes, la largeur reste celle d'un champ ; hors de l'ordre de tabulation (le clavier utilise ↑ ↓).<div class="demo"><label class="l">Quantité</label><div class="num"><span class="v">1 250</span><span class="u">pièces</span><span class="st"><span>▲</span><span>▼</span></span></div></div><div class="src">macOS, Fluent.</div></div>
+    <div class="col"><h4>Option B</h4><b>− et + de part et d'autre</b>Plus grands, plus faciles au doigt.<div class="demo"><label class="l">Quantité</label><div class="num"><span class="pm">−</span><span class="v">1 250</span><span class="pm">+</span></div></div><div class="src">Carbon.</div></div>
+    <div class="col"><h4>Option C</h4><b>Pas de boutons</b>Clavier seulement (↑ ↓, Maj).</div>
+  </div></div>
+  <div class="q"><h3>N2. Clavier et pas</h3><div class="cols">
+    <div class="col reco"><h4>Option A <span class="tag">recommandé</span></h4><b>↑ ↓ pour un pas, Maj pour dix pas</b>Page haut / bas = dix pas ; Origine / Fin = minimum / maximum ; molette désactivée (évite les changements en faisant défiler la page).</div>
+  </div></div>
+  <div class="q"><h3>N3. Format et unité</h3><div class="cols">
+    <div class="col reco"><h4>Option A <span class="tag">recommandé</span></h4><b>Format de la langue, unité en suffixe</b>« 1 250 » en français ; pendant la saisie, le texte reste libre, il est relu à la sortie ; unité, devise ou % affichés dans le champ et lus avec la valeur ; nombre aligné à droite ; minimum et maximum vérifiés à la sortie, avec le message de <code>Field</code>.</div>
+  </div></div>
+
+  <h2 style="margin-top:32px">Avant / après</h2>
+  <p class="muted">À remplir une fois les composants codés : captures Storybook.</p>
+</div>
+</body>
+</html>
