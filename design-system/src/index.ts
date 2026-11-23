@@ -125,3 +125,8 @@ export { DetailPage } from "./templates/DetailPage/DetailPage";
 export type { DetailPageProps, DetailPageBack } from "./templates/DetailPage/DetailPage";
 export { TreeView } from "./components/TreeView/TreeView";
 export type { TreeViewProps, TreeNode, TreeMoveTarget } from "./components/TreeView/TreeView";
+export { Terminal } from "./components/Terminal/Terminal";
+export type { TerminalProps, TerminalHandle, TerminalConnection, TerminalState } from "./components/Terminal/Terminal";
+export type { TerminalEngine, TerminalEngineSource } from "./components/Terminal/terminalEngine";
+export { LogViewer } from "./components/LogViewer/LogViewer";
+export type { LogViewerProps, LogViewerHandle, LogViewerView, LogLevelFilter, LogLine, LogLevel } from "./components/LogViewer/LogViewer";

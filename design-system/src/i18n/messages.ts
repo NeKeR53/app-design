@@ -171,9 +171,63 @@ export interface SocleMessages {
   expand: string;
   collapse: string;
   moveItem: (label: string) => string;
+  /* Terminal (D-282 à D-284) */
+  terminalDescription: string;
+  terminalReadOnlyDescription: string;
+  terminalOpening: string;
+  terminalConnecting: string;
+  terminalOpen: string;
+  terminalClosed: (reason?: string) => string;
+  terminalError: (reason?: string) => string;
+  terminalUnavailable: (reason: string) => string;
+  terminalLeave: string;
+  terminalSize: string;
+  terminalReadOnly: string;
+  selectionCopied: string;
+  copyFailed: string;
+  /* LogViewer (D-285 à D-289) */
+  logTools: string;
+  logLevel: (level: string) => string;
+  levelAll: string;
+  levelWarning: string;
+  levelError: string;
+  levelAllLines: string;
+  levelWarnings: string;
+  levelErrors: string;
+  logSearch: string;
+  matchOf: (index: number, total: number) => string;
+  noMatchingLine: string;
+  previousMatch: string;
+  nextMatch: string;
+  followEnd: string;
+  wrapLines: string;
+  showTimestamps: string;
+  errorList: string;
+  copyLog: string;
+  copySelection: string;
+  copied: string;
+  lineCount: (n: number) => string;
+  droppedLines: (n: number) => string;
+  errorCount: (n: number) => string;
+  warningCount: (n: number) => string;
+  logLive: string;
+  logEnded: string;
+  followPaused: (newLines: number) => string;
+  backToEnd: string;
+  loadingLog: string;
+  waitingLines: string;
+  emptyLog: string;
+  noLineAtLevel: string;
+  logErrors: string;
+  errorsTitle: (n: number) => string;
+  lineNumber: (n: number) => string;
+  noErrors: string;
+  errorListLimit: (n: number) => string;
+  lineCut: string;
 }
 
 const s = (n: number) => (n > 1 ? "s" : "");
+const num = (n: number) => n.toLocaleString("fr-FR");
 
 export const frenchMessages: SocleMessages = {
   keyShift: "Maj",
@@ -325,4 +379,56 @@ export const frenchMessages: SocleMessages = {
   expand: "Déplier",
   collapse: "Replier",
   moveItem: (l) => `Déplacer ${l}`,
+  terminalDescription: "Terminal interactif : la saisie est envoyée au programme. Ctrl+Maj+C copie, Ctrl+V colle, F6 pour en sortir.",
+  terminalReadOnlyDescription: "Terminal en lecture seule. F6 pour en sortir.",
+  terminalOpening: "Ouverture du terminal…",
+  terminalConnecting: "Connexion…",
+  terminalOpen: "Connecté",
+  terminalClosed: (r) => (r ? `Session terminée : ${r}` : "Session terminée"),
+  terminalError: (r) => (r ? `Connexion interrompue : ${r}` : "Connexion interrompue"),
+  terminalUnavailable: (r) => `Terminal indisponible : ${r}`,
+  terminalLeave: "F6 pour sortir",
+  terminalSize: "Taille",
+  terminalReadOnly: "Lecture seule",
+  selectionCopied: "Sélection copiée",
+  copyFailed: "Copie impossible",
+
+  logTools: "Outils du journal",
+  logLevel: (l) => `Niveau : ${l}`,
+  levelAll: "Tous",
+  levelWarning: "Alertes",
+  levelError: "Erreurs",
+  levelAllLines: "Toutes les lignes",
+  levelWarnings: "Alertes et erreurs",
+  levelErrors: "Erreurs",
+  logSearch: "le journal",
+  matchOf: (i, n) => `${num(i)} sur ${num(n)}`,
+  noMatchingLine: "Aucune ligne",
+  previousMatch: "Résultat précédent",
+  nextMatch: "Résultat suivant",
+  followEnd: "Suivre la fin",
+  wrapLines: "Retour à la ligne",
+  showTimestamps: "Horodatage",
+  errorList: "Liste des erreurs",
+  copyLog: "Copier le journal",
+  copySelection: "Copier la sélection",
+  copied: "Copié",
+  lineCount: (n) => `${num(n)} ligne${s(n)}`,
+  droppedLines: (n) => `${num(n)} plus ancienne${s(n)} oubliée${s(n)}`,
+  errorCount: (n) => `${num(n)} erreur${s(n)}`,
+  warningCount: (n) => `${num(n)} alerte${s(n)}`,
+  logLive: "En direct",
+  logEnded: "Terminé",
+  followPaused: (n) => (n ? `Suivi en pause · ${num(n)} nouvelle${s(n)} ligne${s(n)}` : "Suivi en pause"),
+  backToEnd: "Revenir à la fin",
+  loadingLog: "Chargement du journal…",
+  waitingLines: "En attente des premières lignes…",
+  emptyLog: "Journal vide",
+  noLineAtLevel: "Aucune ligne de ce niveau.",
+  logErrors: "Erreurs du journal",
+  errorsTitle: (n) => `Erreurs · ${num(n)}`,
+  lineNumber: (n) => `Ligne ${num(n)}`,
+  noErrors: "Aucune erreur relevée dans ce journal.",
+  errorListLimit: (n) => `Seules les ${num(n)} premières erreurs sont listées.`,
+  lineCut: " … ligne coupée à l'affichage",
 };

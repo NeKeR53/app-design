@@ -1,0 +1,329 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Terminal et LogViewer — validation v1</title>
+<style>
+/* ---------- Page de validation ---------- */
+:root{--pg-bg:#f6f6f6;--pg-fg:#1a1a1a;--pg-muted:#5c5c5c;--pg-line:#e2e2e2;--pg-card:#fff;--pg-ok:#e3f4e8;--pg-ok-fg:#14532d;--pg-reco:#e7f0ff;--pg-reco-fg:#1d4ed8}
+:root[data-theme="dark"]{--pg-bg:#121212;--pg-fg:#ececec;--pg-muted:#9a9a9a;--pg-line:#2c2c2c;--pg-card:#1b1b1b;--pg-ok:#173323;--pg-ok-fg:#bfe8cf;--pg-reco:#16233d;--pg-reco-fg:#9cc0ff}
+*{box-sizing:border-box}html,body{margin:0}
+body{background:var(--pg-bg);color:var(--pg-fg);font:15px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif}
+.pg{max-width:1180px;margin:0 auto;padding:24px 16px 64px}
+h1{font-size:22px;font-weight:600;margin:0 0 4px;display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+h2.sec{font-size:16px;margin:28px 0 8px}
+.intro{color:var(--pg-muted);margin:0 0 20px}
+.badge{font-size:12px;font-weight:600;letter-spacing:.04em;padding:3px 8px;border-radius:6px;background:var(--pg-ok);color:var(--pg-ok-fg)}
+.boxes{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px}
+@media (max-width:760px){.boxes{grid-template-columns:1fr}}
+.box{background:var(--pg-card);border:1px solid var(--pg-line);border-radius:10px;padding:14px 16px;font-size:14px}
+.box h2{font-size:14px;margin:0 0 8px;font-weight:600}.box ul,.box ol{margin:0;padding-left:20px}.box li{margin:5px 0}
+.reco{font-size:11.5px;font-weight:600;padding:1px 6px;border-radius:5px;background:var(--pg-reco);color:var(--pg-reco-fg);margin-left:4px}
+.toolbar{position:sticky;top:0;z-index:100;background:var(--pg-bg);padding:10px 0;border-bottom:1px solid var(--pg-line);margin-bottom:16px;display:flex;flex-wrap:wrap;gap:10px 16px;align-items:center}
+.seg{display:inline-flex;border:1px solid var(--pg-line);border-radius:8px;overflow:hidden;background:var(--pg-card)}
+.seg button{border:0;background:transparent;color:var(--pg-fg);padding:5px 10px;font:inherit;font-size:13px;cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--pg-fg);color:var(--pg-bg)}
+.tlabel{font-size:12px;color:var(--pg-muted);margin-right:6px}
+.hint{margin:8px 0 0;color:var(--pg-muted);font-size:13px}
+.cmp{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+@media (max-width:860px){.cmp{grid-template-columns:1fr}}
+.opt{background:var(--pg-card);border:1px solid var(--pg-line);border-radius:10px;padding:12px 14px;font-size:13px;min-width:0}
+.opt h3{margin:0 0 2px;font-size:13px}.opt p{margin:0 0 10px;color:var(--pg-muted)}
+
+/* ---------- Tokens Socle (copie de src/tokens) ---------- */
+.tk{--surface:#fff;--surface-side:#f3f3f3;--surface-raised:#fff;--field:#f2f2f2;--hover:#e9e9e9;--selected:#dedede;--line:#e4e4e4;--line-strong:#cfcfcf;--fg:#1a1a1a;--fg-2:#5c5c5c;--fg-3:#6b6b6b;
+  --accent:#1d4ed8;--accent-text:#1d4ed8;--success:#15803d;--warning:#b45309;--danger:#c62828;--info:#1d4ed8;
+  --ansi-0:#3a3a3a;--ansi-1:#c62828;--ansi-2:#1b7a36;--ansi-3:#8a6100;--ansi-4:#1d4ed8;--ansi-5:#a3248f;--ansi-6:#0e7490;--ansi-7:#5c5c5c;
+  --ansi-8:#6b6b6b;--ansi-9:#b3261e;--ansi-10:#15803d;--ansi-11:#946200;--ansi-12:#2552c9;--ansi-13:#9b2789;--ansi-14:#0b6b85;--ansi-15:#1a1a1a;
+  --font-sans:-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;--font-mono:ui-monospace,"SF Mono","Cascadia Code",Consolas,monospace;
+  --radius-sm:4px;--radius-md:8px;--radius-lg:12px;--icon:16px;--icon-stroke:1.6;--fs-xs:11.5px;--fs-sm:12.5px;--fs-md:14px;--lh:1.45;--row-h:34px;--bar-h:44px;--side-w:220px;--icon-btn:28px;--btn-h-sm:26px;
+  background:var(--surface);color:var(--fg);font-family:var(--font-sans);font-size:var(--fs-md);line-height:var(--lh)}
+.tk.dark{--surface:#181818;--surface-side:#222;--surface-raised:#262626;--field:#2a2a2a;--hover:#303030;--selected:#3d3d3d;--line:#333;--line-strong:#4a4a4a;--fg:#ececec;--fg-2:#ababab;--fg-3:#8f8f8f;
+  --accent:#5b8def;--accent-text:#7da4f2;--success:#5cc98a;--warning:#e0a24a;--danger:#f07167;--info:#5b8def;
+  --ansi-0:#9a9a9a;--ansi-1:#f07167;--ansi-2:#5cc98a;--ansi-3:#e0b44a;--ansi-4:#7da4f2;--ansi-5:#e48ad6;--ansi-6:#5ec4d6;--ansi-7:#cfcfcf;
+  --ansi-8:#8f8f8f;--ansi-9:#ff8a80;--ansi-10:#7fe0a6;--ansi-11:#f2cd6a;--ansi-12:#9dbcf7;--ansi-13:#f0a6e6;--ansi-14:#82dbe9;--ansi-15:#f5f5f5}
+.tk.desktop{--fs-xs:10.5px;--fs-sm:11.5px;--fs-md:13px;--lh:1.4;--row-h:28px;--bar-h:38px;--side-w:200px;--icon-btn:24px;--btn-h-sm:24px}
+
+/* ---------- Mini AppShell ---------- */
+.app{position:relative;height:600px;border:1px solid var(--pg-line);border-radius:12px;overflow:hidden;display:grid;grid-template-columns:var(--side-w) minmax(0,1fr);grid-template-rows:var(--bar-h) 1fr}
+@media (max-width:760px){.app{grid-template-columns:minmax(0,1fr);height:auto}.side,.bar-side{display:none}}
+.app *{box-sizing:border-box}.app button{font:inherit;color:inherit}
+.ic{width:var(--icon);height:var(--icon);flex:none;stroke:currentColor;fill:none;stroke-width:var(--icon-stroke);stroke-linecap:round;stroke-linejoin:round}
+.bar-side{background:var(--surface-side);border-right:1px solid var(--line)}
+.bar{display:flex;align-items:center;gap:10px;padding:0 16px;border-bottom:1px solid var(--line);font-weight:600}
+.side{background:var(--surface-side);border-right:1px solid var(--line);padding:6px;display:flex;flex-direction:column}
+.nav{display:flex;align-items:center;gap:8px;height:var(--row-h);padding:0 8px;border-radius:var(--radius-md);color:var(--fg-2)}
+.nav.on{background:var(--selected);color:var(--fg)}
+.main{display:flex;flex-direction:column;min-width:0;min-height:0;padding:12px 16px;gap:8px}
+.tabs{display:flex;gap:16px;border-bottom:1px solid var(--line);font-size:var(--fs-md)}
+.tabs span{padding:6px 0;color:var(--fg-2);cursor:pointer}.tabs span.on{color:var(--fg);box-shadow:inset 0 -2px var(--fg)}
+
+/* ---------- Pièces Socle ---------- */
+.ib{display:inline-grid;place-items:center;width:var(--icon-btn);height:var(--icon-btn);border:0;border-radius:var(--radius-md);background:transparent;color:var(--fg-2);cursor:default;flex:none}
+.ib:hover{background:var(--hover);color:var(--fg)}.ib[aria-pressed="true"]{background:var(--hover);color:var(--fg)}
+.ib:disabled{opacity:.4}
+.btn{display:inline-flex;align-items:center;gap:6px;height:var(--btn-h-sm);padding:0 10px;border:0;border-radius:var(--radius-md);background:var(--field);font-size:var(--fs-sm);cursor:default;white-space:nowrap}
+.btn:hover{background:var(--hover)}
+.search{display:flex;align-items:center;gap:6px;width:320px;max-width:100%;height:var(--row-h);padding:0 8px;border:1px solid var(--line-strong);border-radius:var(--radius-md);background:var(--surface);color:var(--fg-3)}
+.search input{border:0;outline:0;background:transparent;color:var(--fg);font:inherit;flex:1;min-width:0}
+.search:focus-within{outline:2px solid var(--accent);outline-offset:1px}
+.dot{display:inline-block;width:7px;height:7px;border-radius:50%;flex:none;background:var(--fg-3)}
+.dot.success{background:var(--success)}.dot.danger{background:var(--danger)}.dot.pending{background:transparent;border:1.5px solid var(--fg-3)}
+.menu{position:absolute;z-index:20;min-width:220px;background:var(--surface-raised);border:1px solid var(--line);border-radius:var(--radius-lg);box-shadow:0 6px 20px rgb(0 0 0 / .12);padding:4px}
+.menu .it{display:flex;align-items:center;gap:8px;height:var(--row-h);padding:0 10px;border-radius:var(--radius-md);cursor:default}
+.menu .it:hover{background:var(--hover)}.menu .it .n{margin-left:auto;color:var(--fg-3);font-variant-numeric:tabular-nums}
+.menu .it .chk{width:16px;display:inline-grid;place-items:center}
+
+/* ---------- Terminal ---------- */
+.term{display:flex;flex-direction:column;flex:1;min-height:0;border:1px solid var(--line);border-radius:var(--radius-md);background:var(--surface);overflow:hidden}
+.term:focus-within,.term.focus{border-color:var(--accent);outline:1px solid var(--accent)}
+.term .screen{flex:1;min-height:0;overflow:auto;padding:8px 12px 4px;font:13px/1.2 var(--font-mono);white-space:pre;color:var(--fg);outline:0}
+.term .cursor{display:inline-block;width:.6em;background:var(--accent);color:var(--surface)}
+.term .status{display:flex;align-items:center;gap:12px;min-height:28px;padding:2px 12px;border-top:1px solid var(--line);background:var(--surface-side);color:var(--fg-2);font-size:var(--fs-sm);font-variant-numeric:tabular-nums}
+.term .status .st{display:inline-flex;align-items:center;gap:6px}.term .status .st.err{color:var(--danger)}
+.term .status .hintr{margin-left:auto}
+.a0{color:var(--ansi-0)}.a1{color:var(--ansi-1)}.a2{color:var(--ansi-2)}.a3{color:var(--ansi-3)}.a4{color:var(--ansi-4)}.a5{color:var(--ansi-5)}.a6{color:var(--ansi-6)}.a7{color:var(--ansi-7)}
+.a8{color:var(--ansi-8)}.a9{color:var(--ansi-9)}.a10{color:var(--ansi-10)}.a11{color:var(--ansi-11)}.a12{color:var(--ansi-12)}.a13{color:var(--ansi-13)}.a14{color:var(--ansi-14)}.a15{color:var(--ansi-15)}
+.b{font-weight:700}
+
+/* ---------- LogViewer ---------- */
+.log{position:relative;display:flex;flex-direction:column;flex:1;min-height:0;border:1px solid var(--line);border-radius:var(--radius-md);background:var(--surface);overflow:hidden}
+.log .lbar{display:flex;flex-wrap:wrap;align-items:center;gap:6px;padding:6px 8px;border-bottom:1px solid var(--line)}
+.log .spacer{flex:1}
+.log .count{color:var(--fg-3);font-size:var(--fs-sm);font-variant-numeric:tabular-nums;min-width:64px}
+.log .body{display:flex;flex:1;min-height:0}
+.log .vp{flex:1;min-width:0;overflow:auto;font:12.5px/18px var(--font-mono);padding:4px 0;outline:0}
+.log .vp:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
+.log .ln{display:flex;white-space:pre;padding-right:12px}
+.log.wrap .ln{white-space:pre-wrap;word-break:break-all}
+.log .ln .no{flex:none;width:5ch;text-align:right;padding-right:1ch;color:var(--fg-3);user-select:none;border-left:3px solid transparent}
+.log .ln .tm{flex:none;width:13ch;color:var(--fg-3);user-select:none}
+.log.notime .ln .tm{display:none}
+.log .ln.err .no{border-left-color:var(--danger)}.log .ln.warn .no{border-left-color:var(--warning)}
+.log .ln.match{background:var(--field)}.log .ln.cur{background:var(--selected)}
+.log mark{background:color-mix(in srgb,var(--warning) 35%,transparent);color:inherit;border-radius:2px}
+.log .errs{width:260px;flex:none;border-left:1px solid var(--line);overflow:auto;background:var(--surface)}
+.log .errs h4{margin:0;padding:8px 12px;font-size:var(--fs-sm);font-weight:500;color:var(--fg-3)}
+.log .errs .e{display:flex;flex-direction:column;padding:6px 12px;border-radius:var(--radius-md);margin:0 4px;cursor:default}
+.log .errs .e:hover{background:var(--hover)}
+.log .errs .e small{color:var(--fg-3);font-size:var(--fs-xs)}.log .errs .e code{font:var(--fs-sm) var(--font-mono);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.log .lstat{display:flex;flex-wrap:wrap;align-items:center;gap:12px;min-height:28px;padding:2px 12px;border-top:1px solid var(--line);background:var(--surface-side);color:var(--fg-2);font-size:var(--fs-sm);font-variant-numeric:tabular-nums}
+.log .lstat .e{color:var(--danger)}.log .lstat .w{color:var(--warning)}
+.log .lstat .paused{margin-left:auto;display:inline-flex;align-items:center;gap:8px}
+.log .empty{flex:1;display:grid;place-items:center;color:var(--fg-2);text-align:center}
+.seg2{display:inline-flex;background:var(--field);border-radius:var(--radius-md);padding:2px}
+.seg2 button{border:0;background:transparent;height:calc(var(--btn-h-sm) - 4px);padding:0 8px;border-radius:6px;font-size:var(--fs-sm);cursor:default}
+.seg2 button[aria-pressed="true"]{background:var(--surface);box-shadow:0 1px 2px rgb(0 0 0 / .12)}
+.seg2 .n{color:var(--fg-3);margin-left:4px}
+.lstat button.cnt{border:0;background:transparent;padding:0 4px;border-radius:4px;font:inherit;color:inherit;cursor:default;text-decoration:underline dotted}
+.lstat button.cnt[aria-pressed="true"]{background:var(--selected)}
+
+/* ---------- Palette ---------- */
+.pal{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:6px;padding:12px;border-radius:10px;border:1px solid var(--pg-line)}
+@media (max-width:640px){.pal{grid-template-columns:repeat(4,minmax(0,1fr))}}
+.sw{font:12px var(--font-mono);display:flex;flex-direction:column;gap:2px}
+.sw b{font-size:15px}
+.sw span{color:var(--fg-3);font-size:11px}
+</style>
+</head>
+<body>
+<div class="pg">
+<h1>Terminal et LogViewer <span class="badge">VALIDÉ le 2026-11-23 (par délégation)</span></h1>
+<p class="intro">Deux composants spécialisés pour les écrans techniques : un terminal interactif (xterm.js fourni par l'app) et un journal en lignes. Version mineure : deux composants nouveaux, seize tokens nouveaux, rien ne change pour l'existant. Décisions D-280 à D-289.</p>
+
+<div class="boxes">
+  <div class="box"><h2>Déjà décidé</h2><ul>
+    <li>Rien de métier dans Socle (règle 7) : pas de canal WebSocket propre à une app.</li>
+    <li>Boutons-icônes de 24 ou 28 px, une seule variante (D-035 à D-037) ; info-bulle partout.</li>
+    <li>Filtrer par une propriété : un bouton et un Menu à choix (D-074, D-141).</li>
+    <li>Barre de recherche : 320 px, 2 caractères, 300 ms (D-078, D-080).</li>
+    <li>État vide avec <code>EmptyState</code> (D-166), état par <code>StatusDot</code> (D-161).</li>
+    <li>Mode clair ou sombre par les tokens (D-005, D-012).</li>
+  </ul></div>
+  <div class="box"><h2>Tranché (par délégation, 2026-11-23)</h2><ol>
+    <li>xterm.js : <b>reste côté app</b>, peer dependency facultative ; l'app passe le moteur par <code>engine</code> (D-280).</li>
+    <li>Couleurs ANSI : <b>16 tokens <code>--ansi-0</code> à <code>--ansi-15</code></b>, ≥ 4,5:1 sur <code>--surface</code> (D-281).</li>
+    <li>Filtre de niveau : <b>option A, Menu à choix</b> avec compteurs (D-286).</li>
+    <li>Liste des erreurs : <b>panneau à droite</b>, clic = ligne montrée (D-287).</li>
+    <li>Suivre : <b>pause dès qu'on remonte</b>, « Revenir à la fin » (D-288).</li>
+    <li>Copie : <b>la sélection, sinon les lignes affichées</b>, sans séquences ANSI (D-289).</li>
+  </ol></div>
+</div>
+
+<div class="toolbar">
+  <span><span class="tlabel">Mode</span><span class="seg" data-k="mode"><button aria-pressed="true" data-v="light">Clair</button><button data-v="dark">Sombre</button></span></span>
+  <span><span class="tlabel">Densité</span><span class="seg" data-k="dens"><button aria-pressed="true" data-v="web">Web</button><button data-v="desktop">Desktop</button></span></span>
+  <span><span class="tlabel">Terminal</span><span class="seg" data-k="tstate"><button aria-pressed="true" data-v="open">Connecté</button><button data-v="waiting">Ouverture</button><button data-v="closed">Terminé</button><button data-v="error">Erreur</button><button data-v="ro">Lecture seule</button></span></span>
+  <span><span class="tlabel">Journal</span><span class="seg" data-k="lstate"><button aria-pressed="true" data-v="live">En direct</button><button data-v="done">Terminé</button><button data-v="loading">Chargement</button><button data-v="empty">Vide</button></span></span>
+</div>
+
+<h2 class="sec">1. Terminal dans une page de détail</h2>
+<div class="tk app" id="app1">
+  <div class="bar-side"></div>
+  <div class="bar">Conteneur « web-01 »</div>
+  <div class="side"><div class="nav">Vue d'ensemble</div><div class="nav on">Conteneurs</div><div class="nav">Réglages</div></div>
+  <div class="main">
+    <div class="tabs"><span>Résumé</span><span class="on">Console</span><span>Journal</span></div>
+    <div style="display:flex;gap:6px;align-items:center">
+      <span style="flex:1;color:var(--fg-2);font-size:var(--fs-sm)">Barre de la page (ActionBar <code>toolbar</code>), qui pilote la poignée du terminal :</span>
+      <button class="btn" onclick="termClear()">Effacer</button>
+      <button class="btn" onclick="termPaste()">Coller « ls -la »</button>
+      <button class="btn" onclick="termCopy()">Copier la session</button>
+    </div>
+    <section class="term" id="term" aria-label="Console du conteneur web-01">
+      <div class="screen" id="screen" tabindex="0" aria-label="Console du conteneur web-01"></div>
+      <div class="status"><span class="st" id="tst"><span class="dot success"></span>Connecté</span><span class="hintr" id="thint" aria-live="polite">F6 pour sortir</span><span>120 × 32</span></div>
+    </section>
+  </div>
+</div>
+<p class="hint">Cliquez dans le terminal : le cadre passe à l'accent (il garde le clavier). F6 ou Maj+F6 sortent. Ctrl+C copie quand du texte est choisi, sinon il interrompt le programme ; Ctrl+Maj+C copie toujours ; Ctrl+V colle. Sur macOS, ⌘C et ⌘V.</p>
+
+<h2 class="sec">2. Couleurs ANSI en tokens (D-281)</h2>
+<div class="tk" id="palwrap" style="border-radius:10px"><div class="pal" id="pal"></div></div>
+<p class="hint">Les 16 couleurs suivent le mode. Chacune atteint au moins 4,5:1 sur <code>--surface</code>. « Noir » et « blanc » deviennent des gris lisibles. Une couleur 256 ou RVB est ramenée à la plus proche des 16 dans le journal ; xterm garde un contraste minimum de 4,5:1.</p>
+
+<h2 class="sec">3. Filtre de niveau : trois options</h2>
+<div class="cmp">
+  <div class="opt"><h3>A — Menu à choix <span class="reco">Retenue</span></h3><p>Un bouton « Niveau : Tous » ouvre un Menu à choix avec les compteurs. Même règle que les filtres des listes (D-141). Aucun composant nouveau.</p>
+    <div class="tk" style="position:relative;padding:8px;border-radius:8px;border:1px solid var(--line)"><button class="btn" onclick="this.nextElementSibling.hidden=!this.nextElementSibling.hidden">Niveau : Tous ▾</button>
+      <div class="menu" hidden style="top:44px;left:8px"><div class="it"><span class="chk">✓</span>Toutes les lignes<span class="n">1 204</span></div><div class="it"><span class="chk"></span>Alertes et erreurs<span class="n">15</span></div><div class="it"><span class="chk"></span>Erreurs<span class="n">3</span></div></div></div></div>
+  <div class="opt"><h3>B — Boutons segmentés</h3><p>Compteurs toujours visibles. Demande un composant segmenté, qui n'existe pas encore dans Socle (hors de ce lot).</p>
+    <div class="tk" style="padding:8px;border-radius:8px;border:1px solid var(--line)"><span class="seg2"><button aria-pressed="true">Tous<span class="n">1 204</span></button><button>Alertes<span class="n">15</span></button><button>Erreurs<span class="n">3</span></button></span></div></div>
+  <div class="opt"><h3>C — Compteurs de la barre d'état</h3><p>Les compteurs du bas deviennent des bascules. Discret, mais peu découvrable et loin de la recherche.</p>
+    <div class="tk" style="padding:8px;border-radius:8px;border:1px solid var(--line);font-size:var(--fs-sm);color:var(--fg-2)">1 204 lignes · <span class="lstat" style="display:inline"><button class="cnt" style="color:var(--danger)" aria-pressed="true">3 erreurs</button> <button class="cnt" style="color:var(--warning)">12 alertes</button></span></div></div>
+</div>
+<p class="hint">Raison du choix A : un seul geste pour filtrer dans tout le design system ; les compteurs restent visibles en permanence dans la barre d'état ; B pourra remplacer A le jour où un contrôle segmenté entrera dans Socle.</p>
+
+<h2 class="sec">4. LogViewer dans une page (option A)</h2>
+<div class="tk app" id="app2">
+  <div class="bar-side"></div>
+  <div class="bar">Build n° 42</div>
+  <div class="side"><div class="nav">Vue d'ensemble</div><div class="nav on">Builds</div><div class="nav">Réglages</div></div>
+  <div class="main">
+    <section class="log" id="log" aria-label="Journal du build n° 42">
+      <div class="lbar" role="toolbar" aria-label="Outils du journal">
+        <span style="position:relative"><button class="btn" id="lvlBtn">Niveau : Tous ▾</button>
+          <div class="menu" id="lvlMenu" hidden style="top:32px;left:0"></div></span>
+        <label class="search"><svg class="ic" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><input id="q" placeholder="Rechercher dans le journal" autocomplete="off" spellcheck="false"></label>
+        <span class="count" id="mc" aria-live="polite"></span>
+        <button class="ib" id="prev" title="Résultat précédent (Maj+F3)" disabled><svg class="ic" viewBox="0 0 24 24"><path d="m18 15-6-6-6 6"/></svg></button>
+        <button class="ib" id="next" title="Résultat suivant (F3)" disabled><svg class="ic" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg></button>
+        <span class="spacer"></span>
+        <button class="ib" id="follow" title="Suivre la fin (Fin)" aria-pressed="true"><svg class="ic" viewBox="0 0 24 24"><path d="M12 4v12M6 10l6 6 6-6M5 20h14"/></svg></button>
+        <button class="ib" id="wrapB" title="Retour à la ligne" aria-pressed="false"><svg class="ic" viewBox="0 0 24 24"><path d="M3 6h18M3 12h15a3 3 0 0 1 0 6h-4M3 18h7M14 15l-3 3 3 3"/></svg></button>
+        <button class="ib" id="timeB" title="Horodatage" aria-pressed="true"><svg class="ic" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></button>
+        <button class="ib" id="errB" title="Liste des erreurs" aria-pressed="false"><svg class="ic" viewBox="0 0 24 24"><path d="M8 6h13M8 12h13M8 18h13"/><path d="m3 5 2 2m0-2-2 2M3 11l2 2m0-2-2 2"/></svg></button>
+        <button class="ib" id="copyB" title="Copier le journal"><svg class="ic" viewBox="0 0 24 24"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg></button>
+        <button class="ib" title="Télécharger (action de l'app)"><svg class="ic" viewBox="0 0 24 24"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></svg></button>
+      </div>
+      <div class="body" id="lbody">
+        <div class="vp" id="vp" tabindex="0" role="log" aria-label="Journal du build n° 42"></div>
+        <aside class="errs" id="errs" hidden aria-label="Erreurs du journal"></aside>
+      </div>
+      <div class="empty" id="lempty" hidden></div>
+      <div class="lstat"><span id="ltot"></span><span class="e" id="lerr"></span><span class="w" id="lwarn"></span><span id="lst"></span>
+        <span class="paused" id="paused" hidden><span id="ptext">Suivi en pause</span><button class="btn" id="resume">↓ Revenir à la fin</button></span></div>
+    </section>
+  </div>
+</div>
+<p class="hint">À jouer : remonter dans le journal (le suivi se met en pause et compte les nouvelles lignes), « Revenir à la fin » ou touche Fin, taper « error » puis Entrée ou F3, filtrer par niveau, ouvrir la liste des erreurs et cliquer une erreur, copier.</p>
+
+<div class="boxes" style="margin-top:20px">
+  <div class="box"><h2>API (toujours facultative au-delà du nom)</h2><ul>
+    <li><code>&lt;Terminal label engine connection? onResize? state? reason? readOnly? ref /&gt;</code> ; poignée <code>clear()</code>, <code>write()</code>, <code>text()</code>, <code>selection()</code>, <code>paste()</code>, <code>focus()</code>.</li>
+    <li><code>&lt;LogViewer label lines live? levels? wrap? timestamps? maxLines? loading? empty? tools? actions? ref /&gt;</code> ; poignée <code>append()</code>, <code>clear()</code>, <code>text()</code>.</li>
+  </ul></div>
+  <div class="box"><h2>Reste dans Alfred (solution locale)</h2><ul>
+    <li>Lecture d'un canal <code>useChannel</code> de son SDK : un adaptateur de 20 lignes vers <code>connection</code> (Terminal) ou <code>ref.append()</code> (LogViewer).</li>
+    <li>Décodage base64 des flux et texte des messages d'état propres au protocole.</li>
+  </ul></div>
+</div>
+</div>
+
+<script>
+const $=id=>document.getElementById(id);
+const tks=[...document.querySelectorAll('.tk')];
+document.querySelectorAll('.seg').forEach(seg=>seg.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;seg.querySelectorAll('button').forEach(x=>x.setAttribute('aria-pressed',x===b));const k=seg.dataset.k,v=b.dataset.v;
+  if(k==='mode'){document.documentElement.dataset.theme=v;tks.forEach(t=>t.classList.toggle('dark',v==='dark'));pal()}
+  if(k==='dens')tks.forEach(t=>t.classList.toggle('desktop',v==='desktop'));
+  if(k==='tstate')termState(v);
+  if(k==='lstate')logState(v);
+}));
+
+/* ---------- Terminal ---------- */
+const P='<span class="a2 b">alex@web-01</span>:<span class="a4 b">~/app</span>$ ';
+let tlines=[P+'npm run build','','<span class="a6">vite</span> v8.3.8 <span class="a2">building for production…</span>','<span class="a2">✓</span> 412 modules transformed.','<span class="a8">dist/</span>index.html            <span class="a8">0.46 kB</span>','<span class="a8">dist/</span>assets/index.js      <span class="a3">212.18 kB</span> <span class="a8">│ gzip: 68.02 kB</span>','<span class="a3 b">(!)</span> <span class="a3">Some chunks are larger than 500 kB</span>','<span class="a1 b">error</span> <span class="a1">TS2339: Property "foo" does not exist</span>','<span class="a5">magenta</span> <span class="a6">cyan</span> <span class="a7">blanc</span> <span class="a0">noir</span> <span class="a9">rouge vif</span> <span class="a12">bleu vif</span> <span class="a15 b">blanc vif</span>'];
+let cur=P;
+function termRender(){$('screen').innerHTML=tlines.join('\n')+'\n'+cur+'<span class="cursor"> </span>'}
+termRender();
+function termState(v){const s=$('tst'),h=$('thint');s.classList.toggle('err',v==='error');
+  s.innerHTML={open:'<span class="dot success"></span>Connecté',waiting:'<span class="dot pending"></span>Ouverture du terminal…',closed:'<span class="dot"></span>Session terminée : code 0',error:'<span class="dot danger"></span>Connexion interrompue : délai dépassé',ro:'<span class="dot success"></span>Connecté'}[v];
+  h.textContent=v==='ro'?'Lecture seule':'F6 pour sortir'}
+function flash(t){const h=$('thint'),o=h.textContent;h.textContent=t;setTimeout(()=>h.textContent=o,1600)}
+function termClear(){tlines=[];termRender()}
+function termPaste(){cur=P+'ls -la';termRender();$('screen').focus()}
+function termCopy(){navigator.clipboard?.writeText($('screen').innerText).catch(()=>{});flash('Session copiée')}
+$('screen').addEventListener('keydown',e=>{if(e.key==='F6'){e.preventDefault();document.querySelector(e.shiftKey?'.tabs span':'#q')?.focus?.();return}
+  if(e.key==='Enter'){tlines.push(cur);cur=P;termRender();e.preventDefault()}else if(e.key==='Backspace'){if(cur.length>P.length)cur=cur.slice(0,-1);termRender();e.preventDefault()}else if(e.key.length===1&&!e.ctrlKey&&!e.metaKey){cur+=e.key.replace('<','&lt;');termRender();e.preventDefault()}
+  else if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='c'&&getSelection().toString()){flash('Sélection copiée')}});
+
+/* ---------- Palette ---------- */
+const names=['noir','rouge','vert','jaune','bleu','magenta','cyan','blanc','noir vif','rouge vif','vert vif','jaune vif','bleu vif','magenta vif','cyan vif','blanc vif'];
+function lum(h){const c=[1,3,5].map(i=>parseInt(h.slice(i,i+2),16)/255).map(v=>v<=.03928?v/12.92:((v+.055)/1.055)**2.4);return .2126*c[0]+.7152*c[1]+.0722*c[2]}
+function pal(){const w=$('palwrap'),cs=getComputedStyle(w),bg=cs.getPropertyValue('--surface').trim();const bl=lum(bg.length===4?'#'+bg[1]+bg[1]+bg[2]+bg[2]+bg[3]+bg[3]:bg);
+  $('pal').innerHTML=names.map((n,i)=>{let c=cs.getPropertyValue('--ansi-'+i).trim();const l=lum(c);const r=(Math.max(l,bl)+.05)/(Math.min(l,bl)+.05);return `<div class="sw"><b style="color:var(--ansi-${i})">Aa ${i}</b><span>--ansi-${i}</span><span>${n} · ${r.toFixed(1)}:1</span></div>`}).join('')}
+pal();
+
+/* ---------- LogViewer ---------- */
+const msgs=['GET /api/health 200 3ms','INFO cache warmed (412 keys)','compiling module %s','WARN deprecated option "legacy" in config','ERROR connection refused: db:5432','GET /api/items 200 18ms','done in 1.42s','level=warn msg="slow query" ms=812','Exception in thread "main" java.lang.NullPointerException'];
+let lines=[],t0=Date.parse('2026-11-23T09:14:02Z');
+function mk(i){const m=msgs[(i*7+i%5)%msgs.length].replace('%s','src/m'+i+'.ts');const lv=/ERROR|Exception/.test(m)?'err':/WARN|level=warn/.test(m)?'warn':'';return{t:new Date(t0+i*137),m,lv}}
+for(let i=0;i<140;i++)lines.push(mk(i));
+let level='all',q='',cur2=-1,follow=true,pausedAt=0,live=true,errsOpen=false,picked=-1;
+const vp=$('vp'),log=$('log');
+const fmt=d=>d.toISOString().slice(11,23);
+function shown(){return lines.map((l,i)=>i).filter(i=>level==='all'||(level==='warn'?lines[i].lv:lines[i].lv==='err'))}
+function esc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;')}
+function col(m){return esc(m).replace(/^(ERROR|Exception)/,'<span style="color:var(--ansi-1);font-weight:700">$1</span>').replace(/^(WARN|level=warn)/,'<span style="color:var(--ansi-3)">$1</span>').replace(/ (200) /,' <span style="color:var(--ansi-2)">$1</span> ')}
+function matches(){return q.length<2?[]:shown().filter(i=>lines[i].m.toLowerCase().includes(q))}
+function render(){const s=shown(),ms=matches(),curLine=cur2>=0?ms[cur2]:picked;
+  vp.innerHTML=s.map(i=>{const l=lines[i];let txt=col(l.m);if(q.length>=2)txt=txt.replace(new RegExp('('+q.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+')(?![^<]*>)','gi'),'<mark>$1</mark>');
+    const cls=['ln',l.lv,i===curLine?'cur':(ms.includes(i)?'match':'')].join(' ');return `<div class="${cls}" data-i="${i}"><span class="no">${i+1}</span><span class="tm">${fmt(l.t)}</span><span>${txt}</span></div>`}).join('');
+  const e=lines.filter(l=>l.lv==='err').length,w=lines.filter(l=>l.lv==='warn').length;
+  $('ltot').textContent=lines.length.toLocaleString('fr-FR')+' lignes';$('lerr').textContent=e?e+' erreurs':'';$('lwarn').textContent=w?w+' alertes':'';
+  $('lst').innerHTML=live?'<span class="dot success"></span> En direct':'Terminé';
+  $('mc').textContent=q.length>=2?(ms.length?`${cur2+1} sur ${ms.length}`:'Aucune ligne'):'';
+  $('prev').disabled=$('next').disabled=!ms.length;
+  $('lvlBtn').textContent='Niveau : '+{all:'Tous',warn:'Alertes',err:'Erreurs'}[level]+' ▾';
+  $('lvlMenu').innerHTML=[['all','Toutes les lignes',lines.length],['warn','Alertes et erreurs',e+w],['err','Erreurs',e]].map(([v,n,c])=>`<div class="it" data-v="${v}"><span class="chk">${v===level?'✓':''}</span>${n}<span class="n">${c}</span></div>`).join('');
+  $('errs').hidden=!errsOpen;$('errB').setAttribute('aria-pressed',errsOpen);
+  $('errs').innerHTML='<h4>Erreurs · '+e+'</h4>'+lines.map((l,i)=>l.lv==='err'?`<div class="e" data-i="${i}"><small>Ligne ${i+1}</small><code>${esc(l.m)}</code></div>`:'').join('');
+  $('follow').setAttribute('aria-pressed',follow);$('follow').hidden=!live;
+  $('paused').hidden=follow||!live;const n=lines.length-pausedAt;$('ptext').textContent='Suivi en pause'+(n>0?` · ${n} nouvelle${n>1?'s':''} ligne${n>1?'s':''}`:'');
+  if(follow)vp.scrollTop=vp.scrollHeight}
+function center(i){const el=vp.querySelector(`[data-i="${i}"]`);if(el)vp.scrollTop=el.offsetTop-vp.clientHeight/2}
+function setFollow(v){if(follow===v)return;follow=v;pausedAt=lines.length;render()}
+vp.addEventListener('wheel',e=>{if(e.deltaY<0)setFollow(false)});
+vp.addEventListener('scroll',()=>{if(vp.scrollHeight-vp.scrollTop-vp.clientHeight<4&&!follow)setFollow(true)});
+vp.addEventListener('keydown',e=>{if(['ArrowUp','PageUp','Home'].includes(e.key))setFollow(false);if(e.key==='End'){e.preventDefault();setFollow(true)}});
+$('resume').onclick=()=>{setFollow(true);vp.focus()};
+$('follow').onclick=()=>setFollow(!follow);
+$('wrapB').onclick=e=>{log.classList.toggle('wrap');e.currentTarget.setAttribute('aria-pressed',log.classList.contains('wrap'))};
+$('timeB').onclick=e=>{log.classList.toggle('notime');e.currentTarget.setAttribute('aria-pressed',!log.classList.contains('notime'))};
+$('errB').onclick=()=>{errsOpen=!errsOpen;render()};
+$('errs').onclick=e=>{const it=e.target.closest('.e');if(!it)return;level='all';cur2=-1;picked=+it.dataset.i;follow=false;pausedAt=lines.length;render();center(picked)};
+$('lvlBtn').onclick=()=>{$('lvlMenu').hidden=!$('lvlMenu').hidden};
+$('lvlMenu').onclick=e=>{const it=e.target.closest('.it');if(!it)return;level=it.dataset.v;cur2=-1;picked=-1;$('lvlMenu').hidden=true;render()};
+let qt;$('q').oninput=e=>{clearTimeout(qt);qt=setTimeout(()=>{q=e.target.value.trim().toLowerCase();const ms=matches();cur2=ms.length?ms.length-1:-1;if(ms.length){follow=false;pausedAt=lines.length}render();if(cur2>=0)center(ms[cur2])},300)};
+function move(d){const ms=matches();if(!ms.length)return;cur2=(cur2+d+ms.length)%ms.length;follow=false;render();center(ms[cur2])}
+$('prev').onclick=()=>move(-1);$('next').onclick=()=>move(1);
+log.addEventListener('keydown',e=>{if(e.key==='F3'||(e.key==='Enter'&&e.target.id==='q')){e.preventDefault();move(e.shiftKey?-1:1)}if(e.key==='Escape'&&e.target.id==='q'){e.target.value='';q='';cur2=-1;render()}});
+$('copyB').onclick=e=>{const s=getSelection().toString()||shown().map(i=>fmt(lines[i].t)+' '+lines[i].m).join('\n');navigator.clipboard?.writeText(s).catch(()=>{});e.currentTarget.title='Copié';setTimeout(()=>e.currentTarget.title='Copier le journal',1600)};
+let timer=setInterval(()=>{if(!live)return;lines.push(mk(lines.length));render()},900);
+function logState(v){live=v==='live';$('lbody').hidden=v==='loading'||v==='empty';$('lempty').hidden=!$('lbody').hidden;
+  $('lempty').innerHTML=v==='loading'?'Chargement du journal…':'<div><b>Journal vide</b><br><span style="color:var(--fg-3)">Aucune ligne pour le moment.</span></div>';if(v!=='live')follow=true;render()}
+render();
+</script>
+</body>
+</html>

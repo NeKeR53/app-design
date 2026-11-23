@@ -64,6 +64,12 @@ Versions selon semver (règle 6 du skill design) : une nouvelle option facultati
 - `Table` : une colonne déclarée sous 80 px garde sa largeur (D-274).
 - `Table` : un en-tête coupé par « … » montre son libellé complet en info-bulle (D-275).
 
+- `Terminal` : terminal interactif sur xterm.js (D-280 à D-284). Branchement générique `connection` `{ send, subscribe }`, taille par `onResize`, état par `state` et `reason`, lecture seule, `fill`. Poignée `ref` : `write`, `clear`, `text`, `selection`, `paste`, `bracketedPaste`, `focus`. Clavier de Windows Terminal ; F6 et Maj+F6 sortent du terminal. Barre d'état : état, aide, taille.
+- xterm.js reste côté app (D-280) : `@xterm/xterm` et `@xterm/addon-fit` sont des peer dependencies facultatives ; l'app passe le moteur par `engine` et importe `@xterm/xterm/css/xterm.css`. Une app sans terminal n'a rien à installer.
+- `LogViewer` : journal en lignes horodatées, virtualisé jusqu'à 500 000 lignes (D-285). Filtre de niveau par Menu à choix avec compteurs (D-286), liste des erreurs (D-287), Suivre la fin avec pause et « Revenir à la fin » (D-288), recherche, retour à la ligne, horodatage, copie (D-289). Alimenté par `lines` ou par la poignée `ref.append()`.
+- Tokens `--ansi-0` à `--ansi-15` : les 16 couleurs ANSI, en clair et en sombre, au moins 4,5:1 sur `--surface` (D-281).
+- Libellés du Terminal et du LogViewer dans le dictionnaire `messages` (`terminalOpening`, `logLevel`, `followPaused`…).
+
 ## [0.2.0] — 2026-11-23
 
 Lot 1 de la migration d'Alfred : bouton à texte, actions, modale, champs, ComboBox, notifications et petits éléments d'affichage (décisions D-100 à D-169). Version mineure : tout est nouveau ou facultatif, rien ne casse.
