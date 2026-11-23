@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Nouveaux composants P2 et P3 — validation</title>
+<style>
+:root {
+  --surface: #ffffff; --surface-side: #f3f3f3; --surface-raised: #ffffff; --field: #f2f2f2; --hover: #e9e9e9; --selected: #dedede;
+  --line: #e4e4e4; --line-strong: #cfcfcf; --fg: #1a1a1a; --fg-2: #5c5c5c; --fg-3: #6b6b6b;
+  --accent: #1d4ed8; --accent-fg: #ffffff; --accent-text: #1d4ed8; --danger: #c62828; --warning: #b45309; --success: #15803d; --info: #1d4ed8;
+  --page: #ebebeb; --radius-sm: 4px; --radius-md: 8px; --radius-lg: 12px; --shadow-md: 0 6px 20px rgb(0 0 0 / .10);
+}
+body:has(#m-dark:checked) {
+  --surface: #181818; --surface-side: #222222; --surface-raised: #262626; --field: #2a2a2a; --hover: #303030; --selected: #3d3d3d;
+  --line: #333333; --line-strong: #4a4a4a; --fg: #ececec; --fg-2: #ababab; --fg-3: #8f8f8f;
+  --accent: #5b8def; --accent-fg: #0b1630; --accent-text: #7da4f2; --danger: #f07167; --warning: #e0a24a; --success: #5cc98a; --info: #5b8def;
+  --page: #111111; --shadow-md: 0 6px 20px rgb(0 0 0 / .5);
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--page); color: var(--fg); font: 14px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif; }
+.wrap { max-width: 1200px; margin: 0 auto; padding: 24px 16px 64px; }
+h1 { font-size: 22px; margin: 0; } h2 { font-size: 18px; margin: 28px 0 4px; } h3 { font-size: 15px; margin: 0 0 4px; } h4 { font-size: 12px; margin: 0 0 6px; text-transform: uppercase; letter-spacing: .04em; color: var(--fg-3); }
+.muted { color: var(--fg-2); }
+.status { display: inline-block; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 999px; background: #fde68a; color: #713f12; margin-left: 8px; vertical-align: middle; }
+.boxes { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 16px 0; }
+.box, .q { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; }
+.box ul, .box ol { margin: 4px 0 0; padding-left: 20px; }
+.bar { position: sticky; top: 0; z-index: 5; background: var(--page); padding: 10px 0; }
+.seg { display: inline-flex; border: 1px solid var(--line-strong); border-radius: 8px; overflow: hidden; background: var(--surface); }
+.seg input { position: absolute; opacity: 0; } .seg label { padding: 4px 12px; cursor: pointer; }
+.seg input:checked + label { background: var(--fg); color: var(--surface); }
+.q { margin-top: 12px; }
+.cols { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 12px; margin-top: 8px; }
+.col { border: 1px solid var(--line); border-radius: 8px; padding: 10px; }
+.col.reco { outline: 2px solid #16a34a; }
+.tag { font-size: 11px; font-weight: 700; color: #15803d; margin-left: 6px; }
+.col b { display: block; margin-bottom: 4px; }
+.demo { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-md); padding: 12px; margin-top: 8px; font-size: 13px; position: relative; }
+.src { font-size: 12px; color: var(--fg-3); margin-top: 6px; }
+label.l { display: block; font-size: 12px; font-weight: 500; margin-bottom: 3px; }
+.in { height: 30px; border: 1px solid var(--line-strong); border-radius: var(--radius-md); padding: 0 8px; display: flex; align-items: center; gap: 2px; background: var(--surface); color: var(--fg); }
+.in .seg-d { padding: 1px 2px; border-radius: 3px; } .in .seg-d.f { background: var(--accent); color: var(--accent-fg); } .in .ph { color: var(--fg-3); }
+.in .sp { flex: 1; }
+.ib { width: 24px; height: 24px; border-radius: var(--radius-sm); display: grid; place-items: center; color: var(--fg-2); }
+.cal { position: absolute; top: 62px; left: 12px; width: 236px; background: var(--surface-raised); border: 1px solid var(--line); border-radius: var(--radius-lg); box-shadow: var(--shadow-md); padding: 8px; z-index: 2; }
+.cal .h { display: flex; justify-content: space-between; align-items: center; font-weight: 600; font-size: 13px; padding: 2px 4px 6px; }
+.grid7 { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; text-align: center; font-size: 12px; }
+.grid7 .w { color: var(--fg-3); font-size: 11px; }
+.grid7 span { height: 26px; display: grid; place-items: center; border-radius: var(--radius-sm); }
+.grid7 .o { color: var(--fg-3); } .grid7 .x { color: var(--fg-3); text-decoration: line-through; }
+.grid7 .t { outline: 1px solid var(--line-strong); outline-offset: -1px; font-weight: 600; }
+.grid7 .s { background: var(--accent); color: var(--accent-fg); } .grid7 .r { background: color-mix(in srgb, var(--accent) 14%, transparent); border-radius: 0; }
+.tall { padding-bottom: 260px; }
+.alert { display: grid; grid-template-columns: auto 1fr auto; gap: 10px; align-items: start; border: 1px solid var(--line); border-radius: var(--radius-md); padding: 10px 12px; background: var(--surface); }
+.alert .ic { font-weight: 700; width: 16px; text-align: center; }
+.alert.tint-warning { background: color-mix(in srgb, var(--warning) 10%, var(--surface)); border-color: color-mix(in srgb, var(--warning) 35%, var(--surface)); }
+.alert.bar-warning { border-left: 3px solid var(--warning); }
+.alert .t { font-weight: 600; } .alert .d { color: var(--fg-2); font-size: 13px; }
+.alert .act { margin-top: 6px; } .alert .x { color: var(--fg-3); }
+.btn { display: inline-flex; align-items: center; height: 26px; padding: 0 10px; border-radius: var(--radius-md); border: 0; font: inherit; font-size: 12px; font-weight: 500; background: var(--field); color: var(--fg); }
+.num { display: flex; align-items: stretch; height: 30px; border: 1px solid var(--line-strong); border-radius: var(--radius-md); overflow: hidden; background: var(--surface); width: 180px; }
+.num .v { flex: 1; display: flex; align-items: center; padding: 0 8px; font-variant-numeric: tabular-nums; justify-content: flex-end; }
+.num .u { display: flex; align-items: center; padding-right: 8px; color: var(--fg-3); }
+.num .st { display: flex; flex-direction: column; border-left: 1px solid var(--line); width: 22px; } .num .st span { flex: 1; display: grid; place-items: center; font-size: 9px; color: var(--fg-2); } .num .st span + span { border-top: 1px solid var(--line); }
+.num .pm { width: 30px; display: grid; place-items: center; color: var(--fg-2); background: var(--field); }
+@media (max-width: 800px) { .boxes { grid-template-columns: 1fr; } }
+</style>
+<style>
+.drop { border: 1.5px dashed var(--line-strong); border-radius: var(--radius-md); padding: 14px; text-align: center; color: var(--fg-2); font-size: 13px; }
+.drop b { color: var(--fg); display: inline; }
+.file { display: grid; grid-template-columns: auto 1fr auto; gap: 8px; align-items: center; padding: 6px 0; border-bottom: 1px solid var(--line); font-size: 13px; }
+.file .meta { font-size: 12px; color: var(--fg-3); } .file .err { font-size: 12px; color: var(--danger); }
+.prog { height: 3px; background: var(--field); border-radius: 2px; margin-top: 3px; } .prog i { display: block; height: 3px; width: 60%; background: var(--accent); border-radius: 2px; }
+.sc { display: inline-flex; background: var(--field); border-radius: var(--radius-md); padding: 2px; gap: 2px; font-size: 13px; }
+.sc span { padding: 3px 10px; border-radius: 6px; color: var(--fg-2); } .sc span.on { background: var(--surface); color: var(--fg); box-shadow: 0 1px 2px rgb(0 0 0/.12); font-weight: 500; }
+.sc.out { background: none; border: 1px solid var(--line-strong); padding: 0; gap: 0; } .sc.out span { border-radius: 0; border-right: 1px solid var(--line-strong); } .sc.out span:last-child { border-right: 0; } .sc.out span.on { background: var(--selected); box-shadow: none; }
+.pg { display: flex; gap: 6px; align-items: center; font-size: 13px; } .pg .n { min-width: 26px; height: 26px; display: grid; place-items: center; border-radius: var(--radius-sm); } .pg .n.on { background: var(--selected); font-weight: 600; }
+.spin { width: 16px; height: 16px; border: 2px solid var(--line-strong); border-top-color: var(--fg-2); border-radius: 50%; display: inline-block; vertical-align: middle; }
+.card { border: 1px solid var(--line); border-radius: var(--radius-lg); padding: 12px; background: var(--surface); }
+.card .k { font-size: 12px; color: var(--fg-3); } .card .v { font-size: 22px; font-weight: 600; font-variant-numeric: tabular-nums; } .card .d { font-size: 12px; color: var(--success); }
+.cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+<h1>Nouveaux composants, priorités 2 et 3 <span class="status" style="background:#bbf7d0;color:#14532d">VALIDÉ le 23/11/2026 — toutes les options A</span></h1>
+<p class="muted">FileUpload et File, SegmentedControl, Pagination, Spinner, Card (revue Component Gallery, partie C, validée). La recommandation est encadrée en vert. Réponse de l'utilisateur : tout A.</p>
+<div class="boxes"><div class="box"><h3>Déjà décidé</h3><ul>
+<li>Anatomie de <code>Field</code> pour tout ce qui se saisit (D-022, D-130 à D-132).</li>
+<li>Monochrome : l'accent ne porte que du sens (D-001, D-102).</li>
+<li>D-175 : ListPage garde « Afficher plus » par défaut ; sa pagination réutilisera le composant.</li>
+<li>D-081 : l'indicateur rotatif existe déjà dans Button et SearchInput ; mouvement réduit respecté (D-014).</li>
+<li>D-040 : rayon de 12 px pour un conteneur.</li></ul></div>
+<div class="box"><h3>À décider</h3><ol><li>F1 à F3 : FileUpload et File.</li><li>S1, S2 : SegmentedControl.</li><li>P1 : Pagination.</li><li>SP1 : Spinner.</li><li>C1, C2 : Card.</li></ol></div></div>
+<div class="bar"><span class="seg" role="radiogroup" aria-label="Mode"><input type="radio" name="m" id="m-light" checked><label for="m-light">Clair</label><input type="radio" name="m" id="m-dark"><label for="m-dark">Sombre</label></span></div>
+<h2>FileUpload et File</h2><div class="q"><h3>F1. Zone de dépôt</h3><div class="cols"><div class="col reco"><h4>Option A <span class="tag">recommandé</span></h4><b>Zone en pointillés, bouton « Choisir des fichiers »</b>Glisser-déposer ou bouton (clavier) ; types et taille maximale écrits dans la zone ; la zone se marque au survol d'un fichier glissé.<div class="demo"><div class="drop">Déposez des fichiers ici ou <b>choisir des fichiers</b><br><span style="font-size:12px;color:var(--fg-3)">PDF ou image, 10 Mo au plus</span></div></div><div class="src">Carbon, GOV.UK, Atlassian.</div></div><div class="col"><h4>Option B</h4><b>Bouton seul</b>Un bouton « Ajouter un fichier » ; le dépôt marche quand même sur le bouton. Plus compact, pour un formulaire.<div class="demo"><button class="btn">Ajouter un fichier</button></div></div></div></div><div class="q"><h3>F2. Liste des fichiers (<code>File</code>)</h3><div class="cols"><div class="col reco"><h4>Option A <span class="tag">recommandé</span></h4><b>Une ligne par fichier</b>Icône du type, nom (coupé au milieu si trop long), taille ; barre fine pendant l'envoi ; erreur sous le nom (« Fichier trop lourd : 12 Mo, 10 Mo au plus ») ; bouton × pour retirer, « Réessayer » si l'envoi a échoué.<div class="demo"><div class="file"><span>📄</span><div>Devis-2026-114.pdf<div class="meta">1,2 Mo</div></div><span>✕</span></div><div class="file"><span>🖼</span><div>Plan-atelier.png<div class="prog"><i></i></div></div><span>✕</span></div><div class="file"><span>📄</span><div>Archive.zip<div class="err">Type non accepté : ZIP.</div></div><span>✕</span></div></div><div class="src">Carbon File uploader.</div></div><div class="col"><h4>Option B</h4><b>Vignettes</b>Grille de vignettes, adaptée aux images seulement.</div></div></div><div class="q"><h3>F3. Envoi</h3><div class="cols"><div class="col reco"><h4>Option A <span class="tag">recommandé</span></h4><b>Géré par l'app, état par fichier</b>Le composant ne fait pas l'envoi : l'app reçoit les fichiers (<code>onAdd</code>) et rend l'état de chacun (en attente, envoi n %, envoyé, erreur). Type et taille vérifiés avant, sans envoi.</div><div class="col"><h4>Option B</h4><b>Envoi intégré</b>Le composant envoie lui-même vers une URL. Moins souple (authentification, API).</div></div></div><h2>SegmentedControl</h2><div class="q"><h3>S1. Aspect</h3><div class="cols"><div class="col reco"><h4>Option A <span class="tag">recommandé</span></h4><b>Fond <code>--field</code>, segment actif en surface</b>Le segment choisi est une carte claire. 2 à 4 options, texte court ou icône avec nom.<div class="demo"><span class="sc"><span class="on">Liste</span><span>Grille</span><span>Carte</span></span></div><div class="src">macOS, Fluent.</div></div><div class="col"><h4>Option B</h4><b>Contour, segments séparés par un trait</b>Plus proche d'un groupe de boutons.<div class="demo"><span class="sc out"><span class="on">Liste</span><span>Grille</span><span>Carte</span></span></div><div class="src">Carbon Content switcher.</div></div></div></div><div class="q"><h3>S2. Rôle</h3><div class="cols"><div class="col reco"><h4>Option A <span class="tag">recommandé</span></h4><b>Choix exclusif (radiogroup)</b>Flèches entre segments, un arrêt de Tab ; le choix s'applique tout de suite. Pas pour naviguer (Tabs) ni pour plusieurs choix.</div></div></div><h2>Pagination</h2><div class="q"><h3>P1. Forme</h3><div class="cols"><div class="col reco"><h4>Option A <span class="tag">recommandé</span></h4><b>Précédent / suivant et numéros</b>« ‹ 1 … 4 5 6 … 13 › », page courante marquée ; sur mobile, « Page 5 sur 13 » et les flèches. ListPage la réutilisera.<div class="demo"><div class="pg"><span>‹</span><span class="n">1</span><span>…</span><span class="n">4</span><span class="n on">5</span><span class="n">6</span><span>…</span><span class="n">13</span><span>›</span></div></div><div class="src">GOV.UK, Carbon.</div></div><div class="col"><h4>Option B</h4><b>Flèches et « Page n sur N » seulement</b>Comme ListPage aujourd'hui.<div class="demo"><div class="pg"><span>‹</span><span>Page 5 sur 13</span><span>›</span></div></div></div></div></div><h2>Spinner</h2><div class="q"><h3>SP1. Forme et usage</h3><div class="cols"><div class="col reco"><h4>Option A <span class="tag">recommandé</span></h4><b>Indicateur rotatif de socle, exposé</b>Celui de Button et SearchInput, en 14 et 20 px, nommé (« Chargement ») ou décoratif à côté d'un texte. Avec le mouvement réduit, il tourne trois fois plus lentement. Pour les attentes courtes et locales (cellule, panneau) ; au-delà, ProgressBar ou Skeleton.<div class="demo"><span class="spin"></span> <span class="muted" style="font-size:12px">Synchronisation…</span></div><div class="src">Carbon Loading.</div></div><div class="col"><h4>Option B</h4><b>Ne pas l'exposer</b>On garde l'indicateur interne ; les apps utilisent ProgressBar ou Skeleton.</div></div></div><h2>Card</h2><div class="q"><h3>C1. Aspect</h3><div class="cols"><div class="col reco"><h4>Option A <span class="tag">recommandé</span></h4><b>Conteneur neutre</b>Surface, trait fin, rayon 12 px, pas d'ombre ; titre facultatif, contenu libre, pied d'actions facultatif. Variante <code>metric</code> : libellé, valeur, évolution.<div class="demo"><div class="cards"><div class="card"><div class="k">Commandes</div><div class="v">1 284</div><div class="d">+12 % sur 30 jours</div></div><div class="card"><div class="k">En retard</div><div class="v">37</div></div><div class="card"><div class="k">Chiffre d’affaires</div><div class="v">86 k€</div></div></div></div><div class="src">Atlassian, Carbon Tile.</div></div><div class="col"><h4>Option B</h4><b>Avec ombre</b>Comme ce qui flotte. Contraire à D-001 (ombres réservées à ce qui flotte).</div></div></div><div class="q"><h3>C2. Carte cliquable</h3><div class="cols"><div class="col reco"><h4>Option A <span class="tag">recommandé</span></h4><b>Toute la carte est un lien ou un bouton</b>Une seule action principale : la carte entière est la cible (nom = titre), survol <code>--hover</code>, anneau de focus. Les autres actions passent dans « … ».</div><div class="col"><h4>Option B</h4><b>Pas de carte cliquable</b>Un lien dans la carte seulement.</div></div></div><h2 style="margin-top:32px">Avant / après</h2><p class="muted">À remplir une fois les composants codés.</p>
+</div>
+</body>
+</html>
