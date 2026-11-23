@@ -4,6 +4,13 @@ Versions selon semver (règle 6 du skill design) : une nouvelle option facultati
 
 ## [Non publié]
 
+### Ajouté
+- Gabarit `FormPage` (D-022, D-193) : en-tête, sections titrées (titre et aide à gauche à partir de 800 px de conteneur, au-dessus en dessous), pied collé en bas avec l'état d'enregistrement (D-194), « Annuler » (confirmé après une saisie, D-195) et l'action principale, toujours active (D-196). Options `initialValues`, `onDirtyChange`, `isLoading` (squelettes).
+- Formulaire en modale : `const openForm = useOpenForm(); const values = await openForm({ title, fields, submitLabel, onSubmit? })` rend les valeurs, ou `null` si l'utilisateur ferme (D-197). Taille automatique `sm` ou `md`, attente et erreur sur place (D-198). L'hôte est dans `SocleProvider`.
+- Modèle de champ déclaratif `FormField`, commun aux deux : `text`, `email`, `url`, `tel`, `password`, `number`, `textarea`, `select`, `combobox`, `radio`, `checkbox`, `checkboxGroup` et le groupe `fieldset`, dessinés avec les champs du lot 1 (D-190). Pas d'interrupteur (D-137). Valeurs typées (D-191) ; vérification par les champs, règle croisée `validate(valeur, valeurs)`, erreurs rendues par `onSubmit` (`{ errors, message }`) sous les champs (D-192). Entrée et Mod+Entrée envoient (D-196). Types exportés : `FormField`, `FormValues`, `FormSubmitResult`, etc.
+- Libellés du dictionnaire `messages` : `unsavedChanges`, `saving`, `saved`, `saveFailed`, `fixErrors`, `discardTitle`, `discardMessage`, `discard`, `invalidNumber`, `numberTooSmall`, `numberTooLarge`.
+- Règles de placement : FormPage et saisie courte en modale (docs/layout-rules.md).
+
 ## [0.2.0] — 2026-11-23
 
 Lot 1 de la migration d'Alfred : bouton à texte, actions, modale, champs, ComboBox, notifications et petits éléments d'affichage (décisions D-100 à D-169). Version mineure : tout est nouveau ou facultatif, rien ne casse.

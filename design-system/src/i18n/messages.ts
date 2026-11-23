@@ -114,6 +114,18 @@ export interface SocleMessages {
   typeMoreChars: (n: number) => string;
   resultsUnavailable: string;
   noResults: string;
+  /* Formulaires déclaratifs : FormPage, useOpenForm (D-190 à D-198) */
+  unsavedChanges: string;
+  saving: string;
+  saved: string;
+  saveFailed: string;
+  fixErrors: string;
+  discardTitle: string;
+  discardMessage: string;
+  discard: string;
+  invalidNumber: string;
+  numberTooSmall: (min: number) => string;
+  numberTooLarge: (max: number) => string;
 }
 
 const s = (n: number) => (n > 1 ? "s" : "");
@@ -217,4 +229,16 @@ export const frenchMessages: SocleMessages = {
   typeMoreChars: (n) => `Tapez au moins ${n} caractères.`,
   resultsUnavailable: "Résultats indisponibles",
   noResults: "Aucun résultat",
+
+  unsavedChanges: "Modifications non enregistrées",
+  saving: "Enregistrement…",
+  saved: "Enregistré",
+  saveFailed: "L'enregistrement a échoué. Réessayez.",
+  fixErrors: "Corrigez les champs signalés.",
+  discardTitle: "Abandonner les modifications ?",
+  discardMessage: "Les modifications non enregistrées seront perdues.",
+  discard: "Abandonner",
+  invalidNumber: "Saisissez un nombre.",
+  numberTooSmall: (min) => `Saisissez un nombre supérieur ou égal à ${min}.`,
+  numberTooLarge: (max) => `Saisissez un nombre inférieur ou égal à ${max}.`,
 };
