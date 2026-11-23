@@ -1,0 +1,278 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Composants de chat — validation</title>
+<style>
+:root {
+  --surface: #ffffff; --surface-side: #f3f3f3; --surface-raised: #ffffff; --field: #f2f2f2; --hover: #e9e9e9; --selected: #dedede;
+  --line: #e4e4e4; --line-strong: #cfcfcf; --fg: #1a1a1a; --fg-2: #5c5c5c; --fg-3: #6b6b6b;
+  --accent: #1d4ed8; --accent-text: #1d4ed8; --warning: #b45309; --danger: #c62828; --success: #15803d;
+  --page: #ebebeb; --radius-sm: 4px; --radius-md: 8px; --radius-lg: 12px; --shadow-md: 0 6px 20px rgb(0 0 0 / .10);
+  --mono: ui-monospace, "SF Mono", Consolas, monospace;
+}
+body:has(#m-dark:checked) {
+  --surface: #181818; --surface-side: #222222; --surface-raised: #262626; --field: #2a2a2a; --hover: #303030; --selected: #3d3d3d;
+  --line: #333333; --line-strong: #4a4a4a; --fg: #ececec; --fg-2: #ababab; --fg-3: #8f8f8f;
+  --accent: #5b8def; --accent-text: #7da4f2; --warning: #e0a24a; --danger: #f07167; --success: #5cc98a;
+  --page: #111111; --shadow-md: 0 6px 20px rgb(0 0 0 / .5);
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--page); color: var(--fg); font: 14px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif; }
+.wrap { max-width: 1200px; margin: 0 auto; padding: 24px 16px 64px; }
+h1 { font-size: 22px; margin: 0; } h2 { font-size: 18px; margin: 28px 0 6px; } h3 { font-size: 15px; margin: 0 0 4px; } h4 { font-size: 12px; margin: 0 0 6px; text-transform: uppercase; letter-spacing: .04em; color: var(--fg-3); }
+.muted { color: var(--fg-2); }
+.status { display: inline-block; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 999px; background: #fde68a; color: #713f12; margin-left: 8px; vertical-align: middle; }
+.boxes { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 16px 0; }
+.box, .q { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; }
+.box ul, .box ol { margin: 4px 0 0; padding-left: 20px; }
+.bar { position: sticky; top: 0; z-index: 9; background: var(--page); padding: 10px 0; }
+.seg { display: inline-flex; border: 1px solid var(--line-strong); border-radius: 8px; overflow: hidden; background: var(--surface); }
+.seg input { position: absolute; opacity: 0; } .seg label { padding: 4px 12px; cursor: pointer; }
+.seg input:checked + label { background: var(--fg); color: var(--surface); }
+.q { margin-top: 12px; }
+.cols { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 12px; margin-top: 8px; }
+.col { border: 1px solid var(--line); border-radius: 8px; padding: 10px; }
+.col.reco { outline: 2px solid #16a34a; }
+.tag { font-size: 11px; font-weight: 700; color: #15803d; margin-left: 6px; }
+.col b { display: block; margin-bottom: 4px; }
+.src { font-size: 12px; color: var(--fg-3); margin-top: 6px; }
+.demo { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-md); padding: 12px; margin-top: 8px; position: relative; font-size: 13px; }
+
+/* ---------- Écran de chat ---------- */
+.chat { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; height: 720px; display: grid; grid-template-rows: 1fr auto; overflow: hidden; position: relative; }
+.transcript { overflow: auto; padding: 24px 16px 8px; }
+.col760 { max-width: 760px; margin: 0 auto; display: flex; flex-direction: column; gap: 16px; }
+.msg-user { align-self: flex-end; max-width: 85%; background: var(--surface-side); border-radius: var(--radius-md); padding: 8px 12px; }
+.msg-ai p { margin: 0 0 8px; }
+.msg-ai code, .mono { font-family: var(--mono); font-size: 12.5px; }
+.codeblock { background: var(--surface-side); border-radius: var(--radius-md); padding: 8px 10px; font-family: var(--mono); font-size: 12.5px; position: relative; }
+.codeblock .cp { position: absolute; right: 8px; top: 6px; font-family: inherit; font-size: 11px; color: var(--fg-3); }
+.actions { display: flex; gap: 2px; margin-top: 4px; color: var(--fg-3); font-size: 12px; align-items: center; }
+.actions .ib { width: 24px; height: 24px; border-radius: var(--radius-sm); display: grid; place-items: center; }
+.actions .ib:hover { background: var(--hover); color: var(--fg); }
+.actions.right { justify-content: flex-end; }
+.work { font-size: 13px; color: var(--fg-2); }
+.work .head { display: flex; align-items: center; gap: 6px; cursor: default; }
+.work .head .chev { color: var(--fg-3); }
+.act { display: flex; align-items: center; gap: 8px; padding: 2px 0 2px 18px; font-size: 13px; color: var(--fg-2); }
+.act .ic { width: 14px; text-align: center; color: var(--fg-3); }
+.act .err { color: var(--danger); }
+.running { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--fg-2); }
+.spin { width: 14px; height: 14px; border: 2px solid currentColor; border-right-color: transparent; border-radius: 50%; display: inline-block; color: var(--fg-2); }
+.bottom { padding: 0 16px 12px; }
+.usage { max-width: 760px; margin: 0 auto 6px; font-size: 12px; color: var(--fg-2); background: var(--surface-side); border-radius: var(--radius-md); padding: 4px 10px; font-variant-numeric: tabular-nums; }
+.usage b { color: var(--fg); font-weight: 500; } .usage .hi { color: var(--warning); }
+.composer { max-width: 760px; margin: 0 auto; border: 1px solid var(--line-strong); background: var(--surface); border-radius: 16px; padding: 8px; box-shadow: 0 1px 2px rgb(0 0 0 / .05); }
+.queue { border-bottom: 1px solid var(--line); margin: 0 4px 8px; padding: 2px 0 8px; font-size: 13px; }
+.qrow { display: flex; align-items: center; gap: 8px; height: 24px; color: var(--fg-2); }
+.qrow .t { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--fg); }
+.thumbs { display: flex; gap: 8px; padding: 2px 4px 8px; }
+.thumb { width: 56px; height: 56px; border-radius: var(--radius-md); background: linear-gradient(135deg, var(--selected), var(--field)); border: 1px solid var(--line); }
+.file { display: inline-flex; align-items: center; gap: 6px; height: 28px; padding: 0 8px; border-radius: var(--radius-md); background: var(--field); font-size: 12px; }
+.row { display: flex; align-items: flex-end; gap: 6px; }
+.round { width: 32px; height: 32px; border-radius: 50%; display: grid; place-items: center; color: var(--fg-2); flex-shrink: 0; font-size: 18px; }
+.round:hover { background: var(--hover); }
+.round.send { color: var(--fg); font-size: 18px; }
+.round.send.off { color: var(--fg-3); }
+.round.stop { color: var(--fg); } .round.stop i { width: 12px; height: 12px; background: currentColor; border-radius: 3px; display: block; }
+.input { flex: 1; min-height: 32px; padding: 6px 2px; color: var(--fg); }
+.input .ph { color: var(--fg-3); }
+.pill { display: inline-flex; align-items: center; height: 20px; padding: 0 6px; border-radius: var(--radius-sm); background: var(--selected); font-size: 12.5px; font-family: var(--mono); }
+.opts { max-width: 760px; margin: 4px auto 0; display: flex; align-items: center; gap: 4px; font-size: 13px; color: var(--fg); }
+.opts .sp { flex: 1; }
+.opt { height: 26px; padding: 0 8px; border-radius: var(--radius-md); display: inline-flex; align-items: center; gap: 6px; }
+.opt:hover, .opt.on { background: var(--hover); }
+.opt .sub { color: var(--fg-3); }
+.gauge { width: 16px; height: 16px; border-radius: 50%; background: conic-gradient(var(--accent) 0 72%, var(--line-strong) 72% 100%); -webkit-mask: radial-gradient(circle, transparent 5px, #000 5.5px); mask: radial-gradient(circle, transparent 5px, #000 5.5px); }
+.gitpill { font-size: 12px; color: var(--fg-2); }
+.gitpill b { color: var(--success); font-weight: 500; } .gitpill i { color: var(--danger); font-style: normal; }
+.menu { position: absolute; right: 120px; bottom: 58px; width: 280px; background: var(--surface-raised); border: 1px solid var(--line); border-radius: var(--radius-lg); box-shadow: var(--shadow-md); padding: 4px; font-size: 13px; z-index: 3; }
+.menu .it { display: flex; align-items: center; gap: 8px; height: 30px; padding: 0 8px; border-radius: var(--radius-sm); }
+.menu .it:hover, .menu .it.hl { background: var(--hover); }
+.menu .it .sp { flex: 1; } .menu .it .kbd { color: var(--fg-3); font-variant-numeric: tabular-nums; } .menu .it .chk { color: var(--accent-text); }
+.menu .badge { font-size: 11px; color: var(--fg-2); background: var(--field); border-radius: var(--radius-sm); padding: 0 6px; }
+.menu .sep { height: 1px; background: var(--line); margin: 4px 6px; }
+.menu .hd { font-size: 12px; color: var(--fg-3); padding: 4px 8px 0; }
+.tg { width: 28px; height: 16px; border-radius: 999px; background: var(--line-strong); position: relative; } .tg::after { content: ""; position: absolute; left: 2px; top: 2px; width: 12px; height: 12px; border-radius: 50%; background: var(--surface); }
+.plusmenu { position: absolute; left: 16px; bottom: 58px; width: 250px; }
+.hint { font-size: 12px; color: var(--fg-3); }
+.question { max-width: 760px; margin: 0 auto 8px; border: 1px solid var(--line); border-radius: var(--radius-lg); padding: 10px 12px; background: var(--surface); font-size: 13px; }
+.question .o { display: flex; gap: 8px; align-items: center; height: 28px; padding: 0 6px; border-radius: var(--radius-sm); }
+.question .o:hover { background: var(--hover); } .question kbd { font-family: var(--mono); font-size: 11px; border: 1px solid var(--line-strong); border-radius: 3px; padding: 0 4px; color: var(--fg-2); }
+body:has(#menus-off:checked) .chat .menu { display: none; }
+body:has(#state-idle:checked) .chat .only-running { display: none; }
+body:has(#state-running:checked) .chat .only-idle { display: none; }
+@media (max-width: 800px) { .boxes { grid-template-columns: 1fr; } .menu { right: 8px; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Composants de chat IA <span class="status" style="background:#bbf7d0;color:#14532d">VALIDÉ le 23/11/2026 — sauf Q3 (à simuler)</span></h1>
+  <p class="muted">Nouveaux composants de socle-ui pour une partie chat avec un agent. Ils reprennent la structure de la zone de saisie de Claude Code (captures de l'utilisateur) et le comportement déjà en place dans Alfred et oneapp, qui dupliquent aujourd'hui le même code. On reprend la structure et le comportement, pas l'identité de marque (D-001). Réponses de l’utilisateur : Q1 B (comme Alfred : « Arrêter » à côté de la flèche) ; Q2 A sans le résumé Git (modèle, autonomie, jauge de contexte) ; Q3 à simuler dans Storybook avant de choisir ; Q4 A sans barre d’usage (la jauge ouvre le volet des limites) ; Q5 A (fichiers et photos, commandes, fichiers du projet) ; Q6 A, rappel dans le texte d’attente seulement pendant une réponse (à confirmer) ; Q7 A ; Q8 A, actions plus près du texte comme Alfred ; Q9 A ; Q10 A ; Q11 A.</p>
+
+  <div class="boxes">
+    <div class="box"><h3>Déjà décidé</h3><ul>
+      <li>Alfred et oneapp : bulle à droite pour l'utilisateur, réponse de l'assistant sans bulle, colonne de 760 px.</li>
+      <li>Entrée envoie, Maj+Entrée va à la ligne ; Échap arrête ; collage en texte brut.</li>
+      <li>Markdown de socle-ui pour les réponses (blocs de code avec « Copier »).</li>
+      <li>Toute nouvelle option est facultative ; les réglages propres à une app (autonomie, dossier, secret) passent par un emplacement libre.</li>
+      <li>D-360 Spinner, D-367 Slider, D-342 et suivantes pour les choix.</li>
+    </ul></div>
+    <div class="box"><h3>À décider</h3><ol>
+      <li>Q1 : bouton à droite de la zone (envoyer / arrêter).</li>
+      <li>Q2 : rangée de contrôles sous la zone.</li>
+      <li>Q3 : menu du modèle (coche, pastille, raccourcis, sous-menu, interrupteur).</li>
+      <li>Q4 : jauge et volet des limites d'usage.</li>
+      <li>Q5 : menu « + ».</li>
+      <li>Q6 : rappel des raccourcis.</li>
+      <li>Q7 : travail de l'agent dans la conversation.</li>
+      <li>Q8 : actions sur un message.</li>
+      <li>Q9 : file d'attente.</li>
+      <li>Q10 : défilement et nouveaux messages.</li>
+      <li>Q11 : liste des composants à créer.</li>
+    </ol></div>
+  </div>
+
+  <div class="bar">
+    <span class="seg" role="radiogroup" aria-label="Mode"><input type="radio" name="m" id="m-light" checked><label for="m-light">Clair</label><input type="radio" name="m" id="m-dark"><label for="m-dark">Sombre</label></span>
+    <span class="seg" role="radiogroup" aria-label="État"><input type="radio" name="st" id="state-running" checked><label for="state-running">L'agent travaille</label><input type="radio" name="st" id="state-idle"><label for="state-idle">Au repos</label></span>
+    <span class="seg" role="radiogroup" aria-label="Menus"><input type="radio" name="mn" id="menus-on" checked><label for="menus-on">Menu du modèle ouvert</label><input type="radio" name="mn" id="menus-off"><label for="menus-off">Fermé</label></span>
+  </div>
+
+  <h2>L'écran proposé (toutes les options A)</h2>
+  <div class="chat">
+    <div class="transcript"><div class="col760">
+      <div class="msg-user">Ajoute un champ « Date de livraison » au formulaire de commande, obligatoire.</div>
+      <div class="actions right"><span>Envoyé · 14:02</span><span class="ib" title="Copier">⧉</span><span class="ib" title="Modifier">✎</span></div>
+      <div class="work">
+        <div class="head"><span class="chev">›</span> A travaillé pendant 42 s · 4 outils appelés</div>
+      </div>
+      <div class="msg-ai">
+        <p>C'est fait. Le champ utilise <code>DatePicker</code> et la règle d'obligation du formulaire :</p>
+        <div class="codeblock"><span class="cp">Copier</span>{ name: "delivery", type: "date", label: "Date de livraison", isRequired: true }</div>
+        <p style="margin-top:8px">Les tests du formulaire passent (12 / 12).</p>
+      </div>
+      <div class="actions"><span class="ib" title="Copier">⧉</span><span class="ib" title="Citer">❝</span><span class="ib" title="Relancer">↻</span><span>14:03</span></div>
+      <div class="msg-user">Et ajoute une date minimale : aujourd'hui.</div>
+      <div class="work only-running">
+        <div class="head"><span class="chev">⌄</span> 2 outils exécutés · 1 en cours</div>
+        <div class="act"><span class="ic">⌕</span>Recherché « minValue » dans src</div>
+        <div class="act"><span class="ic">✎</span>Modifié <span class="mono">OrderForm.tsx</span></div>
+        <div class="act"><span class="ic"><i class="spin" style="width:10px;height:10px"></i></span>Exécute <span class="mono">npm test</span></div>
+      </div>
+      <div class="running only-running"><i class="spin"></i> Outil en cours : npm test · depuis 12 s</div>
+    </div></div>
+
+    <div class="bottom">
+      <div class="usage only-running">5 h <span class="hi">71 %</span> ↻ 00:10 · 7 j <span class="hi">67 %</span> ↻ ven. 06:00 · <b>Contexte</b> <span class="hi">72 %</span> 723 k</div>
+      <div class="composer">
+        <div class="queue only-running"><div class="qrow"><span>⋮⋮</span><span class="t">Ensuite, mets à jour la doc du formulaire</span><span title="Modifier">✎</span><span title="Retirer">✕</span><span title="Envoyer maintenant">↗</span></div></div>
+        <div class="thumbs"><div class="thumb"></div><span class="file">📎 maquette.pdf ✕</span></div>
+        <div class="row">
+          <span class="round" title="Ajouter">＋</span>
+          <div class="input"><span class="only-running ph">⌘↩ pour mettre en file</span><span class="only-idle"><span class="pill">@OrderForm.tsx</span> vérifie aussi l'</span></div>
+          <span class="round stop only-running" title="Arrêter · Échap"><i></i></span>
+          <span class="round send only-idle" title="Envoyer · ↩">↩</span>
+          <span class="round" title="Dicter">🎙</span>
+        </div>
+      </div>
+      <div class="opts">
+        <span class="gitpill">3 fichiers · <b>+48</b> <i>−6</i></span>
+        <span class="sp"></span>
+        <span class="opt on">Modèle avancé <span class="sub">Moyen</span></span>
+        <span class="opt">Autonomie complète</span>
+        <span class="opt" title="Contexte utilisé : 72 %"><span class="gauge"></span></span>
+      </div>
+    </div>
+
+    <div class="menu">
+      <div class="it"><span>Modèle avancé</span><span class="badge">Par défaut</span><span class="sp"></span><span class="chk">✓</span></div>
+      <div class="it"><span>Modèle rapide</span><span class="sp"></span><span class="kbd">2</span></div>
+      <div class="it"><span>Modèle léger</span><span class="sp"></span><span class="kbd">3</span></div>
+      <div class="sep"></div>
+      <div class="it hl"><span>Effort</span><span class="sp"></span><span class="kbd">Moyen</span><span>›</span></div>
+      <div class="it"><span>Autres modèles</span><span class="sp"></span><span>›</span></div>
+      <div class="sep"></div>
+      <div class="hd">Mode rapide</div>
+      <div class="it"><span>Activer le mode rapide</span><span class="sp"></span><span class="tg"></span></div>
+    </div>
+  </div>
+
+  <h2>Questions</h2>
+
+  <div class="q"><h3>Q1. Bouton à droite de la zone</h3><div class="cols">
+    <div class="col reco"><h4>Option A <span class="tag">recommandé</span></h4><b>Un seul bouton qui change (Claude Code)</b>Icônes seules, sans fond plein. Champ vide pendant une réponse : carré ■ « Arrêter · Échap ». Dès qu'il y a du texte : flèche de retour ↩ « Envoyer » (au repos) ou « Mettre en file » (pendant une réponse, aussi ⌘↩). Champ vide au repos : ↩ grisé. Micro facultatif à droite du bouton (emplacement).<div class="demo"><div class="row"><span class="round stop"><i></i></span><span class="round">🎙</span> <span class="muted">vide, pendant une réponse</span></div><div class="row" style="margin-top:6px"><span class="round send">↩</span><span class="round">🎙</span> <span class="muted">avec du texte</span></div></div><div class="src">Claude Code.</div></div>
+    <div class="col"><h4>Option B</h4><b>Arrêter à côté de la flèche (Alfred, oneapp)</b>Le carré ■ s'ajoute à côté de la flèche pendant une réponse ; la flèche reste pour « Envoyer maintenant ».<div class="demo"><div class="row"><span class="round stop"><i></i></span><span class="round send">↑</span></div></div></div>
+  </div></div>
+
+  <div class="q"><h3>Q2. Rangée de contrôles sous la zone</h3><div class="cols">
+    <div class="col reco"><h4>Option A <span class="tag">recommandé</span></h4><b>Texte simple, aligné à droite</b>Boutons sans cadre, en texte (« Modèle avancé <span class="muted">Moyen</span> », « Autonomie complète »), fond au survol et quand le menu est ouvert ; la jauge en dernier. À gauche, un emplacement libre (état Git, dossier). Les contrôles viennent de l'app : la rangée n'impose rien.<div class="demo"><div class="opts" style="margin:0"><span class="gitpill">3 fichiers · <b>+48</b> <i>−6</i></span><span class="sp"></span><span class="opt">Modèle avancé <span class="sub">Moyen</span></span><span class="opt">Autonomie complète</span><span class="opt"><span class="gauge"></span></span></div></div><div class="src">Claude Code.</div></div>
+    <div class="col"><h4>Option B</h4><b>Petits boutons avec chevron (Alfred)</b>Chaque contrôle est un bouton <code>sm</code> discret avec un chevron ▾.</div>
+  </div></div>
+
+  <div class="q"><h3>Q3. Menu du modèle</h3><div class="cols">
+    <div class="col reco"><h4>Option A <span class="tag">recommandé</span></h4><b>DropdownMenu enrichi</b>On ajoute à DropdownMenu ce que montre la capture, utile partout : une pastille à côté du libellé (« Par défaut »), le raccourci à droite (2, 3, 4 : touches actives tant que le menu est ouvert), la valeur courante d'un sous-menu (« Effort Moyen › »), et un élément interrupteur (« Activer le mode rapide »). Le choix du modèle reste assemblé par l'app.<div class="src">Claude Code ; DropdownMenu a déjà la coche, les sections et un niveau de sous-menu (D-067).</div></div>
+    <div class="col"><h4>Option B</h4><b>Popover avec des champs (Alfred)</b>Un volet avec RadioButtonGroup, Select et Slider. Plus lourd : trois clics au lieu d'un.</div>
+  </div></div>
+
+  <div class="q"><h3>Q4. Jauge et limites d'usage</h3><div class="cols">
+    <div class="col reco"><h4>Option A <span class="tag">recommandé</span></h4><b>Jauge qui ouvre un volet des limites</b><code>UsageRing</code> : anneau de 16 px, rôle <code>meter</code>, valeur dans le nom et l'info-bulle (« Contexte utilisé : 72 % »), couleur d'alerte au-delà d'un seuil. Un clic ouvre un Popover : titre, lien « Tout voir → » facultatif, puis une ligne par limite (<code>UsageMeter</code>) : nom, « Remise à zéro mar. 00:10 », pourcentage, barre de 4 px en accent, en couleur d'alerte au-delà du seuil (avec le mot « Élevé » lu). La barre d'usage au-dessus de la zone (<code>UsageBar</code>) reste en option.<div class="demo"><div style="border:1px solid var(--line);border-radius:12px;padding:10px 12px;max-width:380px;background:var(--surface-raised);box-shadow:var(--shadow-md)"><div style="display:flex;font-size:13px;color:var(--fg-2);margin-bottom:8px"><span>Limites d'usage</span><span style="flex:1"></span><span style="color:var(--fg)">Tout voir →</span></div><div style="display:flex;font-size:13px"><span>Limite sur 5 h</span><span style="flex:1"></span><span style="color:var(--fg-2)">Remise à zéro mar. 00:10 · 79 %</span></div><div style="height:4px;background:var(--field);border-radius:2px;margin:4px 0 10px"><i style="display:block;height:4px;width:79%;background:var(--warning);border-radius:2px"></i></div><div style="display:flex;font-size:13px"><span>Semaine · tous modèles</span><span style="flex:1"></span><span style="color:var(--fg-2)">Remise à zéro ven. 06:00 · 69 %</span></div><div style="height:4px;background:var(--field);border-radius:2px;margin-top:4px"><i style="display:block;height:4px;width:69%;background:var(--accent);border-radius:2px"></i></div></div><div style="display:flex;justify-content:flex-end;max-width:380px;margin-top:6px"><span class="opt on"><span class="gauge" style="background:conic-gradient(var(--warning) 0 79%, var(--line-strong) 79% 100%)"></span></span></div></div><div class="src">Claude Code (capture de la jauge ouverte).</div></div>
+    <div class="col"><h4>Option B</h4><b>Ne pas les ajouter</b>L'app les construit avec Popover et ProgressBar.</div>
+  </div></div>
+
+  <div class="q"><h3>Q5. Menu « + »</h3><div class="cols">
+    <div class="col reco"><h4>Option A <span class="tag">recommandé</span></h4><b>Menu vers le haut, entrées de l'app</b>« Joindre des fichiers… », puis les références déclarées par l'app avec leur caractère (« Commande · / », « Fichier · @ », « Ticket · # ») : choisir une entrée insère le caractère et ouvre les suggestions.<div class="demo" style="height:130px"><div class="menu" style="left:12px;right:auto;bottom:12px;width:240px;position:absolute"><div class="it"><span>Joindre des fichiers…</span></div><div class="sep"></div><div class="it"><span>Commande</span><span class="sp"></span><span class="kbd">/</span></div><div class="it"><span>Fichier</span><span class="sp"></span><span class="kbd">@</span></div></div></div><div class="src">Alfred, oneapp.</div></div>
+    <div class="col"><h4>Option B</h4><b>« + » ouvre seulement le sélecteur de fichiers</b></div>
+  </div></div>
+
+  <div class="q"><h3>Q6. Rappel des raccourcis</h3><div class="cols">
+    <div class="col reco"><h4>Option A <span class="tag">recommandé</span></h4><b>Dans le texte d'attente</b>Pendant une réponse, le texte d'attente dit « ⌘↩ pour mettre en file » (Ctrl+↩ sous Windows) ; au repos, il dit ce que l'app veut (« Que puis-je faire pour vous ? »). L'info-bulle du bouton rappelle « Envoyer · ↩ » ou « Arrêter · Échap ».<div class="src">Claude Code.</div></div>
+    <div class="col"><h4>Option B</h4><b>Ligne sous la zone (oneapp)</b>« ↩ pour envoyer, ⌘↩ pour mettre en file » en permanence.</div>
+  </div></div>
+
+  <div class="q"><h3>Q7. Travail de l'agent dans la conversation</h3><div class="cols">
+    <div class="col reco"><h4>Option A <span class="tag">recommandé</span></h4><b>Visible pendant, replié après</b>Pendant : chaque outil sur une ligne (icône, verbe, objet en police à chasse fixe), groupés au-delà de 3 (« 5 outils exécutés · 1 en cours »), puis une ligne d'état avec Spinner (« Outil en cours : npm test · depuis 12 s »), annoncée poliment. Après : tout se replie derrière « A travaillé pendant 42 s · 4 outils appelés » (Accordion) ; la réponse reste visible. Une erreur d'outil reste visible, en rouge, avec le mot « Échec ».<div class="src">Alfred, oneapp.</div></div>
+    <div class="col"><h4>Option B</h4><b>Toujours déplié</b>Chaque outil reste visible après la réponse.</div>
+  </div></div>
+
+  <div class="q"><h3>Q8. Actions sur un message</h3><div class="cols">
+    <div class="col reco"><h4>Option A <span class="tag">recommandé</span></h4><b>Barre au survol et au focus</b>Sous le message, à droite pour l'utilisateur, à gauche pour l'assistant : Copier, Citer, Relancer, Repartir d'ici, et Modifier sur un message envoyé (en place : Échap annule, Entrée renvoie). Heure et état d'envoi en gris. Les actions viennent de l'app ; Copier et Citer sont fournies par défaut.<div class="src">Alfred ; Modifier vient d'oneapp.</div></div>
+    <div class="col"><h4>Option B</h4><b>Menu « … » par message</b>Une seule icône ouvre toutes les actions.</div>
+  </div></div>
+
+  <div class="q"><h3>Q9. File d'attente</h3><div class="cols">
+    <div class="col reco"><h4>Option A <span class="tag">recommandé</span></h4><b>Dans la zone, au-dessus du texte</b>Une ligne par message en file : poignée (glisser, ou ↑↓ au clavier), aperçu, Modifier, Retirer, « Envoyer maintenant » ↗ ; un trait la sépare du texte.<div class="src">Alfred.</div></div>
+    <div class="col"><h4>Option B</h4><b>Au-dessus de la zone, hors du cadre</b></div>
+  </div></div>
+
+  <div class="q"><h3>Q10. Défilement</h3><div class="cols">
+    <div class="col reco"><h4>Option A <span class="tag">recommandé</span></h4><b>Collé en bas, bouton « Nouveaux messages »</b>La conversation suit la réponse tant qu'on est à moins de 100 px du bas ; un envoi y ramène. Si on a remonté et que la réponse continue, un bouton « Nouveaux messages ↓ » apparaît au-dessus de la zone. La fin de chaque réponse est annoncée poliment (pas chaque mot).<div class="src">Alfred, oneapp ; le bouton et l'annonce sont nouveaux.</div></div>
+    <div class="col"><h4>Option B</h4><b>Comme aujourd'hui</b>Collé en bas, sans bouton ni annonce.</div>
+  </div></div>
+
+  <div class="q"><h3>Q11. Composants à créer</h3>
+    <p class="muted" style="margin:4px 0 8px">A = les créer tous, dans l'ordre ; B = seulement les quatre premiers d'abord.</p>
+    <table style="width:100%;border-collapse:collapse;font-size:13px">
+      <tr><th style="text-align:left;padding:4px">Composant</th><th style="text-align:left;padding:4px">Rôle</th><th style="text-align:left;padding:4px">Remplace</th></tr>
+      <tr><td style="padding:4px"><b>ChatComposer</b></td><td>Cadre, « + », texte, bouton envoyer / arrêter, micro, emplacements file et pièces jointes, dépôt et collage de fichiers, collage long en carte, clavier</td><td>Composer, AgentComposer</td></tr>
+      <tr><td style="padding:4px"><b>MentionInput</b></td><td>Texte à pastilles (@fichier, /commande) avec suggestions accessibles, déclencheurs fournis par l'app</td><td>ComposerEditor, ReferenceComposer, ReferenceSuggestions</td></tr>
+      <tr><td style="padding:4px"><b>ChatOptions</b></td><td>Rangée sous la zone : emplacement gauche, contrôles texte à droite</td><td>lignes de réglages</td></tr>
+      <tr><td style="padding:4px"><b>ChatTranscript</b> et <b>ChatMessage</b></td><td>Colonne de 760 px, bulle utilisateur, réponse en Markdown, actions, défilement collé, bouton « Nouveaux messages »</td><td>Transcript, ChatTranscript, MessageActions</td></tr>
+      <tr><td style="padding:4px"><b>AgentActivity</b>, <b>WorkStatus</b></td><td>Outils (ligne, groupe, détail), ligne d'état, résumé replié</td><td>Activities, ChatActivities, RunningWork</td></tr>
+      <tr><td style="padding:4px"><b>MessageQueue</b></td><td>File réordonnable</td><td>QueueList, AgentQueue</td></tr>
+      <tr><td style="padding:4px"><b>AttachmentChip</b></td><td>Vignette d'image, fichier, texte collé, avec retrait</td><td>ChatAttachments, TextPreview</td></tr>
+      <tr><td style="padding:4px"><b>ChoicePrompt</b></td><td>Question ou autorisation de l'agent : options numérotées, « Autre réponse… »</td><td>AgentQuestionCard, AgentQuestion</td></tr>
+      <tr><td style="padding:4px"><b>UsageRing</b>, <b>UsageMeter</b>, <b>UsageBar</b></td><td>Jauge qui ouvre le volet des limites, ligne de limite avec barre, barre d'usage facultative (Q4)</td><td>nouveau</td></tr>
+      <tr><td style="padding:4px">DropdownMenu</td><td>Pastille, raccourci, valeur de sous-menu, élément interrupteur (Q3)</td><td>menus de modèle</td></tr>
+    </table>
+    <p class="muted" style="margin:8px 0 0">Exemple de <b>ChoicePrompt</b> :</p>
+    <div class="question"><div style="margin-bottom:4px">L'agent veut exécuter <span class="mono">npm install date-fns</span>.</div><div class="o"><kbd>1</kbd>Autoriser une fois</div><div class="o"><kbd>2</kbd>Toujours autoriser dans ce projet</div><div class="o"><kbd>3</kbd>Refuser</div><div class="o"><kbd>4</kbd>Autre réponse…</div></div>
+  </div>
+
+  <h2 style="margin-top:32px">Avant / après</h2>
+  <p class="muted">À remplir une fois les composants codés, avec Alfred passé sur ces composants.</p>
+</div>
+</body>
+</html>
