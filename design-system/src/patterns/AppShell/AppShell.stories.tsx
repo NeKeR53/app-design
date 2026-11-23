@@ -5,6 +5,9 @@ import { AppShell } from "./AppShell";
 import { Sidebar } from "../Sidebar/Sidebar";
 import type { TabItem } from "../../components/Tabs/Tabs";
 import { IconButton } from "../../components/IconButton/IconButton";
+import { Button } from "../../components/Button/Button";
+import { ActionBar, type Action } from "../ActionBar/ActionBar";
+import { ArrowDown, Bell, Plus, Settings } from "../../icons";
 import { DemoDetail } from "../DetailPanel/DetailPanel.stories";
 import { Doc } from "../../../.storybook/story-icons";
 import { SocleProvider } from "../../provider/SocleProvider";
@@ -167,5 +170,76 @@ export const Traduction: Story = {
     await expect(c.getByRole("tablist", { name: "Views of Documents" })).toBeVisible();
     // Une entrée absente garde la valeur française.
     await expect(c.getByRole("button", { name: "Précédent" })).toBeVisible();
+  },
+};
+
+/* ---------- P13 : actions de page (D-220 à D-222) ---------- */
+const topbarActions: Action[] = [
+  { id: "new", label: "Nouveau document", primary: true, onPress: () => {} },
+  { id: "export", label: "Exporter en CSV", icon: <ArrowDown />, onPress: () => {} },
+  { id: "add", label: "Ajouter un dossier", icon: <Plus />, onPress: () => {} },
+  { id: "settings", label: "Réglages de la liste", icon: <Settings />, onPress: () => {} },
+  { id: "import", label: "Importer un fichier…", onPress: () => {} },
+];
+
+function ActionsDemo() {
+  const [width, setWidth] = useState<number | undefined>(undefined);
+  return (
+    <div className="fixed inset-y-0 left-0" style={{ width: width ?? "100%" }}>
+      <AppShell
+        pageTitle="Documents"
+        views={[
+          { id: "all", label: "Tous les documents" },
+          { id: "shared", label: "Partagés" },
+        ]}
+        activeView="all"
+        onViewChange={() => {}}
+        actions={
+          <>
+            <IconButton icon={<Bell />} label="Notifications" />
+            <ActionBar zone="topbar" actions={topbarActions} />
+          </>
+        }
+        detail={<DemoDetail />}
+        sidebar={
+          <Sidebar selectedId="docs" onSelectionChange={() => {}} account={<Sidebar.Account name="Camille Martin" onSettings={() => {}} />}>
+            <Sidebar.Item id="docs" icon={<Doc />} label="Documents" />
+          </Sidebar>
+        }
+      >
+        <div className="flex gap-2 p-6">
+          <Button onPress={() => setWidth(undefined)}>Fenêtre large</Button>
+          <Button onPress={() => setWidth(900)}>Fenêtre moyenne</Button>
+          <Button onPress={() => setWidth(700)}>Fenêtre étroite</Button>
+        </div>
+      </AppShell>
+    </div>
+  );
+}
+
+/**
+ * Action principale à texte dans la barre du haut (D-220) ; repli selon la place (D-221) :
+ * les icônes passent dans « … » depuis la fin, puis le bouton à texte. La cloche reste.
+ */
+export const ActionsDePage: Story = {
+  render: () => <ActionsDemo />,
+  play: async ({ canvasElement }) => {
+    const c = within(canvasElement);
+    const bar = () => within(c.getByRole("banner"));
+    await waitFor(() => expect(bar().getByRole("button", { name: "Nouveau document" })).toHaveTextContent("Nouveau document"));
+    await expect(bar().getByRole("button", { name: "Réglages de la liste" })).toBeVisible();
+    await userEvent.click(c.getByRole("button", { name: "Fenêtre moyenne" }));
+    await waitFor(() => expect(bar().queryByRole("button", { name: "Réglages de la liste" })).toBeNull());
+    await expect(bar().getByRole("button", { name: "Nouveau document" })).toBeVisible();
+    await userEvent.click(c.getByRole("button", { name: "Fenêtre étroite" }));
+    await waitFor(() => expect(bar().queryByRole("button", { name: "Nouveau document" })).toBeNull());
+    await expect(bar().getByRole("button", { name: "Notifications" })).toBeVisible();
+    // Le bouton à texte replié passe en tête de « … », puis les icônes, dans leur ordre.
+    await userEvent.click(bar().getByRole("button", { name: "Plus d'actions" }));
+    const items = await waitFor(() => body().getAllByRole("menuitem"));
+    await expect(items[0]).toHaveAccessibleName("Nouveau document");
+    await userEvent.keyboard("{Escape}");
+    await userEvent.click(c.getByRole("button", { name: "Fenêtre large" }));
+    await waitFor(() => expect(bar().getByRole("button", { name: "Réglages de la liste" })).toBeVisible());
   },
 };

@@ -4,6 +4,13 @@ Versions selon semver (règle 6 du skill design) : une nouvelle option facultati
 
 ## [Non publié]
 
+### Ajouté (lot 3, coquille)
+- `ActionBar`, zone `topbar` : une action principale sans icône devient un bouton à texte, tout à droite (D-220). Dans la barre du haut d'AppShell, repli selon la place : les icônes passent dans « … » depuis la dernière, puis le bouton à texte (D-221). Option `fit` de `arrangeActions`, type `ActionFit`.
+- `AppShell` : le slot `actions` prend la place libre de la barre et accepte `ActionBar zone="topbar"` avec les boutons-icônes de l'app (D-222).
+
+### Changé
+- `ActionBar`, zone `topbar` : une action `primary` **sans icône** était en tête de « … » ; elle est maintenant un bouton à texte (D-220, remplace une partie de D-112). Migration : pour une forme compacte, donner une icône à l’action principale (elle reste alors une icône, en premier, D-112) ; pour la garder dans « … », retirer `primary`.
+
 ## [0.2.0] — 2026-11-23
 
 Lot 1 de la migration d'Alfred : bouton à texte, actions, modale, champs, ComboBox, notifications et petits éléments d'affichage (décisions D-100 à D-169). Version mineure : tout est nouveau ou facultatif, rien ne casse.

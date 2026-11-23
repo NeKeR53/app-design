@@ -6,7 +6,7 @@ Ces règles s'appliquent à toutes les apps. Si aucune règle ne couvre un cas, 
 
 | Zone | Ce qui y va | Ce qui n'y va pas |
 |---|---|---|
-| `topbar` | Bouton de repli de la sidebar, précédent/suivant, **nom de la page**, **onglets des vues de la page** (D-021), actions de la page en boutons-icônes, cloche du centre de notifications (D-157), état durable de la page en indicateur compact (D-159), bouton du panneau de détail (icône liste), commandes (Mod+K). En Tauri, la place des boutons de fenêtre (D-020). | Les filtres, la recherche dans une liste, les actions sur un élément précis. Aucun bandeau pleine largeur dessous (D-159). |
+| `topbar` | Bouton de repli de la sidebar, précédent/suivant, **nom de la page**, **onglets des vues de la page** (D-021), actions de la page (`ActionBar` `topbar` : icônes, « … », action principale à texte, D-220), cloche du centre de notifications (D-157), état durable de la page en indicateur compact (D-159), bouton du panneau de détail (icône liste), commandes (Mod+K). En Tauri, la place des boutons de fenêtre (D-020). | Les filtres, la recherche dans une liste, les actions sur un élément précis. Aucun bandeau pleine largeur dessous (D-159). |
 | `sidebar` → navigation | Les pages principales : une icône, puis un libellé. Une action facultative peut apparaître au survol (D-002). | Les vues d'une page : elles sont dans les onglets (D-021). |
 | `sidebar` → sections | Des sections repliables, qui contiennent soit des éléments de navigation, soit des éléments sur deux lignes avec enfants (D-002). | Des réglages, ou du contenu de travail. |
 | `sidebar` → `account` | L'avatar, le nom et le plan ; le bouton Réglages (roue dentée). | Toute autre action. |
@@ -33,7 +33,7 @@ Une app décrit ses actions par des données (`Action`) et les passe à `ActionB
 
 | Zone | Où | Action principale | Icônes visibles | Reste |
 |---|---|---|---|---|
-| `topbar` | `actions` d'AppShell | Première icône (D-112) | 3 | « … » |
+| `topbar` | `actions` d'AppShell | Première icône (D-112) ; sans icône, bouton à texte (D-220) | 3, puis selon la place (D-221) | « … » |
 | `header` | En-tête de ListPage, DetailPage | Bouton à texte, à droite | 3 | « … » |
 | `toolbar` | Barre d'outils (sélection) | Bouton à texte, à droite | 3 | « … » |
 | `section` | Titre de section | Bouton secondaire `sm` (D-113) | 2 | « … » |
@@ -43,6 +43,8 @@ Une app décrit ses actions par des données (`Action`) et les passe à `ActionB
 - Ordre : icônes, « … », action principale à droite.
 - Action `danger` : dans « … », en dernier, après un trait, confirmée (D-115).
 - Sous 640 px : les icônes de `topbar`, `header` et `toolbar` passent dans « … » (D-117).
+- Barre du haut : quand la place manque, les icônes passent dans « … » depuis la dernière, puis le bouton à texte ; ensuite seulement les vues défilent (D-221).
+- Un seul bouton plein par écran : une action principale à texte dans la barre du haut exclut celle de l'en-tête du gabarit (D-220).
 
 ## Gabarits
 

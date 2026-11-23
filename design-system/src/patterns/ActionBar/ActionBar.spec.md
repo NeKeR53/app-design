@@ -1,6 +1,6 @@
 # ActionBar (modèle Action)
 Statut : validé (2026-11-23) — Version : depuis la version qui suit 0.1.0
-Validation : docs/validation/components/ActionBar-v1.html
+Validation : docs/validation/components/ActionBar-v1.html ; zone `topbar` : docs/validation/components/AppShell-actions-v1.html (par délégation de l'utilisateur, 2026-11-23)
 
 ## Rôle
 Une app décrit ses actions par des données (`Action`). `ActionBar` les dessine selon la zone où elle se trouve : bouton à texte, bouton-icône ou entrée du menu « … ». La page ne choisit aucun bouton. Les gabarits (ListPage, DetailPage, DetailPanel) s'appuient sur ce modèle.
@@ -36,7 +36,7 @@ Ordre : icônes, « … », action principale (D-111). Écart de 2 px entre bout
 ## Règle par zone (D-111 à D-114, D-117)
 | Zone | Où | Action `primary` | Actions à icône | Sans icône, ou en trop | `danger` |
 |---|---|---|---|---|---|
-| `topbar` | Option `actions` d'AppShell | Première icône ; sans icône, en tête de « … » (D-112) | 3 au plus | « … » | « … », en dernier |
+| `topbar` | Option `actions` d'AppShell | Avec icône : première icône (D-112) ; sans icône : `Button` `primary`, à droite (D-220) | 3 au plus, puis selon la place (D-221) | « … » | « … », en dernier |
 | `header` | En-tête de gabarit (ListPage `actions`, DetailPage) | `Button` `primary` | 3 au plus | « … » | « … », en dernier |
 | `toolbar` | Barre d'outils (actions groupées sur la sélection) | `Button` `primary` | 3 au plus | « … » | « … », en dernier |
 | `section` | Titre de section (DetailPanel, DetailPage) | `Button` `secondary`, taille `sm` (D-113) | 2 au plus | « … » | « … », en dernier |
@@ -44,6 +44,8 @@ Ordre : icônes, « … », action principale (D-111). Écart de 2 px entre bout
 | `empty` | État vide | `Button` `primary`, seul | Rien d'autre ne s'affiche | — | — |
 
 Sous 640 px, en `topbar`, `header` et `toolbar`, les icônes passent dans « … » ; l'action principale reste (D-117).
+
+Dans la barre du haut d'AppShell, la place se mesure en continu (D-221) : quand elle manque, les icônes passent dans « … » depuis la dernière, avant les entrées déjà présentes ; puis le bouton à texte passe en tête de « … ». Ailleurs, rien ne se mesure.
 
 ## Variantes
 Aucune variante visuelle propre : la zone décide de la forme. Les variantes viennent de `Button`, `IconButton` et `Menu`.
@@ -57,13 +59,13 @@ Aucune variante visuelle propre : la zone décide de la forme. Les variantes vie
 | `onError` | `(action, error) => void` | aucun | Appelé si `onPress` lève une erreur ou rejette sa promesse (D-116). |
 | `onDone` | `(action) => void` | aucun | Appelé après la réussite d'une action (par exemple pour recharger les données). |
 
-`arrangeActions(actions, zone, { narrow })` est aussi exporté : la règle seule, sans rendu, pour un gabarit qui dessine lui-même (Table, List).
+`arrangeActions(actions, zone, { narrow, fit })` est aussi exporté : la règle seule, sans rendu, pour un gabarit qui dessine lui-même (Table, List). `fit: { icons, primary }` (zone `topbar`) dit ce qui tient encore : le nombre d'icônes visibles, et si le bouton à texte reste (D-221).
 
 ## Exclus
 - Pas de bascule de vue (`group`, `selected`) : prendre `Tabs` (D-021).
 - Pas de notification de réussite ni d'échec dans `ActionBar` : le gabarit les affiche avec `onDone` et `onError` (D-116).
 - Pas d'action `danger` en icône ni en bouton à texte, et pas de titre de groupe au-dessus (D-115).
-- Pas de bouton à texte dans la zone `topbar` (D-112, spec AppShell).
+- Pas de bouton à texte en `topbar` pour une action principale à icône : elle reste une icône (D-112). Sans icône, elle est à texte (D-220).
 - Pas de sous-menu dans « … » dans cette version.
 - Pas de `className` ni de `style`.
 
@@ -87,6 +89,8 @@ Aucune variante visuelle propre : la zone décide de la forme. Les variantes vie
 | Une promesse met le bouton en attente ; un second clic est ignoré ; `onDone` après réussite (D-116, D-118) | verrouillé | `Attente` |
 | Une erreur, levée ou rejetée, est rendue à `onError` (D-116) | verrouillé | `Erreur` |
 | Sous 640 px, les icônes de `topbar`, `header` et `toolbar` passent dans « … » (D-117) | verrouillé | `PetitEcran` |
+| `topbar` : une principale sans icône est à texte, à droite (D-220) | verrouillé | `Zones`, `Regle` |
+| `topbar` dans AppShell : repli selon la place, icônes puis texte (D-221) | verrouillé | `Regle`, AppShell `ActionsDePage` |
 
 ## Contenu
 - `label` : court et complet, verbe à l'infinitif. Points de suspension si l'action demande une étape de plus (« Importer un fichier… »).
@@ -117,7 +121,7 @@ Zones `topbar` (option `actions` d'AppShell), `header` et `toolbar` d'un gabarit
 Contient `Button`, `IconButton`, `Menu` et `Tooltip` (via `IconButton`). La confirmation passe par `useConfirm` (D-127) : la modale affichée par `SocleProvider`.
 
 ## Décisions
-D-011, D-013, D-021, D-032, D-048, D-049, D-059, D-066, D-089, D-105, D-107, D-110, D-111, D-112, D-113, D-114, D-115, D-116, D-117, D-118
+D-011, D-013, D-021, D-032, D-048, D-049, D-059, D-066, D-089, D-105, D-107, D-110, D-111, D-112, D-113, D-114, D-115, D-116, D-117, D-118, D-220, D-221, D-222
 
 ## Questions ouvertes
 Aucune.

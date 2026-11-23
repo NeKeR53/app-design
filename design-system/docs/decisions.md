@@ -922,7 +922,7 @@
 ## D-112 — Modèle Action : action principale en icône dans la barre du haut
 - Date : 2026-11-23
 - Portée : ActionBar (zone `topbar`)
-- Décision : dans la zone `topbar`, l'action principale reste un bouton-icône, placé en premier. Sans icône, elle va en tête du menu « … ». La spec AppShell (boutons-icônes uniquement) ne change pas.
+- Décision : dans la zone `topbar`, l'action principale reste un bouton-icône, placé en premier. Sans icône, elle va en tête du menu « … » (partie remplacée par D-220 : sans icône, elle est à texte). La spec AppShell (boutons-icônes uniquement) ne change pas.
 - Raison : respecter AppShell aujourd'hui ; P13 pourra ajouter le texte en option, sans casser cette règle.
 - Options écartées : bouton à texte dans la barre du haut dès maintenant.
 - Validation : docs/validation/components/ActionBar-v1.html
@@ -1273,3 +1273,27 @@
 - Raison : comportements montrés dans la page de validation v1 et repris de la barre de recherche (D-071) et du Menu, pour un seul clavier dans le design system.
 - Options écartées : liste ouverte au focus (Alfred) ; champ sans chevron (Combobox d'Alfred).
 - Validation : docs/validation/components/ComboBox-v1.html
+
+## D-220 — Barre du haut : action principale à texte quand elle n'a pas d'icône
+- Date : 2026-11-23
+- Portée : ActionBar (zone `topbar`), AppShell
+- Décision : dans la zone `topbar`, une action `primary` sans icône est un `Button` `primary` de taille `md`, tout à droite du groupe, après « … », à 6 px du dernier bouton-icône. Une action `primary` avec icône reste un bouton-icône, en premier (D-112, inchangé). Un écran n'a qu'un bouton plein : si la barre du haut a une action principale à texte, l'en-tête du gabarit n'en a pas.
+- Raison : l'action attendue de la page reste visible et lisible ; l'app choisit la forme par la présence de l'icône, sans nouvelle option, comme D-112 le prévoyait.
+- Options écartées : toujours du texte (changerait D-112 pour toutes les apps) ; icône seulement (actuel : l'action attendue reste peu visible) ; nouvelle option `text` sur l'action (la page ne choisit pas la forme, D-111).
+- Validation : par délégation de l'utilisateur, 2026-11-23 — docs/validation/components/AppShell-actions-v1.html
+
+## D-221 — Barre du haut : repli selon la place
+- Date : 2026-11-23
+- Portée : ActionBar (zone `topbar`), AppShell
+- Décision : dans la barre du haut d'AppShell, `ActionBar` mesure la place libre en continu. Quand elle manque, les boutons-icônes passent dans « … » un à un, depuis le dernier ; ils y entrent avant les entrées déjà présentes, dans leur ordre. Puis le bouton à texte passe en tête de « … ». Les actions se replient avant les onglets de vues, qui ne rétrécissent qu'une fois tout replié (D-027). Les autres enfants du slot (la cloche, D-157) et le bouton du panneau de détail ne se replient jamais. Sous 640 px, D-117 s'applique toujours. Aucune animation (D-026). `arrangeActions` reçoit l'option `fit: { icons, primary }` pour la règle seule.
+- Raison : un seuil fixe de largeur de fenêtre (Alfred : 1100 px) replie trop tôt ou trop tard selon le titre et les vues ; la mesure garde tout ce qui tient.
+- Options écartées : seuil de largeur de fenêtre ; tout replier d'un coup ; replier les onglets de vues d'abord.
+- Validation : par délégation de l'utilisateur, 2026-11-23 — docs/validation/components/AppShell-actions-v1.html
+
+## D-222 — Barre du haut : contenu du slot `actions`
+- Date : 2026-11-23
+- Portée : AppShell
+- Décision : le slot `actions` d'AppShell reçoit une `ActionBar` `zone="topbar"` pour les actions de la page, et des boutons-icônes propres à l'app (cloche du centre de notifications, D-157), placés avant elle. Le slot prend la place libre de la barre ; sa largeur ne dépend pas de son contenu. Une bascule de vue (boutons accolés, `group` et `selected` dans Alfred) n'y va pas : les vues passent par l'option `views` (Tabs, D-021).
+- Raison : une seule forme d'action dans la barre ; les vues ont déjà leur place.
+- Options écartées : bascule de vue à deux boutons dans la barre (D-110 l'exclut déjà) ; deuxième slot pour le bouton à texte.
+- Validation : par délégation de l'utilisateur, 2026-11-23 — docs/validation/components/AppShell-actions-v1.html

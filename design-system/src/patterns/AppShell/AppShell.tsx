@@ -1,6 +1,6 @@
 /*
  * Cadre commun de toutes les apps. Spec : AppShell.spec.md.
- * Décisions : D-003, D-016 à D-021, D-025 à D-027.
+ * Décisions : D-003, D-016 à D-021, D-025 à D-027, D-220 à D-222.
  */
 import { Children, isValidElement, useEffect, useRef, useState, type PointerEvent as ReactPointerEvent, type ReactElement, type ReactNode } from "react";
 import { Button } from "react-aria-components/Button";
@@ -27,7 +27,7 @@ export interface AppShellProps {
   activeView?: string;
   onViewChange?: (id: string) => void;
   onViewClose?: (id: string) => void;
-  /** Actions de la page : boutons-icônes `IconButton` uniquement. */
+  /** Actions de la page : `ActionBar zone="topbar"` et boutons-icônes `IconButton` (cloche…) (D-222). */
   actions?: ReactNode;
   /** La sidebar de l'app (`Sidebar`). */
   sidebar: ReactElement<SidebarProps>;
@@ -166,11 +166,13 @@ export function AppShell({ pageTitle, views, activeView, onViewChange, onViewClo
               <Tabs pageTitle={pageTitle} items={views} selectedId={activeView} onSelectionChange={onViewChange} {...(onViewClose ? { onClose: onViewClose } : {})} />
             </>
           )}
-          <span className="flex-1" />
-          <span className="flex items-center gap-0.5">
+          {/* Actions de la page (D-222) : le slot prend la place libre, sans dépendre de son contenu ;
+              ActionBar y replie ses actions quand la place manque (D-221), avant les onglets de vues.
+              Sa largeur minimale (--socle-fit-min) est posée par ActionBar : ce qui reste tout replié. */}
+          <div data-socle-fit="" className="flex min-w-[var(--socle-fit-min,min-content)] flex-1 basis-0 items-center justify-end gap-0.5">
             {actions}
             {detail && <IconButton icon={<ListDetail />} label={m.detailPanel} shortcut="Mod+." isSelected={showDetail} onChange={toggleDetail} />}
-          </span>
+          </div>
         </div>
       </header>
 

@@ -1,0 +1,180 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Actions de page — validation v1</title>
+<style>
+/* ---------- Page de validation ---------- */
+:root{--pg-bg:#f6f6f6;--pg-fg:#1a1a1a;--pg-muted:#5c5c5c;--pg-line:#e2e2e2;--pg-card:#fff;--pg-badge:#fff4d6;--pg-badge-fg:#7a5a00;--pg-reco:#e7f0ff;--pg-reco-fg:#1d4ed8}
+:root[data-theme="dark"]{--pg-bg:#121212;--pg-fg:#ececec;--pg-muted:#9a9a9a;--pg-line:#2c2c2c;--pg-card:#1b1b1b;--pg-badge:#3a2f10;--pg-badge-fg:#f3d27a;--pg-reco:#16233d;--pg-reco-fg:#9cc0ff}
+*{box-sizing:border-box}html,body{margin:0}
+body{background:var(--pg-bg);color:var(--pg-fg);font:15px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif}
+.pg{max-width:1180px;margin:0 auto;padding:24px 16px 64px}
+h1{font-size:22px;font-weight:600;margin:0 0 4px;display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+h2.sec{font-size:16px;margin:28px 0 8px}
+.intro{color:var(--pg-muted);margin:0 0 20px}
+.badge{font-size:12px;font-weight:600;letter-spacing:.04em;padding:3px 8px;border-radius:6px;background:var(--pg-badge);color:var(--pg-badge-fg)}
+.boxes{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px}
+@media (max-width:760px){.boxes{grid-template-columns:1fr}}
+.box{background:var(--pg-card);border:1px solid var(--pg-line);border-radius:10px;padding:14px 16px;font-size:14px}
+.box h2{font-size:14px;margin:0 0 8px;font-weight:600}.box ul,.box ol{margin:0;padding-left:20px}.box li{margin:5px 0}
+.reco{font-size:11.5px;font-weight:600;padding:1px 6px;border-radius:5px;background:var(--pg-reco);color:var(--pg-reco-fg);margin-left:4px}
+.toolbar{position:sticky;top:0;z-index:100;background:var(--pg-bg);padding:10px 0;border-bottom:1px solid var(--pg-line);margin-bottom:16px;display:flex;flex-wrap:wrap;gap:10px 16px;align-items:center}
+.seg{display:inline-flex;border:1px solid var(--pg-line);border-radius:8px;overflow:hidden;background:var(--pg-card)}
+.seg button{border:0;background:transparent;color:var(--pg-fg);padding:5px 10px;font:inherit;font-size:13px;cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--pg-fg);color:var(--pg-bg)}
+.tlabel{font-size:12px;color:var(--pg-muted);margin-right:6px}
+.hint{margin:8px 0 0;color:var(--pg-muted);font-size:13px}
+.cmp{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+@media (max-width:760px){.cmp{grid-template-columns:1fr}}
+.opt{background:var(--pg-card);border:1px solid var(--pg-line);border-radius:10px;padding:12px 14px;font-size:13px}
+.opt h3{margin:0 0 2px;font-size:13px}.opt p{margin:0 0 10px;color:var(--pg-muted)}
+
+
+/* ---------- Mini AppShell commun ---------- */
+.frame{max-width:100%;overflow:hidden;border:1px solid var(--pg-line);border-radius:12px;margin:0 auto}
+.app{position:relative;height:520px;display:grid;grid-template-rows:var(--bar-h) minmax(0,1fr);overflow:hidden}
+.app *{box-sizing:border-box}.app button{font:inherit;color:inherit}
+.ic{width:var(--icon);height:var(--icon);flex:none;stroke:currentColor;fill:none;stroke-width:var(--icon-stroke);stroke-linecap:round;stroke-linejoin:round}
+.top{display:flex;min-width:0;border-bottom:1px solid var(--line)}
+.top .lead{width:var(--side-w);flex:none;display:flex;align-items:center;gap:2px;padding:0 8px;background:var(--surface-side);border-right:1px solid var(--line)}
+.top .rest{flex:1;min-width:0;display:flex;align-items:center;gap:8px;padding:0 8px 0 16px}
+.top h1{margin:0;font-size:var(--fs-md);font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:40%;flex:none}
+.vsep{width:1px;height:16px;background:var(--line);flex:none}
+.tabs{display:flex;gap:2px;min-width:0;overflow:hidden;flex:0 1 auto}
+.tab{height:calc(var(--row-h) - 6px);padding:0 10px;border-radius:var(--radius-md);display:inline-flex;align-items:center;color:var(--fg-2);white-space:nowrap;font-size:var(--fs-md)}
+.tab.on{background:var(--selected);color:var(--fg)}
+.ib{width:var(--row-h);height:var(--row-h);border:0;background:transparent;border-radius:var(--radius-md);display:inline-grid;place-items:center;color:var(--fg-2);cursor:pointer;flex:none;position:relative}
+.ib:hover{background:var(--hover);color:var(--fg)}.ib[aria-pressed="true"]{background:var(--selected);color:var(--fg)}
+.btn{height:var(--row-h);padding:0 12px;border:0;border-radius:var(--radius-md);background:var(--field);font-size:var(--fs-md);font-weight:500;cursor:pointer;white-space:nowrap;flex:none}
+.btn:hover{background:var(--hover)}.btn.primary{background:var(--accent);color:#fff}.tk.dark .btn.primary{color:#0b1630}
+.btn[disabled]{opacity:.4;cursor:default}
+.body{display:flex;min-height:0;min-width:0}
+.side{width:var(--side-w);flex:none;background:var(--surface-side);border-right:1px solid var(--line);display:flex;flex-direction:column;min-height:0}
+.side .navs{flex:1;min-height:0;overflow:auto;padding:6px}
+.nav{display:flex;align-items:center;gap:8px;height:var(--row-h);padding:0 8px;border-radius:var(--radius-md);color:var(--fg-2);white-space:nowrap;overflow:hidden}
+.nav.on{background:var(--selected);color:var(--fg)}.nav .cnt{margin-left:auto;color:var(--fg-3);font-size:var(--fs-sm)}
+.sect{font-size:var(--fs-sm);color:var(--fg-3);padding:10px 8px 4px}
+.foot{border-top:1px solid var(--line);padding:8px;display:flex;flex-direction:column;gap:2px}
+.acc{display:flex;align-items:center;gap:8px;height:var(--row-h);padding:0 6px;border-radius:var(--radius-md);min-width:0}
+.av{width:24px;height:24px;border-radius:50%;background:var(--selected);display:inline-grid;place-items:center;font-size:10px;font-weight:600;flex:none}
+.main{flex:1;min-width:0;overflow:auto}
+.li{display:flex;align-items:center;gap:12px;height:var(--row-h);padding:0 16px;border-bottom:1px solid var(--line);white-space:nowrap}
+.li span:first-child{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis}.li .m{color:var(--fg-3);font-size:var(--fs-sm)}
+.detail{flex:none;width:var(--detail-w);border-left:1px solid var(--line);padding:12px 16px;overflow:auto;position:relative}
+.detail h4{margin:0 0 8px;font-size:var(--fs-sm);font-weight:500;color:var(--fg-3)}
+.prop{display:flex;gap:12px;padding:4px 0;margin:0}.prop dt{width:96px;flex:none;color:var(--fg-2)}.prop dd{margin:0;min-width:0}
+.menu{position:absolute;z-index:30;min-width:200px;background:var(--surface);border:1px solid var(--line);border-radius:var(--radius-lg);box-shadow:0 8px 24px rgba(0,0,0,.14);padding:4px}
+.menu .mi{display:flex;align-items:center;gap:8px;height:var(--row-h);padding:0 10px;border-radius:var(--radius-md);white-space:nowrap}
+.menu .mi:hover{background:var(--hover)}.menu .sep{border-top:1px solid var(--line);margin:4px 6px}.menu .mi.danger{color:var(--danger)}
+.menu .mh{font-size:var(--fs-sm);color:var(--fg-3);padding:6px 10px 2px}
+.hidden{display:none!important}
+.tk{--surface:#fff;--surface-side:#f3f3f3;--field:#f2f2f2;--hover:#e9e9e9;--selected:#dedede;--line:#e4e4e4;--line-strong:#cfcfcf;--fg:#1a1a1a;--fg-2:#5c5c5c;--fg-3:#6b6b6b;--accent:#1d4ed8;--success:#15803d;--warning:#b45309;--danger:#c62828;--info:#1d4ed8;
+  --font-sans:-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;--radius-sm:4px;--radius-md:8px;--radius-lg:12px;--icon:16px;--icon-stroke:1.6;--fs-xs:11.5px;--fs-sm:12.5px;--fs-md:14px;--lh:1.45;--row-h:34px;--bar-h:44px;--side-w:220px;--detail-w:300px;--detail-w-form:460px;
+  background:var(--surface);color:var(--fg);font-family:var(--font-sans);font-size:var(--fs-md);line-height:var(--lh)}
+.tk.dark{--surface:#181818;--surface-side:#222;--field:#2a2a2a;--hover:#303030;--selected:#3d3d3d;--line:#333;--line-strong:#4a4a4a;--fg:#ececec;--fg-2:#ababab;--fg-3:#8f8f8f;--accent:#5b8def;--success:#5cc98a;--warning:#e0a24a;--danger:#f07167;--info:#5b8def}
+.tk.desktop{--fs-xs:10.5px;--fs-sm:11.5px;--fs-md:13px;--row-h:28px;--bar-h:38px;--side-w:200px;--detail-w:272px;--detail-w-form:420px}
+</style>
+</head>
+<body>
+<div class="pg">
+<h1>AppShell : actions de page dans la barre du haut <span class="badge">VALIDÉ le 2026-11-23</span></h1>
+<p class="intro">Proposition P13. Une action principale à texte dans <code>actions</code> d'AppShell, et un repli en « … » quand la place manque. Validation : par délégation de l'utilisateur, 2026-11-23.</p>
+<div class="boxes">
+<div class="box"><h2>Déjà décidé</h2><ul>
+<li>D-110, D-111 : l'app décrit ses actions par des données ; la zone décide de la forme.</li>
+<li>D-112 : en <code>topbar</code>, l'action principale à icône reste une icône, en premier.</li>
+<li>D-117 : sous 640 px, les icônes passent dans « … ».</li>
+<li>D-021, D-027 : les vues vont dans les onglets ; trop de vues font défiler la rangée.</li>
+<li>D-157 : la cloche des notifications est dans <code>actions</code>.</li>
+</ul></div>
+<div class="box"><h2>Tranché (par délégation)</h2><ol>
+<li><b>Forme</b> : option A. Une action principale <i>sans icône</i> devient un bouton à texte plein, tout à droite (D-220).</li>
+<li><b>Repli</b> : selon la place réelle. Les icônes passent dans « … » une à une, depuis la fin ; le bouton à texte passe en dernier, en tête de « … » (D-221).</li>
+<li><b>Priorité</b> : les actions se replient avant les onglets de vues ; la cloche et le bouton du détail ne se replient jamais (D-221).</li>
+<li><b>Slot</b> : <code>actions</code> accepte <code>ActionBar zone="topbar"</code> et des boutons-icônes. Pas de bascule à deux boutons : les vues passent en <code>views</code> (D-222).</li>
+</ol></div>
+</div>
+<div class="toolbar">
+<span><span class="tlabel">Thème</span><span class="seg" id="t-mode"></span></span>
+<span><span class="tlabel">Densité</span><span class="seg" id="t-dens"></span></span>
+<span><span class="tlabel">Option</span><span class="seg" id="t-opt"></span></span>
+<span><span class="tlabel">État</span><span class="seg" id="t-state"></span></span>
+<span><span class="tlabel">Largeur</span><input type="range" id="t-w" min="420" max="1180" value="1180" aria-label="Largeur de la fenêtre"> <span id="t-wv" class="tlabel"></span></span>
+</div>
+<div class="frame" id="frame"><div class="app tk" id="app"></div></div>
+<p class="hint" id="explain"></p>
+<h2 class="sec">Les trois options</h2>
+<div class="cmp">
+<div class="opt"><h3>A — texte si l'action n'a pas d'icône <span class="reco">reco</span></h3><p>D-112 reste vrai. L'app choisit le texte en omettant l'icône : aucune nouvelle option. La seule différence : une principale sans icône sort de « … ».</p></div>
+<div class="opt"><h3>B — toujours du texte</h3><p>Comme les en-têtes. Plus lisible, mais change D-112 pour toutes les apps qui ont déjà une icône principale.</p></div>
+<div class="opt"><h3>C — icône seulement (actuel)</h3><p>Rien ne change. L'action attendue reste peu visible ; Alfred garderait une solution locale.</p></div>
+</div>
+<h2 class="sec">Comportement</h2>
+<div class="box"><ul>
+<li>Ordre : icônes, « … », action principale à texte, puis la cloche, puis le bouton du détail.</li>
+<li>La place se mesure en continu. Rien ne bouge tant que tout tient. Aucune animation (D-026).</li>
+<li>Une icône repliée garde son ordre : elle passe <i>avant</i> les entrées déjà dans « … ». Le texte replié passe en tête.</li>
+<li>Attente : le bouton à texte montre l'attente (D-116) ; désactivé : opacité 40 %.</li>
+<li>Un seul bouton plein par écran : si la barre du haut a une action principale à texte, l'en-tête du gabarit n'en a pas.</li>
+<li>Clavier : Tab passe d'un bouton à l'autre ; « … » s'ouvre avec Entrée, Espace ou flèche bas.</li>
+</ul></div>
+</div>
+<script>
+var ICONS={search:'<circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/>',more:'<circle cx="5" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/>',list:'<path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/>',panel:'<rect x="3" y="4" width="18" height="16" rx="2"/><path d="M9 4v16"/>',left:'<path d="m15 18-6-6 6-6"/>',right:'<path d="m9 18 6-6-6-6"/>',doc:'<path d="M14 3H6a1 1 0 0 0-1 1v16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V8z"/><path d="M14 3v5h5"/>',share:'<path d="M4 12v7a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-7"/><path d="m16 6-4-4-4 4M12 2v14"/>',upload:'<path d="M12 16V4M7 9l5-5 5 5M4 20h16"/>',bell:'<path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10 21a2 2 0 0 0 4 0"/>',gear:'<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/>',updown:'<path d="m7 15 5 5 5-5M7 9l5-5 5 5"/>',check:'<path d="M20 6 9 17l-5-5"/>',chat:'<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>',trash:'<path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14"/>',help:'<circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.5 2.5 0 1 1 3.5 2.3c-.6.3-1 .9-1 1.5V14M12 17h.01"/>',max:'<path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/>',min:'<path d="M4 14h6v6M20 10h-6V4M14 10l7-7M3 21l7-7"/>',plus:'<path d="M5 12h14M12 5v14"/>'};
+function ic(n){return '<svg class="ic" viewBox="0 0 24 24" aria-hidden="true">'+ICONS[n]+'</svg>';}
+function ib(n,label,extra){return '<button class="ib" title="'+label+'" aria-label="'+label+'" '+(extra||'')+'>'+ic(n)+'</button>';}
+function seg(id,opts,cur,on){var el=document.getElementById(id);el.innerHTML=opts.map(function(o){return '<button aria-pressed="'+(o[0]===cur)+'" data-v="'+o[0]+'">'+o[1]+'</button>';}).join('');el.addEventListener('click',function(e){var b=e.target.closest('button');if(!b)return;[].forEach.call(el.children,function(x){x.setAttribute('aria-pressed',x===b);});on(b.dataset.v);});}
+function themeBar(apply){seg('t-mode',[['light','Clair'],['dark','Sombre']],'light',function(v){document.documentElement.dataset.theme=v;[].forEach.call(document.querySelectorAll('.tk'),function(el){el.classList.toggle('dark',v==='dark');});apply&&apply();});
+seg('t-dens',[['web','Web'],['desktop','Desktop']],'web',function(v){[].forEach.call(document.querySelectorAll('.tk'),function(el){el.classList.toggle('desktop',v==='desktop');});apply&&apply();});}
+function sideHTML(sel,footExtra){var items=[['home','Accueil'],['docs','Documents'],['plan','Planning'],['contacts','Contacts']];return '<aside class="side"><div class="navs">'+items.map(function(i){return '<div class="nav'+(i[0]===sel?' on':'')+'">'+ic('doc')+'<span>'+i[1]+'</span></div>';}).join('')+'<div class="sect">Projets</div><div class="nav">'+ic('doc')+'<span>Refonte du site</span></div><div class="nav">'+ic('doc')+'<span>Application mobile</span></div></div><div class="foot">'+(footExtra||'')+'<div class="acc"><span class="av">CM</span><span style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Camille Martin <span style="color:var(--fg-3);font-size:var(--fs-sm)">· Admin</span></span>'+ib('gear','Réglages')+'</div></div></aside>';}
+function leadHTML(){return '<div class="lead">'+ib('panel','Replier la barre latérale')+'<span style="flex:1"></span>'+ib('left','Précédent')+ib('right','Suivant')+'</div>';}
+function listHTML(){return ['Rapport trimestriel','Plan de charge 2027','Compte rendu du comité','Budget prévisionnel','Charte graphique','Procédure d’achat','Note de cadrage'].map(function(t,i){return '<div class="li"><span>'+t+'</span><span class="m">'+(21-i)+' nov.</span></div>';}).join('');}
+function detailHTML(){return '<h4>Propriétés</h4><dl><div class="prop"><dt>Auteur</dt><dd>Inès Moreau</dd></div><div class="prop"><dt>Modifié</dt><dd>21 nov. 2026</dd></div><div class="prop"><dt>Statut</dt><dd>En relecture</dd></div><div class="prop"><dt>Dossier</dt><dd>Direction</dd></div></dl>';}
+</script>
+<script>
+var st={opt:'A',state:'normal',w:1180,menu:false};
+var ACTIONS=[{id:'new',label:'Nouveau document',primary:true},{id:'share',label:'Partager',icon:'share'},{id:'import',label:'Importer',icon:'upload'},{id:'search',label:'Rechercher',icon:'search'},{id:'csv',label:'Exporter en CSV'},{id:'del',label:'Supprimer la sélection',danger:true}];
+function arrange(avail){
+  var p=ACTIONS[0],icons=ACTIONS.filter(function(a){return a.icon;}),menu=ACTIONS.filter(function(a){return !a.icon&&!a.primary&&!a.danger;}),danger=ACTIONS.filter(function(a){return a.danger;});
+  var text=null,lead=[];
+  if(st.opt==='A'||st.opt==='B') text=p; else lead=[p];
+  if(st.opt==='C'){/* principale sans icône : en tête de « … » */}
+  var iw=parseFloat(getComputedStyle(document.getElementById('app')).getPropertyValue('--row-h'))+2, tw=text?(text.label.length*7.4+24+8):0;
+  if(window.innerWidth<640&&false){}
+  var k=icons.length, out=[];
+  function need(k,t){var m=menu.length+danger.length+lead.length+(icons.length-k)+(t?0:(text?1:0));return k*iw+(m?iw:0)+(t?tw:0);}
+  var keepText=!!text;
+  while(k>0&&need(k,keepText)>avail)k--;
+  if(k===0&&keepText&&need(0,true)>avail)keepText=false;
+  var shown=icons.slice(0,k),folded=icons.slice(k);
+  var m=(text&&!keepText?[text]:[]).concat(lead,folded,menu);
+  return {icons:shown,menu:m,danger:danger,text:keepText?text:null};
+}
+function render(){
+  var app=document.getElementById('app');document.getElementById('frame').style.width=st.w+'px';document.getElementById('t-wv').textContent=st.w+' px';
+  var narrow=st.w<640;
+  app.innerHTML='<header class="top">'+(narrow?'':leadHTML())+'<div class="rest"><h1>Documents</h1><span class="vsep"></span><div class="tabs" id="tabs"><span class="tab on">Tous les documents</span><span class="tab">Partagés</span><span class="tab">Brouillons</span></div><div id="slot" style="flex:1 1 0;min-width:var(--row-h);display:flex;justify-content:flex-end;align-items:center;gap:2px"></div>'+ib('bell','Notifications')+ib('list','Panneau de détail','aria-pressed="true"')+'</div></header><div class="body">'+(narrow?'':sideHTML('docs'))+'<main class="main">'+listHTML()+'</main>'+(st.w>=1024?'<aside class="detail">'+detailHTML()+'</aside>':'')+'</div>';
+  var slot=document.getElementById('slot');var avail=slot.clientWidth;
+  var r=arrange(narrow?Math.min(avail,0+ (r0()) ):avail);
+  function r0(){return 9999;}
+  if(narrow){r.menu=r.icons.concat(r.menu);r.icons=[];}
+  var h=r.icons.map(function(a){return ib(a.icon,a.label);}).join('');
+  if(r.menu.length+r.danger.length)h+='<span style="position:relative">'+ib('more','Plus d’actions','id="more"')+'</span>';
+  if(r.text)h+='<span style="margin-left:6px;display:inline-flex"><button class="btn primary" '+(st.state==='disabled'?'disabled':'')+'>'+(st.state==='pending'?'<span aria-busy="true">…</span> ':'')+r.text.label+'</button></span>';
+  slot.innerHTML=h;
+  var more=document.getElementById('more');
+  if(more)more.onclick=function(){st.menu=!st.menu;render();};
+  if(st.menu&&more){var mm=document.createElement('div');mm.className='menu';mm.style.right='0';mm.style.top='calc(var(--row-h) + 4px)';mm.innerHTML=r.menu.map(function(a){return '<div class="mi">'+(a.icon?ic(a.icon):'<span style="width:16px"></span>')+a.label+'</div>';}).join('')+(r.danger.length?'<div class="sep"></div>'+r.danger.map(function(a){return '<div class="mi danger"><span style="width:16px"></span>'+a.label+'</div>';}).join(''):'');more.parentNode.appendChild(mm);}
+  document.getElementById('explain').textContent=(r.text?'Bouton à texte visible. ':'Bouton à texte replié en tête de « … ». ')+r.icons.length+' icône(s) visible(s)'+(narrow?' (sous 640 px, D-117).':'.')+' Faites glisser la largeur pour voir le repli.';
+}
+themeBar(render);
+seg('t-opt',[['A','A (reco)'],['B','B'],['C','C']],'A',function(v){st.opt=v;if(v==='B'){ACTIONS[0].icon=undefined;}render();});
+seg('t-state',[['normal','Normal'],['pending','Attente'],['disabled','Désactivé'],['menu','Menu ouvert']],'normal',function(v){st.state=v;st.menu=v==='menu';render();});
+var wi=document.getElementById('t-w');wi.max=Math.min(1180,document.querySelector('.pg').clientWidth-32);wi.value=wi.max;st.w=+wi.value;wi.oninput=function(){st.w=+wi.value;render();};
+window.addEventListener('resize',function(){wi.max=Math.min(1180,document.querySelector('.pg').clientWidth-32);if(st.w>wi.max){st.w=+wi.max;}render();});
+render();
+</script>
+</body>
+</html>

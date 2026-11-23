@@ -1,6 +1,6 @@
 # AppShell
 Statut : validé — Version : depuis 0.1.0
-Validation : docs/validation/components/AppShell-v1.html
+Validation : docs/validation/components/AppShell-v1.html ; actions de page : docs/validation/components/AppShell-actions-v1.html (par délégation de l'utilisateur, 2026-11-23)
 
 ## Rôle
 Cadre commun de toutes les apps : barre supérieure, sidebar, zone de contenu, panneau de détail et, sur mobile, barre d'onglets. Chaque écran d'une app est rendu dans un AppShell. On ne l'utilise pas pour une fenêtre secondaire ou une modale : dans ce cas, prendre `Dialog`.
@@ -10,7 +10,7 @@ Cadre commun de toutes les apps : barre supérieure, sidebar, zone de contenu, p
    - bouton de repli de la sidebar et précédent/suivant (facultatifs) ;
    - nom de la page (obligatoire) ;
    - onglets des vues de la page (facultatifs, D-021) ;
-   - actions de la page (facultatives) ;
+   - actions de la page (facultatives) : boutons-icônes de l'app (cloche), puis `ActionBar` `zone="topbar"` : icônes, « … », action principale à texte (D-220 à D-222) ;
    - bouton du panneau de détail, avec l'icône liste (présent si `detail` est fourni) ;
    - en Tauri, la place réservée aux boutons de fenêtre (D-020).
 2. `sidebar` (obligatoire sur bureau et tablette) : navigation, sections, compte (voir `Sidebar`).
@@ -27,7 +27,7 @@ Aucune variante visuelle. La disposition dépend de la largeur (D-013) et de la 
 | `pageTitle` | `string` | — (obligatoire) | Nom de la page, dans la barre supérieure. |
 | `views` | `{ id, label, closable? }[]` | aucune | Vues de la page en onglets (D-021). |
 | `activeView` / `onViewChange` / `onViewClose` | — | — | Vue active et ses événements. |
-| `actions` | slot `ReactNode` (boutons-icônes `IconButton` uniquement) | aucune | Actions de la page. |
+| `actions` | slot `ReactNode` : `ActionBar` `zone="topbar"` et boutons-icônes `IconButton` | aucune | Actions de la page (D-222). Le slot prend la place libre ; `ActionBar` y replie ses actions selon la place (D-221). |
 | `sidebar` | slot `Sidebar` | — (obligatoire) | Contenu de la sidebar. |
 | `detail` | slot `ReactNode` | aucun | Contenu du panneau de détail ; s'il est absent, ni la colonne ni le bouton ne s'affichent. |
 | `tabbar` | `{ id, label, icon }[]` (4 au plus) | les 4 premières entrées de navigation | Entrées de la barre d'onglets mobile. |
@@ -36,6 +36,7 @@ Aucune variante visuelle. La disposition dépend de la largeur (D-013) et de la 
 ## Exclus
 - Pas de deuxième barre d'outils sous la barre supérieure : les filtres vont dans la `toolbar` du gabarit.
 - Pas de pied de page global.
+- Pas de bascule de vue à boutons accolés dans `actions` : les vues passent par `views` (D-021, D-222).
 - Pas de `className` ni de `style`.
 
 ## États
@@ -53,12 +54,14 @@ Aucune variante visuelle. La disposition dépend de la largeur (D-013) et de la 
 | Onglets de vues : chaque page retient sa dernière vue, Mod+1 à 9 (D-021) | verrouillé | `OngletsDeVues` |
 | Panneau de détail et overlay de la sidebar : affichage immédiat, sans animation (D-026) | verrouillé | `PanneauDetail` |
 | Trop de vues : la rangée défile et un chevron liste toutes les vues ; l'onglet actif reste visible ; sur mobile, le titre de la vue ouvre la liste ; un seul chevron visible (D-027) | verrouillé | `VuesEnDebordement` |
+| Actions de la page : principale à texte si elle n'a pas d'icône ; repli en « … » selon la place, icônes puis texte, avant les onglets de vues ; la cloche et le bouton du détail restent (D-220, D-221) | verrouillé | `ActionsDePage` |
 | Échap ferme ce qui flotte | verrouillé | `Echap` |
 | Mobile : barre d'onglets, feuille « Plus » sans doublons (D-003, D-019) | verrouillé | `Mobile` |
 
 ## Contenu
 - Nom de page trop long : il est tronqué, avec une info-bulle.
 - Trop de vues pour la largeur : défilement et chevron « Toutes les vues » (D-027).
+- Trop d'actions pour la largeur : elles passent dans « … », puis seulement les vues défilent (D-221).
 
 ## Densité
 `--bar-h`, `--side-w`, `--detail-w` et `--row-h` suivent la densité (D-004).
@@ -86,7 +89,7 @@ Contient les icônes internes de Socle (D-028), `Sidebar`, `IconButton`, `Tabs` 
 
 ## Décisions
 Libellés internes : dictionnaire `messages` de SocleProvider (D-089).
-D-003, D-004, D-006, D-013, D-015, D-016, D-017, D-018, D-019, D-020, D-021, D-025, D-026, D-027, D-028, D-029
+D-003, D-004, D-006, D-013, D-015, D-016, D-017, D-018, D-019, D-020, D-021, D-025, D-026, D-027, D-028, D-029, D-220, D-221, D-222
 
 ## Questions ouvertes
 Aucune.
