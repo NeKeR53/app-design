@@ -56,6 +56,8 @@ Mise en conformité avec les specs existantes, après une revue UX comparée à 
 - ActionBar : « … » en attente pendant une action lancée depuis son menu (D-353).
 
 ### Corrigé
+- TreeView : déplacer un nœud au clavier fonctionne aussi quand le focus arrive directement sur la poignée « Déplacer » (lecteur d'écran) ; une seconde Entrée trop rapide ne relance plus le glissement. La poignée sort de l'ordre de tabulation, comme le chevron (D-267).
+- ComboBox et TreeView utilisent le Spinner (D-360).
 - Toast : au retour sur la fenêtre, la minuterie ne repart plus si la souris ou le focus sont sur un toast (D-153). Échap ferme aussi le toast depuis son action ou sa croix.
 - FormattedValue : une valeur négative arrondie à zéro s'affiche « 0 », pas « -0 » (`number`, `money`, `percent`).
 - SettingsPage : quand les réponses arrivent dans le désordre, l'échec d'un ancien envoi ne rétablit plus une valeur dépassée (D-204).

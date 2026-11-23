@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Nouveaux composants P4 — validation</title>
+<style>
+:root {
+  --surface: #ffffff; --surface-side: #f3f3f3; --surface-raised: #ffffff; --field: #f2f2f2; --hover: #e9e9e9; --selected: #dedede;
+  --line: #e4e4e4; --line-strong: #cfcfcf; --fg: #1a1a1a; --fg-2: #5c5c5c; --fg-3: #6b6b6b;
+  --accent: #1d4ed8; --accent-fg: #ffffff; --accent-text: #1d4ed8; --danger: #c62828; --warning: #b45309; --success: #15803d; --info: #1d4ed8;
+  --page: #ebebeb; --radius-sm: 4px; --radius-md: 8px; --radius-lg: 12px; --shadow-md: 0 6px 20px rgb(0 0 0 / .10);
+}
+body:has(#m-dark:checked) {
+  --surface: #181818; --surface-side: #222222; --surface-raised: #262626; --field: #2a2a2a; --hover: #303030; --selected: #3d3d3d;
+  --line: #333333; --line-strong: #4a4a4a; --fg: #ececec; --fg-2: #ababab; --fg-3: #8f8f8f;
+  --accent: #5b8def; --accent-fg: #0b1630; --accent-text: #7da4f2; --danger: #f07167; --warning: #e0a24a; --success: #5cc98a; --info: #5b8def;
+  --page: #111111; --shadow-md: 0 6px 20px rgb(0 0 0 / .5);
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--page); color: var(--fg); font: 14px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif; }
+.wrap { max-width: 1200px; margin: 0 auto; padding: 24px 16px 64px; }
+h1 { font-size: 22px; margin: 0; } h2 { font-size: 18px; margin: 28px 0 4px; } h3 { font-size: 15px; margin: 0 0 4px; } h4 { font-size: 12px; margin: 0 0 6px; text-transform: uppercase; letter-spacing: .04em; color: var(--fg-3); }
+.muted { color: var(--fg-2); }
+.status { display: inline-block; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 999px; background: #fde68a; color: #713f12; margin-left: 8px; vertical-align: middle; }
+.boxes { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 16px 0; }
+.box, .q { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; }
+.box ul, .box ol { margin: 4px 0 0; padding-left: 20px; }
+.bar { position: sticky; top: 0; z-index: 5; background: var(--page); padding: 10px 0; }
+.seg { display: inline-flex; border: 1px solid var(--line-strong); border-radius: 8px; overflow: hidden; background: var(--surface); }
+.seg input { position: absolute; opacity: 0; } .seg label { padding: 4px 12px; cursor: pointer; }
+.seg input:checked + label { background: var(--fg); color: var(--surface); }
+.q { margin-top: 12px; }
+.cols { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 12px; margin-top: 8px; }
+.col { border: 1px solid var(--line); border-radius: 8px; padding: 10px; }
+.col.reco { outline: 2px solid #16a34a; }
+.tag { font-size: 11px; font-weight: 700; color: #15803d; margin-left: 6px; }
+.col b { display: block; margin-bottom: 4px; }
+.demo { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-md); padding: 12px; margin-top: 8px; font-size: 13px; position: relative; }
+.src { font-size: 12px; color: var(--fg-3); margin-top: 6px; }
+label.l { display: block; font-size: 12px; font-weight: 500; margin-bottom: 3px; }
+.in { height: 30px; border: 1px solid var(--line-strong); border-radius: var(--radius-md); padding: 0 8px; display: flex; align-items: center; gap: 2px; background: var(--surface); color: var(--fg); }
+.in .seg-d { padding: 1px 2px; border-radius: 3px; } .in .seg-d.f { background: var(--accent); color: var(--accent-fg); } .in .ph { color: var(--fg-3); }
+.in .sp { flex: 1; }
+.ib { width: 24px; height: 24px; border-radius: var(--radius-sm); display: grid; place-items: center; color: var(--fg-2); }
+.cal { position: absolute; top: 62px; left: 12px; width: 236px; background: var(--surface-raised); border: 1px solid var(--line); border-radius: var(--radius-lg); box-shadow: var(--shadow-md); padding: 8px; z-index: 2; }
+.cal .h { display: flex; justify-content: space-between; align-items: center; font-weight: 600; font-size: 13px; padding: 2px 4px 6px; }
+.grid7 { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; text-align: center; font-size: 12px; }
+.grid7 .w { color: var(--fg-3); font-size: 11px; }
+.grid7 span { height: 26px; display: grid; place-items: center; border-radius: var(--radius-sm); }
+.grid7 .o { color: var(--fg-3); } .grid7 .x { color: var(--fg-3); text-decoration: line-through; }
+.grid7 .t { outline: 1px solid var(--line-strong); outline-offset: -1px; font-weight: 600; }
+.grid7 .s { background: var(--accent); color: var(--accent-fg); } .grid7 .r { background: color-mix(in srgb, var(--accent) 14%, transparent); border-radius: 0; }
+.tall { padding-bottom: 260px; }
+.alert { display: grid; grid-template-columns: auto 1fr auto; gap: 10px; align-items: start; border: 1px solid var(--line); border-radius: var(--radius-md); padding: 10px 12px; background: var(--surface); }
+.alert .ic { font-weight: 700; width: 16px; text-align: center; }
+.alert.tint-warning { background: color-mix(in srgb, var(--warning) 10%, var(--surface)); border-color: color-mix(in srgb, var(--warning) 35%, var(--surface)); }
+.alert.bar-warning { border-left: 3px solid var(--warning); }
+.alert .t { font-weight: 600; } .alert .d { color: var(--fg-2); font-size: 13px; }
+.alert .act { margin-top: 6px; } .alert .x { color: var(--fg-3); }
+.btn { display: inline-flex; align-items: center; height: 26px; padding: 0 10px; border-radius: var(--radius-md); border: 0; font: inherit; font-size: 12px; font-weight: 500; background: var(--field); color: var(--fg); }
+.num { display: flex; align-items: stretch; height: 30px; border: 1px solid var(--line-strong); border-radius: var(--radius-md); overflow: hidden; background: var(--surface); width: 180px; }
+.num .v { flex: 1; display: flex; align-items: center; padding: 0 8px; font-variant-numeric: tabular-nums; justify-content: flex-end; }
+.num .u { display: flex; align-items: center; padding-right: 8px; color: var(--fg-3); }
+.num .st { display: flex; flex-direction: column; border-left: 1px solid var(--line); width: 22px; } .num .st span { flex: 1; display: grid; place-items: center; font-size: 9px; color: var(--fg-2); } .num .st span + span { border-top: 1px solid var(--line); }
+.num .pm { width: 30px; display: grid; place-items: center; color: var(--fg-2); background: var(--field); }
+@media (max-width: 800px) { .boxes { grid-template-columns: 1fr; } }
+</style>
+<style>
+.etq { display:inline-flex; align-items:center; gap:4px; height:24px; padding:0 8px; border-radius: var(--radius-sm); background: var(--field); color: var(--fg); font-size:12px; margin:2px; }
+.etq.sel { background: var(--selected); font-weight:500; } .etq .x { color: var(--fg-3); }
+.etq.col { background: color-mix(in srgb, #7c3aed 14%, var(--surface)); color: #6d28d9; }
+.otp { display:flex; gap:6px; } .otp span { width:34px; height:40px; border:1px solid var(--line-strong); border-radius: var(--radius-md); display:grid; place-items:center; font-size:18px; font-variant-numeric: tabular-nums; }
+.otp span.f { outline: 2px solid var(--accent); outline-offset: 1px; }
+.steps { display:flex; gap:10px; font-size:12px; align-items:center; margin-bottom:8px; } .steps b { display:inline-grid; place-items:center; width:20px; height:20px; border-radius:50%; background: var(--fg); color: var(--surface); font-size:11px; margin:0 4px 0 0; } .steps i { display:inline-grid; place-items:center; width:20px; height:20px; border-radius:50%; border:1px solid var(--line-strong); font-style:normal; font-size:11px; margin-right:4px; color: var(--fg-3); }
+.split { display:inline-flex; } .split .b1 { border-radius: var(--radius-md) 0 0 var(--radius-md); } .split .b2 { border-radius: 0 var(--radius-md) var(--radius-md) 0; border-left: 1px solid color-mix(in srgb, var(--surface) 30%, transparent); padding: 0 6px; }
+.btn.pri { background: var(--fg); color: var(--surface); }
+.track { position:relative; height:4px; background: var(--field); border-radius:2px; width:200px; margin:14px 0 6px; } .track i { position:absolute; left:0; top:0; height:4px; width:60%; background: var(--fg); border-radius:2px; } .track b { position:absolute; left:60%; top:-6px; width:16px; height:16px; margin-left:-8px; border-radius:50%; background: var(--surface); border:2px solid var(--fg); }
+.sw { display:inline-block; width:22px; height:22px; border-radius: var(--radius-sm); margin:2px; } .sw.on { outline:2px solid var(--fg); outline-offset:2px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+<h1>Nouveaux composants, lot 4 <span class="status">PROPOSITION</span></h1>
+<p class="muted">Composants repérés pendant les revues (React Bits, design system d’entreprise, Component Gallery) et pas encore faits. La recommandation est encadrée en vert. Répondez par « tout A » ou question par question (« T1 : B »).</p>
+<div class="boxes"><div class="box"><h3>Déjà décidé</h3><ul>
+<li>Badge sert au statut, statique (D-160) ; un Tag interactif est un autre composant.</li>
+<li>Anatomie de <code>Field</code> pour tout ce qui se saisit.</li>
+<li>D-211 : pas de fil d'Ariane, navigation sur deux niveaux.</li>
+<li>D-100 : une seule action principale par zone ; D-007 : réduire les clics.</li>
+<li>Monochrome (D-001) : la couleur ne porte que du sens.</li></ul></div>
+<div class="box"><h3>À décider</h3><ol><li>T1, T2 : Tag.</li><li>K1 : CodeField.</li><li>W1 : formulaire en étapes.</li><li>SB1 : SplitButton.</li><li>SL1 : Slider.</li><li>CP1 : ColorPicker.</li><li>BC1 : Breadcrumbs.</li></ol></div></div>
+<div class="bar"><span class="seg" role="radiogroup" aria-label="Mode"><input type="radio" name="m" id="m-light" checked><label for="m-light">Clair</label><input type="radio" name="m" id="m-dark"><label for="m-dark">Sombre</label></span></div>
+<h2>Tag (étiquette interactive)</h2><div class="q"><h3>T1. Aspect</h3><div class="cols"><div class="col reco"><h4>Option A <span class="tag" style="background:none;color:#15803d;font-weight:700;padding:0">recommandé</span></h4><b>Pastille neutre</b>Fond <code>--field</code>, texte <code>--fg</code>, rayon 4 px ; × pour retirer (« Retirer &lt;nom&gt; ») ; sélectionnable en option : fond <code>--selected</code>, coche, <code>aria-pressed</code>.<div class="demo"><span class="etq">Urgent <span class="x">✕</span></span><span class="etq sel">✓ Client</span><span class="etq">Interne</span></div><div class="src">Carbon Tag.</div></div><div class="col"><h4>Option B</h4><b>Couleur par catégorie</b>Chaque catégorie a sa teinte. Plus repérable, mais la couleur n’est plus réservée au sens (D-001).<div class="demo"><span class="etq col">Urgent</span></div></div></div></div><div class="q"><h3>T2. Groupe</h3><div class="cols"><div class="col reco"><h4>Option A <span class="tag" style="background:none;color:#15803d;font-weight:700;padding:0">recommandé</span></h4><b>TagGroup de React Aria</b>Liste d'étiquettes : flèches entre étiquettes, Suppr ou Retour arrière retire, sélection simple ou multiple pour filtrer. Jamais à la place d'un bouton.<div class="src">WAI-ARIA, React Aria TagGroup.</div></div></div></div><h2>CodeField (code à usage unique)</h2><div class="q"><h3>K1. Saisie</h3><div class="cols"><div class="col reco"><h4>Option A <span class="tag" style="background:none;color:#15803d;font-weight:700;padding:0">recommandé</span></h4><b>Un seul champ, cases dessinées</b>4 à 8 cases ; un vrai champ caché (<code>autocomplete="one-time-code"</code>, clavier numérique) ; le collage remplit tout ; Retour arrière recule ; flèches et Origine/Fin ; <code>onComplete</code> quand c'est plein ; en erreur, le code se vide et le focus revient au début ; « 3 sur 6 » annoncé.<div class="demo"><div class="otp"><span>4</span><span>8</span><span>1</span><span class="f"></span><span></span><span></span></div></div><div class="src">React Bits CodeSlots, GOV.UK.</div></div><div class="col"><h4>Option B</h4><b>Un champ par chiffre</b>Six champs séparés. Plus simple à coder, mais le collage et le remplissage automatique marchent mal.</div></div></div><h2>Formulaire en étapes</h2><div class="q"><h3>W1. Forme</h3><div class="cols"><div class="col reco"><h4>Option A <span class="tag" style="background:none;color:#15803d;font-weight:700;padding:0">recommandé</span></h4><b>FormPage avec <code>steps</code></b>ProgressIndicator en haut ; une étape à la fois ; « Précédent » et « Suivant » dans le pied ; la vérification se fait par étape ; dernière étape : récapitulatif puis l'action. Les valeurs restent quand on revient en arrière.<div class="demo"><div class="steps"><span><b>1</b>Client</span><span><b>2</b>Commande</span><span><i>3</i>Récapitulatif</span></div><button class="btn">Précédent</button> <button class="btn pri">Suivant</button></div><div class="src">Carbon Progress indicator.</div></div><div class="col"><h4>Option B</h4><b>Sections repliables</b>Toutes les étapes sur une page, en sections qu'on déplie.</div></div></div><h2>SplitButton</h2><div class="q"><h3>SB1. Forme</h3><div class="cols"><div class="col reco"><h4>Option A <span class="tag" style="background:none;color:#15803d;font-weight:700;padding:0">recommandé</span></h4><b>Bouton et chevron accolés</b>Le libellé lance l'action par défaut ; le chevron ouvre un DropdownMenu des variantes (« Enregistrer sous », « Enregistrer et fermer »). Deux cibles, deux noms (« Plus d'options d'enregistrement »). Même hauteur que Button.<div class="demo"><span class="split"><button class="btn pri b1">Enregistrer</button><button class="btn pri b2">▾</button></span></div><div class="src">Fluent.</div></div><div class="col"><h4>Option B</h4><b>Ne pas l'ajouter</b>On garde un bouton et « … » à côté (déjà possible avec ActionBar).</div></div></div><h2>Slider</h2><div class="q"><h3>SL1. Forme</h3><div class="cols"><div class="col reco"><h4>Option A <span class="tag" style="background:none;color:#15803d;font-weight:700;padding:0">recommandé</span></h4><b>Pour des réglages approximatifs</b>Piste de 4 px, poignée de 16 px, valeur affichée à droite ; flèches, Page, Origine/Fin ; enregistrement au relâché (<code>onChangeEnd</code>) ; plage à deux poignées en option ; jamais pour une valeur exacte (NumberField).<div class="demo"><div class="track"><i></i><b></b></div><span class="muted" style="font-size:12px">Seuil d’alerte : 60 %</span></div><div class="src">React Aria Slider, Carbon.</div></div><div class="col"><h4>Option B</h4><b>Ne pas l'ajouter</b>NumberField suffit.</div></div></div><h2>ColorPicker</h2><div class="q"><h3>CP1. Forme</h3><div class="cols"><div class="col reco"><h4>Option A <span class="tag" style="background:none;color:#15803d;font-weight:700;padding:0">recommandé</span></h4><b>Nuancier prédéfini</b>8 à 12 couleurs fournies par l'app (ou une palette par défaut), choix exclusif aux flèches, nom de chaque couleur lu ; saisie hexadécimale en option ; contraste vérifié si la couleur sert de fond à un texte.<div class="demo"><span class="sw" style="background:#2a78d6"></span><span class="sw on" style="background:#1baf7a"></span><span class="sw" style="background:#eda100"></span><span class="sw" style="background:#e34948"></span><span class="sw" style="background:#6250d6"></span><span class="sw" style="background:#e87ba4"></span></div><div class="src">React Aria ColorSwatchPicker.</div></div><div class="col"><h4>Option B</h4><b>Ne pas l'ajouter</b>Les apps n'en ont pas besoin pour l'instant.</div></div></div><h2>Breadcrumbs</h2><div class="q"><h3>BC1. Ajouter un fil d'Ariane ?</h3><div class="cols"><div class="col reco"><h4>Option B <span class="tag" style="background:none;color:#15803d;font-weight:700;padding:0">recommandé</span></h4><b>Non, garder D-211</b>La navigation reste sur deux niveaux, avec un lien de retour. À revoir si un arbre profond navigue dans le contenu.</div><div class="col"><h4>Option A</h4><b>Oui</b>« Accueil › Projets › Migration », dernier élément non cliquable, « … » au-delà de 5 niveaux.</div></div></div><h2 style="margin-top:32px">Avant / après</h2><p class="muted">À remplir une fois les composants codés.</p>
+</div>
+</body>
+</html>

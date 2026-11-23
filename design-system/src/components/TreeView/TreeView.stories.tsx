@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { useState } from "react";
-import { expect, fn, userEvent, waitFor, within } from "storybook/test";
+import { expect, fireEvent, fn, userEvent, waitFor, within } from "storybook/test";
 import { TreeView, type TreeMoveTarget, type TreeNode, type TreeViewProps } from "./TreeView";
 import { Plus } from "../../icons";
 import { Doc, Folder, FolderOpen } from "../../../.storybook/story-icons";
@@ -40,6 +40,14 @@ const NODES: TreeNode[] = [
 ];
 
 const rowOf = (name: string) => body().getByRole("row", { name: new RegExp(`^${name}`) });
+/** Déplacement au clavier : React Aria a proposé une cible (focus sur un trait d'insertion ou une ligne). */
+const targetProposed = (handle: HTMLElement) =>
+  waitFor(() => {
+    const active = document.activeElement;
+    expect(active).not.toBe(handle);
+    expect(active?.closest('[role="treegrid"]')).not.toBeNull();
+    expect(active?.getAttribute("role")).toMatch(/^(button|row)$/);
+  });
 
 function Frame(props: Partial<TreeViewProps>) {
   return (
@@ -245,6 +253,68 @@ export const Deplacer: Story = {
     handle.focus();
     await userEvent.keyboard("{Enter}");
     // La première cible proposée au clavier, puis Entrée pour déposer.
+    await targetProposed(handle);
+    await userEvent.keyboard("{Enter}");
+    await waitFor(() => expect(moves).toHaveLength(1));
+    await expect(moves[0]![0]).toEqual(["notes"]);
+  },
+};
+/**
+ * Même déplacement, en partant du clavier (focus visible) et avec une pause avant de déposer.
+ * Régression : le focus posé tout droit sur « Déplacer » partait sur la première ligne (D-267).
+ */
+export const DeplacerAvecPause: Story = {
+  render: () => <MoveDemo />,
+  play: async () => {
+    moves.length = 0;
+    // Une touche avant : React Aria passe en modalité clavier, comme pour un utilisateur au clavier.
+    await userEvent.keyboard("{Shift}");
+    const handle = within(rowOf("Notes.md")).getByRole("button", { name: "Déplacer Notes.md" });
+    handle.focus();
+    await expect(handle).toHaveFocus();
+    await userEvent.keyboard("{Enter}");
+    await new Promise((r) => setTimeout(r, 300));
+    await targetProposed(handle);
+    await userEvent.keyboard("{Enter}");
+    await waitFor(() => expect(moves).toHaveLength(1));
+    await expect(moves[0]![0]).toEqual(["notes"]);
+  },
+};
+/** Parcours clavier réel : flèches jusqu'à la ligne, flèche droite sur « Déplacer », Entrée, pause, Entrée (D-267). */
+export const DeplacerAuClavier: Story = {
+  render: () => <MoveDemo />,
+  play: async () => {
+    moves.length = 0;
+    rowOf("Migration des données").focus();
+    await userEvent.keyboard("{ArrowDown}");
+    await expect(rowOf("Notes.md")).toHaveFocus();
+    await userEvent.keyboard("{ArrowRight}");
+    const handle = within(rowOf("Notes.md")).getByRole("button", { name: "Déplacer Notes.md" });
+    await expect(handle).toHaveFocus();
+    await userEvent.keyboard("{Enter}");
+    await new Promise((r) => setTimeout(r, 300));
+    await targetProposed(handle);
+    await userEvent.keyboard("{Enter}");
+    await waitFor(() => expect(moves).toHaveLength(1));
+    await expect(moves[0]![0]).toEqual(["notes"]);
+  },
+};
+/**
+ * Seconde Entrée avant que React Aria propose une cible (il le fait à l'image suivante) :
+ * elle est ignorée, sans relancer le glisser ; le dépôt se fait ensuite normalement (D-267).
+ */
+export const DeplacerEntreeRapide: Story = {
+  render: () => <MoveDemo />,
+  play: async () => {
+    moves.length = 0;
+    const handle = within(rowOf("Notes.md")).getByRole("button", { name: "Déplacer Notes.md" });
+    handle.focus();
+    // Deux Entrée dans la même image : la seconde arrive avant que la cible soit proposée.
+    for (let i = 0; i < 2; i++) {
+      fireEvent.keyDown(handle, { key: "Enter" });
+      fireEvent.keyUp(handle, { key: "Enter" });
+    }
+    await targetProposed(handle);
     await userEvent.keyboard("{Enter}");
     await waitFor(() => expect(moves).toHaveLength(1));
     await expect(moves[0]![0]).toEqual(["notes"]);

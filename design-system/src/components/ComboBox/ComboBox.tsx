@@ -14,6 +14,7 @@ import type { ValidationResult } from "react-aria-components/TextField";
 import { useMessages } from "../../provider/SocleProvider";
 import { buttonReset, cx } from "../../lib/cx";
 import { Check, ChevronDown, Plus, X } from "../../icons";
+import { Spinner } from "../Spinner/Spinner";
 import { FieldHelp, FieldLabel, ReadOnlyLock, fieldBox, fieldRoot, listPopoverClass, optionClass, requiredText, sectionHeaderClass, type FieldBaseProps } from "../Field/Field";
 
 export interface ComboBoxItem {
@@ -484,7 +485,7 @@ export function ComboBox(props: ComboBoxProps) {
           className="h-[calc(var(--row-h)-2px)] min-w-[60px] flex-1 border-0 bg-transparent p-0 px-0.5 font-[inherit] text-[length:inherit] text-fg outline-none placeholder:text-fg-3"
         />
         <span className="ml-auto flex shrink-0 items-center gap-0.5 self-center">
-          {loading && <span role="status" aria-label={m.searching} className="socle-spin size-3.5 shrink-0 rounded-full border-2 border-line-strong border-t-fg-2" />}
+          {loading && <Spinner label={m.searching} />}
           {isReadOnly ? null : (
             <button
               type="button"
@@ -554,7 +555,7 @@ export function ComboBox(props: ComboBoxProps) {
           {loadItems && remote.status === "short" && <Info>{m.typeMoreChars(MIN_CHARS)}</Info>}
           {loadItems && remote.status === "loading" && (
             <Info role="status">
-              <span className="socle-spin size-3.5 rounded-full border-2 border-line-strong border-t-fg-2" />
+              <Spinner decorative />
               {m.searchingRow}
             </Info>
           )}

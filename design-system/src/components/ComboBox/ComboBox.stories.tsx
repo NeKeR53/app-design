@@ -239,6 +239,8 @@ export const Asynchrone: Story = {
     await expect(body().getByText("Tapez au moins 2 caractères.")).toBeInTheDocument();
     await userEvent.type(input, "a");
     await expect(body().getByText("Recherche…")).toBeInTheDocument();
+    // Le Spinner de socle (D-360) : décoratif dans la liste, nommé dans le champ.
+    await expect(body().getByText("Recherche…").closest("[role=status]")?.querySelector("[data-spinner]")).not.toBeNull();
     await pause(100);
     await userEvent.type(input, "r");
     await waitFor(() => expect(body().getAllByRole("option")).toHaveLength(2), { timeout: 2000 });

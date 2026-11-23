@@ -7,6 +7,7 @@ import { Button, Tree, TreeItem, TreeItemContent, TreeLoadMoreItem, type Key, ty
 import { DropIndicator, useDragAndDrop } from "react-aria-components/useDragAndDrop";
 import { ActionBar, type Action } from "../../patterns/ActionBar/ActionBar";
 import { EmptyState } from "../EmptyState/EmptyState";
+import { Spinner } from "../Spinner/Spinner";
 import { useRowMenu } from "../DropdownMenu/DropdownMenu";
 import { Link } from "../Link/Link";
 import { OverflowTooltip } from "../Tooltip/OverflowTooltip";
@@ -285,6 +286,20 @@ export function TreeView({
     onRowMenuKey(e);
   };
 
+  /**
+   * React Aria ne propose la première cible qu'à l'image suivante (requestAnimationFrame) ; jusque-là
+   * le focus reste sur « Déplacer ». Une seconde Entrée trop tôt relançait le glisser et levait
+   * « Cannot begin dragging while already dragging ». Pendant un déplacement, la poignée ignore
+   * Entrée et Espace (D-267).
+   */
+  const pressOnDraggingHandle = (e: KeyboardEvent) => {
+    if (dragged.current.size === 0 || (e.key !== "Enter" && e.key !== " ")) return false;
+    if (!(e.target as HTMLElement).hasAttribute("data-tree-drag")) return false;
+    e.preventDefault();
+    e.stopPropagation();
+    return true;
+  };
+
   /* ---------- Rendu ---------- */
   const renderNode = (n: TreeNode): ReactNode => {
     const kids = kidsOf(n);
@@ -314,7 +329,13 @@ export function TreeView({
             <>
               <Guides level={level} />
               {onMove && !n.isDisabled && (
-                <Button slot="drag" aria-label={m.moveItem(n.label)} className={cx(buttonReset, "sr-only focus-visible:not-sr-only")}>
+                <Button
+                  slot="drag"
+                  data-tree-drag=""
+                  excludeFromTabOrder
+                  aria-label={m.moveItem(n.label)}
+                  className={cx(buttonReset, "sr-only focus-visible:not-sr-only")}
+                >
                   ⠿
                 </Button>
               )}
@@ -375,7 +396,7 @@ export function TreeView({
         {parent && !kids?.length && (
           <TreeLoadMoreItem isLoading={open && !kids && st === "loading"} className="relative flex h-(--row-h) items-center gap-2 text-sm text-fg-3">
             <StatusIndent level={(index.get(n.id)?.level ?? 1) + 1} />
-            <span aria-hidden className="socle-spin size-3.5 shrink-0 rounded-full border-2 border-current border-r-transparent" />
+            <Spinner decorative />
             {m.loading}
           </TreeLoadMoreItem>
         )}
@@ -409,10 +430,26 @@ export function TreeView({
       ref={box}
       className="socle-box flex min-h-0 flex-1 flex-col font-sans text-md text-fg"
       {...rowMenuProps}
+      onFocusCapture={(e) => {
+        // Focus posé tout droit sur un bouton « Déplacer » depuis l'extérieur de l'arbre (curseur
+        // d'un lecteur d'écran, `focus()`) : React Aria ne retient pas sa ligne et renvoie le focus
+        // sur la première ligne ; Entrée plie alors cette ligne au lieu de commencer le déplacement.
+        // On fait d'abord retenir la ligne, puis on rend le focus au bouton (D-267).
+        const target = e.target as HTMLElement;
+        if (!target.hasAttribute("data-tree-drag")) return;
+        if (e.relatedTarget instanceof Node && box.current?.contains(e.relatedTarget)) return;
+        const row = target.closest<HTMLElement>('[role="row"]');
+        if (!row) return;
+        e.stopPropagation();
+        row.focus();
+        target.focus();
+      }}
       onKeyDownCapture={(e) => {
         shift.current = e.shiftKey;
+        if (pressOnDraggingHandle(e)) return;
         onKeyDown(e);
       }}
+      onKeyUpCapture={pressOnDraggingHandle}
       onPointerDownCapture={(e) => {
         shift.current = e.shiftKey;
         rowMenuProps.onPointerDownCapture(e);
