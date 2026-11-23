@@ -14,6 +14,8 @@ export type { SocleProviderProps, Platform, Density, ColorScheme } from "./provi
 
 export { Tooltip } from "./components/Tooltip/Tooltip";
 export type { TooltipProps } from "./components/Tooltip/Tooltip";
+export { Button } from "./components/Button/Button";
+export type { ButtonProps, ButtonVariant, ButtonSize } from "./components/Button/Button";
 export { IconButton } from "./components/IconButton/IconButton";
 export type { IconButtonProps } from "./components/IconButton/IconButton";
 export { Menu } from "./components/Menu/Menu";

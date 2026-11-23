@@ -6,6 +6,7 @@ import type { ReactNode } from "react";
 import { Button } from "react-aria-components/Button";
 import { ToggleButton } from "react-aria-components/ToggleButton";
 import { buttonReset, cx, focusRing } from "../../lib/cx";
+import { PendingSpinner } from "../../lib/pending";
 import { Tooltip } from "../Tooltip/Tooltip";
 
 export interface IconButtonProps {
@@ -17,6 +18,8 @@ export interface IconButtonProps {
   shortcut?: string;
   onPress?: () => void;
   isDisabled?: boolean;
+  /** Chargement : l'icône devient une roue, clics ignorés, focus et info-bulle gardés (D-107). Sans effet sur une bascule. */
+  isPending?: boolean;
   /** Si fourni, le bouton devient une bascule (`aria-pressed`). */
   isSelected?: boolean;
   onChange?: (isSelected: boolean) => void;
@@ -33,14 +36,16 @@ const base = cx(
   "data-disabled:opacity-40 data-disabled:data-hovered:bg-transparent",
   focusRing,
 );
+/** En attente (D-107) : pas d'opacité de désactivation, pas de survol. */
+const pending = "data-pending:opacity-100 data-pending:bg-transparent";
 /** Sélectionné : fond clair, qui fonce au survol (D-034). */
 const selected = "data-selected:bg-hover data-selected:text-fg data-selected:data-hovered:bg-selected";
 
-export function IconButton({ icon, label, shortcut, onPress, isDisabled, isSelected, onChange, tooltipPlacement = "bottom" }: IconButtonProps) {
+export function IconButton({ icon, label, shortcut, onPress, isDisabled, isPending = false, isSelected, onChange, tooltipPlacement = "bottom" }: IconButtonProps) {
   const button =
     isSelected === undefined ? (
-      <Button aria-label={label} className={base} {...(onPress ? { onPress } : {})} {...(isDisabled ? { isDisabled } : {})}>
-        {icon}
+      <Button aria-label={label} className={cx(base, pending)} isPending={isPending} {...(onPress ? { onPress } : {})} {...(isDisabled ? { isDisabled } : {})}>
+        {isPending ? <PendingSpinner /> : icon}
       </Button>
     ) : (
       <ToggleButton

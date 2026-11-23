@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { useState } from "react";
 import { expect, userEvent, waitFor, within } from "storybook/test";
+import { Button } from "../../components/Button/Button";
 import { DetailPanel } from "./DetailPanel";
 import { Copy } from "../../../.storybook/story-icons";
 
@@ -30,7 +31,7 @@ export function DemoDetail() {
         <DetailPanel.Row label="Identifiant" value="DOC-2026-0412" icon={<Copy />} action={{ type: "icon", icon: <Copy />, label: "Copier l'identifiant", onPress: () => {} }} />
         <DetailPanel.Row label="Accès" value="3 personnes" />
       </DetailPanel.Section>
-      <DetailPanel.Section id="files" title="Fichiers" footer={<button className="h-[26px] rounded-md border-0 bg-field px-2.5 text-sm text-fg">Exporter l'historique</button>}>
+      <DetailPanel.Section id="files" title="Fichiers" footer={<Button size="sm">Exporter l'historique</Button>}>
         <DetailPanel.Row label="Pièces jointes" value="2 fichiers" details={<ul className="m-0 list-none p-0"><li>synthese.pdf — 1,8 Mo</li><li>annexes.xlsx — 2,4 Mo</li></ul>} />
       </DetailPanel.Section>
     </DetailPanel>

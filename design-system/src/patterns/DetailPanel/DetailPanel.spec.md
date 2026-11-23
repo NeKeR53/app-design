@@ -29,7 +29,7 @@ Aucune.
 | `PropertyRow` : `label`, `value` | `string`, `ReactNode` texte | — (obligatoires) | Libellé et valeur. Une valeur vide s'affiche « — » en `--fg-3`. |
 | `PropertyRow` : `icon` | `ReactNode` | aucune | Icône facultative, alignée par section (D-057). |
 | `PropertyRow` : `action` | `{ type: "link" \| "switch" \| "icon", … }` | aucune | Une action à droite, parmi trois types (D-059). |
-| `DetailPanel.Section` : `footer` | `Button` | aucun | Bouton à texte en pied de section (D-059). |
+| `DetailPanel.Section` : `footer` | `Button` | aucun | Bouton à texte en pied de section, `size="sm"`, variante `secondary` (D-059, D-101). |
 
 ## Exclus
 - Pas de bouton à texte ni de deuxième action dans une ligne : le bouton à texte va en pied de section (D-059).
@@ -78,7 +78,7 @@ Une action qui échoue garde l'ancienne valeur et affiche une notification avec 
 Uniquement dans le slot `detail` d'AppShell.
 
 ## Composition
-Contient `IconButton`, `Menu`, `Switch` (à spécifier), `Button` (à spécifier) et `Tooltip`.
+Contient `IconButton`, `Menu`, `Switch` (à spécifier), `Button` et `Tooltip`.
 
 ## Décisions
 D-007, D-015, D-018, D-025, D-026, D-040, D-047, D-057, D-058, D-059, D-060, D-061
