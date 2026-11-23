@@ -9,6 +9,9 @@ Versions selon semver (règle 6 du skill design) : une nouvelle option facultati
 - `IconButton` : option facultative `isPending` (chargement, par exemple « Actualiser ») (D-107).
 - Tokens `--btn-h-sm` (26 px web, 24 px desktop) et `--danger-fg` (D-101, D-104).
 - Libellé interne `loading` (« Chargement ») dans le dictionnaire `messages`.
+- Modèle `Action` et `ActionBar` : une app décrit ses actions par des données ; la zone (`topbar`, `header`, `toolbar`, `section`, `row`, `empty`) décide de leur forme : bouton à texte, bouton-icône ou entrée du menu « … » (D-110 à D-114, D-117). Action `danger` dans « … », en dernier, toujours confirmée (D-115). Attente pendant la promesse de `onPress`, erreur rendue à `onError`, réussite à `onDone` (D-116, D-118). La règle seule est exportée : `arrangeActions`.
+- Libellés internes `moreActions` (« Plus d'actions ») et `confirmQuestion` (« {label} ? »).
+- Règles de mise en page : section « Actions » dans `docs/layout-rules.md` (D-111).
 
 ## [0.1.0] — 2026-11-22
 
