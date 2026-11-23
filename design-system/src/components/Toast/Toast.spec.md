@@ -59,8 +59,9 @@ Options de `createNotifications()` : `maxVisible` est fixé à 3 (D-154) ; `init
 | La minuterie s'arrête au survol, au focus et quand la fenêtre perd le focus (D-153) | verrouillé | `Pause` |
 | Trois toasts visibles au plus ; au-delà, le plus ancien se ferme ; le plus récent est en bas (D-154) | verrouillé | `Pile` |
 | L'action exécute `onAction` puis ferme le toast (D-155) | verrouillé | `Action` |
+| Échap ferme le toast qui a le focus ; le focus revient là où il était | verrouillé | `Clavier` |
 | La croix ferme le toast ; la notification reste dans le centre (D-156) | verrouillé | `Fermeture` |
-| Entrée : fondu et glissement de 8 px, `--dur-base` ; sortie : fondu, `--dur-fast` ; rien ne bouge si l'utilisateur réduit les animations (D-014, D-154) | verrouillé | — (visuel) |
+| Entrée : fondu et glissement de 8 px, `--dur-base` ; sortie immédiate ; rien ne bouge si l'utilisateur réduit les animations (D-014, D-154) | verrouillé | — (visuel) |
 
 ## Contenu
 - Titre et texte passent à la ligne, sans troncature ; le texte garde ses retours à la ligne.

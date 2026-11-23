@@ -88,3 +88,32 @@ export const AlertTriangle = icon(
 );
 export const ArrowUp = icon(<path d="M12 19V5M5 12l7-7 7 7" />, "ArrowUp");
 export const ArrowDown = icon(<path d="M12 5v14M19 12l-7 7-7-7" />, "ArrowDown");
+/* Notifications (D-152, D-157) */
+export const Bell = icon(
+  <>
+    <path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9" />
+    <path d="M10.3 21a1.94 1.94 0 0 0 3.4 0" />
+  </>,
+  "Bell",
+);
+export const CircleCheck = icon(
+  <>
+    <circle cx="12" cy="12" r="10" />
+    <path d="m9 12 2 2 4-4" />
+  </>,
+  "CircleCheck",
+);
+export const CircleInfo = icon(
+  <>
+    <circle cx="12" cy="12" r="10" />
+    <path d="M12 16v-4M12 8h.01" />
+  </>,
+  "CircleInfo",
+);
+export const CircleAlert = icon(
+  <>
+    <circle cx="12" cy="12" r="10" />
+    <path d="M12 8v4M12 16h.01" />
+  </>,
+  "CircleAlert",
+);

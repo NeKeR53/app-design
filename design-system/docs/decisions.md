@@ -858,7 +858,7 @@
 ## D-154 — Toasts : pile de trois, en bas à droite
 - Date : 2026-11-23
 - Portée : Toast
-- Décision : les toasts s'empilent en bas à droite, à 16 px des bords, 8 px entre eux, le plus récent en bas. Trois sont visibles au plus : au-delà, le plus ancien se ferme (il reste dans le centre). Sur mobile, la pile prend la largeur, au-dessus de la barre d'onglets. Entrée par un fondu et un glissement de 8 px (`--dur-base`), sortie par un fondu (`--dur-fast`) ; rien ne bouge si l'utilisateur réduit les animations.
+- Décision : les toasts s'empilent en bas à droite, à 16 px des bords, 8 px entre eux, le plus récent en bas. Trois sont visibles au plus : au-delà, le plus ancien se ferme (il reste dans le centre). Sur mobile, la pile prend la largeur, au-dessus de la barre d'onglets. Entrée par un fondu et un glissement de 8 px (`--dur-base`) ; sortie immédiate, car React Aria retire le toast ; rien ne bouge si l'utilisateur réduit les animations.
 - Raison : une pile courte ne cache pas le contenu ; le centre garde ce qui sort.
 - Options écartées : quatre ou cinq visibles ; file d'attente qui ressort les anciens toasts.
 - Validation : par délégation de l'utilisateur, 2026-11-23 — docs/validation/components/Notifications-v1.html

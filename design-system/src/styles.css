@@ -69,3 +69,19 @@
     }
   }
 }
+
+/* Entrée d'un toast (D-154) : fondu et glissement de 8 px ; rien ne bouge si l'utilisateur réduit les animations. */
+@layer base {
+  .socle-toast-in {
+    animation: socle-toast-in var(--dur-base) var(--ease);
+  }
+  @keyframes socle-toast-in {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: none; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .socle-toast-in {
+      animation: none;
+    }
+  }
+}

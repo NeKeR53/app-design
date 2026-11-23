@@ -9,6 +9,9 @@ Versions selon semver (règle 6 du skill design) : une nouvelle option facultati
 - `IconButton` : option facultative `isPending` (chargement, par exemple « Actualiser ») (D-107).
 - Tokens `--btn-h-sm` (26 px web, 24 px desktop) et `--danger-fg` (D-101, D-104).
 - Libellé interne `loading` (« Chargement ») dans le dictionnaire `messages`.
+- Notifications (D-150 à D-158) : file `createNotifications({ initial?, onChange? })`, passée à `SocleProvider` par l'option facultative `notifications` ; `notify()` sur la file ou par `useNotify()` ; `useNotifications()`. Toasts sur le Toast de React Aria, sans sonner (D-150) : carte neutre (D-151), quatre tons (D-152), 5 s, 8 s avec action, erreur jusqu'à fermeture, pause au survol, au focus et fenêtre inactive (D-153), trois visibles en bas à droite (D-154), une action au plus (D-155). Pattern `NotificationCenter` pour la barre du haut d'`AppShell` : cloche, pastille de non-lus « 9+ », panneau groupé par jour, « Tout effacer », 100 notifications en mémoire (D-156 à D-158).
+- Libellés internes des notifications dans le dictionnaire `messages` (`notifications`, `closeNotification`, `toneSuccess`…).
+- Règle de placement « Messages » (D-159) : pas de bandeau pleine largeur ; un état durable de la page va dans la barre du haut (docs/layout-rules.md).
 
 ## [0.1.0] — 2026-11-22
 

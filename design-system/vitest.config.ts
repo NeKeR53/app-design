@@ -35,6 +35,7 @@ export default defineConfig({
       "react-aria-components/Separator",
       "react-aria-components/Dialog",
       "react-aria-components/Modal",
+      "react-aria-components/Toast",
     ],
   },
   test: {
