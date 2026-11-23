@@ -7,6 +7,8 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
 import { contrast, mixWithWhite, parseHex, toHex } from "../lib/color";
 import { frenchMessages, type SocleMessages } from "../i18n/messages";
+import type { Notifications, NotifyOptions } from "../components/Toast/notifications";
+import { ToastRegion } from "../components/Toast/Toast";
 
 export type Platform = "web" | "macos" | "windows";
 export type Density = "web" | "desktop";
@@ -23,6 +25,8 @@ export interface SocleProviderProps {
   storageKey?: string;
   /** Libellés internes traduits (D-089). Défaut : français ; une entrée absente garde la valeur française. */
   messages?: Partial<SocleMessages>;
+  /** File de notifications de l'app (`createNotifications()`). Si elle est fournie, le provider affiche les toasts (Toast.spec.md). */
+  notifications?: Notifications;
   children: ReactNode;
 }
 
@@ -36,6 +40,7 @@ interface SocleContextValue {
   colorScheme: ColorScheme;
   setColorScheme: (c: ColorScheme) => void;
   messages: SocleMessages;
+  notifications: Notifications | null;
 }
 
 const SocleContext = createContext<SocleContextValue | null>(null);
@@ -101,7 +106,7 @@ function accentCss(vars: NonNullable<ReturnType<typeof accentVariables>>): strin
   );
 }
 
-export function SocleProvider({ accent, density, platform, storageKey = "socle", messages, children }: SocleProviderProps) {
+export function SocleProvider({ accent, density, platform, storageKey = "socle", messages, notifications, children }: SocleProviderProps) {
   const resolvedPlatform = useMemo(() => platform ?? detectPlatform(), [platform]);
   const isMac = resolvedPlatform === "macos" || (resolvedPlatform === "web" && detectIsMac());
   const defaultDensity: Density = density ?? (resolvedPlatform === "web" ? "web" : "desktop");
@@ -161,10 +166,25 @@ export function SocleProvider({ accent, density, platform, storageKey = "socle",
 
   const merged = useMemo<SocleMessages>(() => ({ ...frenchMessages, ...messages }), [messages]);
   const value = useMemo<SocleContextValue>(
-    () => ({ platform: resolvedPlatform, isMac, storageKey, density: currentDensity, setDensity, colorScheme: userScheme, setColorScheme, messages: merged }),
-    [resolvedPlatform, isMac, storageKey, currentDensity, setDensity, userScheme, setColorScheme, merged],
+    () => ({
+      platform: resolvedPlatform,
+      isMac,
+      storageKey,
+      density: currentDensity,
+      setDensity,
+      colorScheme: userScheme,
+      setColorScheme,
+      messages: merged,
+      notifications: notifications ?? null,
+    }),
+    [resolvedPlatform, isMac, storageKey, currentDensity, setDensity, userScheme, setColorScheme, merged, notifications],
   );
-  return <SocleContext.Provider value={value}>{children}</SocleContext.Provider>;
+  return (
+    <SocleContext.Provider value={value}>
+      {children}
+      {notifications ? <ToastRegion notifications={notifications} /> : null}
+    </SocleContext.Provider>
+  );
 }
 
 const FALLBACK: SocleContextValue = {
@@ -176,6 +196,7 @@ const FALLBACK: SocleContextValue = {
   colorScheme: "system",
   setColorScheme: () => {},
   messages: frenchMessages,
+  notifications: null,
 };
 
 /** Réglages de l'app et choix de l'utilisateur. Sans provider : valeurs par défaut. */
@@ -186,6 +207,24 @@ export function useSocle(): SocleContextValue {
 /** Libellés internes (D-089). */
 export function useMessages(): SocleMessages {
   return useSocle().messages;
+}
+
+/** File de notifications du provider, ou null sans `notifications`. */
+export function useNotifications(): Notifications | null {
+  return useSocle().notifications;
+}
+
+/** Fonction `notify` de la file du provider (Toast.spec.md). Sans file : avertit et ne fait rien. */
+export function useNotify(): (options: NotifyOptions) => string {
+  const notifications = useNotifications();
+  return useCallback(
+    (options: NotifyOptions) => {
+      if (notifications) return notifications.notify(options);
+      console.warn("[socle-ui] notify() sans file : passez createNotifications() à SocleProvider (option notifications).");
+      return "";
+    },
+    [notifications],
+  );
 }
 
 /** État mémorisé, préfixé par `storageKey` (D-007, règle 3). */

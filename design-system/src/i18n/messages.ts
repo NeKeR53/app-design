@@ -76,6 +76,21 @@ export interface SocleMessages {
   /* ActionBar */
   moreActions: string;
   confirmQuestion: (label: string) => string;
+  /* Notifications (Toast, NotificationCenter) */
+  notifications: string;
+  notificationsUnread: (n: number) => string;
+  closeNotification: string;
+  removeNotification: string;
+  noNotifications: string;
+  unreadNotification: string;
+  noNotificationsHint: string;
+  today: string;
+  yesterday: string;
+  toneSuccess: string;
+  toneInfo: string;
+  toneWarning: string;
+  toneDanger: string;
+  closeNotificationCenter: string;
 }
 
 const s = (n: number) => (n > 1 ? "s" : "");
@@ -144,4 +159,18 @@ export const frenchMessages: SocleMessages = {
   progressOf: (v, max) => `${v} sur ${max}`,
   moreActions: "Plus d'actions",
   confirmQuestion: (l) => `${l} ?`,
+  notifications: "Notifications",
+  notificationsUnread: (n) => `Notifications, ${n} non lue${s(n)}`,
+  closeNotification: "Fermer la notification",
+  removeNotification: "Retirer la notification",
+  noNotifications: "Aucune notification",
+  unreadNotification: "non lue",
+  noNotificationsHint: "Les événements de l'app apparaîtront ici.",
+  today: "Aujourd'hui",
+  yesterday: "Hier",
+  toneSuccess: "Succès",
+  toneInfo: "Information",
+  toneWarning: "Alerte",
+  toneDanger: "Erreur",
+  closeNotificationCenter: "Fermer les notifications",
 };
