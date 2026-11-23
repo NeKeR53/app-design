@@ -801,3 +801,37 @@
 - Raison : même rendu sur macOS, Windows et web ; même liste que ComboBox.
 - Options écartées : `<select>` natif (rendu propre à chaque système, peu stylable).
 - Validation : docs/validation/components/FormFields-v1.html
+
+## D-135 — Case et bouton radio : accent quand c'est coché
+- Date : 2026-11-23
+- Portée : Checkbox, CheckboxGroup, RadioGroup
+- Décision : une case fait 16 px, rayon 4 px (D-040) ; un bouton radio fait 16 px, rond. Non coché : fond `--surface`, bord 1 px `--line-strong` (`--fg-3` au survol, `--danger` en erreur). Coché : fond et bord `--accent`, coche (ou point de 6 px) en `--accent-fg`. État mixte d'une case : un trait à la place de la coche. Le libellé est à droite, en `--fs-md`, `--fg`, avec une description facultative en dessous en `--fs-sm`, `--fg-3` ; un clic sur le libellé coche.
+- Raison : l'accent porte l'état choisi, comme l'interrupteur actif ; le principe « l'accent ne porte que du sens » le permet.
+- Options écartées : fond `--fg` (monochrome).
+- Validation : docs/validation/components/FormChoices-v1.html — par délégation de l'utilisateur, 2026-11-23.
+
+## D-136 — Interrupteur : une seule taille ; libellé selon le contexte
+- Date : 2026-11-23
+- Portée : Switch, PropertyRow, SettingsPage
+- Décision : l'interrupteur fait 30 × 18 px, rond, partout (celui du panneau de détail). Éteint : fond `--selected` ; allumé : fond `--accent` ; pastille blanche de 14 px qui glisse en `--dur-fast`. Dans un formulaire, l'interrupteur est à gauche et son libellé à droite, comme une case. Dans une ligne (ligne de réglage, `PropertyRow`), le libellé est masqué et l'interrupteur calé à droite ; son nom accessible reprend le libellé de la ligne. `PropertyRow` (`action type "switch"`) utilise le composant `Switch`, sans changer son rendu.
+- Raison : un seul interrupteur, partout le même ; la ligne donne déjà le libellé.
+- Options écartées : 36 × 20 px dans un formulaire ; libellé toujours à gauche.
+- Validation : docs/validation/components/FormChoices-v1.html — par délégation de l'utilisateur, 2026-11-23.
+
+## D-137 — Interrupteur ou case : selon le moment où ça s'applique
+- Date : 2026-11-23
+- Portée : Switch, Checkbox
+- Décision : un interrupteur s'applique tout de suite (D-007) : réglage, ligne du panneau de détail. Une case fait partie d'un formulaire qu'on envoie, ou d'une sélection (lignes d'un tableau). On ne met jamais un interrupteur dans un formulaire qui a un bouton d'envoi pour une valeur qui attend cet envoi.
+- Raison : l'utilisateur sait si son geste agit tout de suite.
+- Options écartées : laisser le choix à l'app.
+- Validation : docs/validation/components/FormChoices-v1.html — par délégation de l'utilisateur, 2026-11-23.
+
+## D-138 — Groupes de choix et Fieldset
+- Date : 2026-11-23
+- Portée : CheckboxGroup, RadioGroup, Fieldset
+- Décision :
+  - `RadioGroup` et `CheckboxGroup` portent leur propre libellé (au style de D-130), leurs options, puis l'aide ou l'erreur du groupe. Les options sont l'une sous l'autre par défaut, avec 4 px d'écart ; l'option `orientation="horizontal"` les met côte à côte (20 px d'écart), avec retour à la ligne, pour 2 ou 3 options courtes.
+  - `Fieldset` regroupe des champs différents qui forment un tout (une adresse) : légende au style d'un libellé, champs avec 12 px d'écart, aide ou erreur du groupe en dessous. Il n'enveloppe pas un `RadioGroup` ou un `CheckboxGroup` seul.
+- Raison : le rôle accessible du groupe (`radiogroup`, `group`) vient avec le composant ; une liste verticale se lit d'un coup d'œil.
+- Options écartées : un seul `Fieldset` pour tous les groupes.
+- Validation : docs/validation/components/FormChoices-v1.html — par délégation de l'utilisateur, 2026-11-23.
