@@ -1,6 +1,6 @@
 ---
 name: design
-description: Créer, faire évoluer et faire respecter un design system React partagé entre apps web et desktop (init, define, inspire, check, propose, audit, apply, review), avec validation visuelle à chaque étape.
+description: Créer, faire évoluer et faire respecter un design system React partagé entre apps web et desktop (init, define, inspire, install, check, propose, audit, apply, review), avec validation visuelle à chaque étape.
 ---
 
 # Design system
@@ -9,7 +9,7 @@ Ce skill gère un design system React unique, consommé par plusieurs apps (web 
 
 Dans ce skill, le package s'appelle `@moi/ui`. Son vrai nom est celui du `package.json` du dépôt de référence.
 
-**Hors périmètre** : la publication du package et l'hébergement de Storybook. Ce skill conçoit, modifie et fait respecter le design ; il ne publie rien et ne déploie rien. Quand une étape suppose qu'une nouvelle version est disponible, il le dit et laisse l'utilisateur s'en charger.
+**Hors périmètre** : la publication du package et l'hébergement de Storybook. Ce skill conçoit, modifie et fait respecter le design, et installe le package dans une app (`install`) ; il ne publie rien et ne déploie rien. Quand une étape suppose qu'une nouvelle version est disponible, il le dit et laisse l'utilisateur s'en charger.
 
 ## Organisation du skill
 
@@ -23,7 +23,7 @@ Lis seulement les fichiers dont le mode courant a besoin.
 | `modes/<mode>.md` | Déroulé détaillé du mode | Le mode choisi uniquement |
 | `assets/checklist.md` | Grille de questions initiale | `init` (étape 6), `define`, `inspire`, `review` |
 | `assets/spec-template.md` | Modèle de spec de composant | `define` |
-| `assets/claude-md-app.md` | Bloc à ajouter au `CLAUDE.md` des apps | `init` (étape 6), contexte app sans bloc |
+| `assets/claude-md-app.md` | Bloc à ajouter au `CLAUDE.md` et à l'`AGENTS.md` des apps | `init` (étape 6), `install`, contexte app sans bloc |
 | `assets/guardrails.md` | Garde-fous techniques | `init` (étape 6), `audit` |
 
 ## Règles invariables
@@ -44,6 +44,7 @@ Lis seulement les fichiers dont le mode courant a besoin.
 | `init` | référence (dépôt vide) | Créer le design system de zéro | `modes/init.md` |
 | `define <Composant>` | référence | Spécifier ou compléter un composant, pattern ou gabarit | `modes/define.md` |
 | `inspire <source> "<élément>"` | les deux | Reprendre l'anatomie et le comportement d'un élément observé ailleurs | `modes/inspire.md` |
+| `install [chemin]` | app | Installer le package dans une app, faire la mise en place, mettre à jour `CLAUDE.md` et `AGENTS.md` | `modes/install.md` |
 | `check "<demande>"` | app | Vérifier qu'une demande d'UI rentre dans la spec | `modes/check.md` |
 | `propose "<besoin>"` | app | Faire évoluer le design depuis une app | `modes/propose.md` |
 | `audit [app]` | app ou référence | Lister les écarts entre une app et le design | `modes/audit.md` |

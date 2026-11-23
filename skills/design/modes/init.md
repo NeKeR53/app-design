@@ -65,7 +65,8 @@ Crée le dépôt selon la structure de `../references/context.md` :
 - Storybook, avec les sections Fondations, Composants, Patterns, Gabarits, Règles (où s'affichent `principles.md` et `layout-rules.md`) et les sélecteurs de thème et de mode ;
 - les scripts `build`, `test` et `check`, et `eslint-config/`, selon `../assets/guardrails.md` ;
 - `docs/checklist.md`, copie de `../assets/checklist.md` ;
-- le modèle de bloc pour les apps, à partir de `../assets/claude-md-app.md` ;
+- la documentation pour l'IA livrée avec le package : un script de build génère `ai/AI.md` (règles, mise en place, liste des exports et de leurs options), `ai/specs/<X>.md` et `ai/docs/` (principes, règles de placement, décisions) ; `ai` figure dans le champ `files` du `package.json`, et le dossier est ignoré par git ;
+- le modèle de bloc pour les apps, à partir de `../assets/claude-md-app.md`, qui pointe vers `node_modules/@moi/ui/ai/AI.md` ;
 - `CHANGELOG.md`.
 
 Vérifie que Storybook démarre et que `build`, `test` et `check` passent.
@@ -80,4 +81,4 @@ Enchaîne `define` (`define.md`) sur, dans l'ordre :
 
 Chaque gabarit est codé avec ses zones nommées en props et une story qui le montre rempli de données factices. Propose d'ajouter d'autres composants selon l'inventaire de l'étape 1.
 
-À la fin : fixe la version à `0.1.0` dans `package.json` et `CHANGELOG.md`, supprime `init-progress.md` (son contenu est dans `docs/decisions.md`), et propose de choisir une app pilote pour `apply`.
+À la fin : fixe la version à `0.1.0` dans `package.json` et `CHANGELOG.md`, supprime `init-progress.md` (son contenu est dans `docs/decisions.md`), et propose de choisir une app pilote, à installer avec `install` puis à mettre en conformité avec `apply`.

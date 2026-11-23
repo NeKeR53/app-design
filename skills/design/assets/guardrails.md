@@ -6,6 +6,8 @@
 
 - **API fermée** : pas de `className` ni de `style` dans les props publiques ; variantes et options en unions TypeScript. Une option non prévue provoque une erreur de compilation.
 - **Export unique** : `index.ts` est le seul point d'entrée ; les chemins internes ne sont pas exportés dans `package.json` (champ `exports`).
+- **Installation locale** : un script `publish:local` construit le package puis lance `npx yalc push --update` (avec `--private` si le package est marqué `private`), qui met à jour toutes les apps installées avec yalc (mode `install`).
+- **Documentation pour l'IA livrée** : `npm run build` génère `ai/` (`AI.md`, `specs/`, `docs/`), inclus dans le champ `files`. L'IA d'une app lit ainsi la documentation de la version installée.
 
 ## `eslint-config` partagée pour les apps
 

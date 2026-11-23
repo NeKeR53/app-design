@@ -33,6 +33,7 @@ codex plugin add app-design@app-design
 | `init` | Créer le design system de zéro |
 | `define <Composant>` | Spécifier ou compléter un composant, un pattern ou un gabarit |
 | `inspire <source> "<élément>"` | Reprendre l'anatomie et le comportement d'un élément observé ailleurs |
+| `install [chemin]` | Installer le package dans une app, faire la mise en place et mettre à jour `CLAUDE.md` et `AGENTS.md` |
 | `check "<demande>"` | Vérifier qu'une demande d'UI rentre dans la spec |
 | `propose "<besoin>"` | Faire évoluer le design depuis une app |
 | `audit [app]` | Lister les écarts entre une app et le design |

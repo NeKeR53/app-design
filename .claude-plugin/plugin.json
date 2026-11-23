@@ -2,7 +2,7 @@
   "$schema": "https://json.schemastore.org/claude-code-plugin-manifest.json",
   "name": "app-design",
   "displayName": "App Design",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Créer, faire évoluer et faire respecter un design system React partagé entre apps web et desktop, avec validation visuelle à chaque étape.",
   "author": {
     "name": "NeKeR53"
