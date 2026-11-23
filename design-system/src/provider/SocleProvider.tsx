@@ -7,6 +7,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
 import { contrast, mixWithWhite, parseHex, toHex } from "../lib/color";
 import { frenchMessages, type SocleMessages } from "../i18n/messages";
+import { ConfirmProvider } from "../components/Dialog/useConfirm";
 
 export type Platform = "web" | "macos" | "windows";
 export type Density = "web" | "desktop";
@@ -164,7 +165,12 @@ export function SocleProvider({ accent, density, platform, storageKey = "socle",
     () => ({ platform: resolvedPlatform, isMac, storageKey, density: currentDensity, setDensity, colorScheme: userScheme, setColorScheme, messages: merged }),
     [resolvedPlatform, isMac, storageKey, currentDensity, setDensity, userScheme, setColorScheme, merged],
   );
-  return <SocleContext.Provider value={value}>{children}</SocleContext.Provider>;
+  // La confirmation est affichée ici, une seule pour toute l'app (D-127).
+  return (
+    <SocleContext.Provider value={value}>
+      <ConfirmProvider>{children}</ConfirmProvider>
+    </SocleContext.Provider>
+  );
 }
 
 const FALLBACK: SocleContextValue = {

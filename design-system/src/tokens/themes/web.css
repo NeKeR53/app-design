@@ -16,6 +16,7 @@
   --side-w: 264px;        /* sidebar */
   --detail-w: 300px;      /* panneau de détail */
   --target-min: 24px;     /* cible minimale (AA) */
+  --dlg-pad: 20px;        /* marge intérieure d'une modale (Dialog) */
   --icon-btn: 28px;       /* bouton-icône (D-035) */
   --btn-h-sm: 26px;       /* bouton à texte, taille sm (D-101) */
 }

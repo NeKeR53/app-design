@@ -70,6 +70,10 @@ export interface SocleMessages {
   clearAll: string;
   /* Button et IconButton */
   loading: string;
+  /* Dialog et confirmation */
+  close: string;
+  cancel: string;
+  actionFailed: string;
 }
 
 const s = (n: number) => (n > 1 ? "s" : "");
@@ -134,4 +138,7 @@ export const frenchMessages: SocleMessages = {
   noElements: "Aucun élément trouvé",
   clearAll: "Tout effacer",
   loading: "Chargement",
+  close: "Fermer",
+  cancel: "Annuler",
+  actionFailed: "L'action a échoué. Réessayez.",
 };
