@@ -5,7 +5,7 @@
  * de confirmation affichée par `SocleProvider`. Une action destructrice n'est jamais lancée sans accord.
  */
 import { useCallback } from "react";
-import { useConfirm } from "../components/Dialog/useConfirm";
+import { useConfirm } from "../components/Modal/useConfirm";
 
 export interface ConfirmRequest {
   /** Question, qui nomme l'objet. */

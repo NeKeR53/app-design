@@ -39,6 +39,29 @@ export const InfoBulle: Story = {
   },
 };
 
+/** Sans raccourci, l'info-bulle répète le nom : elle n'est pas reliée en description, le nom n'est pas lu deux fois. */
+export const InfoBulleSansDoublon: Story = {
+  render: () => <IconButton icon={<Settings />} label="Réglages" />,
+  play: async ({ canvasElement }) => {
+    const button = within(canvasElement).getByRole("button", { name: "Réglages" });
+    await userEvent.tab();
+    const tip = await waitFor(() => body().getByRole("tooltip"));
+    await expect(tip).toHaveTextContent("Réglages");
+    await expect(button.getAttribute("aria-describedby") ?? "").not.toContain(tip.id);
+    await expect(button).toHaveAccessibleDescription("");
+  },
+};
+
+/** Avec un raccourci, l'info-bulle ajoute une information : elle reste la description du bouton. */
+export const InfoBulleRaccourci: Story = {
+  play: async ({ canvasElement }) => {
+    const button = within(canvasElement).getByRole("button", { name: "Rechercher" });
+    await userEvent.tab();
+    const tip = await waitFor(() => body().getByRole("tooltip"));
+    await expect(button.getAttribute("aria-describedby")).toContain(tip.id);
+  },
+};
+
 /** Bascule : un clic inverse l'état et met à jour aria-pressed (D-034). */
 export const Bascule: Story = {
   render: () => {

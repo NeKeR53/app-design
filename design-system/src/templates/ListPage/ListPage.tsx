@@ -9,8 +9,8 @@ import { EmptyState } from "../../components/EmptyState/EmptyState";
 import { FormattedValue, isEmptyValue, isRichValue, useFormatValue, valueLayout, valueSortKey, type ValueFormat } from "../../components/FormattedValue/FormattedValue";
 import { IconButton } from "../../components/IconButton/IconButton";
 import { List, type ListItemData } from "../../components/List/List";
-import { Menu } from "../../components/Menu/Menu";
-import { SearchField } from "../../components/SearchField/SearchField";
+import { DropdownMenu } from "../../components/DropdownMenu/DropdownMenu";
+import { SearchInput } from "../../components/SearchInput/SearchInput";
 import { Select } from "../../components/Select/Select";
 import { Table, type TableColumn, type TableRowAction } from "../../components/Table/Table";
 import { ChevronLeft, ChevronRight, MoreHorizontal } from "../../icons";
@@ -219,6 +219,37 @@ export function ListPage<Row extends { id: string }>({
   const current = Math.min(page, pages);
   const shown = remote ? matching : mode === "pages" ? matching.slice((current - 1) * pageSize, current * pageSize) : matching.slice(0, current * pageSize);
 
+  // Les cases cochées restent dans les lignes qui correspondent : une recherche, un filtre ou un
+  // rechargement décoche les lignes masquées. Le compte de la barre de sélection est donc toujours
+  // celui des lignes que l'action groupée touchera (D-178).
+  useEffect(() => {
+    const visible = new Set(matching.map((r) => r.id));
+    setChecked((prev) => {
+      const kept = [...prev].filter((id) => visible.has(id));
+      return kept.length === prev.size ? prev : new Set(kept);
+    });
+  }, [matching]);
+
+  // Pied « pages » : une nouvelle page s'affiche depuis son début. Le focus reste dans la pagination,
+  // même quand le bouton pressé devient inactif (première ou dernière page).
+  const listRef = useRef<HTMLDivElement>(null);
+  const pagerRef = useRef<HTMLElement>(null);
+  const pagerPressed = useRef(false);
+  const goTo = (p: number) => {
+    pagerPressed.current = true;
+    setPage(p);
+  };
+  useEffect(() => {
+    listRef.current?.querySelectorAll<HTMLElement>("*").forEach((el) => {
+      if (el.scrollTop > 0) el.scrollTop = 0;
+    });
+    if (!pagerPressed.current) return;
+    pagerPressed.current = false;
+    const nav = pagerRef.current;
+    const active = document.activeElement as HTMLButtonElement | null;
+    if (nav && (!active || !nav.contains(active) || active.disabled)) nav.querySelector<HTMLElement>("button:not([disabled])")?.focus();
+  }, [current]);
+
   const firstLoad = rows === undefined;
   const isEmpty = !firstLoad && !hasError && (rows.length === 0 && (!remote || !criteria));
   const terms = [...query.split(/\s+/).filter(Boolean), ...filters.flatMap((f) => f.options.filter((o) => o.id === activeFilters[f.id]).map((o) => o.label))];
@@ -230,7 +261,7 @@ export function ListPage<Row extends { id: string }>({
     const out: TableRowAction[] = icons.map((a) => ({ icon: a.icon, label: a.label, onPress: () => void run(a) }));
     if (menu.length + danger.length > 0) {
       const entry = (a: Action) => (
-        <Menu.Item key={a.id} id={a.id} label={a.label} onAction={() => void run(a)} {...(a.icon ? { icon: a.icon } : {})} {...(a.shortcut ? { shortcut: a.shortcut } : {})} {...(a.danger ? { danger: true } : {})} {...(a.isDisabled ? { isDisabled: true } : {})} />
+        <DropdownMenu.Item key={a.id} id={a.id} label={a.label} onAction={() => void run(a)} {...(a.icon ? { icon: a.icon } : {})} {...(a.shortcut ? { shortcut: a.shortcut } : {})} {...(a.danger ? { danger: true } : {})} {...(a.isDisabled ? { isDisabled: true } : {})} />
       );
       out.push({
         icon: <MoreHorizontal />,
@@ -238,7 +269,7 @@ export function ListPage<Row extends { id: string }>({
         menu: (
           <Fragment>
             {menu.map(entry)}
-            {menu.length > 0 && danger.length > 0 && <Menu.Separator />}
+            {menu.length > 0 && danger.length > 0 && <DropdownMenu.Separator />}
             {danger.map(entry)}
           </Fragment>
         ),
@@ -344,7 +375,7 @@ export function ListPage<Row extends { id: string }>({
     ) : search || filters.length ? (
       <div className="flex flex-wrap items-center gap-2">
         {search && (
-          <SearchField
+          <SearchInput
             key={searchVersion}
             label={searchLabel}
             onChange={(c) => {
@@ -386,9 +417,9 @@ export function ListPage<Row extends { id: string }>({
           </Button>
         )}
         {!fits && mode === "pages" && (
-          <nav aria-label={m.pagination} className="ml-auto flex items-center gap-0.5">
-            <IconButton icon={<ChevronLeft />} label={m.previousPage} isDisabled={current <= 1} onPress={() => setPage(current - 1)} />
-            <IconButton icon={<ChevronRight />} label={m.nextPage} isDisabled={current >= pages} onPress={() => setPage(current + 1)} />
+          <nav ref={pagerRef} aria-label={m.pagination} className="ml-auto flex items-center gap-0.5">
+            <IconButton icon={<ChevronLeft />} label={m.previousPage} isDisabled={current <= 1} onPress={() => goTo(current - 1)} />
+            <IconButton icon={<ChevronRight />} label={m.nextPage} isDisabled={current >= pages} onPress={() => goTo(current + 1)} />
           </nav>
         )}
       </div>
@@ -399,7 +430,7 @@ export function ListPage<Row extends { id: string }>({
     <div className="socle-box flex h-full min-h-0 flex-col font-sans text-md text-fg">
       <header className="flex flex-wrap items-start gap-3 px-(--pad) pt-(--pad) pb-2">
         <div className="min-w-0 flex-1">
-          <h1 className="m-0 text-lg font-semibold">{title}</h1>
+          <h1 className="m-0 text-lg font-heading">{title}</h1>
           {description && <p className="m-0 mt-0.5 text-sm text-fg-2">{description}</p>}
         </div>
         {actions.length > 0 && (
@@ -416,7 +447,7 @@ export function ListPage<Row extends { id: string }>({
       ) : (
         <>
           {!firstLoad && toolbar && <div className="px-(--pad) py-2">{toolbar}</div>}
-          <div className="flex min-h-0 flex-1 flex-col px-[calc(var(--pad)-6px)]">{list}</div>
+          <div ref={listRef} className="flex min-h-0 flex-1 flex-col px-[calc(var(--pad)-6px)]">{list}</div>
           {footer}
         </>
       )}

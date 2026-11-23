@@ -3,10 +3,10 @@ Statut : validé (2026-11-23) — Version : prochaine version mineure (non publi
 Validation : docs/validation/components/FormFields-v1.html
 
 ## Rôle
-Anatomie et règles communes à tous les champs de saisie : `TextField`, `TextArea`, `Select`, et `ComboBox` (P5). `Field` n'est pas exporté : une app n'assemble jamais un champ elle-même, elle prend un des composants ci-dessus. Les composants de Socle qui ont un cadre de champ importent ses pièces depuis `src/components/Field/Field.tsx`.
+Anatomie et règles communes à tous les champs de saisie : `TextInput`, `TextArea`, `Select`, et `ComboBox` (P5). `Field` n'est pas exporté : une app n'assemble jamais un champ elle-même, elle prend un des composants ci-dessus. Les composants de Socle qui ont un cadre de champ importent ses pièces depuis `src/components/Field/Field.tsx`.
 Ne pas l'utiliser pour :
-- une case, un bouton radio ou un interrupteur : leur libellé est à côté du contrôle (voir `Checkbox`, `RadioGroup`, `Switch`) ;
-- une recherche qui filtre une liste : prendre `SearchField`.
+- une case, un bouton radio ou un interrupteur : leur libellé est à côté du contrôle (voir `Checkbox`, `RadioButtonGroup`, `Toggle`) ;
+- une recherche qui filtre une liste : prendre `SearchInput`.
 
 ## Anatomie
 De haut en bas (D-022) :
@@ -53,10 +53,10 @@ Aucune.
 ## Comportement
 | Règle | Niveau de réglage | Test (story) |
 |---|---|---|
-| L'erreur s'affiche quand on quitte un champ modifié, ou à l'envoi du formulaire ; jamais pendant la frappe (D-022, D-132) | verrouillé | `TextField/Verification` |
-| À l'envoi, le focus va au premier champ en erreur (D-132) | verrouillé | `TextField/Envoi` |
-| Une erreur de l'app (`error`) s'affiche tout de suite et prime sur la vérification locale (D-132) | verrouillé | `TextField/ErreurApp` |
-| Un champ obligatoire vide reçoit « Ce champ est obligatoire. » (D-132, D-089) | verrouillé | `TextField/Verification` |
+| L'erreur s'affiche quand on quitte un champ modifié, ou à l'envoi du formulaire ; jamais pendant la frappe (D-022, D-132) | verrouillé | `TextInput/Verification` |
+| À l'envoi, le focus va au premier champ en erreur (D-132) | verrouillé | `TextInput/Envoi` |
+| Une erreur de l'app (`error`) s'affiche tout de suite et prime sur la vérification locale (D-132) | verrouillé | `TextInput/ErreurApp` |
+| Un champ obligatoire vide reçoit « Ce champ est obligatoire. » (D-132, D-089) | verrouillé | `TextInput/Verification` |
 
 ## Contenu
 - Libellé : un nom court, sans deux-points.
@@ -80,7 +80,7 @@ Sur mobile, toutes les largeurs passent à `full`.
 Voir États et Comportement.
 
 ## Placement
-Gabarit `FormPage` (sections), formulaire dans une modale (`Dialog`), ligne de réglage de `SettingsPage` (libellé masqué). Jamais dans une ligne du panneau de détail (spec DetailPanel) ni dans la barre supérieure.
+Gabarit `FormPage` (sections), formulaire dans une modale (`Modal`), ligne de réglage de `SettingsPage` (libellé masqué). Jamais dans une ligne du panneau de détail (spec Drawer) ni dans la barre supérieure.
 
 ## Composition
 Contient le libellé, le cadre, l'aide et l'erreur. Le cadre contient le contrôle propre au composant.

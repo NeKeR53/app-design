@@ -11,7 +11,7 @@ Ne pas l'utiliser pour :
 
 ## Anatomie
 1. **`header`** (obligatoire) : titre de la page (`--fs-lg`, `--fw-semibold`) et description courte facultative (`--fs-sm`, `--fg-2`) à gauche ; actions de la page à droite, en `ActionBar` zone `header` (D-111).
-2. **`toolbar`** (si recherche ou filtres) : `SearchField` puis les filtres en `Select` à gauche (D-174). Quand des lignes sont cochées, la barre devient la barre de sélection : « 3 sélectionnés », « Tout désélectionner », et les actions groupées en `ActionBar` zone `toolbar` à droite (D-178).
+2. **`toolbar`** (si recherche ou filtres) : `SearchInput` puis les filtres en `Select` à gauche (D-174). Quand des lignes sont cochées, la barre devient la barre de sélection : « 3 sélectionnés », « Tout désélectionner », et les actions groupées en `ActionBar` zone `toolbar` à droite (D-178).
 3. **`list`** (obligatoire) : `Table` (défaut) ou `List`, selon `layout`. Chaque cellule est une `FormattedValue` du type de sa colonne (D-170, D-172). Actions de ligne en zone `row` (D-114).
 4. **`footer`** : compteur à gauche ; pagination « 1–50 sur 312 » avec page précédente et suivante, ou bouton « Afficher plus » (D-175).
 5. **`empty`** (à la place de `toolbar`, `list` et `footer` quand il n'y a aucun élément) : `EmptyState` avec icône, titre, phrase et l'action principale de la page en zone `empty` (D-176).
@@ -88,7 +88,7 @@ Ne pas l'utiliser pour :
 - Titre au pluriel, nom de ce qui est listé : « Demandes ».
 - Titre vide au négatif : « Aucune demande » ; phrase qui dit à quoi sert la page.
 - Libellés de filtre : nom au singulier (« État ») et première entrée « Tous les états ». Un filtre fait 160 px (`Select` largeur `sm`) : un libellé plus long est coupé.
-- Recherche : `SearchField`, 320 px (D-078) ; `search.label` complète « Rechercher dans … » (« les demandes »). Défaut : le titre en minuscules.
+- Recherche : `SearchInput`, 320 px (D-078) ; `search.label` complète « Rechercher dans … » (« les demandes »). Défaut : le titre en minuscules.
 - Les libellés internes (compteur, pagination, sélection) sont dans `messages` (D-089).
 
 ## Densité
@@ -110,7 +110,7 @@ Erreur de chargement : états ci-dessus (D-085). Erreur d'une action : `onAction
 Zone `main` d'`AppShell` (layout-rules, gabarit ListPage). Le panneau de détail montre la ligne sélectionnée.
 
 ## Composition
-`ActionBar`, `SearchField`, `Select`, `Table`, `List`, `EmptyState`, `FormattedValue`, `Button`, `IconButton`. Rien d'autre.
+`ActionBar`, `SearchInput`, `Select`, `Table`, `List`, `EmptyState`, `FormattedValue`, `Button`, `IconButton`. Rien d'autre.
 
 ## Décisions
 D-021, D-080, D-084 à D-087, D-111, D-114, D-117, D-159, D-170 à D-178

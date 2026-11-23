@@ -8,7 +8,7 @@ import { cx } from "../../lib/cx";
 import { FormFields, useFormModel, type FormField, type FormSubmit } from "../../lib/form";
 import { useMessages } from "../../provider/SocleProvider";
 import { Button } from "../../components/Button/Button";
-import { useConfirm } from "../../components/Dialog/useConfirm";
+import { useConfirm } from "../../components/Modal/useConfirm";
 import { Skeleton, SkeletonGroup } from "../../components/Skeleton/Skeleton";
 
 /** Une section titrée du formulaire. */
@@ -50,7 +50,7 @@ const sectionClass = "grid grid-cols-[minmax(0,1fr)] gap-3 border-t border-line 
 function Header({ id, title, description }: { id: string; title: string; description?: string | undefined }) {
   return (
     <header className="mb-2">
-      <h2 id={id} className="m-0 text-xl leading-[1.3] font-semibold [overflow-wrap:anywhere]">
+      <h2 id={id} className="m-0 text-xl leading-[1.3] font-heading [overflow-wrap:anywhere]">
         {title}
       </h2>
       {description && <p className="mt-1 mb-0 text-fg-2">{description}</p>}
@@ -61,7 +61,7 @@ function Header({ id, title, description }: { id: string; title: string; descrip
 function SectionHead({ id, title, description }: { id: string; title: string; description?: string | undefined }) {
   return (
     <div className="min-w-0">
-      <h3 id={id} className="m-0 text-md font-semibold">
+      <h3 id={id} className="m-0 text-md font-heading">
         {title}
       </h3>
       {description && <p className="mt-0.5 mb-0 text-sm text-fg-3">{description}</p>}

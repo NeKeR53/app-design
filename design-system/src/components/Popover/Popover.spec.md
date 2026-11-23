@@ -5,9 +5,9 @@ Validation : docs/validation/components/Divers-v1.html (par délégation de l'ut
 ## Rôle
 Volet flottant ouvert depuis un bouton, sans voile : un contenu court et riche (texte, quelques champs, liste courte) sans quitter la page. Exemples : partager, filtrer, aperçu rapide, réglages rapides.
 Ne pas l'utiliser pour :
-- une liste d'actions ou de choix : prendre `Menu` ;
+- une liste d'actions ou de choix : prendre `DropdownMenu` ;
 - un texte d'aide au survol : prendre `Tooltip` ;
-- une tâche longue, un formulaire de plus de trois champs, une confirmation : prendre `Dialog` ou `useConfirm` ;
+- une tâche longue, un formulaire de plus de trois champs, une confirmation : prendre `Modal` ou `useConfirm` ;
 - les notifications : prendre `NotificationCenter`.
 
 ## Anatomie
@@ -85,7 +85,7 @@ Une action du volet qui échoue affiche son erreur dans le volet (message de cha
 Ouvert depuis la `topbar`, une barre d'outils ou un élément de la `sidebar` (`right start`). Jamais depuis un autre Popover.
 
 ## Composition
-Contient `IconButton` (×) ; reprend le rebond et le focus de `Dialog` (D-122, D-125). Peut contenir `TextField`, `TextArea`, `Select`, `Button`, `List`.
+Contient `IconButton` (×) ; reprend le rebond et le focus de `Modal` (D-122, D-125). Peut contenir `TextInput`, `TextArea`, `Select`, `Button`, `List`.
 
 ## Décisions
 D-026, D-033, D-040, D-122, D-124, D-125, D-328, D-329

@@ -103,8 +103,8 @@ export function createNotifications(options: NotificationsOptions = {}): Notific
   const toastQueue = new ToastQueue<ToastContent>({ maxVisibleToasts: MAX_VISIBLE_TOASTS });
   let items: NotificationRecord[] = (options.initial ?? []).slice(0, MAX_HISTORY);
   const listeners = new Set<() => void>();
-  /** Toasts ouverts, du plus ancien au plus récent : identifiant → clé React Aria. */
-  const open = new Map<string, string>();
+  /** Toasts ouverts, du plus ancien au plus récent : identifiant → clé React Aria et durée (`null` : jusqu'à fermeture). */
+  const open = new Map<string, { key: string; timeout: number | null }>();
 
   const setItems = (next: NotificationRecord[]) => {
     items = next;
@@ -133,19 +133,23 @@ export function createNotifications(options: NotificationsOptions = {}): Notific
           ...(timeout === null ? {} : { timeout }),
           onClose: () => open.delete(id),
         });
-        open.set(id, key);
+        open.set(id, { key, timeout });
         // Pile limitée : au-delà de trois, le plus ancien se ferme (D-154).
+        // Un toast sans minuterie (une erreur) reste jusqu'à sa fermeture (D-153, WCAG 2.2.1) :
+        // on ferme d'abord le plus ancien toast à minuterie, hors du nouveau toast, qui reste affiché.
+        // Si les toasts plus anciens sont tous sans minuterie, le plus ancien se ferme ; il reste dans le centre.
         while (open.size > MAX_VISIBLE_TOASTS) {
-          const [oldest, oldestKey] = open.entries().next().value as [string, string];
+          const older = [...open.entries()].filter(([k]) => k !== id);
+          const [oldest, entry] = older.find(([, e]) => e.timeout !== null) ?? older[0]!;
           open.delete(oldest);
-          toastQueue.close(oldestKey);
+          toastQueue.close(entry.key);
         }
       }
       return id;
     },
     dismiss(id) {
-      const key = open.get(id);
-      if (key) toastQueue.close(key);
+      const entry = open.get(id);
+      if (entry) toastQueue.close(entry.key);
     },
     remove(id) {
       setItems(items.filter((i) => i.id !== id));

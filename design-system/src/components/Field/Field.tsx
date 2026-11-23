@@ -1,7 +1,7 @@
 /*
  * Anatomie commune des champs : libellé, cadre, aide, erreur. Spec : Field.spec.md.
  * Décisions : D-022, D-130 à D-134. Module interne, non exporté par index.ts :
- * TextField, TextArea, Select (et ComboBox) l'importent.
+ * TextInput, TextArea, Select (et ComboBox) l'importent.
  */
 import type { ReactNode } from "react";
 import { FieldError } from "react-aria-components/FieldError";
@@ -41,19 +41,19 @@ export function fieldBox({ isReadOnly = false }: { isReadOnly?: boolean | undefi
   return cx(
     "socle-box m-0 w-full min-w-0 rounded-md border font-sans text-md text-fg outline-none",
     "transition-colors duration-[var(--dur-fast)] ease-standard",
-    "data-focused:outline-2 data-focused:outline-solid data-focused:outline-accent data-focused:outline-offset-1",
-    "data-focus-visible:outline-2 data-focus-visible:outline-solid data-focus-visible:outline-accent data-focus-visible:outline-offset-1",
+    "data-focused:outline-2 data-focused:outline-solid data-focused:outline-focus data-focused:outline-offset-1",
+    "data-focus-visible:outline-2 data-focus-visible:outline-solid data-focus-visible:outline-focus data-focus-visible:outline-offset-1",
     isReadOnly
       ? "border-line bg-surface-side"
       : cx(
           "border-line-strong bg-surface data-hovered:border-fg-3",
           "data-invalid:border-danger data-invalid:data-hovered:border-danger group-data-invalid/field:border-danger",
-          "group-data-open/field:outline-2 group-data-open/field:outline-solid group-data-open/field:outline-accent group-data-open/field:outline-offset-1",
+          "group-data-open/field:outline-2 group-data-open/field:outline-solid group-data-open/field:outline-focus group-data-open/field:outline-offset-1",
         ),
   );
 }
 
-/** Liste flottante d'un Select ou d'un ComboBox (D-134) : style du Menu, au moins la largeur du cadre. */
+/** Liste flottante d'un Select ou d'un ComboBox (D-134) : style du DropdownMenu, au moins la largeur du cadre. */
 export const listPopoverClass =
   "socle-box max-h-80 min-w-(--trigger-width) max-w-[max(320px,var(--trigger-width))] overflow-auto rounded-lg border border-line bg-surface-raised p-1 font-sans text-md text-fg shadow-md outline-none";
 

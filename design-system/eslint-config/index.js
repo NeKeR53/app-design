@@ -14,7 +14,11 @@
 
 const COLOR = /#(?:[0-9a-fA-F]{3,4}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})\b|\b(?:rgb|rgba|hsl|hsla|oklch|oklab)\s*\(/;
 
-/** Signale `style` et `className` sur les composants importés de socle-ui. */
+/**
+ * Signale `style` et `className` sur les composants importés de socle-ui.
+ * La règle suit les imports, pas une liste de noms : les nouveaux noms et les anciens
+ * noms dépréciés (D-336) sont couverts, de même qu'un import renommé.
+ */
 const noOverrideOnSocle = {
   meta: {
     type: "problem",

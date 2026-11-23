@@ -10,7 +10,7 @@ import { useMessages } from "../../provider/SocleProvider";
 import { cx } from "../../lib/cx";
 import { X } from "../../icons";
 import { IconButton } from "../IconButton/IconButton";
-import { FocusFirstField, nudge, useEscapeFlag } from "../Dialog/Dialog";
+import { FocusFirstField, nudge, useEscapeFlag } from "../Modal/Modal";
 
 export type PopoverWidth = "sm" | "md" | "lg";
 export type PopoverPlacement = "bottom start" | "bottom end" | "right start";
@@ -107,7 +107,7 @@ export function Popover({
           <div className="flex min-h-0 flex-1 flex-col" onInputCapture={markEdited} onChangeCapture={markEdited}>
             {title && (
               <header className="flex shrink-0 items-center gap-2 pt-2 pr-2 pb-1 pl-3.5">
-                <h2 id={`${id}-title`} className="m-0 min-w-0 flex-1 truncate text-md font-semibold">
+                <h2 id={`${id}-title`} className="m-0 min-w-0 flex-1 truncate text-md font-heading">
                   {title}
                 </h2>
                 <IconButton icon={<X />} label={m.close} isDisabled={isBusy} onPress={() => setOpen(false)} />

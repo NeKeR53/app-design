@@ -7,7 +7,7 @@ Info-bulle : un court texte qui nomme ou complète un élément au survol ou au 
 Ne pas l'utiliser pour :
 - une information indispensable : la mettre dans la page ;
 - un contenu interactif (lien, bouton) : prendre `Popover` ;
-- un message d'erreur : le mettre sous le champ (voir `TextField`).
+- un message d'erreur : le mettre sous le champ (voir `TextInput`).
 
 ## Anatomie
 1. Bulle (obligatoire).
@@ -56,7 +56,7 @@ Taille de texte `--fs-sm` (12,5 px en web, 11,5 px en desktop). Marges internes 
 L'info-bulle ne prend jamais le focus. Elle s'ouvre au focus clavier de l'élément et se ferme avec Échap, sans fermer ce qui est derrière.
 
 ## Accessibilité
-- Rôle `tooltip`, relié à l'élément par `aria-describedby` (React Aria).
+- Rôle `tooltip`, relié à l'élément par `aria-describedby` (React Aria). Sur un `IconButton`, le lien n'est posé que si la bulle ajoute quelque chose au nom (un raccourci) : sinon le nom serait lu deux fois.
 - Si `shortcut` est fourni, l'élément reçoit `aria-keyshortcuts` (par exemple `Meta+K` ou `Control+K`).
 - Pour un bouton-icône, le nom accessible vient de `aria-label`, pas de l'info-bulle : les deux portent le même texte.
 - Contraste du texte et du raccourci : au moins 4,5:1 sur le fond de la bulle, en clair et en sombre.

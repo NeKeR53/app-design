@@ -6,7 +6,7 @@ import { type Ref, useCallback, useEffect, useImperativeHandle, useRef, useState
 import { useMessages, useSocle } from "../../provider/SocleProvider";
 import { copyText } from "../../lib/clipboard";
 import { cx } from "../../lib/cx";
-import { StatusBadge, type StatusTone } from "../StatusBadge/StatusBadge";
+import { Badge, type StatusTone } from "../Badge/Badge";
 import { openTerminal, type OpenedTerminal, type TerminalEngine, type TerminalEngineSource } from "./terminalEngine";
 
 /** Branchement au programme (D-284) : ce que l'utilisateur tape part par `send`, ce que le programme écrit arrive par `subscribe`. */
@@ -206,14 +206,14 @@ export function Terminal({ label, engine, connection, onResize, state, reason, r
       aria-label={label}
       className={cx(
         "socle-box socle-terminal flex min-w-0 flex-col overflow-hidden rounded-md border border-solid border-line bg-surface font-sans",
-        "focus-within:border-accent focus-within:outline-1 focus-within:outline-solid focus-within:outline-accent",
+        "focus-within:border-focus focus-within:outline-1 focus-within:outline-solid focus-within:outline-focus",
         fill ? "min-h-0 flex-1" : "h-[min(560px,max(280px,calc(100dvh-240px)))]",
       )}
     >
       <div ref={host} className="min-h-0 min-w-0 flex-1 overflow-hidden pt-2 pr-0 pb-1 pl-3" />
       <div className="flex min-h-7 flex-none items-center gap-3 border-t border-solid border-line bg-surface-side px-3 py-0.5 text-sm text-fg-2 tabular-nums">
         <span role="status" className={cx("min-w-0 truncate", status.tone === "danger" && "[&_span]:text-danger")}>
-          <StatusBadge tone={status.tone}>{status.text}</StatusBadge>
+          <Badge tone={status.tone}>{status.text}</Badge>
         </span>
         <span className="ml-auto whitespace-nowrap" aria-live="polite">
           {hint}

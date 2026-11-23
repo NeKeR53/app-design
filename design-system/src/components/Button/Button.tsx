@@ -46,11 +46,11 @@ const sizes: Record<ButtonSize, string> = {
 
 /** Survol et pression désactivés par React Aria quand le bouton est désactivé ou en attente. */
 const variants: Record<ButtonVariant, string> = {
-  // D-102 : monochrome inversé.
+  // D-102 : monochrome inversé, par --primary (un thème peut le régler, D-338).
   primary:
-    "bg-fg text-surface data-hovered:bg-[color-mix(in_srgb,var(--fg)_82%,var(--surface))] data-pressed:bg-[color-mix(in_srgb,var(--fg)_72%,var(--surface))]",
-  // D-103 : fond --field, sans contour.
-  secondary: "bg-field text-fg data-hovered:bg-hover data-pressed:bg-selected",
+    "bg-primary text-primary-fg data-hovered:bg-[color-mix(in_srgb,var(--primary)_82%,var(--surface))] data-pressed:bg-[color-mix(in_srgb,var(--primary)_72%,var(--surface))]",
+  // D-103 : fond --field, sans contour. Thème : variante « outline » posée par styles.css (D-338).
+  secondary: "socle-btn-secondary bg-field text-fg data-hovered:bg-hover data-pressed:bg-selected",
   // D-100 : transparent, comme IconButton.
   subtle: "bg-transparent text-fg-2 data-hovered:bg-hover data-hovered:text-fg data-pressed:bg-selected",
   // D-104 : rouge plein ; le mélange avec --fg fonce en clair et éclaircit en sombre.

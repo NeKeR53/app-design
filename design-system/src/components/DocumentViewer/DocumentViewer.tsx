@@ -9,7 +9,7 @@ import { cx } from "../../lib/cx";
 import { useMessages } from "../../provider/SocleProvider";
 import { ActionBar, type Action } from "../../patterns/ActionBar/ActionBar";
 import { Button } from "../Button/Button";
-import { Divider } from "../Divider/Divider";
+import { Separator } from "../Separator/Separator";
 import { EmptyState } from "../EmptyState/EmptyState";
 import { IconButton } from "../IconButton/IconButton";
 import { Skeleton, SkeletonGroup } from "../Skeleton/Skeleton";
@@ -187,7 +187,7 @@ function Bar({
   const m = useMessages();
   const sep = (
     <span className="flex h-4 items-center">
-      <Divider orientation="vertical" />
+      <Separator orientation="vertical" />
     </span>
   );
   const end = onDownload !== undefined || actions.some((a) => !a.isHidden);
@@ -372,7 +372,7 @@ function Viewer({
         onScroll={pdf ? trackPage : undefined}
         className={cx(
           "flex min-h-0 flex-1 flex-col items-center-safe gap-3 overflow-auto overscroll-contain bg-surface-side p-4",
-          "outline-none focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-accent focus-visible:outline-solid",
+          "outline-none focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-focus focus-visible:outline-solid",
         )}
       >
         {pdf?.sizes.map((size, index) => (

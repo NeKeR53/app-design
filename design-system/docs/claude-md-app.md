@@ -34,7 +34,7 @@ Pas de `file:` ni de `npm link` : les liens symboliques font charger deux copies
 ## Mise en place technique dans l'app
 
 1. Styles, une seule fois à la racine : `import "socle-ui/styles.css";`
-2. Racine de l'app : `<SocleProvider>` (accent, densité, plateforme, préfixe de mémorisation, libellés `messages`).
+2. Racine de l'app : `<SocleProvider>` (accent, densité, plateforme, préfixe de mémorisation, libellés `messages`, thème d'organisation `theme`).
 3. Avec Tailwind, dans le CSS principal de l'app :
    ```css
    @import "tailwindcss";

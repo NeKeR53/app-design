@@ -3,7 +3,7 @@ Statut : validé — Version : depuis 0.1.0
 Validation : docs/validation/components/AppShell-v1.html ; actions de page : docs/validation/components/AppShell-actions-v1.html ; largeurs du détail : docs/validation/components/DetailPanel-width-v1.html ; résumé et état : docs/validation/components/AppShell-summary-v1.html (par délégation de l'utilisateur, 2026-11-23)
 
 ## Rôle
-Cadre commun de toutes les apps : barre supérieure, sidebar, zone de contenu, panneau de détail et, sur mobile, barre d'onglets. Chaque écran d'une app est rendu dans un AppShell. On ne l'utilise pas pour une fenêtre secondaire ou une modale : dans ce cas, prendre `Dialog`.
+Cadre commun de toutes les apps : barre supérieure, sidebar, zone de contenu, panneau de détail et, sur mobile, barre d'onglets. Chaque écran d'une app est rendu dans un AppShell. On ne l'utilise pas pour une fenêtre secondaire ou une modale : dans ce cas, prendre `Modal`.
 
 ## Anatomie
 1. `topbar` (obligatoire) :
@@ -101,12 +101,14 @@ Sans objet : les erreurs sont gérées par les gabarits et les composants.
 ## Placement
 Racine de chaque écran, à l'intérieur du `SocleProvider` de l'app (D-029) ; un seul AppShell par fenêtre. La plateforme et le préfixe de mémorisation viennent du provider.
 
+Options du `SocleProvider` : `accent`, `density`, `platform`, `storageKey` (D-029), `messages` (D-089), `notifications` (D-154) et `theme`, le thème d'une organisation (D-337). Sans `theme`, le rendu est neutre et inchangé. Avec `theme`, seuls les tokens et les variantes signature changent ; le conteneur de la sidebar, son overlay et la feuille « Plus » suivent les rôles `--side-*`. Le thème peut aussi fixer les couleurs des graphiques (`--chart-*`), la graisse des titres (`typography.headingWeight`), le bouton secondaire (`signature.buttonSecondary`) et un jeu d'icônes pour les icônes internes (`icons`, D-338).
+
 ## Composition
-Contient les icônes internes de Socle (D-028), `Sidebar`, `IconButton`, `Tabs` (onglets de vues), `Tooltip` et un gabarit (`ListPage`, `DetailPage`, `FormPage`). `SettingsPage` s'ouvre dans un `Dialog` par-dessus l'AppShell (D-015).
+Contient les icônes internes de Socle (D-028), `Sidebar`, `IconButton`, `Tabs` (onglets de vues), `Tooltip` et un gabarit (`ListPage`, `DetailPage`, `FormPage`). `SettingsPage` s'ouvre dans un `Modal` par-dessus l'AppShell (D-015).
 
 ## Décisions
 Libellés internes : dictionnaire `messages` de SocleProvider (D-089).
-D-003, D-004, D-006, D-013, D-015, D-016, D-017, D-018, D-019, D-020, D-021, D-025, D-026, D-027, D-028, D-029, D-220, D-221, D-222, D-240, D-241, D-242, D-250, D-251, D-252
+D-003, D-004, D-006, D-013, D-015, D-016, D-017, D-018, D-019, D-020, D-021, D-025, D-026, D-027, D-028, D-029, D-220, D-221, D-222, D-240, D-241, D-242, D-250, D-251, D-252, D-337, D-338
 
 ## Questions ouvertes
 Aucune.

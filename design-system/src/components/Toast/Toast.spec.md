@@ -8,7 +8,7 @@ Ne pas l'utiliser pour :
 - un état durable de la page (hors ligne, lecture seule) : il va dans la barre du haut (D-159) ;
 - une erreur de champ : la mettre sous le champ ;
 - une erreur de chargement d'une zone : message dans la zone (D-085) ;
-- une décision à prendre : prendre `Dialog`.
+- une décision à prendre : prendre `Modal`.
 
 ## Anatomie
 1. Région (automatique) : en bas à droite, rendue une fois par `SocleProvider` (D-154).

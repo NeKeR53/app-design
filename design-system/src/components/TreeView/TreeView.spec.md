@@ -13,12 +13,12 @@ Ne pas l'utiliser pour :
 | | TreeView | `Sidebar.TreeItem` |
 |---|---|---|
 | Rôle | Contenu de travail : explorer, choisir, agir | Navigation : choisir la page |
-| Où | Zone de contenu (colonne d'une page, zone `list` de ListPage, section de DetailPanel, modale) | Seulement dans la Sidebar |
+| Où | Zone de contenu (colonne d'une page, zone `list` de ListPage, section de Drawer, modale) | Seulement dans la Sidebar |
 | Profondeur | Sans limite | Un niveau d'enfants (D-056) |
 | Ligne | Une ligne : icône, libellé, méta | Deux lignes : titre, sous-titre, étiquette, non-lu |
 | Nœud replié | Rien sous le nœud | Ligne résumé (D-043) |
 | Sélection | Aucune, simple ou multiple | Simple : la page courante |
-| Actions | `Action`, zone `row` (D-114) | Menu « … » |
+| Actions | `Action`, zone `row` (D-114) | DropdownMenu « … » |
 | Chargement à la demande, glisser-déposer | En option | Non |
 
 ## Anatomie
@@ -61,7 +61,7 @@ Aucune.
 ## Exclus
 - Pas de case à cocher par nœud ni de sélection en cascade (parent à demi coché) : la sélection multiple se fait par Mod et Maj (D-263).
 - Pas de deuxième ligne de texte : prendre `Sidebar.TreeItem` dans la navigation, ou mettre le détail dans le panneau (D-260).
-- Pas de renommage dans la ligne : l'action « Renommer » ouvre une modale avec `TextField`.
+- Pas de renommage dans la ligne : l'action « Renommer » ouvre une modale avec `TextInput`.
 - Pas de virtualisation dans cette version : un grand arbre charge ses enfants à la demande (D-266).
 - Pas de couleur par nœud ; l'état d'un nœud passe par la méta.
 - Pas de `className` ni de `style`.
@@ -123,10 +123,10 @@ Identique. Sur écran tactile, les lignes passent à 44 px et le menu « … » 
 Échec de `loadChildren` : ligne d'erreur sous le nœud (D-266). Échec d'une action : rendu à `onActionError` ; la page affiche la notification (D-116). Échec de `onMove` : à l'app de rétablir `nodes` et de notifier.
 
 ## Placement
-Zone de contenu : colonne d'une page, zone `list` de `ListPage`, section de `DetailPanel` ou de `DetailPage`, corps d'une modale (choisir un dossier). Jamais dans la zone `sidebar` (D-260).
+Zone de contenu : colonne d'une page, zone `list` de `ListPage`, section de `Drawer` ou de `DetailPage`, corps d'une modale (choisir un dossier). Jamais dans la zone `sidebar` (D-260).
 
 ## Composition
-Contient `ActionBar` (donc `IconButton`, `Menu`, la confirmation `useConfirm`), `Link` (« Réessayer »), `EmptyState`, `Tooltip`. Repose sur React Aria `Tree` et `useDragAndDrop`.
+Contient `ActionBar` (donc `IconButton`, `DropdownMenu`, la confirmation `useConfirm`), `Link` (« Réessayer »), `EmptyState`, `Tooltip`. Repose sur React Aria `Tree` et `useDragAndDrop`.
 
 ## Décisions
 D-026, D-039, D-040, D-042, D-066, D-089, D-110, D-114, D-115, D-116, D-260, D-261, D-262, D-263, D-264, D-265, D-266, D-267, D-268

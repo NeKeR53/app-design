@@ -5,7 +5,7 @@ Validation : par délégation de l'utilisateur, 2026-11-23 — docs/validation/c
 ## Rôle
 Gabarit de la zone `main` d'AppShell pour un élément ouvert en entier : une demande, une facture, un document. Il montre le contenu principal de l'élément, en sections.
 Ne pas l'utiliser pour :
-- les propriétés de l'élément (« Échéance », « Responsable ») : elles vont dans `DetailPanel` (D-018, D-210) ;
+- les propriétés de l'élément (« Échéance », « Responsable ») : elles vont dans `Drawer` (D-018, D-210) ;
 - une collection : prendre `ListPage` ;
 - une saisie à envoyer : prendre `FormPage` ;
 - une page qui ne montre pas un élément (tableau de bord, éditeur) : prendre `Page` (D-217).
@@ -14,7 +14,7 @@ Ne pas l'utiliser pour :
 1. **En-tête** (fixe, trait `--line` dessous, D-210) :
    1. lien de retour (facultatif) : « ‹ <vue principale> », au-dessus du titre (D-211) ;
    2. titre (obligatoire), `h1`, `--fs-xl`, semi-gras (D-212) ;
-   3. statut (facultatif) : `StatusBadge`, juste après le titre ;
+   3. statut (facultatif) : `Badge`, juste après le titre ;
    4. méta (facultative) : une ligne en `--fs-sm`, `--fg-2`, éléments séparés par « · » ;
    5. actions (facultatives) : `ActionBar` zone `header`, calée en haut à droite (D-111).
 2. **Contenu** (seule zone qui défile) : des `DetailPage.Section` (alias de `PageSection`), séparées par un trait (D-213).
@@ -27,7 +27,7 @@ Aucune.
 |---|---|---|---|
 | `title` | `string` | — (obligatoire) | Nom de l'élément. Facultatif pendant `state="loading"` : un squelette le remplace. |
 | `back` | `{ label: string; onPress?: () => void; href?: string }` | aucun | Lien de retour vers la vue principale. `label` nomme la vue (« Demandes »). |
-| `status` | `{ label: string; tone?: StatusTone }` | aucun | Statut, en `StatusBadge`. |
+| `status` | `{ label: string; tone?: StatusTone }` | aucun | Statut, en `Badge`. |
 | `meta` | `ReactNode[]` | aucune | Éléments de la ligne de méta (texte, `Link`, `Avatar`…), séparés par « · ». |
 | `actions` | `Action[]` | aucune | Actions sur l'élément, zone `header`. |
 | `onActionError`, `onActionDone` | `(action, error?) => void` | aucun | Transmis à `ActionBar` (D-116, D-118). |
@@ -95,7 +95,7 @@ Chargement en échec : état `error`. Action en échec : `onActionError`, en gé
 Uniquement dans la zone `main` d'AppShell, ouvert depuis une liste (vue fermable, D-021). Le panneau `detail` montre ses propriétés.
 
 ## Composition
-Contient `Link` (retour), `StatusBadge`, `ActionBar`, `PageSection`, `Skeleton`, `EmptyState`, `Button`. Se combine avec `DetailPanel` à côté. Ne contient pas de `ListPage`, `FormPage` ni `Page`.
+Contient `Link` (retour), `Badge`, `ActionBar`, `PageSection`, `Skeleton`, `EmptyState`, `Button`. Se combine avec `Drawer` à côté. Ne contient pas de `ListPage`, `FormPage` ni `Page`.
 
 ## Décisions
 D-018, D-021, D-085, D-111, D-116, D-117, D-159, D-165, D-166, D-210, D-211, D-212, D-213, D-214, D-215, D-216

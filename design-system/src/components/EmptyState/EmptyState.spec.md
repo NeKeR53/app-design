@@ -7,7 +7,7 @@ Dire qu'une zone est vide et proposer la suite : zone `empty` de ListPage (aucun
 Ne pas l'utiliser pour :
 - une recherche sans résultat : message de Table et List avec rappel des critères (D-086) ;
 - une erreur de chargement : message de Table et List (D-085) ;
-- un panneau de détail sans sélection : message de DetailPanel.
+- un panneau de détail sans sélection : message de Drawer.
 
 ## Anatomie
 1. Icône (facultative), 32 px, `--fg-3`, sans fond (D-166).
@@ -25,7 +25,8 @@ Ne pas l'utiliser pour :
 | Option | Type | Défaut | Description |
 |---|---|---|---|
 | `title` | `ReactNode` | — (obligatoire) | Ce qui manque : « Aucun projet ». |
-| `description` | `string` | aucune | Phrase d'explication. |
+| `description` | `ReactNode` | aucune | Phrase d'explication ; peut contenir un `Link`. |
+| `headingLevel` | `2 \| 3 \| 4` | `2` | Niveau du titre (`h2` à `h4`), selon la page. |
 | `icon` | `ReactNode` | aucune | Icône de l'app (D-011), affichée en 32 px. |
 | `action` | `ReactNode` | aucune | Action principale : `<Button variant="primary">`. |
 | `size` | `"default" \| "compact"` | `"default"` | Taille. |
@@ -54,7 +55,7 @@ Les textes suivent la densité ; les marges ne changent pas.
 Seule l'action reçoit le focus. Le focus n'est pas déplacé à l'affichage.
 
 ## Accessibilité
-Titre et phrase sont du texte lu dans l'ordre. L'icône est décorative (`aria-hidden` dans l'icône de l'app). Contrastes : `--fg` et `--fg-2` AA.
+Le titre est un vrai titre (`h2` par défaut, `headingLevel`), puis la phrase, lus dans l'ordre. L'icône est décorative (`aria-hidden` dans l'icône de l'app). Contrastes : `--fg` et `--fg-2` AA.
 
 ## Taille d'écran
 Largeur maximale 420 px ; sur mobile, marges latérales de 16 px.

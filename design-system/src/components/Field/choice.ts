@@ -12,7 +12,7 @@ export const alignFirstLine = (size: 16 | 18) =>
 
 /** Anneau de focus clavier autour de l'indicateur. */
 export const indicatorFocus =
-  "group-data-focus-visible/choice:outline-2 group-data-focus-visible/choice:outline-solid group-data-focus-visible/choice:outline-accent group-data-focus-visible/choice:outline-offset-1";
+  "group-data-focus-visible/choice:outline-2 group-data-focus-visible/choice:outline-solid group-data-focus-visible/choice:outline-focus group-data-focus-visible/choice:outline-offset-1";
 
 /** Case ou rond (D-135) : bord marqué, accent quand c'est coché, rouge en erreur. */
 export const indicator = cx(

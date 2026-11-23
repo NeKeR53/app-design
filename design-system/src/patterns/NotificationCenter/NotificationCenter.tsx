@@ -3,7 +3,7 @@
  * Spec : NotificationCenter.spec.md. Il lit la file passée à `SocleProvider`.
  */
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
-import { Dialog, DialogTrigger, Heading } from "react-aria-components/Dialog";
+import { Dialog as AriaDialog, DialogTrigger, Heading } from "react-aria-components/Dialog";
 import { GridList, GridListHeader, GridListItem, GridListSection } from "react-aria-components/GridList";
 import { Modal } from "react-aria-components/Modal";
 import { Popover } from "react-aria-components/Popover";
@@ -82,12 +82,12 @@ export function NotificationCenter() {
   );
 
   const panel = (
-    <Dialog aria-label={m.notifications} className="flex max-h-[inherit] min-h-0 flex-col outline-none max-tablet:h-full">
+    <AriaDialog aria-label={m.notifications} className="flex max-h-[inherit] min-h-0 flex-col outline-none max-tablet:h-full">
       {({ close }) => (
         <>
           <div className="flex items-center gap-2 border-b border-line py-2 pr-2 pl-3.5 max-tablet:pl-2">
             {isMobile ? <IconButton icon={<ChevronLeft />} label={m.closeNotificationCenter} onPress={close} /> : null}
-            <Heading slot="title" className="m-0 flex-1 text-md font-semibold">
+            <Heading slot="title" className="m-0 flex-1 text-md font-heading">
               {m.notifications}
             </Heading>
             {items.length ? (
@@ -107,7 +107,7 @@ export function NotificationCenter() {
           />
         </>
       )}
-    </Dialog>
+    </AriaDialog>
   );
 
   return (
@@ -178,7 +178,7 @@ function Rows({
                   focusRing,
                 )}
               >
-                {isUnread ? <span aria-hidden="true" data-unread className="absolute top-[15px] left-0.5 size-1.5 rounded-full bg-accent" /> : null}
+                {isUnread ? <span aria-hidden="true" data-unread className="absolute top-[15px] left-0.5 size-1.5 rounded-full bg-highlight" /> : null}
                 <ToneIcon tone={item.tone} />
                 <div className="min-w-0">
                   <span className="block font-medium break-words">

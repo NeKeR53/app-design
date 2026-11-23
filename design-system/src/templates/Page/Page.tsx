@@ -113,7 +113,7 @@ export function PageSection({ title, description, actions, state = "ready", onRe
     <section aria-labelledby={id} className="socle-page-section min-w-0">
       <div className="mb-2.5 flex items-start gap-3">
         <div className="min-w-0 flex-1">
-          <h2 id={id} className="m-0 text-lg leading-snug font-semibold text-fg">
+          <h2 id={id} className="m-0 text-lg leading-snug font-heading text-fg">
             {title}
           </h2>
           {description && <p className="m-0 mt-0.5 text-sm text-fg-2">{description}</p>}

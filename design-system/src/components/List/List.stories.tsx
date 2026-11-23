@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from "@storybook/react-vite";
 import { useState } from "react";
 import { expect, fn, userEvent, waitFor, within } from "storybook/test";
 import { List, type ListGroup, type ListItemData } from "./List";
-import { Menu } from "../Menu/Menu";
+import { DropdownMenu } from "../DropdownMenu/DropdownMenu";
 import { MoreHorizontal } from "../../icons";
 
 const meta: Meta<typeof List> = {
@@ -53,7 +53,7 @@ function Demo(props: Partial<Parameters<typeof List>[0]>) {
         groups={groups}
         leading="avatar"
         onAction={onOpen}
-        itemActions={() => [{ icon: <MoreHorizontal />, label: "Plus d'actions", menu: <Menu.Item label="Archiver" /> }]}
+        itemActions={() => [{ icon: <MoreHorizontal />, label: "Plus d'actions", menu: <DropdownMenu.Item label="Archiver" /> }]}
         totalCount={24}
         onLoadMore={() => setGroups((g) => [...g, { id: "week", title: "Cette semaine", items: [mk("e", "Accès VPN", "Tom Faure", "Lun.")] }])}
         {...props}

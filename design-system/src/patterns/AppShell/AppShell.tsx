@@ -2,19 +2,19 @@
  * Cadre commun de toutes les apps. Spec : AppShell.spec.md.
  * Décisions : D-003, D-016 à D-021, D-025 à D-027, D-220 à D-222, D-240 à D-242, D-250 à D-252.
  */
-import { Children, isValidElement, useEffect, useId, useRef, useState, type PointerEvent as ReactPointerEvent, type ReactElement, type ReactNode } from "react";
+import { Children, isValidElement, useEffect, useId, useLayoutEffect, useRef, useState, type KeyboardEvent as ReactKeyboardEvent, type PointerEvent as ReactPointerEvent, type ReactElement, type ReactNode } from "react";
 import { Button } from "react-aria-components/Button";
-import { Dialog } from "react-aria-components/Dialog";
+import { Dialog as AriaDialog } from "react-aria-components/Dialog";
 import { Modal, ModalOverlay } from "react-aria-components/Modal";
 import { useMessages, useSocle, useStoredState } from "../../provider/SocleProvider";
 import { buttonReset, cx, focusRing } from "../../lib/cx";
 import { ChevronLeft, ChevronRight, ListDetail, Maximize, Minimize, MoreHorizontal, PanelLeft, X } from "../../icons";
 import { IconButton } from "../../components/IconButton/IconButton";
 import { Tabs, useTabPanelProps, type TabItem } from "../../components/Tabs/Tabs";
-import { Menu } from "../../components/Menu/Menu";
+import { DropdownMenu } from "../../components/DropdownMenu/DropdownMenu";
 import { Tooltip } from "../../components/Tooltip/Tooltip";
 import { OverflowTooltip } from "../../components/Tooltip/OverflowTooltip";
-import { StatusBadge, type StatusTone } from "../../components/StatusBadge/StatusBadge";
+import { Badge, type StatusTone } from "../../components/Badge/Badge";
 import { Focusable } from "react-aria-components/Focusable";
 import { HiddenNavIds, Sidebar, type SidebarItemProps, type SidebarProps } from "../Sidebar/Sidebar";
 
@@ -32,7 +32,7 @@ export interface PageStatus {
   tone?: StatusTone;
   /** Phrase d'explication, dans l'info-bulle ou le nom du bouton. */
   description?: string;
-  /** Entrées `Menu.Item` : l'indicateur devient un bouton qui ouvre ce menu (« Quitter les données d'exemple »). */
+  /** Entrées `DropdownMenu.Item` : l'indicateur devient un bouton qui ouvre ce menu (« Quitter les données d'exemple »). */
   menu?: ReactNode;
 }
 
@@ -68,6 +68,12 @@ export interface AppShellProps {
 
 const DETAIL_MIN = 240;
 const DETAIL_MAX = 480;
+const FOCUSABLE = 'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"]), [contenteditable="true"]';
+
+/** Éléments atteignables à la tabulation dans `root`, dans l'ordre du document (éléments visibles seulement). */
+function tabbables(root: HTMLElement): HTMLElement[] {
+  return [...root.querySelectorAll<HTMLElement>(FOCUSABLE)].filter((el) => el.tabIndex >= 0 && el.getClientRects().length > 0);
+}
 const OVERLAY_CLOSE_DELAY = 250;
 
 function navItems(sidebar: ReactElement<SidebarProps>): SidebarItemProps[] {
@@ -196,7 +202,7 @@ export function AppShell({ pageTitle, pageSummary, pageStatus, views, activeView
         <div
           className={cx(
             "flex shrink-0 items-center gap-0.5 px-2",
-            sidebarVisible && "box-border w-(--side-w) border-r border-line bg-surface-side",
+            sidebarVisible && "socle-side box-border w-(--side-w) border-r border-line bg-surface-side",
             macControls && "pl-[78px]",
           )}
           {...dragRegion}
@@ -215,7 +221,7 @@ export function AppShell({ pageTitle, pageSummary, pageStatus, views, activeView
           )}
         </div>
         <div className={cx("flex min-w-0 flex-1 items-center gap-2 pr-2 pl-4 max-tablet:pl-2", winControls && "pr-[138px]")} {...dragRegion}>
-          <h1 className="m-0 max-w-[40%] shrink-0 truncate text-md font-semibold">{pageTitle}</h1>
+          <h1 className="m-0 max-w-[40%] shrink-0 truncate text-md font-heading">{pageTitle}</h1>
           {pageStatus && <StatusIndicator status={pageStatus} />}
           {/* Annonce de l'état quand il apparaît ou change (D-252). */}
           <span role="status" className="sr-only">
@@ -250,17 +256,19 @@ export function AppShell({ pageTitle, pageSummary, pageStatus, views, activeView
 
       {/* ---------- Corps ---------- */}
       <div className="relative flex min-h-0 min-w-0">
-        {sidebarVisible && <aside className="box-border w-(--side-w) shrink-0 border-r border-line">{sidebar}</aside>}
+        {/* Pas de repère `complementary` autour de la sidebar : son repère est la `navigation`
+            nommée qu'elle contient (AppShell.spec.md, Accessibilité). */}
+        {sidebarVisible && <div className="socle-side box-border w-(--side-w) shrink-0 border-r border-line">{sidebar}</div>}
         {overlay && collapsed && !isMobile && (
-          <aside
+          <div
             onPointerEnter={enterOverlay}
             onPointerLeave={leaveOverlay}
             onFocus={focusOverlay}
             onBlur={blurOverlay}
-            className="absolute top-0 bottom-0 left-0 z-40 box-border w-(--side-w) border-r border-line shadow-lg"
+            className="socle-side absolute top-0 bottom-0 left-0 z-40 box-border w-(--side-w) border-r border-line shadow-lg"
           >
             {sidebar}
-          </aside>
+          </div>
         )}
         {/* Panneau large : le contenu garde au moins 360 px (D-241). */}
         <main {...panelProps} className={cx("min-w-0 flex-1 overflow-auto", wide && showDetail && "min-w-[360px]")}>{children}</main>
@@ -304,13 +312,13 @@ export function AppShell({ pageTitle, pageSummary, pageStatus, views, activeView
       )}
       {/* Feuille « Plus » : le reste de la navigation, sans doublons (D-019). */}
       <ModalOverlay isOpen={sheet} onOpenChange={setSheet} isDismissable className="fixed inset-0 z-50 bg-scrim">
-        <Modal className="absolute inset-x-0 top-[16%] bottom-0 overflow-hidden rounded-t-[16px] border border-b-0 border-line bg-surface-side shadow-lg">
-          <Dialog aria-label={m.more} className="flex h-full flex-col outline-none">
+        <Modal className="socle-side absolute inset-x-0 top-[16%] bottom-0 overflow-hidden rounded-t-[16px] border border-b-0 border-line bg-surface-side shadow-lg">
+          <AriaDialog aria-label={m.more} className="flex h-full flex-col outline-none">
             <span aria-hidden className="mx-auto mt-2 block h-1 w-9 shrink-0 rounded-full bg-fg-3 opacity-50" />
             <div className="min-h-0 flex-1">
               <HiddenNavIds.Provider value={hidden}>{sidebar}</HiddenNavIds.Provider>
             </div>
-          </Dialog>
+          </AriaDialog>
         </Modal>
       </ModalOverlay>
     </div>
@@ -320,11 +328,11 @@ export function AppShell({ pageTitle, pageSummary, pageStatus, views, activeView
 /** Indicateur d'état de la page : cadre de 24 px, point du ton et libellé (D-251). */
 function StatusIndicator({ status }: { status: PageStatus }) {
   const frame = "inline-flex h-6 max-w-40 min-w-0 shrink-0 items-center rounded-md border border-line bg-surface px-2 max-tablet:max-w-30";
-  const content = <StatusBadge tone={status.tone ?? "neutral"}>{status.label}</StatusBadge>;
+  const content = <Badge tone={status.tone ?? "neutral"}>{status.label}</Badge>;
   const name = status.description ? `${status.label} : ${status.description}` : status.label;
   if (status.menu) {
     return (
-      <Menu
+      <DropdownMenu
         label={status.label}
         placement="bottom start"
         trigger={
@@ -334,14 +342,14 @@ function StatusIndicator({ status }: { status: PageStatus }) {
         }
       >
         {status.menu}
-      </Menu>
+      </DropdownMenu>
     );
   }
   if (!status.description) return <span className={frame}>{content}</span>;
   return (
     <Tooltip content={status.description} placement="bottom">
       <Focusable>
-        <span tabIndex={0} aria-label={name} role="img" className={cx(frame, "cursor-default outline-none focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-accent focus-visible:outline-solid")}>
+        <span tabIndex={0} aria-label={name} role="img" className={cx(frame, "cursor-default outline-none focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-focus focus-visible:outline-solid")}>
           {content}
         </span>
       </Focusable>
@@ -362,6 +370,39 @@ function DetailColumn({ floating, fullscreen, width, form, wide, onWidth, onClos
 }) {
   const m = useMessages();
   const ref = useRef<HTMLElement>(null);
+  const titleRef = useRef<HTMLSpanElement>(null);
+  // Overlay (tablette) et plein écran (mobile) : le panneau est modal pour le focus (motif dialog WAI-ARIA).
+  // À l'ouverture, le focus va sur le titre du panneau ; à la fermeture (Échap, ×), il revient
+  // à l'élément qui l'a ouvert. Sans animation (D-026). Sur bureau, la colonne n'est pas modale.
+  useLayoutEffect(() => {
+    if (!floating) return;
+    const panel = ref.current;
+    const opener = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    titleRef.current?.focus();
+    return () => {
+      // Le focus ne revient que s'il était dans le panneau (ou perdu) : on ne le vole pas ailleurs.
+      const active = document.activeElement;
+      const lost = !active || active === document.body || Boolean(panel?.contains(active));
+      if (lost && opener?.isConnected) opener.focus();
+    };
+  }, [floating]);
+  // Tab et Maj+Tab restent dans le panneau tant qu'il flotte.
+  const trapTab = (e: ReactKeyboardEvent) => {
+    const panel = ref.current;
+    if (!floating || e.key !== "Tab" || !panel || !(e.target instanceof Node) || !panel.contains(e.target)) return;
+    const list = tabbables(panel);
+    const first = list[0];
+    const last = list[list.length - 1];
+    if (!first || !last) return;
+    const active = document.activeElement;
+    if (e.shiftKey && (active === first || active === titleRef.current)) {
+      e.preventDefault();
+      last.focus();
+    } else if (!e.shiftKey && active === last) {
+      e.preventDefault();
+      first.focus();
+    }
+  };
   const current = () => ref.current?.getBoundingClientRect().width ?? DETAIL_MIN;
   const clamp = (w: number) => Math.round(Math.min(DETAIL_MAX, Math.max(DETAIL_MIN, w)));
   const startDrag = (e: ReactPointerEvent) => {
@@ -380,6 +421,7 @@ function DetailColumn({ floating, fullscreen, width, form, wide, onWidth, onClos
     <aside
       ref={ref}
       aria-label={m.detail}
+      onKeyDown={trapTab}
       style={!floating && !wide && width ? { width } : undefined}
       data-width={wide ? "wide" : form ? "form" : "default"}
       className={cx(
@@ -407,12 +449,14 @@ function DetailColumn({ floating, fullscreen, width, form, wide, onWidth, onClos
             e.preventDefault();
             onWidth(clamp(current() + (e.key === "ArrowLeft" ? 16 : -16)));
           }}
-          className="absolute top-0 bottom-0 -left-[3px] z-10 w-1.5 cursor-col-resize outline-none hover:bg-line focus-visible:bg-accent"
+          className="absolute top-0 bottom-0 -left-[3px] z-10 w-1.5 cursor-col-resize outline-none hover:bg-line focus-visible:bg-focus"
         />
       )}
       {floating && (
-        <div className="flex h-(--bar-h) shrink-0 items-center border-b border-line pr-2 pl-4 font-semibold">
-          <span className="flex-1">{m.detail}</span>
+        <div className="flex h-(--bar-h) shrink-0 items-center border-b border-line pr-2 pl-4 font-heading">
+          <span ref={titleRef} tabIndex={-1} className="flex-1 outline-none">
+            {m.detail}
+          </span>
           <IconButton icon={<X />} label={m.closeDetail} onPress={onClose} />
         </div>
       )}

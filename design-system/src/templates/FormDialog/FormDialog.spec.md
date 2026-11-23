@@ -3,15 +3,15 @@ Statut : validé (2026-11-23) — Version : depuis la version qui suit 0.2.0
 Validation : docs/validation/components/FormPage-v1.html — par délégation de l'utilisateur, 2026-11-23
 
 ## Rôle
-`useOpenForm()` rend la fonction `openForm(spec)`, qui ouvre une saisie courte dans une `Dialog` : créer un élément simple, renommer, inviter. Elle rend une promesse des valeurs (D-197). Les champs se décrivent avec le modèle `FormField` de `FormPage.spec.md` (D-190).
+`useOpenForm()` rend la fonction `openForm(spec)`, qui ouvre une saisie courte dans une `Modal` : créer un élément simple, renommer, inviter. Elle rend une promesse des valeurs (D-197). Les champs se décrivent avec le modèle `FormField` de `FormPage.spec.md` (D-190).
 
 Ne pas l'utiliser pour :
 - plus de six champs, ou des sections : prendre `FormPage` (D-198) ;
 - une question oui / non : prendre `useConfirm` ;
-- un aperçu ou un choix dans une liste : prendre `Dialog`.
+- un aperçu ou un choix dans une liste : prendre `Modal`.
 
 ## Anatomie
-1. `Dialog` : titre (verbe et objet), description facultative, × (D-120 à D-125).
+1. `Modal` : titre (verbe et objet), description facultative, × (D-120 à D-125).
 2. Corps : les champs, l'un sous l'autre, 16 px d'écart (D-191). À la fin, l'erreur d'envoi éventuelle, en `--danger` (D-198).
 3. Pied : « Annuler », puis l'action (`primary`), qui envoie le formulaire (D-124).
 
@@ -53,16 +53,16 @@ Taille automatique : `sm` jusqu'à quatre champs sans zone de texte ni groupe, s
 Titre : verbe et objet (« Nouveau contact ») ; action : un verbe (« Ajouter », « Renommer »).
 
 ## Densité
-Celle de `Dialog` (`--dlg-pad`) et des champs.
+Celle de `Modal` (`--dlg-pad`) et des champs.
 
 ## Clavier
-Celui de `Dialog`, plus Entrée et Mod+Entrée (D-196).
+Celui de `Modal`, plus Entrée et Mod+Entrée (D-196).
 
 ## Accessibilité
-Celle de `Dialog` ; `aria-busy` pendant l'envoi ; erreur annoncée (`role="alert"`).
+Celle de `Modal` ; `aria-busy` pendant l'envoi ; erreur annoncée (`role="alert"`).
 
 ## Taille d'écran
-Celle de `Dialog` (D-121) : centrée sur mobile ; boutons du pied sur toute la largeur.
+Celle de `Modal` (D-121) : centrée sur mobile ; boutons du pied sur toute la largeur.
 
 ## Erreurs
 Une exception levée par `onSubmit` affiche son message, sinon « L'enregistrement a échoué. Réessayez. ».
@@ -74,7 +74,7 @@ L'app choisit les champs et les textes. La taille et le reste sont fixes.
 Fenêtre secondaire (layout-rules). Souvent ouverte par une `Action` (`onPress: () => openForm(…)`).
 
 ## Composition
-`Dialog`, `Button` et les champs du modèle `FormField`. L'hôte est dans `SocleProvider` (D-197).
+`Modal`, `Button` et les champs du modèle `FormField`. L'hôte est dans `SocleProvider` (D-197).
 
 ## Décisions
 D-122, D-124, D-125, D-128, D-190 à D-192, D-196 à D-198.

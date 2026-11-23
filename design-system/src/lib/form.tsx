@@ -10,10 +10,10 @@ import { Checkbox, CheckboxGroup } from "../components/Checkbox/Checkbox";
 import { ComboBox, type ComboBoxItem } from "../components/ComboBox/ComboBox";
 import type { FieldWidth } from "../components/Field/Field";
 import { Fieldset } from "../components/Fieldset/Fieldset";
-import { RadioGroup } from "../components/RadioGroup/RadioGroup";
+import { RadioButtonGroup } from "../components/RadioButtonGroup/RadioButtonGroup";
 import { Select, type SelectOption, type SelectSection } from "../components/Select/Select";
 import { TextArea } from "../components/TextArea/TextArea";
-import { TextField } from "../components/TextField/TextField";
+import { TextInput } from "../components/TextInput/TextInput";
 
 /* ---------- Modèle (D-190, D-191) ---------- */
 
@@ -352,7 +352,7 @@ function Control({ field: f, model }: { field: FormInputField; model: FormModel 
   switch (f.type) {
     case "number":
       return (
-        <TextField
+        <TextInput
           {...common}
           {...opt({ placeholder: f.placeholder })}
           label={f.label}
@@ -409,13 +409,13 @@ function Control({ field: f, model }: { field: FormInputField; model: FormModel 
     }
     case "radio":
       return (
-        <RadioGroup {...common} {...opt({ orientation: f.orientation, validate: check(f.validate) })} label={f.label} value={value as string | null} onChange={onChange}>
+        <RadioButtonGroup {...common} {...opt({ orientation: f.orientation, validate: check(f.validate) })} label={f.label} value={value as string | null} onChange={onChange}>
           {f.options.map((o) => (
-            <RadioGroup.Option key={o.value} value={o.value} {...opt({ description: o.description, isDisabled: o.isDisabled })}>
+            <RadioButtonGroup.Option key={o.value} value={o.value} {...opt({ description: o.description, isDisabled: o.isDisabled })}>
               {o.label}
-            </RadioGroup.Option>
+            </RadioButtonGroup.Option>
           ))}
-        </RadioGroup>
+        </RadioButtonGroup>
       );
     case "checkbox":
       return (
@@ -435,7 +435,7 @@ function Control({ field: f, model }: { field: FormInputField; model: FormModel 
       );
     default:
       return (
-        <TextField
+        <TextInput
           {...common}
           {...opt({ placeholder: f.placeholder, autoComplete: f.autoComplete, maxLength: f.maxLength, width: f.width, validate: check(f.validate) })}
           type={f.type ?? "text"}

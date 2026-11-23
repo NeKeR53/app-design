@@ -8,7 +8,7 @@ import { buttonReset, cx, focusRing } from "../../lib/cx";
 import { ChevronLeft } from "../../icons";
 import { useMessages } from "../../provider/SocleProvider";
 import { ActionBar, type Action } from "../../patterns/ActionBar/ActionBar";
-import { StatusBadge, type StatusTone } from "../../components/StatusBadge/StatusBadge";
+import { Badge, type StatusTone } from "../../components/Badge/Badge";
 import { Skeleton, SkeletonGroup } from "../../components/Skeleton/Skeleton";
 import { PageColumn, PageEmptyState, PageError, PageSection, PageSkeleton, type PageEmpty, type PageWidth } from "../Page/Page";
 
@@ -24,7 +24,7 @@ export interface DetailPageProps {
   title?: string;
   /** Lien de retour vers la vue principale (D-211). */
   back?: DetailPageBack;
-  /** Statut, en `StatusBadge` après le titre. */
+  /** Statut, en `Badge` après le titre. */
   status?: { label: string; tone?: StatusTone };
   /** Éléments de la ligne de méta, séparés par « · ». */
   meta?: ReadonlyArray<ReactNode>;
@@ -107,8 +107,8 @@ export function DetailPage({
               {showTitle ? (
                 <>
                   <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1">
-                    <h1 className="m-0 text-xl leading-tight font-semibold [overflow-wrap:anywhere] text-fg">{title}</h1>
-                    {status && ready && <StatusBadge tone={status.tone ?? "neutral"}>{status.label}</StatusBadge>}
+                    <h1 className="m-0 text-xl leading-tight font-heading [overflow-wrap:anywhere] text-fg">{title}</h1>
+                    {status && ready && <Badge tone={status.tone ?? "neutral"}>{status.label}</Badge>}
                   </div>
                   {meta && meta.length > 0 && ready && (
                     <p className="m-0 mt-1 flex flex-wrap items-center text-sm text-fg-2">

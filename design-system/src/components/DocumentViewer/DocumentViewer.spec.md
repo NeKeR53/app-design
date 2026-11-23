@@ -18,7 +18,7 @@ Ne pas l'utiliser pour :
    - zoom arrière, pourcentage, zoom avant, « Ajuster à la largeur » (bascule) (document prêt) ;
    - « Télécharger » (si `onDownload`) ;
    - actions de l'app (`actions`, `ActionBar` zone `toolbar`).
-   Un trait vertical `Divider` sépare les groupes.
+   Un trait vertical `Separator` sépare les groupes.
 3. Zone du document : fond `--surface-side`, marge 16 px, défilement propre, focusable.
 4. Page d'un PDF : fond `--paper` (blanc dans les deux thèmes, D-315), ombre `--shadow-sm`, espacées de 12 px, centrées.
 5. Image : centrée, sans fond.
@@ -90,7 +90,7 @@ Messages : PDF protégé par mot de passe ; PDF invalide ou abîmé ; aperçu PD
 Corps d'une page de détail, panneau de détail large, modale `xl`. Pas dans une ligne de liste.
 
 ## Composition
-Contient `IconButton`, `Divider`, `ActionBar`, `SkeletonGroup`, `EmptyState`, `Button`.
+Contient `IconButton`, `Separator`, `ActionBar`, `SkeletonGroup`, `EmptyState`, `Button`.
 
 ## Décisions
 D-011, D-035, D-089, D-111, D-165, D-166, D-310 à D-316

@@ -15,14 +15,14 @@ import {
 } from "react";
 import { Tab, TabList, Tabs as RACTabs } from "react-aria-components/Tabs";
 import { Button } from "react-aria-components/Button";
-import { Dialog, DialogTrigger } from "react-aria-components/Dialog";
+import { Dialog as AriaDialog, DialogTrigger } from "react-aria-components/Dialog";
 import { GridList, GridListItem } from "react-aria-components/GridList";
 import { Popover } from "react-aria-components/Popover";
 import { useMessages, useSocle } from "../../provider/SocleProvider";
 import { buttonReset, cx, focusRing } from "../../lib/cx";
 import { Check, ChevronDown, X } from "../../icons";
 import { IconButton } from "../IconButton/IconButton";
-import { itemClass, popoverClass } from "../Menu/Menu";
+import { itemClass, popoverClass } from "../DropdownMenu/DropdownMenu";
 import { OverflowTooltip } from "../Tooltip/OverflowTooltip";
 
 export interface TabItem {
@@ -37,8 +37,12 @@ export interface TabsProps {
   items: TabItem[];
   selectedId: string;
   onSelectionChange: (id: string) => void;
-  /** Fermeture d'une vue fermable. */
-  onClose?: (id: string) => void;
+  /**
+   * Demande de fermeture d'une vue fermable. L'app retire l'onglet de `items`, tout de suite ou
+   * après une confirmation ; renvoyer `false` annule. La vue voisine ne s'active qu'une fois
+   * l'onglet actif retiré.
+   */
+  onClose?: (id: string) => void | boolean;
   /** Nom de la page, pour le nom accessible : « Vues de la page Documents ». */
   pageTitle: string;
   /**
@@ -100,7 +104,8 @@ export function TabPanel({ tabs, children, ...rest }: TabPanelProps) {
 
 /** Onglet : rayon 8 px (D-040), fond plein fixe quand il est actif (D-038, D-039). */
 const tabClass = cx(
-  "group relative flex h-[calc(var(--row-h)-4px)] max-w-[200px] shrink-0 cursor-default items-center rounded-md pl-2.5 text-md text-fg-2 select-none",
+  // socle-tab : onglet actif souligné si le thème le demande (tabs « underline », D-337).
+  "socle-tab group relative flex h-[calc(var(--row-h)-4px)] max-w-[200px] shrink-0 cursor-default items-center rounded-md pl-2.5 text-md text-fg-2 select-none",
   "data-hovered:bg-hover data-hovered:text-fg",
   "data-selected:bg-selected data-selected:text-fg data-selected:data-hovered:bg-selected",
   focusRing,
@@ -165,17 +170,31 @@ export function Tabs({ items, selectedId, onSelectionChange, onClose, pageTitle,
   // React Aria garde en cache le rendu des onglets : le × lit toujours l'état le plus récent.
   const latest = useRef({ items, selectedId, onSelectionChange, onClose });
   latest.current = { items, selectedId, onSelectionChange, onClose };
+  // Fermeture de la vue active : l'app décide d'abord (`onClose`) ; la voisine (à gauche, sinon
+  // à droite) ne s'active qu'une fois l'onglet retiré de `items`, même après une confirmation.
+  const closing = useRef<{ id: string; neighbours: string[] } | null>(null);
   const close = (id: string) => {
-    const { items, selectedId, onSelectionChange, onClose } = latest.current;
+    const { items, selectedId, onClose } = latest.current;
     const i = items.findIndex((t) => t.id === id);
     const item = items[i];
     if (!item?.closable || !onClose) return;
-    if (id === selectedId) {
-      const next = items[i - 1] ?? items[i + 1];
-      if (next) onSelectionChange(next.id);
-    }
-    onClose(id);
+    if (id === selectedId) closing.current = { id, neighbours: [...items.slice(0, i).reverse(), ...items.slice(i + 1)].map((t) => t.id) };
+    if (onClose(id) === false && closing.current?.id === id) closing.current = null;
   };
+  useEffect(() => {
+    const pending = closing.current;
+    if (!pending) return;
+    // L'app a déjà choisi une autre vue : rien à faire.
+    if (selectedId !== pending.id) {
+      closing.current = null;
+      return;
+    }
+    // Onglet encore là : fermeture en attente (confirmation) ou refusée.
+    if (items.some((t) => t.id === pending.id)) return;
+    closing.current = null;
+    const next = pending.neighbours.find((n) => items.some((t) => t.id === n));
+    if (next) onSelectionChange(next);
+  }, [items, selectedId, onSelectionChange]);
 
   const tabIdFromEvent = (e: { target: EventTarget }) =>
     (e.target as HTMLElement).closest('[role="tab"]')?.querySelector<HTMLElement>("[data-tab-id]")?.dataset.tabId;
@@ -280,7 +299,7 @@ function ViewList({ trigger, placement, items, selectedId, onSelect, onClose }: 
     <DialogTrigger isOpen={listOpen} onOpenChange={setListOpen}>
       {trigger}
       <Popover placement={placement} offset={4} containerPadding={8} className={popoverClass}>
-        <Dialog aria-label={m.allViews} className="outline-none">
+        <AriaDialog aria-label={m.allViews} className="outline-none">
           <div
             onKeyDownCapture={(e: KeyboardEvent) => {
               if (e.key !== "Delete" && e.key !== "Backspace") return;
@@ -326,7 +345,7 @@ function ViewList({ trigger, placement, items, selectedId, onSelect, onClose }: 
             )}
           </GridList>
           </div>
-        </Dialog>
+        </AriaDialog>
       </Popover>
     </DialogTrigger>
   );

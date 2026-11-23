@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect, within } from "storybook/test";
 import { Fieldset } from "./Fieldset";
-import { TextField } from "../TextField/TextField";
+import { TextInput } from "../TextInput/TextInput";
 import { Select } from "../Select/Select";
 
 const meta: Meta<typeof Fieldset> = {
@@ -14,10 +14,10 @@ type Story = StoryObj<typeof Fieldset>;
 
 const Adresse = ({ isDisabled = false, error }: { isDisabled?: boolean; error?: string }) => (
   <Fieldset legend="Adresse de livraison" description="L'adresse figure sur le bon de livraison." isDisabled={isDisabled} {...(error ? { error } : {})}>
-    <TextField label="Rue" isRequired defaultValue="12 rue des Lilas" width="lg" />
+    <TextInput label="Rue" isRequired defaultValue="12 rue des Lilas" width="lg" />
     <div className="flex flex-wrap gap-3">
-      <TextField label="Code postal" isRequired width="xs" defaultValue="69003" />
-      <TextField label="Ville" isRequired width="md" defaultValue="Lyon" />
+      <TextInput label="Code postal" isRequired width="xs" defaultValue="69003" />
+      <TextInput label="Ville" isRequired width="md" defaultValue="Lyon" />
     </div>
     <Select label="Pays" isRequired width="md" defaultValue="fr" options={[{ id: "fr", label: "France" }, { id: "be", label: "Belgique" }]} />
   </Fieldset>

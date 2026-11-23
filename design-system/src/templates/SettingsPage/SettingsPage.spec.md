@@ -3,17 +3,17 @@ Statut : validé (2026-11-23) — Version : depuis la version qui suit 0.2.0
 Validation : docs/validation/components/SettingsPage-v1.html — par délégation de l'utilisateur, 2026-11-23.
 
 ## Rôle
-Gabarit des réglages d'une app (D-015) : une navigation par rubriques à gauche, le contenu de la rubrique à droite, des lignes de réglage qui s'appliquent tout de suite (D-007). L'app décrit ses réglages par des données ; le gabarit dessine les contrôles (D-200). Il se pose dans un `Dialog` `xl` (bureau, tablette) ou dans la zone `main` d'AppShell ; seul le conteneur change.
+Gabarit des réglages d'une app (D-015) : une navigation par rubriques à gauche, le contenu de la rubrique à droite, des lignes de réglage qui s'appliquent tout de suite (D-007). L'app décrit ses réglages par des données ; le gabarit dessine les contrôles (D-200). Il se pose dans un `Modal` `xl` (bureau, tablette) ou dans la zone `main` d'AppShell ; seul le conteneur change.
 
 Ne pas l'utiliser pour :
 - un formulaire qu'on envoie, avec « Annuler » et « Enregistrer » : prendre `FormPage` (D-022) ;
-- les propriétés de l'élément courant : prendre `DetailPanel` et `PropertyRow` ;
+- les propriétés de l'élément courant : prendre `Drawer` et `PropertyRow` ;
 - une longue liste qu'on cherche, trie et filtre : prendre `ListPage`, et `Table` ou `List` ;
-- un choix ponctuel dans une modale : prendre `Dialog` avec des champs.
+- un choix ponctuel dans une modale : prendre `Modal` avec des champs.
 
 ## Anatomie
 1. Navigation (`nav`, obligatoire), à gauche, `--surface-side`, 220 px en web, 200 px en desktop (D-201) :
-   1. recherche (`SearchField`, nom « Rechercher dans les réglages ») (D-202) ;
+   1. recherche (`SearchInput`, nom « Rechercher dans les réglages ») (D-202) ;
    2. groupes, séparés par un trait ; titre de groupe facultatif ;
    3. rubriques : icône (obligatoire) et libellé, `aria-current="page"` sur la rubrique courante ;
    4. lien externe en pied (facultatif), avec la flèche externe.
@@ -61,9 +61,9 @@ Champs communs : `id` (obligatoire), `label` (obligatoire, nom accessible du con
 
 | `type` | Champs propres | Contrôle | Application |
 |---|---|---|---|
-| `switch` | `value: boolean`, `onChange(value)` | `Switch` à libellé masqué (D-136) | Immédiate (D-204). |
+| `switch` | `value: boolean`, `onChange(value)` | `Toggle` à libellé masqué (D-136) | Immédiate (D-204). |
 | `select` | `value: string \| null`, `options: SelectOption[] \| SelectSection[]`, `onChange(id)`, `width?` (défaut `md`) | `Select` à libellé masqué | Immédiate (D-204). |
-| `text` | `value: string`, `onChange(value)`, `inputType?: "text" \| "email" \| "url"`, `isRequired?`, `validate?`, `placeholder?`, `width?` (défaut `md`) | `TextField` à libellé masqué | Entrée ou sortie du champ ; Échap rétablit (D-204). |
+| `text` | `value: string`, `onChange(value)`, `inputType?: "text" \| "email" \| "url"`, `isRequired?`, `validate?`, `placeholder?`, `width?` (défaut `md`) | `TextInput` à libellé masqué | Entrée ou sortie du champ ; Échap rétablit (D-204). |
 | `action` | `action: Action` | `Button` secondaire | Confirmée si `danger` ou `confirm` (D-205). |
 | `item` | `code?: string`, `tags?: { label: string; tone?: StatusTone }[]`, `actions?: Action[]` | `ActionBar` zone `row` | Voir D-206. |
 | `info` | `value: string`, `isCode?: boolean` | Texte `--fg-2`, ou `Code` | Lecture seule. |
@@ -78,10 +78,10 @@ Champs communs : `id` (obligatoire), `label` (obligatoire, nom accessible du con
 | `onSelectionChange` | `(id: string) => void` | aucun | Appelée au choix d'une rubrique. |
 | `footerLink` | `{ label: string; href: string }` | aucun | Lien externe en pied de navigation (nouvel onglet). |
 
-Exclus : `className`, `style` ; un titre propre (celui du `Dialog` ou de la barre du haut suffit) ; un contrôle segmenté ; un bouton « Enregistrer ».
+Exclus : `className`, `style` ; un titre propre (celui du `Modal` ou de la barre du haut suffit) ; un contrôle segmenté ; un bouton « Enregistrer ».
 
 ## Variantes
-Aucune variante visuelle. Le conteneur seul change : `Dialog` `xl` ou zone `main` (D-208).
+Aucune variante visuelle. Le conteneur seul change : `Modal` `xl` ou zone `main` (D-208).
 
 ## États
 - Rubrique : par défaut ; survol `--hover` ; courante `--selected` ; focus anneau accent (D-201).
@@ -96,7 +96,7 @@ Aucune variante visuelle. Le conteneur seul change : `Dialog` `xl` ou zone `main
 - Clic sur une rubrique : son contenu s'affiche, remonté en haut (D-207).
 - `switch`, `select` : appliqués tout de suite ; `text` : à Entrée ou à la sortie du champ, si la valeur a changé et passe la vérification ; Échap rétablit (D-204). Pas de toast de réussite.
 - Échec d'enregistrement : valeur précédente rétablie, toast `danger` « Le réglage n'a pas été enregistré. » avec le message de l'erreur (D-204).
-- Dans un `Dialog`, un réglage changé ne bloque pas le clic hors (D-208).
+- Dans un `Modal`, un réglage changé ne bloque pas le clic hors (D-208).
 - Aucune animation propre.
 
 ## Contenu
@@ -118,7 +118,7 @@ Hauteurs des rubriques et des contrôles : `--row-h`.
 - Entrée dans la recherche : ouvre la première rubrique trouvée (D-202). Mod+F : focus dans la recherche (D-083).
 - Entrée ou Espace sur une rubrique : l'ouvre.
 - `text` : Entrée applique, Échap rétablit la valeur enregistrée (un second Échap ferme la modale).
-- Dans un `Dialog` : focus d'abord dans la recherche (premier champ, D-125).
+- Dans un `Modal` : focus d'abord dans la recherche (premier champ, D-125).
 
 ## Accessibilité
 - `nav` nommée « Rubriques des réglages » ; rubrique courante `aria-current="page"`.
@@ -144,13 +144,13 @@ Requête de conteneur sur le gabarit. Sous 640 px de large : navigation seule, e
 | Libellés internes | Par app (`SocleProvider` `messages`, D-089) |
 
 ## Placement
-- Dans le corps d'un `Dialog` `xl`, sans pied (tout s'applique tout de suite), titré « Réglages » (D-015, D-120).
+- Dans le corps d'un `Modal` `xl`, sans pied (tout s'applique tout de suite), titré « Réglages » (D-015, D-120).
 - Ou dans la zone `main` d'AppShell, le nom de la page dans la barre du haut.
 - Jamais dans le panneau de détail, ni dans une modale plus petite que `xl` (sauf sur mobile, en plein écran).
 
 ## Composition
-Contient : `SearchField`, `Switch`, `Select`, `TextField`, `Button`, `ActionBar`, `Code`, `StatusBadge`, `Skeleton`, `EmptyState` (message d'erreur), `IconButton` (retour).
-Ne se combine pas avec : `FormPage` (pas de pied d'envoi), `DetailPanel`.
+Contient : `SearchInput`, `Toggle`, `Select`, `TextInput`, `Button`, `ActionBar`, `Code`, `Badge`, `Skeleton`, `EmptyState` (message d'erreur), `IconButton` (retour).
+Ne se combine pas avec : `FormPage` (pas de pied d'envoi), `Drawer`.
 
 ## Questions ouvertes
 Aucune.

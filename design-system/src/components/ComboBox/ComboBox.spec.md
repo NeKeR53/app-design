@@ -5,10 +5,10 @@ Validation : docs/validation/components/ComboBox-v1.html
 ## Rôle
 Champ de formulaire qui propose une liste de choix pendant la saisie. On choisit un élément (choix simple) ou plusieurs (choix multiple, en étiquettes), dans une liste connue ou chargée par une API (D-140). La valeur choisie (un id, ou une liste d'ids) est enregistrée avec le formulaire.
 Ne pas l'utiliser pour (D-141) :
-- filtrer ou trier le tableau ou la liste d'une page : prendre `SearchField` ;
-- filtrer par une propriété (statut, type, personne) : un bouton de filtre avec un `Menu` à choix, dans la `toolbar` ;
+- filtrer ou trier le tableau ou la liste d'une page : prendre `SearchInput` ;
+- filtrer par une propriété (statut, type, personne) : un bouton de filtre avec un `DropdownMenu` à choix, dans la `toolbar` ;
 - choisir une valeur dans une liste fermée et courte (15 options environ), sans taper : prendre `Select` ;
-- saisir un texte libre sans liste : prendre `TextField` ;
+- saisir un texte libre sans liste : prendre `TextInput` ;
 - chercher dans toute l'app ou lancer une commande : palette Mod+K (D-006).
 
 ## Anatomie
@@ -21,11 +21,11 @@ Celle de `Field` (Field.spec.md) : libellé au-dessus, cadre, aide ou erreur en 
    3. **Indicateur d'attente** (automatique, source asynchrone) : indicateur rotatif de 14 px (D-081, D-145) ;
    4. **Chevron** (obligatoire), à droite : ouvre et ferme la liste (D-147).
 3. **Aide** (facultative), sous le champ, en `--fs-sm`, `--fg-3` ; l'erreur prend sa place (D-130).
-4. **Liste** (flottante), sous le champ, au moins aussi large que lui (D-134), au style du `Menu` : conteneur de 12 px, 8 lignes visibles puis défilement (D-145). Chaque élément tient sur une ligne : icône facultative, libellé, description facultative, coche à droite (D-146, D-047, D-050). Sections titrées facultatives.
+4. **Liste** (flottante), sous le champ, au moins aussi large que lui (D-134), au style du `DropdownMenu` : conteneur de 12 px, 8 lignes visibles puis défilement (D-145). Chaque élément tient sur une ligne : icône facultative, libellé, description facultative, coche à droite (D-146, D-047, D-050). Sections titrées facultatives.
 5. **Lignes d'information** de la liste (automatiques) : « Ajouter « texte » » (D-142), « Tapez au moins 2 caractères », « Recherche… », « Résultats indisponibles » avec « Réessayer », « Aucun résultat » (D-145).
 
 ## Variantes
-Aucune variante visuelle : même apparence que `TextField` (D-130). Deux réglages de fonctionnement, indépendants : choix simple ou multiple (`selectionMode`), source locale ou asynchrone (`items` ou `loadItems`) (D-140).
+Aucune variante visuelle : même apparence que `TextInput` (D-130). Deux réglages de fonctionnement, indépendants : choix simple ou multiple (`selectionMode`), source locale ou asynchrone (`items` ou `loadItems`) (D-140).
 
 ## Options
 Les options communes de `Field` (`label`, `hideLabel`, `description`, `isRequired`, `validate`, `error`, `isDisabled`, `isReadOnly`, `width`, `name`), plus :
@@ -96,7 +96,7 @@ Hauteur `--row-h` (34 px en web, 28 px en desktop) pour le champ et les élémen
 Tab entre et sort du champ (le chevron n'est pas dans l'ordre de tabulation). Flèche bas ouvre la liste ; flèches haut et bas parcourent les éléments ; Entrée choisit ; Échap ferme puis rétablit. Flèches gauche et droite depuis le début du texte : passent d'une étiquette à l'autre (choix multiple).
 
 ## Accessibilité
-- Rôle `combobox` sur le texte, `listbox` sur la liste, `option` et `aria-selected` sur les éléments, comme `SearchField` ; `aria-multiselectable` en choix multiple ; `aria-activedescendant` suit l'élément mis en avant.
+- Rôle `combobox` sur le texte, `listbox` sur la liste, `option` et `aria-selected` sur les éléments, comme `SearchInput` ; `aria-multiselectable` en choix multiple ; `aria-activedescendant` suit l'élément mis en avant.
 - Le libellé nomme le champ ; l'aide et l'erreur le décrivent (`aria-describedby`) ; `aria-invalid` et `aria-required` comme `Field`.
 - Le chevron est nommé « Afficher les choix » ; chaque × « Retirer <libellé> » ; les étiquettes forment un groupe nommé « <libellé> choisis ».
 - L'attente est annoncée (« Recherche en cours ») ; l'erreur de chargement porte `role="alert"`.
@@ -115,7 +115,7 @@ Toutes les règles sont verrouillées. Options par usage : `selectionMode`, sour
 Celui de `Field` : sections de `FormPage`, formulaire dans une modale, ligne de réglage de `SettingsPage` (libellé masqué). Jamais dans la `toolbar`, la `topbar`, la `sidebar`, ni dans une ligne du panneau de détail (D-141, spec Field).
 
 ## Composition
-Reprend l'anatomie commune des champs (`Field`, D-130 à D-133), des étiquettes au style de `SearchField` et une liste au style du `Menu`. Ne contient pas d'autre champ. Ne se combine pas avec `SearchField` dans un même usage.
+Reprend l'anatomie commune des champs (`Field`, D-130 à D-133), des étiquettes au style de `SearchInput` et une liste au style du `DropdownMenu`. Ne contient pas d'autre champ. Ne se combine pas avec `SearchInput` dans un même usage.
 
 ## Décisions
 D-006, D-022, D-040, D-047, D-050, D-073, D-074, D-081, D-082, D-087, D-089, D-130, D-131, D-132, D-133, D-134, D-140, D-141, D-142, D-143, D-144, D-145, D-146, D-147

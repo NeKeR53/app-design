@@ -76,7 +76,7 @@ Vérifie que Storybook démarre et que `build`, `test` et `check` passent.
 Enchaîne `define` (`define.md`) sur, dans l'ordre :
 
 1. `AppShell` et `Sidebar`, `MenuItem` ;
-2. `Button`, `TextField`, `Select` ;
+2. `Button`, `TextInput`, `Select` ;
 3. `SettingRow`, puis les gabarits `ListPage`, `DetailPage`, `FormPage`, `SettingsPage`.
 
 Chaque gabarit est codé avec ses zones nommées en props et une story qui le montre rempli de données factices. Propose d'ajouter d'autres composants selon l'inventaire de l'étape 1.

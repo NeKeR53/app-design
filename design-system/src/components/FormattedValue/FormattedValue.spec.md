@@ -4,14 +4,14 @@ Validation : docs/validation/components/ListPage-v1.html, section « Valeurs typ
 
 ## Rôle
 Afficher une valeur de donnée d'après son **type** : texte, nombre, montant, date, statut, lien… Le type fixe le format de la langue, l'alignement, la largeur de colonne et le tri. L'app ne formate rien elle-même : elle déclare le type.
-Il sert dans les colonnes de `ListPage`, dans les lignes de propriétés de `DetailPanel` (P9) et partout où une donnée brute s'affiche.
+Il sert dans les colonnes de `ListPage`, dans les lignes de propriétés de `Drawer` (P9) et partout où une donnée brute s'affiche.
 Ne pas l'utiliser pour :
 - un texte de l'interface (titre, phrase, libellé) : c'est du texte simple ;
-- une valeur modifiable : c'est un champ (`TextField`, `Select`…) ;
+- une valeur modifiable : c'est un champ (`TextInput`, `Select`…) ;
 - un avancement : `ProgressBar`.
 
 ## Anatomie
-Une seule pièce : la valeur formatée, en ligne. Selon le type, c'est du texte, un `StatusBadge`, un `Link` ou un `Code` (D-170).
+Une seule pièce : la valeur formatée, en ligne. Selon le type, c'est du texte, un `Badge`, un `Link` ou un `Code` (D-170).
 
 ## Types (D-170)
 | `type` | Valeur reçue | Affiché (français) | Rendu | Colonne (D-172) |
@@ -27,7 +27,7 @@ Une seule pièce : la valeur formatée, en ligne. Selon le type, c'est du texte,
 | `relative` | idem | « il y a 3 jours », « demain », « à l'instant » | `<time>` | 130 px, à droite |
 | `duration` | nombre (`durationUnit`, secondes par défaut) | « 45 s », « 12 min », « 1 h 5 min », « 3 j 4 h » | chiffres de largeur égale | 100 px, à droite |
 | `boolean` | `true`/`false`, `1`/`0`, `"true"`/`"false"` | « Oui » ou « Non » | texte | 80 px, à gauche |
-| `status` | clé de `statuses` | libellé de la clé | `StatusBadge` au ton de la clé | 140 px, à gauche |
+| `status` | clé de `statuses` | libellé de la clé | `Badge` au ton de la clé | 140 px, à gauche |
 | `email` | adresse | l'adresse | `Link` `mailto:` | place restante, à gauche |
 | `url` | adresse web | l'adresse | `Link` externe | place restante, à gauche |
 | `code` | identifiant | l'identifiant | `Code` en ligne | 140 px, à gauche |
@@ -53,7 +53,7 @@ Aucune. Le rendu suit le type.
 | `decimals` | `number` | selon le type | Pour `number`, `money`, `percent`, `bytes`. |
 | `durationUnit` | `"ms" \| "s" \| "min"` | `"s"` | Unité de la valeur reçue, pour `duration`. |
 
-Les options sauf `value` forment le type `ValueFormat`, partagé par les colonnes de `ListPage` et les propriétés de `DetailPanel`.
+Les options sauf `value` forment le type `ValueFormat`, partagé par les colonnes de `ListPage` et les propriétés de `Drawer`.
 
 Fonctions exportées, pour les gabarits et l'app :
 | Fonction | Rôle |
@@ -104,10 +104,10 @@ Sans objet : la valeur suit la place que lui donne son conteneur.
 Aucune erreur levée : une valeur illisible s'affiche telle quelle (D-171).
 
 ## Placement
-Cellules de `ListPage` (Table et List), propriétés de `DetailPanel`, méta d'une ligne de `List`.
+Cellules de `ListPage` (Table et List), propriétés de `Drawer`, méta d'une ligne de `List`.
 
 ## Composition
-Utilise `StatusBadge`, `Link` et `Code`. Pas d'autre composant.
+Utilise `Badge`, `Link` et `Code`. Pas d'autre composant.
 
 ## Décisions
 D-089, D-160, D-170, D-171, D-172

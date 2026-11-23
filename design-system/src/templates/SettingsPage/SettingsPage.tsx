@@ -8,12 +8,12 @@ import { Button } from "../../components/Button/Button";
 import { Code } from "../../components/Code/Code";
 import type { FieldWidth } from "../../components/Field/Field";
 import { IconButton } from "../../components/IconButton/IconButton";
-import { SearchField, type SearchCriteria } from "../../components/SearchField/SearchField";
+import { SearchInput, type SearchCriteria } from "../../components/SearchInput/SearchInput";
 import { Select, type SelectOption, type SelectSection } from "../../components/Select/Select";
 import { Skeleton, SkeletonGroup } from "../../components/Skeleton/Skeleton";
-import { StatusBadge, type StatusTone } from "../../components/StatusBadge/StatusBadge";
-import { Switch } from "../../components/Switch/Switch";
-import { TextField } from "../../components/TextField/TextField";
+import { Badge, type StatusTone } from "../../components/Badge/Badge";
+import { Toggle } from "../../components/Toggle/Toggle";
+import { TextInput } from "../../components/TextInput/TextInput";
 import { ChevronLeft, ChevronRight, ExternalArrow } from "../../icons";
 import { useConfirmFn } from "../../lib/confirm";
 import { cx } from "../../lib/cx";
@@ -261,9 +261,9 @@ function SwitchRow({ setting, narrow }: { setting: SwitchSetting; narrow: boolea
       setting={setting}
       narrow={narrow}
       control={
-        <Switch hideLabel isSelected={on} onChange={(v) => void apply(v)} {...(setting.isDisabled ? { isDisabled: true } : {})}>
+        <Toggle hideLabel isSelected={on} onChange={(v) => void apply(v)} {...(setting.isDisabled ? { isDisabled: true } : {})}>
           {setting.label}
-        </Switch>
+        </Toggle>
       }
     />
   );
@@ -341,7 +341,7 @@ function TextRow({ setting, narrow }: { setting: TextSetting; narrow: boolean })
       wraps
       control={
         <div onKeyDown={onKeyDown} className="flex">
-          <TextField
+          <TextInput
             label={setting.label}
             hideLabel
             width={narrow ? "full" : (setting.width ?? "md")}
@@ -413,9 +413,9 @@ function ItemRow({ setting, narrow }: { setting: ItemSetting; narrow: boolean })
         setting.tags?.length ? (
           <div className="mt-0.5 flex flex-wrap gap-x-3 gap-y-0.5 text-sm">
             {setting.tags.map((t) => (
-              <StatusBadge key={t.label} tone={t.tone ?? "neutral"}>
+              <Badge key={t.label} tone={t.tone ?? "neutral"}>
                 {t.label}
-              </StatusBadge>
+              </Badge>
             ))}
           </div>
         ) : undefined
@@ -470,7 +470,7 @@ function Section({ section, narrow }: { section: SettingsSection; narrow: boolea
       {hasHead && (
         <div className="flex items-start gap-3 border-b border-line pb-2">
           <div className="min-w-0 flex-1">
-            {section.title && <h3 className="m-0 text-md font-semibold text-fg">{section.title}</h3>}
+            {section.title && <h3 className="m-0 text-md font-heading text-fg">{section.title}</h3>}
             {section.description && <p className="m-0 mt-0.5 max-w-[72ch] text-sm text-fg-2">{section.description}</p>}
           </div>
           {section.actions?.length ? (
@@ -537,7 +537,7 @@ function CategoryBody({ category, narrow }: { category: SettingsCategory; narrow
 const navItem = cx(
   "socle-btn flex h-(--row-h) w-full min-w-0 shrink-0 cursor-default items-center gap-2 rounded-md px-2 text-left text-md text-fg-2 outline-none select-none",
   "hover:bg-hover hover:text-fg aria-[current=page]:bg-selected aria-[current=page]:text-fg",
-  "focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-accent focus-visible:outline-solid",
+  "focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-focus focus-visible:outline-solid",
 );
 
 /** Largeur du gabarit : la requête de conteneur de D-208. */
@@ -608,7 +608,7 @@ export function SettingsPage({ groups, selectedId, onSelectionChange, footerLink
         >
           {/* La recherche prend la largeur de la navigation, pas ses 320 px de barre d'outils (D-202). */}
           <div className="mb-2.5 min-w-0 shrink-0 [&_[role=search]]:w-full" onKeyDown={onSearchKey}>
-            <SearchField label={m.settingsSearchScope} onChange={(c: SearchCriteria) => setQuery(c.text)} />
+            <SearchInput label={m.settingsSearchScope} onChange={(c: SearchCriteria) => setQuery(c.text)} />
           </div>
           {shownGroups.length === 0 && <p className="m-0 px-2 py-1.5 text-sm text-fg-3">{m.noSettingsFound}</p>}
           {shownGroups.map((g, i) => (
@@ -654,7 +654,7 @@ export function SettingsPage({ groups, selectedId, onSelectionChange, footerLink
             narrow ? "px-4 pt-3" : "px-(--settings-pad) pt-5",
           )}
         >
-          <h2 id={titleId} className="m-0 flex items-center gap-1.5 text-lg font-semibold [overflow-wrap:anywhere]">
+          <h2 id={titleId} className="m-0 flex items-center gap-1.5 text-lg font-heading [overflow-wrap:anywhere]">
             {narrow && <IconButton icon={<ChevronLeft />} label={m.backToSections} onPress={() => setView("nav")} />}
             {current.label}
           </h2>

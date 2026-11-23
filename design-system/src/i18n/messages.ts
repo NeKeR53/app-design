@@ -44,7 +44,7 @@ export interface SocleMessages {
   closeView: (label: string) => string;
   allViews: string;
   currentView: (label: string) => string;
-  /* DetailPanel */
+  /* Drawer */
   detailEmpty: string;
   detailLoadErrorTitle: string;
   detailLoadErrorText: string;
@@ -71,7 +71,7 @@ export interface SocleMessages {
   noResultsFor: string;
   noResultsHint: string;
   clearSearch: string;
-  /* SearchField */
+  /* SearchInput */
   searchIn: (label: string) => string;
   searchCriteria: string;
   removeCriterion: (label: string) => string;
@@ -113,7 +113,7 @@ export interface SocleMessages {
   toneWarning: string;
   toneDanger: string;
   closeNotificationCenter: string;
-  /* Dialog et confirmation */
+  /* Modal et confirmation */
   close: string;
   cancel: string;
   actionFailed: string;
@@ -281,7 +281,7 @@ export interface SocleMessages {
   unknownFormat: string;
   imagesHidden: (n: number) => string;
   showImages: string;
-  /* InlineEdit, StepList (D-323, D-325) */
+  /* InlineEdit, ProgressIndicator (D-323, D-325) */
   editValue: (label: string) => string;
   stepDone: string;
   stepError: string;
@@ -307,6 +307,19 @@ export interface SocleMessages {
   imageNotAdded: (name: string) => string;
   linkTextPlaceholder: string;
   linkUrlPlaceholder: string;
+  /* LoginPage (D-339) */
+  loginTitle: string;
+  loginIdentifier: string;
+  loginPassword: string;
+  loginShowPassword: string;
+  loginRemember: string;
+  loginForgot: string;
+  loginSubmit: string;
+  loginOr: string;
+  loginFailed: string;
+  loginIdentifierMissing: string;
+  loginPasswordMissing: string;
+  loginProviders: string;
 }
 
 const s = (n: number) => (n > 1 ? "s" : "");
@@ -592,4 +605,16 @@ export const frenchMessages: SocleMessages = {
   imageNotAdded: (n) => `Image non ajoutée : ${n}`,
   linkTextPlaceholder: "texte",
   linkUrlPlaceholder: "adresse",
+  loginTitle: "Connexion",
+  loginIdentifier: "Adresse e-mail ou identifiant",
+  loginPassword: "Mot de passe",
+  loginShowPassword: "Afficher le mot de passe",
+  loginRemember: "Se souvenir de moi",
+  loginForgot: "Mot de passe oublié ?",
+  loginSubmit: "Se connecter",
+  loginOr: "ou",
+  loginFailed: "La connexion a échoué. Réessayez.",
+  loginIdentifierMissing: "Saisissez votre adresse e-mail ou votre identifiant.",
+  loginPasswordMissing: "Saisissez votre mot de passe.",
+  loginProviders: "Autres moyens de connexion",
 };

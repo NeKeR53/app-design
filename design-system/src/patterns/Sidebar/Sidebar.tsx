@@ -9,7 +9,7 @@ import { useMessages, useStoredState } from "../../provider/SocleProvider";
 import { buttonReset, cx, focusRing } from "../../lib/cx";
 import { AlertTriangle, ChevronDown, ChevronRight, ChevronsUpDown, ExternalArrow, Lock, MoreHorizontal, Settings } from "../../icons";
 import { IconButton } from "../../components/IconButton/IconButton";
-import { Menu, useRowMenu } from "../../components/Menu/Menu";
+import { DropdownMenu, useRowMenu } from "../../components/DropdownMenu/DropdownMenu";
 import { Tooltip } from "../../components/Tooltip/Tooltip";
 import { Avatar } from "../../components/Avatar/Avatar";
 import { HintTooltip, OverflowTooltip } from "../../components/Tooltip/OverflowTooltip";
@@ -19,7 +19,7 @@ export interface SidebarAction {
   icon: ReactNode;
   label: string;
   onPress?: () => void;
-  /** Si fourni, l'action ouvre ce menu (`Menu.Item`…), par exemple pour « … ». */
+  /** Si fourni, l'action ouvre ce menu (`DropdownMenu.Item`…), par exemple pour « … ». */
   menu?: ReactNode;
 }
 
@@ -50,7 +50,7 @@ export interface SidebarTreeItemProps {
   status?: "warning";
   /** Point de non-lu (D-044). */
   unread?: boolean;
-  /** Entrées du menu « … » (`Menu.Item`…). */
+  /** Entrées du menu « … » (`DropdownMenu.Item`…). */
   actions?: ReactNode;
   /** Enfants, sur un seul niveau (D-042, D-043). */
   children?: ReactNode;
@@ -87,7 +87,7 @@ export interface SidebarWorkspaceProps {
   currentId: string;
   /** Appelé quand l'utilisateur choisit un autre espace. */
   onChange: (id: string) => void;
-  /** Entrées `Menu.Item` après un trait : « Créer un espace… », « Ouvrir un autre dossier… » (D-231). */
+  /** Entrées `DropdownMenu.Item` après un trait : « Créer un espace… », « Ouvrir un autre dossier… » (D-231). */
   actions?: ReactNode;
   isDisabled?: boolean;
 }
@@ -134,6 +134,19 @@ function walk(children: ReactNode, fn: (el: ReactElement<AnyProps>, parents: str
 }
 
 const SECTION_MARK = Symbol("SidebarSection");
+
+/**
+ * `aria-current="page"` sur la ligne de la page courante (Sidebar.spec.md, Accessibilité).
+ * TreeItem ne transmet pas cet attribut : on le pose sur l'élément du DOM, à chaque rendu.
+ */
+function useCurrentPageRef(id: string) {
+  const isCurrent = useContext(SidebarCtx)?.selectedId === id;
+  return (el: HTMLDivElement | null) => {
+    if (!el) return;
+    if (isCurrent) el.setAttribute("aria-current", "page");
+    else el.removeAttribute("aria-current");
+  };
+}
 
 /* ---------- Sidebar ---------- */
 export function Sidebar({ selectedId, onSelectionChange, account, footer, workspace, children }: SidebarProps) {
@@ -193,9 +206,13 @@ export function Sidebar({ selectedId, onSelectionChange, account, footer, worksp
     if (id !== selectedId) onSelectionChange(id);
   };
 
+  // « toggle » : la sélection ne suit pas le focus. Les flèches déplacent le focus,
+  // Entrée, Espace ou un clic sélectionnent (Sidebar.spec.md, Clavier).
+  // `disallowEmptySelection` : recliquer l'élément sélectionné ne le désélectionne pas (D-039).
   const treeProps = {
     selectionMode: "single",
-    selectionBehavior: "replace",
+    selectionBehavior: "toggle",
+    disallowEmptySelection: true,
     selectedKeys: [selectedId],
     onSelectionChange: onSelect,
     expandedKeys,
@@ -219,7 +236,7 @@ export function Sidebar({ selectedId, onSelectionChange, account, footer, worksp
     <SidebarCtx.Provider value={ctx}>
       <nav
         aria-label={m.mainNavigation}
-        className="flex h-full min-h-0 flex-col bg-surface-side font-sans text-md text-fg"
+        className="socle-side flex h-full min-h-0 flex-col bg-surface-side font-sans text-md text-fg"
         {...rowMenuProps}
         onKeyDownCapture={(e) => onRowMenuKey(e)}
       >
@@ -243,10 +260,13 @@ export function Sidebar({ selectedId, onSelectionChange, account, footer, worksp
 
 /* ---------- Lignes ---------- */
 const rowBase = cx(
-  "group relative flex cursor-default items-center rounded-md text-fg-2 outline-none select-none",
+  // socle-nav-item : barre de l'entrée active si le thème le demande (navIndicator « bar », D-337).
+  "socle-nav-item group relative flex cursor-default items-center rounded-md text-fg-2 outline-none select-none",
   "data-hovered:bg-hover data-hovered:text-fg",
   // Sélection : fond fixe au survol (D-039).
   "data-selected:bg-selected data-selected:text-fg data-selected:data-hovered:bg-selected",
+  // Texte de l'entrée active : --side-selected-fg (D-337), repris par tout ce qui est en --fg dans la ligne.
+  "data-selected:[--fg:var(--side-selected-fg)]",
   focusRing,
   "data-focus-visible:-outline-offset-2",
 );
@@ -287,9 +307,9 @@ function Actions({ actions }: { actions: SidebarAction[] }) {
     <span className="hidden items-center gap-0.5 group-data-focus-visible:flex group-data-hovered:flex group-data-selected:flex group-has-[[aria-haspopup][aria-expanded=true]]:flex">
       {shown.map((a, i) =>
         a.menu ? (
-          <Menu key={a.label} label={a.label} placement="bottom end" trigger={<SmallAction action={a} rowMenu={i === rowMenu} />}>
+          <DropdownMenu key={a.label} label={a.label} placement="bottom end" trigger={<SmallAction action={a} rowMenu={i === rowMenu} />}>
             {a.menu}
-          </Menu>
+          </DropdownMenu>
         ) : (
           <SmallAction key={a.label} action={a} />
         ),
@@ -324,12 +344,13 @@ const INDICATORS = {
 function Item({ id, icon, label, count, indicator, actions, children }: SidebarItemProps) {
   const { depth } = useContext(Depth);
   const hidden = useContext(HiddenNavIds);
+  const currentRef = useCurrentPageRef(id);
   if (hidden.has(id)) return null;
   const m = useMessages();
   const ind = indicator ? { icon: INDICATORS[indicator].icon, label: m[INDICATORS[indicator].label] } : null;
   const hasKids = Boolean(children);
   return (
-    <TreeItem id={id} textValue={label} className={cx(rowBase, "h-(--row-h)", depth > 0 ? "pl-8" : "pl-2", "pr-1")}>
+    <TreeItem ref={currentRef} id={id} textValue={label} className={cx(rowBase, "h-(--row-h)", depth > 0 ? "pl-8" : "pl-2", "pr-1")}>
       <TreeItemContent>
         {({ isExpanded }) => (
           <>
@@ -366,11 +387,12 @@ function TwoLine({ id, title, subtitle, meta, status, unread, actions, children 
   const m = useMessages();
   const { depth } = useContext(Depth);
   const ctx = useSidebar();
+  const currentRef = useCurrentPageRef(id);
   const kids = Children.toArray(children).filter(isValidElement) as ReactElement<SidebarTreeItemProps>[];
   const unreadKids = kids.filter((k) => k.props.unread).length;
   const showSummary = kids.length > 0 && !ctx.isExpanded(id);
   const row = (
-    <TreeItem id={id} textValue={title} className={cx(rowBase, "min-h-(--row2-h) py-1.5", depth > 0 ? "pl-8" : "pl-2", "pr-1")}>
+    <TreeItem ref={currentRef} id={id} textValue={title} className={cx(rowBase, "min-h-(--row2-h) py-1.5", depth > 0 ? "pl-8" : "pl-2", "pr-1")}>
       <TreeItemContent>
         {({ isExpanded }) => (
           <>
@@ -384,7 +406,7 @@ function TwoLine({ id, title, subtitle, meta, status, unread, actions, children 
                   </Button>
                 )}
                 <span className="flex-1" />
-                {unread && <span role="img" aria-label={m.unread} className="size-1.5 shrink-0 rounded-full bg-accent" />}
+                {unread && <span role="img" aria-label={m.unread} className="size-1.5 shrink-0 rounded-full bg-highlight" />}
                 {status === "warning" && (
                   <span role="img" aria-label={m.toDo} className="text-warning">
                     <AlertTriangle size={14} />
@@ -392,9 +414,9 @@ function TwoLine({ id, title, subtitle, meta, status, unread, actions, children 
                 )}
                 {actions && (
                   <span className="hidden group-data-focus-visible:inline-flex group-data-hovered:inline-flex group-data-selected:inline-flex group-has-[[aria-haspopup][aria-expanded=true]]:inline-flex">
-                    <Menu label={m.actionsOn(title)} placement="bottom end" trigger={<SmallAction action={{ icon: <MoreHorizontal />, label: m.actionsOn(title) }} rowMenu />}>
+                    <DropdownMenu label={m.actionsOn(title)} placement="bottom end" trigger={<SmallAction action={{ icon: <MoreHorizontal />, label: m.actionsOn(title) }} rowMenu />}>
                       {actions}
-                    </Menu>
+                    </DropdownMenu>
                   </span>
                 )}
               </span>
@@ -424,7 +446,7 @@ function TwoLine({ id, title, subtitle, meta, status, unread, actions, children 
           </Depth.Provider>
           {label}
           {unreadKids > 0 && (
-            <span className="text-accent-text">
+            <span className="text-side-highlight">
               &nbsp;· {m.unreadCount(unreadKids)}
             </span>
           )}
@@ -483,7 +505,7 @@ function Account({ name, detail, avatar, onSettings, menu }: SidebarAccountProps
   return (
     <div className="flex items-center gap-1">
       {menu ? (
-        <Menu
+        <DropdownMenu
           label={m.account}
           placement="top start"
           trigger={
@@ -494,7 +516,7 @@ function Account({ name, detail, avatar, onSettings, menu }: SidebarAccountProps
           }
         >
           {menu}
-        </Menu>
+        </DropdownMenu>
       ) : (
         <span className="flex h-(--row-h) min-w-0 flex-1 items-center gap-2 px-1.5">{who}</span>
       )}
@@ -532,7 +554,7 @@ function Workspace({ workspaces, currentId, onChange, actions, isDisabled }: Sid
     );
   }
   return (
-    <Menu
+    <DropdownMenu
       label={m.workspaces}
       placement="top start"
       trigger={
@@ -551,7 +573,7 @@ function Workspace({ workspaces, currentId, onChange, actions, isDisabled }: Sid
         </Button>
       }
     >
-      <Menu.Section
+      <DropdownMenu.Section
         title={m.workspaces}
         selectionMode="single"
         selectedKeys={[current.id]}
@@ -561,12 +583,12 @@ function Workspace({ workspaces, currentId, onChange, actions, isDisabled }: Sid
         }}
       >
         {workspaces.map((w) => (
-          <Menu.Item key={w.id} id={w.id} label={w.name} />
+          <DropdownMenu.Item key={w.id} id={w.id} label={w.name} />
         ))}
-      </Menu.Section>
-      {actions && <Menu.Separator />}
+      </DropdownMenu.Section>
+      {actions && <DropdownMenu.Separator />}
       {actions}
-    </Menu>
+    </DropdownMenu>
   );
 }
 

@@ -7,7 +7,7 @@ Bouton avec un libellé, et une icône facultative. Il déclenche une action : e
 Ne pas l'utiliser pour :
 - une action fréquente et connue dans une barre d'outils, une ligne ou un en-tête : prendre `IconButton` ;
 - aller vers une autre page : prendre un élément de `Sidebar`, un onglet (`Tabs`) ou un lien ;
-- ouvrir une liste de choix : prendre le déclencheur de `Menu` ;
+- ouvrir une liste de choix : prendre le déclencheur de `DropdownMenu` ;
 - une action dans une ligne du panneau de détail : prendre l'action de `PropertyRow` (D-059).
 
 ## Anatomie
@@ -23,6 +23,10 @@ Ne pas l'utiliser pour :
 | `secondary` (secondaire, par défaut) | Fond `--field`, texte `--fg`, sans contour (D-103). | Toute autre action : « Annuler », « Parcourir… », « Réessayer ». |
 | `subtle` (discrète) | Fond transparent, texte `--fg-2` (D-100). | Un retour (« Tous les projets ») ou une action d'appoint dans une zone dense. |
 | `danger` | Fond `--danger`, texte `--danger-fg` (D-104). | Le bouton qui exécute une action destructrice, en général dans sa confirmation. |
+
+Variante signature d'un thème d'organisation (`theme.signature.buttonSecondary`, D-338) ; valeur par défaut : inchangée.
+- `fill` (défaut) : `secondary` a un fond `--field` (D-103).
+- `outline` : `secondary` a un fond transparent, un trait de 1 px et un texte en `--accent-text` ; survol `--hover`, pressé `--selected`. Le trait est intérieur : même taille, aucun décalage. Les autres variantes ne changent pas. `IconButton` n'a pas de variante secondaire : il ne change pas.
 
 ## Options
 | Option | Type | Défaut | Description |
@@ -103,10 +107,10 @@ Le bouton ne montre pas d'erreur. Après un échec, l'écran l'affiche (notifica
 - Jamais dans la barre supérieure (`IconButton` seulement), ni dans une ligne de liste, de tableau ou de propriété.
 
 ## Composition
-Contient une icône facultative et un indicateur d'attente. Boutons voisins espacés de 8 px. Se combine avec `IconButton` dans une barre d'actions ; ne contient ni `Tooltip` ni `Menu`.
+Contient une icône facultative et un indicateur d'attente. Boutons voisins espacés de 8 px. Se combine avec `IconButton` dans une barre d'actions ; ne contient ni `Tooltip` ni `DropdownMenu`.
 
 ## Décisions
-D-011, D-014, D-028, D-040, D-059, D-089, D-100, D-101, D-102, D-103, D-104, D-105, D-106
+D-011, D-014, D-028, D-040, D-059, D-089, D-100, D-101, D-102, D-103, D-104, D-105, D-106, D-338
 
 ## Questions ouvertes
 Aucune.

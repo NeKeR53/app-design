@@ -5,7 +5,7 @@ Validation : docs/validation/components/FormFields-v1.html
 ## Rôle
 Champ de saisie d'un texte libre sur plusieurs lignes : une note, une description, un commentaire.
 Ne pas l'utiliser pour :
-- une seule ligne : prendre `TextField` ;
+- une seule ligne : prendre `TextInput` ;
 - un texte mis en forme (titres, listes, liens) : prendre `MarkdownEditor`.
 
 ## Anatomie

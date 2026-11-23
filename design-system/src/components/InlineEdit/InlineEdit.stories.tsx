@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from "@storybook/react-vite";
 import { useState } from "react";
 import { expect, fn, userEvent, waitFor, within } from "storybook/test";
 import { InlineEdit, type InlineEditProps } from "./InlineEdit";
-import { DetailPanel, PropertyRow } from "../../patterns/DetailPanel/DetailPanel";
+import { Drawer, PropertyRow } from "../../patterns/Drawer/Drawer";
 
 /** Valeur tenue par l'histoire : `onSave` met la valeur à jour, puis appelle l'espion. */
 function Live({ save, ...props }: Omit<InlineEditProps, "onSave"> & { save?: InlineEditProps["onSave"] }) {
@@ -139,13 +139,13 @@ export const DansLePanneau: Story = {
       <div className="border-b border-line px-(--pad) py-3 text-xl font-semibold">
         <Live value="Refonte du site" label="Nom" isRequired />
       </div>
-      <DetailPanel>
-        <DetailPanel.Section id="story-inline" title="Propriétés">
+      <Drawer>
+        <Drawer.Section id="story-inline" title="Propriétés">
           <PropertyRow label="Responsable" value={<Live value="Camille Martin" label="Responsable" />} />
           <PropertyRow label="Échéance" value="15 mars" />
           <PropertyRow label="Description" value={<Live value="" label="Description" mode="multiline" placeholder="Ajouter une description" />} />
-        </DetailPanel.Section>
-      </DetailPanel>
+        </Drawer.Section>
+      </Drawer>
     </div>
   ),
 };

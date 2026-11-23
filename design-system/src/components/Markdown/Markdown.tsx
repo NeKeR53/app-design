@@ -7,7 +7,7 @@ import { memo, useEffect, useMemo, useRef, useState, type ReactNode } from "reac
 import ReactMarkdown, { type Components } from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { Code } from "../Code/Code";
-import { Divider } from "../Divider/Divider";
+import { Separator } from "../Separator/Separator";
 import { IconButton } from "../IconButton/IconButton";
 import { Link } from "../Link/Link";
 import { Check, Copy } from "../../icons";
@@ -119,7 +119,7 @@ export const Markdown = memo(function Markdown({ children, headingLevel = 2, onL
       blockquote: ({ children: content }) => (
         <blockquote className="m-0 mb-3 border-l-[3px] border-line-strong pl-3 text-fg-2 [&>:last-child]:mb-0">{content}</blockquote>
       ),
-      hr: () => <Divider />,
+      hr: () => <Separator />,
       ul: ({ children: content, className }) => (
         <ul className={cx("m-0 mb-3 [li>&]:mb-0 [li>&]:mt-0.5", String(className ?? "").includes("contains-task-list") ? "list-none pl-0" : "list-disc pl-6")}>{content}</ul>
       ),

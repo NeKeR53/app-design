@@ -398,3 +398,60 @@ export const Distant: Story = {
     await waitFor(() => expect(spy).toHaveBeenLastCalledWith(expect.objectContaining({ page: 2 })));
   },
 };
+
+/** Filtre actif, lignes cochées, puis une ligne change d'état au rechargement : masquée par le filtre, elle est décochée ; le compte de la barre est celui que l'action touche (D-178). */
+export const SelectionMasquee: Story = {
+  render: () => {
+    const [rows, setRows] = useState(DOUZE);
+    const [touched, setTouched] = useState<string[]>([]);
+    return (
+      <>
+        <button type="button" onClick={() => setRows((rs) => rs.map((r) => (r.id === "D-1001" ? { ...r, etat: "close" } : r)))}>
+          Recharger
+        </button>
+        <output data-testid="touched">{touched.join(",")}</output>
+        <Frame
+          {...base({
+            rows,
+            selectionMode: "multiple",
+            selectionActions: (rs) => [{ id: "close", label: "Clore", primary: true, onPress: () => setTouched(rs.map((r) => r.id)) }],
+          })}
+        />
+      </>
+    );
+  },
+  play: async ({ canvasElement }) => {
+    const c = within(canvasElement);
+    await userEvent.click(c.getByRole("button", { name: /Tous les états/ }));
+    await userEvent.click(await waitFor(() => body().getByRole("option", { name: "Nouvelle" })));
+    await waitFor(() => expect(c.getByText("3 éléments")).toBeVisible());
+    for (const name of [/Accès au VPN/, /Imprimante du 2e étage/]) {
+      const row = c.getByRole("row", { name });
+      await userEvent.hover(row);
+      await userEvent.click(within(row).getByRole("checkbox"));
+    }
+    await waitFor(() => expect(c.getByRole("toolbar", { name: "2 sélectionnés" })).toBeVisible());
+    // « Accès au VPN » (D-1001) passe à « Close » : le filtre « Nouvelle » la masque.
+    await userEvent.click(c.getByRole("button", { name: "Recharger" }));
+    await waitFor(() => expect(c.getByRole("toolbar", { name: "1 sélectionné" })).toBeVisible());
+    await userEvent.click(c.getByRole("button", { name: "Clore" }));
+    await waitFor(() => expect(c.getByTestId("touched").textContent).toBe("D-1006"));
+  },
+};
+
+/** Pied « pages » : une nouvelle page s'affiche depuis le haut ; le focus reste dans la pagination (D-175). */
+export const PaginationDefilement: Story = {
+  render: () => <Frame {...base({ rows: make(60), pagination: { mode: "pages" } })} />,
+  play: async ({ canvasElement }) => {
+    const c = within(canvasElement);
+    const scroller = c.getByRole("grid").closest<HTMLElement>(".overflow-auto")!;
+    scroller.scrollTop = 400;
+    await waitFor(() => expect(scroller.scrollTop).toBeGreaterThan(0));
+    const nav = c.getByRole("navigation", { name: "Pagination" });
+    await userEvent.click(within(nav).getByRole("button", { name: "Page suivante" }));
+    await expect(c.getByText("51–60 sur 60")).toBeVisible();
+    await waitFor(() => expect(scroller.scrollTop).toBe(0));
+    // Dernière page : « Page suivante » devient inactif, le focus passe à « Page précédente ».
+    await waitFor(() => expect(within(nav).getByRole("button", { name: "Page précédente" })).toHaveFocus());
+  },
+};

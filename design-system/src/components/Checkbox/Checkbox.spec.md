@@ -5,8 +5,8 @@ Validation : docs/validation/components/FormChoices-v1.html
 ## Rôle
 `Checkbox` : une valeur oui/non qui fait partie d'un formulaire qu'on envoie, ou une acceptation (« J'ai lu les conditions »). `CheckboxGroup` : plusieurs choix indépendants dans une liste courte, sous un libellé commun.
 Ne pas l'utiliser pour :
-- un réglage qui s'applique tout de suite : prendre `Switch` (D-137) ;
-- un seul choix parmi plusieurs : prendre `RadioGroup` ou `Select` ;
+- un réglage qui s'applique tout de suite : prendre `Toggle` (D-137) ;
+- un seul choix parmi plusieurs : prendre `RadioButtonGroup` ou `Select` ;
 - plus de 10 choix, ou une recherche : prendre `ComboBox` en choix multiple (P5) ;
 - la sélection des lignes d'un tableau : `Table` a sa propre case (D-065).
 
@@ -78,7 +78,7 @@ Sur mobile, un groupe horizontal passe en vertical.
 Voir États ; la phrase dit quoi faire (« Cochez cette case pour continuer. »).
 
 ## Placement
-`FormPage`, formulaire en modale. Jamais dans une ligne de réglage ni dans le panneau de détail : y mettre un `Switch` (D-137).
+`FormPage`, formulaire en modale. Jamais dans une ligne de réglage ni dans le panneau de détail : y mettre un `Toggle` (D-137).
 
 ## Composition
 Le groupe contient des `Checkbox`. Ne contient pas d'autre champ.

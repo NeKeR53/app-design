@@ -5,7 +5,7 @@ Validation : docs/validation/components/FormChoices-v1.html
 ## Rôle
 Regroupe des champs différents qui forment un tout, sous une légende : une adresse (rue, code postal, ville), une période (début, fin).
 Ne pas l'utiliser pour :
-- un groupe de cases ou de boutons radio : prendre `CheckboxGroup` ou `RadioGroup`, qui ont leur libellé (D-138) ;
+- un groupe de cases ou de boutons radio : prendre `CheckboxGroup` ou `RadioButtonGroup`, qui ont leur libellé (D-138) ;
 - une section titrée d'un formulaire : c'est une section de `FormPage` (D-022).
 
 ## Anatomie
@@ -24,7 +24,7 @@ Aucune.
 | `error` | `string` | aucune | Erreur du groupe (« La date de fin suit la date de début. »). |
 | `isOptional` | `boolean` | `false` | Ajoute « (facultatif) » à la légende. |
 | `isDisabled` | `boolean` | `false` | Désactive tous les champs du groupe. |
-| `children` | champs Socle | — (obligatoire) | `TextField`, `Select`, `ComboBox`, `TextArea`, `Checkbox`. |
+| `children` | champs Socle | — (obligatoire) | `TextInput`, `Select`, `ComboBox`, `TextArea`, `Checkbox`. |
 
 ## Exclus
 - Pas de cadre ni de fond autour du groupe.

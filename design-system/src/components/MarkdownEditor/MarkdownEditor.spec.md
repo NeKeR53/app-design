@@ -12,7 +12,7 @@ Ne pas l'utiliser pour :
 
 ## Anatomie
 Celle de `Field` (Field.spec.md), plus, dans le cadre (D-305) :
-1. **barre de mise en forme** : trois groupes d'`IconButton`, séparés par un `Divider` vertical (D-307) ; bouton « Aperçu » en fin de barre si `preview="toggle"` (D-309) ;
+1. **barre de mise en forme** : trois groupes d'`IconButton`, séparés par un `Separator` vertical (D-307) ; bouton « Aperçu » en fin de barre si `preview="toggle"` (D-309) ;
 2. trait `--line` ;
 3. **texte** (CodeMirror 6), en chasse fixe et coloré (D-306) ;
 4. **aperçu** (facultatif) : `Markdown`, à droite ou à la place du texte (D-309).
@@ -90,10 +90,10 @@ Erreur de l'app (`error`) sous le champ, à la place de l'aide (D-132). Image no
 Barre, raccourcis, coloration : verrouillés. Hauteur, aperçu, images, compteur : par page.
 
 ## Placement
-Comme les champs : `FormPage`, formulaire en `Dialog` (taille `lg`), ligne de réglage pleine largeur, page d'édition d'une note (`fill`). Jamais dans une barre ni dans une cellule de `Table`.
+Comme les champs : `FormPage`, formulaire en `Modal` (taille `lg`), ligne de réglage pleine largeur, page d'édition d'une note (`fill`). Jamais dans une barre ni dans une cellule de `Table`.
 
 ## Composition
-Contient `IconButton`, `Divider`, `Markdown` (aperçu), les pièces de `Field`. Ne se met pas dans un `Fieldset` avec d'autres éditeurs.
+Contient `IconButton`, `Separator`, `Markdown` (aperçu), les pièces de `Field`. Ne se met pas dans un `Fieldset` avec d'autres éditeurs.
 
 ## Décisions
 D-006, D-032, D-089, D-130, D-131, D-132, D-300, D-305, D-306, D-307, D-308, D-309

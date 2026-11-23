@@ -3,7 +3,7 @@ import { useMemo, useState, type ReactNode } from "react";
 import { expect, fn, userEvent, waitFor, within } from "storybook/test";
 import { Copy } from "../../../.storybook/story-icons";
 import { Button } from "../../components/Button/Button";
-import { Dialog } from "../../components/Dialog/Dialog";
+import { Modal } from "../../components/Modal/Modal";
 import { Table } from "../../components/Table/Table";
 import { createNotifications } from "../../components/Toast/notifications";
 import { SocleProvider } from "../../provider/SocleProvider";
@@ -172,16 +172,16 @@ const Box = ({ children, width, height = 640 }: { children: ReactNode; width?: n
   </div>
 );
 
-/** Dans un `Dialog` `xl` : bureau et tablette (D-015, D-120). */
+/** Dans un `Modal` `xl` : bureau et tablette (D-015, D-120). */
 export const DansUneModale: Story = {
   render: () => {
     const [open, setOpen] = useState(true);
     return (
       <div className="p-4">
         <Button onPress={() => setOpen(true)}>Ouvrir les réglages</Button>
-        <Dialog isOpen={open} onOpenChange={setOpen} title="Réglages" size="xl">
+        <Modal isOpen={open} onOpenChange={setOpen} title="Réglages" size="xl">
           <SettingsPage groups={sampleGroups()} footerLink={{ label: "Centre d'aide", href: "https://exemple.fr/aide" }} />
-        </Dialog>
+        </Modal>
       </div>
     );
   },
@@ -467,9 +467,9 @@ export const PetiteLargeur: Story = {
 /** Dans une modale, un réglage changé ne bloque pas le clic hors (D-208, D-122). */
 export const ClicHorsModale: Story = {
   render: (args) => (
-    <Dialog isOpen onOpenChange={args.onSelectionChange as unknown as (o: boolean) => void} title="Réglages" size="xl">
+    <Modal isOpen onOpenChange={args.onSelectionChange as unknown as (o: boolean) => void} title="Réglages" size="xl">
       <SettingsPage groups={sampleGroups()} selectedId="general" />
-    </Dialog>
+    </Modal>
   ),
   args: { onSelectionChange: fn() },
   play: async ({ args }) => {

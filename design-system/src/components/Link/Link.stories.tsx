@@ -36,6 +36,24 @@ export const Externe: Story = {
   },
 };
 
+/** `mailto:` et `tel:` : pas de nouvel onglet, pas de flèche, pas de « S'ouvre dans le navigateur ». */
+export const Messagerie: Story = {
+  render: () => (
+    <p className="text-md text-fg">
+      Écrire au <Link href="mailto:support@example.com">support</Link> ou appeler le <Link href="tel:+33100000000">01 00 00 00 00</Link>.
+    </p>
+  ),
+  play: async ({ canvasElement }) => {
+    const c = within(canvasElement);
+    for (const name of ["support", "01 00 00 00 00"]) {
+      const link = c.getByRole("link", { name });
+      await expect(link).not.toHaveAttribute("target");
+      await expect(link.querySelector("svg")).toBeNull();
+      await expect(link.textContent).not.toMatch(/navigateur/);
+    }
+  },
+};
+
 /** Sans `href` : bouton à l'apparence de lien ; Entrée déclenche l'action. */
 export const Action: Story = {
   args: { onPress: fn() },

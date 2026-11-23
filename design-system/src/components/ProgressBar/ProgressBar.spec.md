@@ -69,7 +69,7 @@ Une tâche en échec n'est pas une barre rouge : on remplace la barre par un mes
 Panneau de détail, ligne de réglage, carte de tâche, notification. Jamais dans la `topbar`.
 
 ## Composition
-Ne contient rien d'autre. Peut suivre un `StatusBadge`.
+Ne contient rien d'autre. Peut suivre un `Badge`.
 
 ## Décisions
 D-014, D-084, D-089, D-164

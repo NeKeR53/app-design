@@ -1,6 +1,7 @@
 // Génère biome/no-socle-override.grit, livré avec le package (config `socle-ui/biome`).
 // Biome ne relie pas une balise JSX à son import : la règle reconnaît les composants
-// Socle par leur nom. La liste vient des exports de src/index.ts, à chaque build (D-331).
+// Socle par leur nom. La liste vient des exports de src/index.ts, à chaque build (D-331),
+// anciens noms dépréciés compris (`export const Dialog = Modal;`, D-336).
 import { readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 
@@ -9,6 +10,7 @@ const index = readFileSync(join(root, "src/index.ts"), "utf8");
 const names = [...index.matchAll(/^export \{([^}]+)\} from /gm)]
   .flatMap((m) => m[1].split(","))
   .map((s) => s.trim().split(/\s+as\s+/).pop())
+  .concat([...index.matchAll(/^export const ([A-Z]\w*) = [A-Z]\w*;/gm)].map((m) => m[1]))
   .filter((n) => /^[A-Z][a-z]/.test(n))
   .sort();
 

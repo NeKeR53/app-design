@@ -21,7 +21,7 @@ export function Code({ children, block = false, label }: CodeProps) {
       role="region"
       aria-label={label ?? m.codeSample}
       tabIndex={0}
-      className="m-0 overflow-auto rounded-md bg-field px-3 py-2.5 font-mono text-sm whitespace-pre text-fg outline-none focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-accent"
+      className="m-0 overflow-auto rounded-md bg-field px-3 py-2.5 font-mono text-sm whitespace-pre text-fg outline-none focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-focus"
     >
       <code>{children}</code>
     </pre>

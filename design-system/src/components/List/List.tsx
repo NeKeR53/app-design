@@ -10,10 +10,10 @@ import { Checkbox } from "react-aria-components/Checkbox";
 import { buttonReset, cx, focusRing } from "../../lib/cx";
 import { ErrorBanner, highlight, LoadError, NoResults, ReloadBar, RetryButton, type ResultsStateProps } from "../../lib/results";
 import { Check } from "../../icons";
-import { Menu, useRowMenu } from "../Menu/Menu";
+import { DropdownMenu, useRowMenu } from "../DropdownMenu/DropdownMenu";
 import { useMessages } from "../../provider/SocleProvider";
 import { Tooltip } from "../Tooltip/Tooltip";
-import { StatusBadge, type StatusTone } from "../StatusBadge/StatusBadge";
+import { Badge, type StatusTone } from "../Badge/Badge";
 import { Skeleton as Bar, SkeletonGroup } from "../Skeleton/Skeleton";
 import { OverflowTooltip } from "../Tooltip/OverflowTooltip";
 import type { TableRowAction } from "../Table/Table";
@@ -136,9 +136,9 @@ export function List({
               {highlight(it.subtitle ?? "", terms)}
             </OverflowTooltip>
             {it.unread ? (
-              <span role="img" aria-label={m.unread} className="size-2 shrink-0 rounded-full bg-accent" />
+              <span role="img" aria-label={m.unread} className="size-2 shrink-0 rounded-full bg-highlight" />
             ) : (
-              it.status && <StatusBadge tone={it.status.tone}>{it.status.label}</StatusBadge>
+              it.status && <Badge tone={it.status.tone}>{it.status.label}</Badge>
             )}
           </span>
         )}
@@ -206,9 +206,9 @@ function ItemActions({ actions }: { actions: TableRowAction[] }) {
           </Tooltip>
         );
         return a.menu ? (
-          <Menu key={a.label} label={a.label} placement="bottom end" trigger={button}>
+          <DropdownMenu key={a.label} label={a.label} placement="bottom end" trigger={button}>
             {a.menu}
-          </Menu>
+          </DropdownMenu>
         ) : (
           <span key={a.label}>{button}</span>
         );

@@ -11,6 +11,10 @@ export { SocleProvider, useSocle } from "./provider/SocleProvider";
 export { frenchMessages } from "./i18n/messages";
 export type { SocleMessages } from "./i18n/messages";
 export type { SocleProviderProps, Platform, Density, ColorScheme } from "./provider/SocleProvider";
+export { THEME_TOKENS } from "./provider/theme";
+export type { SocleTheme, ThemeToken, ThemeMode, ThemeIcons } from "./provider/theme";
+export { ICON_NAMES } from "./icons";
+export type { IconName } from "./icons";
 
 export { Tooltip } from "./components/Tooltip/Tooltip";
 export type { TooltipProps } from "./components/Tooltip/Tooltip";
@@ -18,29 +22,29 @@ export { Button } from "./components/Button/Button";
 export type { ButtonProps, ButtonVariant, ButtonSize } from "./components/Button/Button";
 export { IconButton } from "./components/IconButton/IconButton";
 export type { IconButtonProps } from "./components/IconButton/IconButton";
-export { Dialog } from "./components/Dialog/Dialog";
-export type { DialogProps, DialogSize } from "./components/Dialog/Dialog";
-export { useConfirm } from "./components/Dialog/useConfirm";
-export type { ConfirmOptions, ConfirmFunction } from "./components/Dialog/useConfirm";
-export { Menu, useContextMenu } from "./components/Menu/Menu";
-export type { MenuProps, MenuItemProps, MenuSectionProps, MenuSubmenuProps, MenuPoint, ContextMenuState, ContextMenuTargetProps } from "./components/Menu/Menu";
+export { Modal } from "./components/Modal/Modal";
+export type { ModalProps, ModalSize } from "./components/Modal/Modal";
+export { useConfirm } from "./components/Modal/useConfirm";
+export type { ConfirmOptions, ConfirmFunction } from "./components/Modal/useConfirm";
+export { DropdownMenu, useContextMenu } from "./components/DropdownMenu/DropdownMenu";
+export type { DropdownMenuProps, DropdownMenuItemProps, DropdownMenuSectionProps, DropdownMenuSubmenuProps, MenuPoint, ContextMenuState, ContextMenuTargetProps } from "./components/DropdownMenu/DropdownMenu";
 export { Tabs, TabPanel, useTabPanelProps } from "./components/Tabs/Tabs";
 export type { TabsProps, TabItem, TabPanelProps } from "./components/Tabs/Tabs";
 export { Sidebar, workspaceInitial } from "./patterns/Sidebar/Sidebar";
 export type { SidebarProps, SidebarItemProps, SidebarTreeItemProps, SidebarSectionProps, SidebarAccountProps, SidebarAction, SidebarWorkspaceProps, SidebarWorkspaceEntry } from "./patterns/Sidebar/Sidebar";
 export { AppShell } from "./patterns/AppShell/AppShell";
 export type { AppShellProps, TabbarEntry, PageStatus } from "./patterns/AppShell/AppShell";
-export { DetailPanel, PropertyRow } from "./patterns/DetailPanel/DetailPanel";
-export type { DetailPanelProps, DetailPanelSectionProps, PropertyRowProps, PropertyAction } from "./patterns/DetailPanel/DetailPanel";
-export type { DetailPanelComposedProps, DetailPanelDeclarativeProps, DetailHeader, DetailSection, DetailField, SectionSummary } from "./patterns/DetailPanel/DetailPanel";
+export { Drawer, PropertyRow } from "./patterns/Drawer/Drawer";
+export type { DrawerProps, DrawerSectionProps, PropertyRowProps, PropertyAction } from "./patterns/Drawer/Drawer";
+export type { DrawerComposedProps, DrawerDeclarativeProps, DetailHeader, DetailSection, DetailField, SectionSummary } from "./patterns/Drawer/Drawer";
 export { Table } from "./components/Table/Table";
 export type { TableProps, TableColumn, TableRowAction } from "./components/Table/Table";
 export { List } from "./components/List/List";
 export type { ListProps, ListItemData, ListGroup } from "./components/List/List";
-export { SearchField } from "./components/SearchField/SearchField";
-export type { SearchFieldProps, SearchCriteria, SearchSuggestion, SearchTag } from "./components/SearchField/SearchField";
-export { StatusBadge, StatusDot } from "./components/StatusBadge/StatusBadge";
-export type { StatusBadgeProps, StatusDotProps, StatusTone } from "./components/StatusBadge/StatusBadge";
+export { SearchInput } from "./components/SearchInput/SearchInput";
+export type { SearchInputProps, SearchCriteria, SearchSuggestion, SearchTag } from "./components/SearchInput/SearchInput";
+export { Badge, BadgeDot } from "./components/Badge/Badge";
+export type { BadgeProps, BadgeDotProps, StatusTone } from "./components/Badge/Badge";
 export { Avatar } from "./components/Avatar/Avatar";
 export type { AvatarProps } from "./components/Avatar/Avatar";
 export { ProgressBar } from "./components/ProgressBar/ProgressBar";
@@ -53,16 +57,16 @@ export { Link } from "./components/Link/Link";
 export type { LinkProps } from "./components/Link/Link";
 export { Code } from "./components/Code/Code";
 export type { CodeProps } from "./components/Code/Code";
-export { Divider } from "./components/Divider/Divider";
-export type { DividerProps } from "./components/Divider/Divider";
+export { Separator } from "./components/Separator/Separator";
+export type { SeparatorProps } from "./components/Separator/Separator";
 export { ActionBar, arrangeActions } from "./patterns/ActionBar/ActionBar";
 export type { Action, ActionZone, ActionBarProps, ArrangedActions, ActionFit } from "./patterns/ActionBar/ActionBar";
 export { createNotifications } from "./components/Toast/notifications";
 export type { Notifications, NotificationsOptions, NotifyOptions, NotificationRecord, NotificationTone, NotificationAction } from "./components/Toast/notifications";
 export { useNotify, useNotifications } from "./provider/SocleProvider";
 export { NotificationCenter } from "./patterns/NotificationCenter/NotificationCenter";
-export { TextField } from "./components/TextField/TextField";
-export type { TextFieldProps } from "./components/TextField/TextField";
+export { TextInput } from "./components/TextInput/TextInput";
+export type { TextInputProps } from "./components/TextInput/TextInput";
 export { TextArea } from "./components/TextArea/TextArea";
 export type { TextAreaProps } from "./components/TextArea/TextArea";
 export { Select } from "./components/Select/Select";
@@ -70,10 +74,10 @@ export type { SelectProps, SelectOption, SelectSection } from "./components/Sele
 export type { FieldWidth } from "./components/Field/Field";
 export { Checkbox, CheckboxGroup } from "./components/Checkbox/Checkbox";
 export type { CheckboxProps, CheckboxGroupProps } from "./components/Checkbox/Checkbox";
-export { RadioGroup } from "./components/RadioGroup/RadioGroup";
-export type { RadioGroupProps, RadioOptionProps } from "./components/RadioGroup/RadioGroup";
-export { Switch } from "./components/Switch/Switch";
-export type { SwitchProps } from "./components/Switch/Switch";
+export { RadioButtonGroup } from "./components/RadioButtonGroup/RadioButtonGroup";
+export type { RadioButtonGroupProps, RadioOptionProps } from "./components/RadioButtonGroup/RadioButtonGroup";
+export { Toggle } from "./components/Toggle/Toggle";
+export type { ToggleProps } from "./components/Toggle/Toggle";
 export { Fieldset } from "./components/Fieldset/Fieldset";
 export type { FieldsetProps } from "./components/Fieldset/Fieldset";
 export { ComboBox } from "./components/ComboBox/ComboBox";
@@ -82,6 +86,8 @@ export { FormattedValue, useFormatValue, valueSortKey, valueLayout } from "./com
 export type { FormattedValueProps, ValueFormat, ValueType, StatusMap } from "./components/FormattedValue/FormattedValue";
 export { ListPage } from "./templates/ListPage/ListPage";
 export type { ListPageProps, ListPageColumn, ListPageFilter, ListPageSort, ListPageState } from "./templates/ListPage/ListPage";
+export { LoginPage } from "./templates/LoginPage/LoginPage";
+export type { LoginPageProps, LoginValues, LoginProvider, LoginResult } from "./templates/LoginPage/LoginPage";
 export { FormPage } from "./templates/FormPage/FormPage";
 export type { FormPageProps, FormSection } from "./templates/FormPage/FormPage";
 export { useOpenForm } from "./templates/FormDialog/FormDialog";
@@ -140,11 +146,103 @@ export type { DocumentData, DocumentFormat } from "./components/DocumentViewer/d
 export type { PdfEngine, PdfDocumentHandle, PdfPageHandle } from "./components/DocumentViewer/pdf";
 export { HtmlContent } from "./components/HtmlContent/HtmlContent";
 export type { HtmlContentProps } from "./components/HtmlContent/HtmlContent";
-export { Disclosure } from "./components/Disclosure/Disclosure";
-export type { DisclosureProps } from "./components/Disclosure/Disclosure";
+export { Accordion } from "./components/Accordion/Accordion";
+export type { AccordionProps } from "./components/Accordion/Accordion";
 export { InlineEdit } from "./components/InlineEdit/InlineEdit";
 export type { InlineEditProps } from "./components/InlineEdit/InlineEdit";
-export { StepList } from "./components/StepList/StepList";
-export type { StepListProps, StepItem, StepStatus } from "./components/StepList/StepList";
+export { ProgressIndicator } from "./components/ProgressIndicator/ProgressIndicator";
+export type { ProgressIndicatorProps, StepItem, StepStatus } from "./components/ProgressIndicator/ProgressIndicator";
 export { Popover } from "./components/Popover/Popover";
 export type { PopoverProps, PopoverWidth, PopoverPlacement } from "./components/Popover/Popover";
+
+/*
+ * Anciens noms, dépréciés en 1.0.0 (D-336) : les composants portent les noms de
+ * component.gallery. Ces alias gardent les apps existantes en état de marche pendant
+ * une version. Ils seront retirés en 2.0.0. Un alias est le même objet que le
+ * nouveau composant : ses parties (`DetailPanel.Section`, `Menu.Item`…) suivent.
+ */
+import { Accordion } from "./components/Accordion/Accordion";
+import type { AccordionProps } from "./components/Accordion/Accordion";
+import { Toggle } from "./components/Toggle/Toggle";
+import type { ToggleProps } from "./components/Toggle/Toggle";
+import { Separator } from "./components/Separator/Separator";
+import type { SeparatorProps } from "./components/Separator/Separator";
+import { Modal } from "./components/Modal/Modal";
+import type { ModalProps, ModalSize } from "./components/Modal/Modal";
+import { DropdownMenu } from "./components/DropdownMenu/DropdownMenu";
+import type { DropdownMenuProps, DropdownMenuItemProps, DropdownMenuSectionProps, DropdownMenuSubmenuProps } from "./components/DropdownMenu/DropdownMenu";
+import { TextInput } from "./components/TextInput/TextInput";
+import type { TextInputProps } from "./components/TextInput/TextInput";
+import { SearchInput } from "./components/SearchInput/SearchInput";
+import type { SearchInputProps } from "./components/SearchInput/SearchInput";
+import { ProgressIndicator } from "./components/ProgressIndicator/ProgressIndicator";
+import type { ProgressIndicatorProps } from "./components/ProgressIndicator/ProgressIndicator";
+import { Badge, BadgeDot } from "./components/Badge/Badge";
+import type { BadgeProps, BadgeDotProps } from "./components/Badge/Badge";
+import { Drawer } from "./patterns/Drawer/Drawer";
+import type { DrawerProps, DrawerSectionProps, DrawerComposedProps, DrawerDeclarativeProps } from "./patterns/Drawer/Drawer";
+import { RadioButtonGroup } from "./components/RadioButtonGroup/RadioButtonGroup";
+import type { RadioButtonGroupProps } from "./components/RadioButtonGroup/RadioButtonGroup";
+
+/** @deprecated Utiliser Accordion (1.0.0). */
+export const Disclosure = Accordion;
+/** @deprecated Utiliser AccordionProps (1.0.0). */
+export type DisclosureProps = AccordionProps;
+/** @deprecated Utiliser Toggle (1.0.0). */
+export const Switch = Toggle;
+/** @deprecated Utiliser ToggleProps (1.0.0). */
+export type SwitchProps = ToggleProps;
+/** @deprecated Utiliser Separator (1.0.0). */
+export const Divider = Separator;
+/** @deprecated Utiliser SeparatorProps (1.0.0). */
+export type DividerProps = SeparatorProps;
+/** @deprecated Utiliser Modal (1.0.0). */
+export const Dialog = Modal;
+/** @deprecated Utiliser ModalProps (1.0.0). */
+export type DialogProps = ModalProps;
+/** @deprecated Utiliser ModalSize (1.0.0). */
+export type DialogSize = ModalSize;
+/** @deprecated Utiliser DropdownMenu (1.0.0). */
+export const Menu = DropdownMenu;
+/** @deprecated Utiliser DropdownMenuProps (1.0.0). */
+export type MenuProps = DropdownMenuProps;
+/** @deprecated Utiliser DropdownMenuItemProps (1.0.0). */
+export type MenuItemProps = DropdownMenuItemProps;
+/** @deprecated Utiliser DropdownMenuSectionProps (1.0.0). */
+export type MenuSectionProps = DropdownMenuSectionProps;
+/** @deprecated Utiliser DropdownMenuSubmenuProps (1.0.0). */
+export type MenuSubmenuProps = DropdownMenuSubmenuProps;
+/** @deprecated Utiliser TextInput (1.0.0). */
+export const TextField = TextInput;
+/** @deprecated Utiliser TextInputProps (1.0.0). */
+export type TextFieldProps = TextInputProps;
+/** @deprecated Utiliser SearchInput (1.0.0). */
+export const SearchField = SearchInput;
+/** @deprecated Utiliser SearchInputProps (1.0.0). */
+export type SearchFieldProps = SearchInputProps;
+/** @deprecated Utiliser ProgressIndicator (1.0.0). */
+export const StepList = ProgressIndicator;
+/** @deprecated Utiliser ProgressIndicatorProps (1.0.0). */
+export type StepListProps = ProgressIndicatorProps;
+/** @deprecated Utiliser Badge (1.0.0). */
+export const StatusBadge = Badge;
+/** @deprecated Utiliser BadgeProps (1.0.0). */
+export type StatusBadgeProps = BadgeProps;
+/** @deprecated Utiliser BadgeDot (1.0.0). */
+export const StatusDot = BadgeDot;
+/** @deprecated Utiliser BadgeDotProps (1.0.0). */
+export type StatusDotProps = BadgeDotProps;
+/** @deprecated Utiliser Drawer (1.0.0). */
+export const DetailPanel = Drawer;
+/** @deprecated Utiliser DrawerProps (1.0.0). */
+export type DetailPanelProps = DrawerProps;
+/** @deprecated Utiliser DrawerSectionProps (1.0.0). */
+export type DetailPanelSectionProps = DrawerSectionProps;
+/** @deprecated Utiliser DrawerComposedProps (1.0.0). */
+export type DetailPanelComposedProps = DrawerComposedProps;
+/** @deprecated Utiliser DrawerDeclarativeProps (1.0.0). */
+export type DetailPanelDeclarativeProps = DrawerDeclarativeProps;
+/** @deprecated Utiliser RadioButtonGroup (1.0.0). */
+export const RadioGroup = RadioButtonGroup;
+/** @deprecated Utiliser RadioButtonGroupProps (1.0.0). */
+export type RadioGroupProps = RadioButtonGroupProps;

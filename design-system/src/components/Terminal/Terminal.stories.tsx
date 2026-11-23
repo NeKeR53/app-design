@@ -171,7 +171,7 @@ export const SortieClavier: Story = {
     await waitFor(() => expect(canvasElement.querySelector(".xterm-helper-textarea")).not.toBeNull(), { timeout: 4000 });
     const input = canvasElement.querySelector<HTMLTextAreaElement>(".xterm-helper-textarea")!;
     input.focus();
-    await expect(canvas.getByRole("region", { name: "Console" }).getAttribute("class")).toContain("focus-within:border-accent");
+    await expect(canvas.getByRole("region", { name: "Console" }).getAttribute("class")).toContain("focus-within:border-focus");
     await userEvent.keyboard("{F6}");
     await expect(canvas.getByRole("button", { name: "Après" })).toHaveFocus();
     input.focus();

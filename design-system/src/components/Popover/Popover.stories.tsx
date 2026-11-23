@@ -4,7 +4,7 @@ import { expect, userEvent, waitFor, within } from "storybook/test";
 import { Popover } from "./Popover";
 import { IconButton } from "../IconButton/IconButton";
 import { Button } from "../Button/Button";
-import { TextField } from "../TextField/TextField";
+import { TextInput } from "../TextInput/TextInput";
 import { TextArea } from "../TextArea/TextArea";
 import { Settings } from "../../icons";
 
@@ -34,7 +34,7 @@ function SharePopover({ busy = false }: { busy?: boolean }) {
       trigger={<IconButton icon={<ShareIcon />} label="Partager" />}
     >
       <div className="flex flex-col gap-3">
-        <TextField label="Adresse e-mail" type="email" isRequired />
+        <TextInput label="Adresse e-mail" type="email" isRequired />
         <TextArea label="Message" />
         <div className="flex justify-end gap-2">
           <Button size="sm" onPress={() => setOpen(false)}>Annuler</Button>

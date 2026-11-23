@@ -11,8 +11,9 @@ import { useMessages, useStoredState } from "../../provider/SocleProvider";
 import { buttonReset, cx, focusRing } from "../../lib/cx";
 import { ErrorBanner, highlight, LoadError, NoResults, ReloadBar, type ResultsStateProps } from "../../lib/results";
 import { ArrowDown, ArrowUp, Check, ChevronDown, Minus } from "../../icons";
-import { Menu, useRowMenu } from "../Menu/Menu";
+import { DropdownMenu, useRowMenu } from "../DropdownMenu/DropdownMenu";
 import { Tooltip } from "../Tooltip/Tooltip";
+import { InGridContext } from "../Badge/Badge";
 import { Skeleton as Bar, SkeletonGroup } from "../Skeleton/Skeleton";
 import { OverflowTooltip } from "../Tooltip/OverflowTooltip";
 
@@ -185,6 +186,7 @@ export function Table<T extends { id: string }>({
       {...rowMenuProps}
       onKeyDownCapture={onKeyDown}
     >
+      <InGridContext.Provider value={true}>
       {isLoading && rows.length > 0 && <ReloadBar />}
       {hasError && rows.length > 0 && <ErrorBanner onRetry={onRetry} />}
       {hasError && rows.length === 0 ? (
@@ -222,7 +224,7 @@ export function Table<T extends { id: string }>({
             {...(onAction ? { onRowAction: (k: Key) => !String(k).startsWith(GROUP_PREFIX) && onAction(String(k)) } : {})}
             className={cx("w-full border-separate border-spacing-0 outline-none", multiple && checkedCount > 1 && "socle-has-checked")}
           >
-            <TableHeader className="sticky top-0 z-[2] bg-surface">
+            <TableHeader className="socle-table-head sticky top-0 z-[2] bg-surface">
               {multiple && (
                 <Column width={40} minWidth={40} className={cx(headH, "border-b border-line px-3 text-start")}>
                   <Checkbox slot="selection" aria-label={m.selectAll} className={checkboxClass}>
@@ -354,6 +356,7 @@ export function Table<T extends { id: string }>({
           </RACTable>
         </ResizableTableContainer>
       )}
+      </InGridContext.Provider>
     </div>
   );
 }
@@ -422,9 +425,9 @@ function RowActions({ actions, rowTitle }: { actions: TableRowAction[]; rowTitle
           </Tooltip>
         );
         return a.menu ? (
-          <Menu key={a.label} label={a.label} placement="bottom end" trigger={button}>
+          <DropdownMenu key={a.label} label={a.label} placement="bottom end" trigger={button}>
             {a.menu}
-          </Menu>
+          </DropdownMenu>
         ) : (
           <span key={a.label}>{button}</span>
         );

@@ -86,7 +86,7 @@
   }
 }
 
-/* Dialog (D-014, D-122) : fondu du fond, léger zoom de la fenêtre, rebond d'une fermeture refusée. */
+/* Modal (D-014, D-122) : fondu du fond, léger zoom de la fenêtre, rebond d'une fermeture refusée. */
 @layer base {
   @keyframes socle-fade {
     from { opacity: 0; }
@@ -157,7 +157,7 @@
     height: 100%;
   }
   .socle-diff:has(.socle-diff__scroller:focus-visible) {
-    outline: var(--focus-w) solid var(--accent);
+    outline: var(--focus-w) solid var(--focus);
     outline-offset: var(--focus-offset);
   }
   .socle-diff__scroller {
@@ -326,5 +326,83 @@
       forced-color-adjust: none;
       background: Highlight;
     }
+  }
+}
+
+/*
+ * Thème d'organisation (D-337). Hors couche : ces règles passent avant les utilitaires.
+ * Sans thème, aucun attribut n'est posé et rien ne change.
+ */
+
+/* Sidebar et ses conteneurs (AppShell) : les rôles génériques pointent sur les rôles --side-*. */
+.socle-side {
+  --surface-side: var(--side-bg);
+  --fg: var(--side-fg);
+  --fg-2: var(--side-fg-2);
+  --fg-3: var(--side-fg-3);
+  --hover: var(--side-hover);
+  --selected: var(--side-selected);
+  --line: var(--side-line);
+  /* Texte accentué (résumé « n non lus », liens) : lisible sur une sidebar sombre (D-338). */
+  --accent-text: var(--side-highlight);
+}
+
+/* navIndicator « bar » : l'entrée active garde son fond et prend une barre de 3 px à gauche. */
+:root[data-nav-indicator="bar"] .socle-nav-item[data-selected]::before {
+  content: "";
+  position: absolute;
+  top: 4px;
+  bottom: 4px;
+  left: 0;
+  width: 3px;
+  border-radius: 2px;
+  background: var(--side-indicator);
+}
+
+/* tabs « underline » : l'onglet actif n'a plus de fond ; texte en accent et trait de 3 px dessous. */
+:root[data-tabs="underline"] .socle-tab[data-selected] {
+  background-color: transparent;
+  color: var(--accent-text);
+}
+:root[data-tabs="underline"] .socle-tab[data-selected][data-hovered] {
+  background-color: var(--hover);
+}
+:root[data-tabs="underline"] .socle-tab[data-selected]::after {
+  content: "";
+  position: absolute;
+  right: 6px;
+  bottom: 0;
+  left: 6px;
+  height: 3px;
+  border-radius: 2px;
+  background: var(--accent);
+}
+
+/*
+ * buttonSecondary « outline » (D-338) : bouton secondaire transparent, trait de 1 px et texte en --accent-text.
+ * Le trait est une ombre intérieure : même taille que le bouton plein, aucun décalage.
+ */
+:root[data-button-secondary="outline"] .socle-btn-secondary {
+  background-color: transparent;
+  color: var(--accent-text);
+  box-shadow: inset 0 0 0 1px var(--accent-text);
+}
+:root[data-button-secondary="outline"] .socle-btn-secondary[data-hovered] {
+  background-color: var(--hover);
+}
+:root[data-button-secondary="outline"] .socle-btn-secondary[data-pressed] {
+  background-color: var(--selected);
+}
+
+/* tableHeader « tinted » : teinte posée sur le fond opaque de l'en-tête (il reste collant). */
+:root[data-table-header="tinted"] .socle-table-head {
+  background-image: linear-gradient(var(--table-head-bg), var(--table-head-bg));
+}
+
+@media (forced-colors: active) {
+  :root[data-nav-indicator="bar"] .socle-nav-item[data-selected]::before,
+  :root[data-tabs="underline"] .socle-tab[data-selected]::after {
+    forced-color-adjust: none;
+    background: Highlight;
   }
 }

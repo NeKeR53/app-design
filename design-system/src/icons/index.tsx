@@ -2,13 +2,95 @@
  * Icônes internes de Socle (D-028). Elles servent uniquement aux composants
  * de Socle et ne sont pas exportées. Grille 24, trait `--icon-stroke`,
  * couleur `currentColor`. Tracés repris de Lucide (licence ISC).
+ * Un thème d'organisation peut remplacer une icône par un tracé plein (D-338) :
+ * le jeu arrive par le contexte `ThemeIconsContext`, posé par SocleProvider.
  */
-import type { ReactNode, SVGProps } from "react";
+import { createContext, useContext, type ReactNode, type SVGProps } from "react";
+
+/** Noms des icônes internes ; un thème les cite pour les remplacer (`SocleTheme.icons`). */
+export const ICON_NAMES = [
+  "ChevronRight",
+  "ChevronLeft",
+  "ChevronDown",
+  "ChevronsUpDown",
+  "X",
+  "Check",
+  "Minus",
+  "Plus",
+  "Search",
+  "MoreHorizontal",
+  "PanelLeft",
+  "Maximize",
+  "Minimize",
+  "ListDetail",
+  "Settings",
+  "ExternalArrow",
+  "Lock",
+  "AlertTriangle",
+  "ArrowUp",
+  "ArrowDown",
+  "Bell",
+  "CircleCheck",
+  "CircleInfo",
+  "CircleAlert",
+  "ChevronUp",
+  "Copy",
+  "WrapText",
+  "Clock",
+  "ListX",
+  "ArrowDownToLine",
+  "Columns",
+  "UnfoldVertical",
+  "ZoomIn",
+  "ZoomOut",
+  "FitWidth",
+  "Download",
+  "Heading1",
+  "Heading2",
+  "Heading3",
+  "Bold",
+  "Italic",
+  "CodeIcon",
+  "LinkIcon",
+  "ListOrdered",
+  "TextQuote",
+  "Eye",
+  "EyeOff",
+] as const;
+export type IconName = (typeof ICON_NAMES)[number];
+
+/** Jeu d'icônes du thème : `viewBox` commune et tracé plein par icône (D-338). */
+export interface IconSet {
+  viewBox: string;
+  paths: Partial<Record<IconName, string>>;
+}
+
+/** Jeu d'icônes du thème actif ; null : tracés Lucide. */
+export const ThemeIconsContext = createContext<IconSet | null>(null);
 
 type IconProps = SVGProps<SVGSVGElement> & { size?: number };
 
-function icon(paths: ReactNode, name: string) {
+function icon(paths: ReactNode, name: IconName) {
   function Icon({ size = 16, ...props }: IconProps) {
+    const set = useContext(ThemeIconsContext);
+    const d = set?.paths[name];
+    if (d && set)
+      return (
+        <svg
+          width={size}
+          height={size}
+          viewBox={set.viewBox}
+          fill="currentColor"
+          stroke="none"
+          aria-hidden="true"
+          focusable="false"
+          className="shrink-0"
+          data-icon-source="theme"
+          {...props}
+        >
+          <path d={d} />
+        </svg>
+      );
     return (
       <svg
         width={size}
@@ -192,4 +274,8 @@ export const Eye = icon(
     <circle cx="12" cy="12" r="3" />
   </>,
   "Eye",
+);
+export const EyeOff = icon(
+  <path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68M6.61 6.61A13.53 13.53 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61M9.88 9.88a3 3 0 1 0 4.24 4.24M2 2l20 20" />,
+  "EyeOff",
 );

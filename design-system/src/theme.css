@@ -44,6 +44,34 @@
   --color-paper: var(--paper);
   --color-paper-fg: var(--paper-fg);
   --color-paper-link: var(--paper-link);
+  --color-side-bg: var(--side-bg);
+  --color-side-fg: var(--side-fg);
+  --color-side-fg-2: var(--side-fg-2);
+  --color-side-fg-3: var(--side-fg-3);
+  --color-side-hover: var(--side-hover);
+  --color-side-selected: var(--side-selected);
+  --color-side-selected-fg: var(--side-selected-fg);
+  --color-side-indicator: var(--side-indicator);
+  --color-side-line: var(--side-line);
+  --color-primary: var(--primary);
+  --color-primary-fg: var(--primary-fg);
+  --color-focus: var(--focus);
+  --color-highlight: var(--highlight);
+  --color-table-head-bg: var(--table-head-bg);
+  --color-side-highlight: var(--side-highlight);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --color-chart-6: var(--chart-6);
+  --color-chart-7: var(--chart-7);
+  --color-chart-8: var(--chart-8);
+  --color-chart-seq-1: var(--chart-seq-1);
+  --color-chart-seq-2: var(--chart-seq-2);
+  --color-chart-seq-3: var(--chart-seq-3);
+  --color-chart-seq-4: var(--chart-seq-4);
+  --color-chart-seq-5: var(--chart-seq-5);
   --color-transparent: transparent;
   --color-current: currentColor;
 
@@ -62,6 +90,7 @@
   --font-weight-normal: var(--fw-regular);
   --font-weight-medium: var(--fw-medium);
   --font-weight-semibold: var(--fw-semibold);
+  --font-weight-heading: var(--fw-heading);
 
   /* Rayons, ombres */
   --radius-*: initial;

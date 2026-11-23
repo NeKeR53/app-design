@@ -5,7 +5,7 @@
 import { useLayoutEffect, useRef, useState, type ReactNode, type RefObject } from "react";
 import { Button } from "../../components/Button/Button";
 import { IconButton } from "../../components/IconButton/IconButton";
-import { Menu } from "../../components/Menu/Menu";
+import { DropdownMenu } from "../../components/DropdownMenu/DropdownMenu";
 import { MoreHorizontal } from "../../icons";
 import { useConfirmFn, type ConfirmRequest } from "../../lib/confirm";
 import { useMedia } from "../../lib/media";
@@ -187,7 +187,7 @@ export function ActionBar({ actions, zone, subject, onError, onDone }: ActionBar
   if (!primary && icons.length + menu.length + danger.length === 0) return null;
 
   const item = (a: Action) => (
-    <Menu.Item
+    <DropdownMenu.Item
       key={a.id}
       id={a.id}
       label={a.label}
@@ -224,11 +224,11 @@ export function ActionBar({ actions, zone, subject, onError, onDone }: ActionBar
         />
       ))}
       {menu.length + danger.length > 0 && (
-        <Menu label={m.moreActions} placement="bottom end" trigger={<IconButton icon={<MoreHorizontal />} label={m.moreActions} />}>
+        <DropdownMenu label={m.moreActions} placement="bottom end" trigger={<IconButton icon={<MoreHorizontal />} label={m.moreActions} />}>
           {menu.map(item)}
-          {menu.length > 0 && danger.length > 0 && <Menu.Separator />}
+          {menu.length > 0 && danger.length > 0 && <DropdownMenu.Separator />}
           {danger.map(item)}
-        </Menu>
+        </DropdownMenu>
       )}
       {primary && (
         <span className={zone === "topbar" ? "ml-1.5 inline-flex" : "ml-2 inline-flex"}>

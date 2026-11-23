@@ -7,7 +7,7 @@ import { Button, Tree, TreeItem, TreeItemContent, TreeLoadMoreItem, type Key, ty
 import { DropIndicator, useDragAndDrop } from "react-aria-components/useDragAndDrop";
 import { ActionBar, type Action } from "../../patterns/ActionBar/ActionBar";
 import { EmptyState } from "../EmptyState/EmptyState";
-import { useRowMenu } from "../Menu/Menu";
+import { useRowMenu } from "../DropdownMenu/DropdownMenu";
 import { Link } from "../Link/Link";
 import { OverflowTooltip } from "../Tooltip/OverflowTooltip";
 import { ChevronDown, ChevronRight } from "../../icons";
@@ -302,7 +302,7 @@ export function TreeView({
         className={cx(
           "group/row relative flex h-(--row-h) cursor-default items-center gap-1 rounded-md pr-1 text-fg outline-none select-none pointer-coarse:h-11",
           "data-hovered:bg-hover data-selected:bg-selected data-selected:data-hovered:bg-selected",
-          "data-focus-visible:outline-2 data-focus-visible:-outline-offset-2 data-focus-visible:outline-accent data-focus-visible:outline-solid",
+          "data-focus-visible:outline-2 data-focus-visible:-outline-offset-2 data-focus-visible:outline-focus data-focus-visible:outline-solid",
           "data-disabled:opacity-40 data-dragging:opacity-50",
           "data-drop-target:bg-selected data-drop-target:outline-2 data-drop-target:-outline-offset-2 data-drop-target:outline-accent data-drop-target:outline-solid",
         )}
@@ -383,7 +383,7 @@ export function TreeView({
           <TreeItem
             id={`${n.id}${ERROR_SUFFIX}`}
             textValue={m.childrenLoadFailed}
-            className="relative flex h-(--row-h) cursor-default items-center gap-1 rounded-md pr-2 text-sm text-fg-2 outline-none data-focus-visible:outline-2 data-focus-visible:-outline-offset-2 data-focus-visible:outline-accent data-focus-visible:outline-solid"
+            className="relative flex h-(--row-h) cursor-default items-center gap-1 rounded-md pr-2 text-sm text-fg-2 outline-none data-focus-visible:outline-2 data-focus-visible:-outline-offset-2 data-focus-visible:outline-focus data-focus-visible:outline-solid"
             style={({ level }) => ({ paddingInlineStart: `${PAD + (level - 1) * INDENT + 20}px` })}
           >
             <TreeItemContent>

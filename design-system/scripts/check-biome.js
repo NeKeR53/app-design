@@ -19,6 +19,8 @@ const expected = [
   "bad.tsx:12 plugin",
   "bad.tsx:13 plugin",
   "bad.tsx:18 plugin",
+  "bad.tsx:19 plugin", // nouveau nom (D-336)
+  "bad.tsx:20 plugin", // ancien nom déprécié, avec une partie (D-336)
 ];
 
 execFileSync("node", [join(root, "scripts/build-biome.js")], { stdio: "ignore" });

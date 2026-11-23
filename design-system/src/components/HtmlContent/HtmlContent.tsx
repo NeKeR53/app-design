@@ -39,7 +39,7 @@ img[data-hidden-image] { display: inline-block; min-width: 16px; min-height: 16p
 a[data-href] { text-decoration: underline; cursor: pointer; }
 :host([data-surface="paper"]) a[data-href] { color: var(--paper-link); }
 :host([data-surface="theme"]) a[data-href] { color: var(--accent-text); }
-a[data-href]:focus-visible { outline: var(--focus-w) solid var(--accent); outline-offset: var(--focus-offset); border-radius: var(--radius-sm); }
+a[data-href]:focus-visible { outline: var(--focus-w) solid var(--focus); outline-offset: var(--focus-offset); border-radius: var(--radius-sm); }
 table { border-collapse: collapse; max-width: 100%; }
 pre { white-space: pre-wrap; }
 `;

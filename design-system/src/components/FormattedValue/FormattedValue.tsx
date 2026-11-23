@@ -7,7 +7,7 @@ import type { SocleMessages } from "../../i18n/messages";
 import { useMessages } from "../../provider/SocleProvider";
 import { Code } from "../Code/Code";
 import { Link } from "../Link/Link";
-import { StatusBadge, type StatusTone } from "../StatusBadge/StatusBadge";
+import { Badge, type StatusTone } from "../Badge/Badge";
 
 /** Type d'une donnée (D-170). */
 export type ValueType =
@@ -31,7 +31,7 @@ export type ValueType =
 /** Clé enregistrée → libellé et ton : `{ en_cours: { label: "En cours", tone: "info" } }`. */
 export type StatusMap = Readonly<Record<string, { label: string; tone: StatusTone }>>;
 
-/** Comment lire et écrire une donnée. Partagé par les colonnes de ListPage et les propriétés de DetailPanel. */
+/** Comment lire et écrire une donnée. Partagé par les colonnes de ListPage et les propriétés de Drawer. */
 export interface ValueFormat {
   /** Type de la donnée. Défaut : `text`. */
   type?: ValueType;
@@ -239,7 +239,7 @@ export function FormattedValue({ value, ...format }: FormattedValueProps): React
   switch (type) {
     case "status": {
       const s = format.statuses?.[String(value)];
-      return <StatusBadge tone={s?.tone ?? "neutral"}>{text}</StatusBadge>;
+      return <Badge tone={s?.tone ?? "neutral"}>{text}</Badge>;
     }
     case "email":
       return <Link href={`mailto:${String(value)}`}>{text}</Link>;

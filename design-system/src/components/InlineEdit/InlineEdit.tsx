@@ -5,7 +5,7 @@
  */
 import { useEffect, useRef, useState, type KeyboardEvent } from "react";
 import { FieldError } from "react-aria-components/FieldError";
-import { Input, TextArea, TextField } from "react-aria-components/TextField";
+import { Input, TextArea, TextField as RACTextField } from "react-aria-components/TextField";
 import { useMessages } from "../../provider/SocleProvider";
 import { cx } from "../../lib/cx";
 import { FieldLabel, fieldBox } from "../Field/Field";
@@ -100,7 +100,7 @@ export function InlineEdit({
     <span
       className={cx(
         "socle-box relative block min-w-0 border-transparent hover:border-line-strong",
-        "has-[button:focus-visible]:border-accent has-[button:focus-visible]:outline-1 has-[button:focus-visible]:outline-solid has-[button:focus-visible]:outline-accent",
+        "has-[button:focus-visible]:border-focus has-[button:focus-visible]:outline-1 has-[button:focus-visible]:outline-solid has-[button:focus-visible]:outline-focus",
         box,
       )}
       onClick={(e) => {
@@ -215,7 +215,7 @@ function Editor({
   const font = { font: "inherit", color: "inherit" } as const;
 
   return (
-    <TextField
+    <RACTextField
       ref={root}
       value={draft}
       onChange={(v) => {
@@ -239,6 +239,6 @@ function Editor({
         <Input className={fieldClass} style={font} onKeyDown={onKeyDown} aria-busy={pending || undefined} />
       )}
       <FieldError className="text-sm text-danger">{error}</FieldError>
-    </TextField>
+    </RACTextField>
   );
 }

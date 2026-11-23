@@ -9,7 +9,7 @@ Ne pas l'utiliser pour : un journal à lire, chercher ou filtrer (prendre `LogVi
 ## Anatomie
 1. **Écran** (obligatoire) : xterm.js sur `--surface`, police `--font-mono` 13 px, interligne 1,2, 5 000 lignes d'historique (D-282).
 2. **Cadre** : 1 px `--line`, rayon 8 px ; `--accent` tant que le terminal a le focus (D-282).
-3. **Barre d'état** (obligatoire), 28 px, sur `--surface-side`, `--fs-sm`, `--fg-2` : état (`StatusBadge`), aide à droite, taille « colonnes × lignes ».
+3. **Barre d'état** (obligatoire), 28 px, sur `--surface-side`, `--fs-sm`, `--fg-2` : état (`Badge`), aide à droite, taille « colonnes × lignes ».
 
 ## Variantes
 Interactif (défaut) ; lecture seule (`readOnly`).
@@ -92,7 +92,7 @@ Moteur qui ne se charge pas : message dans la barre d'état. Envoi qui échoue :
 Onglet « Console » d'une page de détail, panneau d'une page plein écran (`fill`).
 
 ## Composition
-Contient `StatusBadge`. Les actions autour viennent d'une `ActionBar` de la page.
+Contient `Badge`. Les actions autour viennent d'une `ActionBar` de la page.
 
 ## Décisions
 D-280, D-281, D-282, D-283, D-284

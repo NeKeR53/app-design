@@ -7,7 +7,7 @@ import { useDeferredValue, useEffect, useId, useLayoutEffect, useRef, useState, 
 import { LabelContext } from "react-aria-components/Label";
 import { Toolbar } from "react-aria-components/Toolbar";
 import type { EditorView } from "@codemirror/view";
-import { Divider } from "../Divider/Divider";
+import { Separator } from "../Separator/Separator";
 import { FieldLabel, ReadOnlyLock, fieldBox, fieldRoot, type FieldBaseProps } from "../Field/Field";
 import { IconButton } from "../IconButton/IconButton";
 import { Markdown } from "../Markdown/Markdown";
@@ -237,7 +237,7 @@ export function MarkdownEditor({
           <Toolbar aria-label={m.formatting} className="flex flex-none flex-wrap items-center gap-0.5 border-b border-line px-1 py-0.5">
             {GROUPS.map((group, i) => (
               <span key={i} className="contents">
-                {i > 0 && <Divider orientation="vertical" />}
+                {i > 0 && <Separator orientation="vertical" />}
                 {group.map((tool) => (
                   <IconButton key={tool.command} icon={tool.icon} label={tool.label(m)} shortcut={COMMAND_SHORTCUTS[tool.command]} isDisabled={toolsOff} onPress={() => run(tool.command)} />
                 ))}
@@ -267,7 +267,7 @@ export function MarkdownEditor({
                 role="region"
                 aria-label={m.preview}
                 tabIndex={0}
-                className="absolute inset-0 overflow-auto px-3 py-2 outline-none focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-accent @max-[560px]:static @max-[560px]:max-h-(--md-max-height)"
+                className="absolute inset-0 overflow-auto px-3 py-2 outline-none focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-focus @max-[560px]:static @max-[560px]:max-h-(--md-max-height)"
               >
                 {rendered}
               </div>
@@ -278,7 +278,7 @@ export function MarkdownEditor({
               role="region"
               aria-label={m.preview}
               tabIndex={0}
-              className="max-h-(--md-max-height) min-h-[calc(var(--md-min-rows)*1.6em+16px)] overflow-auto px-3 py-2 outline-none focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-accent"
+              className="max-h-(--md-max-height) min-h-[calc(var(--md-min-rows)*1.6em+16px)] overflow-auto px-3 py-2 outline-none focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-focus"
             >
               {rendered}
             </div>

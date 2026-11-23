@@ -138,7 +138,7 @@ export const EnDirect: Story = {
 
 const levelled = makeLines(400);
 
-/** Niveaux : filtre par Menu à choix avec compteurs (D-286), liste des erreurs qui mène à la ligne (D-287). */
+/** Niveaux : filtre par DropdownMenu à choix avec compteurs (D-286), liste des erreurs qui mène à la ligne (D-287). */
 export const Niveaux: Story = {
   render: () => (
     <div className="flex h-[420px] flex-col">

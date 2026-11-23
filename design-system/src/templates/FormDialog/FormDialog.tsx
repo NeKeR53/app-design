@@ -8,7 +8,7 @@ import { AlertTriangle } from "../../icons";
 import { FormFields, inputFields, useFormModel, type FormField, type FormSubmit, type FormValues } from "../../lib/form";
 import { useMessages } from "../../provider/SocleProvider";
 import { Button } from "../../components/Button/Button";
-import { Dialog, type DialogSize } from "../../components/Dialog/Dialog";
+import { Modal, type ModalSize } from "../../components/Modal/Modal";
 
 export interface OpenFormOptions {
   /** Titre : le verbe et l'objet (« Nouveau contact »). */
@@ -40,7 +40,7 @@ export function useOpenForm(): OpenFormFunction {
 }
 
 /** Taille (D-198) : `sm` jusqu'à quatre champs sans zone de texte ni groupe, sinon `md`. */
-export function formDialogSize(fields: readonly FormField[]): DialogSize {
+export function formDialogSize(fields: readonly FormField[]): ModalSize {
   const simple = fields.every((f) => f.type !== "fieldset" && f.type !== "textarea" && f.type !== "checkboxGroup");
   return simple && inputFields(fields).length <= 4 ? "sm" : "md";
 }
@@ -103,7 +103,7 @@ function FormDialogView({ options, isOpen, onDone }: { options: OpenFormOptions;
   };
 
   return (
-    <Dialog
+    <Modal
       isOpen={isOpen}
       onOpenChange={(open) => !open && onDone(null)}
       title={options.title}
@@ -130,6 +130,6 @@ function FormDialogView({ options, isOpen, onDone }: { options: OpenFormOptions;
           </div>
         )}
       </form>
-    </Dialog>
+    </Modal>
   );
 }

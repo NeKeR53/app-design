@@ -4,9 +4,30 @@ Versions selon semver (règle 6 du skill design) : une nouvelle option facultati
 
 ## [Non publié]
 
+### Cassé (1.0.0)
+Les composants prennent les noms de component.gallery (D-336). Les types de props suivent.
+- `Disclosure` → `Accordion`
+- `Switch` → `Toggle`
+- `Divider` → `Separator`
+- `Dialog` → `Modal` (`DialogSize` → `ModalSize` ; `useConfirm` ne change pas)
+- `Menu` → `DropdownMenu` (`MenuItemProps`, `MenuSectionProps`, `MenuSubmenuProps` → `DropdownMenu…Props` ; `useContextMenu`, `MenuPoint` ne changent pas)
+- `TextField` → `TextInput`
+- `SearchField` → `SearchInput`
+- `StepList` → `ProgressIndicator`
+- `StatusBadge`, `StatusDot` → `Badge`, `BadgeDot` (`StatusTone` ne change pas)
+- `DetailPanel` → `Drawer`, `DetailPanel.Section` → `Drawer.Section` (`DetailPanelProps`, `DetailPanelSectionProps`, `DetailPanelComposedProps`, `DetailPanelDeclarativeProps` → `Drawer…Props` ; `DetailHeader`, `DetailSection`, `DetailField`, `SectionSummary`, l'option `detail` d'AppShell et `DetailPage` ne changent pas)
+- `RadioGroup` → `RadioButtonGroup`
+- Storybook : les stories passent sous les nouveaux titres (`Composants/Modal`, `Patterns/Drawer`…).
+
+**Migration.** Les anciens noms marchent encore : ils sont exportés comme alias dépréciés (`@deprecated`), avec leurs parties (`DetailPanel.Section`, `Menu.Item`). Ils seront retirés en 2.0.0. Pour migrer, chercher et remplacer dans l'app, en mot entier, selon la liste ci-dessus : `Disclosure` → `Accordion`, `Switch` → `Toggle`, `Divider` → `Separator`, `Dialog` → `Modal`, `Menu` → `DropdownMenu`, `TextField` → `TextInput`, `SearchField` → `SearchInput`, `StepList` → `ProgressIndicator`, `StatusBadge` → `Badge`, `StatusDot` → `BadgeDot`, `DetailPanel` → `Drawer`, `RadioGroup` → `RadioButtonGroup`. Ne remplacer que les imports de `socle-ui` et leurs balises.
+
 Mise en conformité avec les specs existantes, après une revue UX comparée à React Bits. Pas de nouvelle décision de design.
 
 ### Ajouté
+- Tokens `--primary` et `--primary-fg` (défaut : `--fg` et `--surface`, rendu inchangé) : un thème d'organisation peut colorer le bouton principal et l'étape en cours (D-338).
+- Thème d'organisation, compléments (D-338), tous facultatifs, rendu neutre inchangé : couleurs des graphiques `--chart-1` à `--chart-8` et `--chart-seq-1` à `--chart-seq-5` (palette neutre par défaut, clair et sombre, utilitaires `bg-chart-1`…) ; `signature.buttonSecondary` (`fill` ou `outline`, attribut `data-button-secondary`) ; `typography.headingWeight` (token `--fw-heading`, utilitaire `font-heading`, lu par les titres de page, section, modale et panneau) ; `icons` (`{ viewBox, paths }`, type `IconName` et liste `ICON_NAMES` exportés) pour remplacer des icônes internes par des tracés pleins ; token `--side-highlight` : le résumé « n non lus » de la sidebar reste lisible sur une sidebar sombre.
+- Gabarit `LoginPage` (D-339) : page de connexion centrée, logo, identifiant, mot de passe avec bascule d'affichage, « Se souvenir de moi », « Mot de passe oublié ? », fournisseurs d'identité, message d'échec global focalisé. Types `LoginPageProps`, `LoginValues`, `LoginProvider`, `LoginResult`. Libellés internes `login…`.
+- Thème d'organisation (D-337) : option facultative `theme` de `SocleProvider` (type `SocleTheme`, liste `THEME_TOKENS`). Tokens clair et sombre, polices, rayons et trois variantes signature : `navIndicator` (`fill` ou `bar`), `tabs` (`pill` ou `underline`), `tableHeader` (`plain` ou `tinted`). Sans thème, rendu inchangé. Nouveaux tokens, égaux par défaut aux rôles génériques : `--side-bg`, `--side-fg`, `--side-fg-2`, `--side-fg-3`, `--side-hover`, `--side-selected`, `--side-selected-fg`, `--side-indicator`, `--side-line`, `--focus`, `--highlight`, `--table-head-bg` ; utilitaires Tailwind correspondants (`bg-side-bg`, `outline-focus`, `bg-highlight`…). L'anneau de focus lit `--focus` ; les points non lus (Sidebar, List, NotificationCenter) lisent `--highlight`.
 - `TabPanel` et `useTabPanelProps` : la zone de contenu reçoit le rôle `tabpanel`, nommée par l'onglet actif ; option facultative `id` sur `Tabs`. `AppShell` les relie tout seul quand il a des vues (Tabs.spec.md).
 - Libellés internes `rowAction` et `moreActionsFor`.
 
@@ -19,10 +40,21 @@ Mise en conformité avec les specs existantes, après une revue UX comparée à 
 - AppShell : l'overlay de la sidebar repliée reste ouvert tant que le focus clavier est dedans.
 - List : lignes de 44 px au toucher (List.spec.md).
 - Table : les actions de ligne sont nommées avec la ligne, « Archiver Budget 2027 », « Plus d'actions pour Budget 2027 » (Table.spec.md).
-- StepList : le focus reste sur l'étape après un clic ; sous 380 px, une étape garde son nom accessible.
+- ProgressIndicator : le focus reste sur l'étape après un clic ; sous 380 px, une étape garde son nom accessible.
 - DocumentViewer, LogViewer, DiffView : leur barre d'outils se parcourt avec les flèches (Toolbar de React Aria) ; dans un champ texte, les flèches déplacent le curseur.
-- Select : info-bulle sur une option ou une valeur coupée. SearchField : info-bulle sur une étiquette coupée, au survol et au clavier, à la place de `title`. Annonce « Recherche en cours » fiable, sans doublon.
+- Select : info-bulle sur une option ou une valeur coupée. SearchInput : info-bulle sur une étiquette coupée, au survol et au clavier, à la place de `title`. Annonce « Recherche en cours » fiable, sans doublon.
 - FormattedValue : exemple de statut « En cours » en ton `info` (D-161) ; spec alignée sur le texte masqué de « — ».
+
+- Toast : au-delà de trois toasts, le plus ancien toast à minuterie se ferme d'abord ; une erreur `danger` sans durée n'est plus évincée par des succès (D-153).
+- Sidebar : les flèches déplacent le focus sans changer de page ; Entrée, Espace ou un clic sélectionnent. L'élément de la page courante porte `aria-current="page"`.
+- AppShell : le panneau de détail en overlay (tablette) ou plein écran (mobile) prend le focus à l'ouverture, le garde avec Tab et le rend au bouton à la fermeture. La sidebar n'est plus un repère `complementary` sans nom.
+- ListPage : après une recherche, un filtre ou un rechargement, seules les lignes cochées encore visibles restent cochées. Un changement de page remet la liste en haut.
+- Tabs : `onClose` est appelé avant tout changement de vue ; rendre `false` annule la fermeture (option facultative).
+- Table : un `BadgeDot` dans une cellule n'ajoute plus d'arrêt de tabulation.
+- EmptyState : `description` accepte un `ReactNode` (lien dans la phrase) ; le titre est un vrai titre, option facultative `headingLevel`.
+- IconButton : le nom n'est plus lu deux fois (l'info-bulle ne sert de description que si elle ajoute un raccourci).
+- Link : `mailto:` et `tel:` s'ouvrent dans le même onglet, sans mention « navigateur ».
+- Drawer : le bouton de section est dans un titre `h3` et pilote son contenu par `aria-controls`.
 
 ### Interne
 - `tsconfig.json` : types `ES2023.Intl`.

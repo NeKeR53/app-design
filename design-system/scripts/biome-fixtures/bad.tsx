@@ -1,4 +1,4 @@
-import { Button, Sidebar } from "socle-ui";
+import { Button, DetailPanel, Modal, Sidebar } from "socle-ui";
 import { Internal } from "socle-ui/src/components/Button/Button";
 import { Dialog } from "react-aria-components";
 import { useButton } from "@react-aria/button";
@@ -16,6 +16,8 @@ export function Bad() {
       <Dialog />
       <Internal />
       <p style={{ color: "red" }} title="hsl(0 50% 50%)">{String(useButton)}</p>
+      <Modal className="x" />
+      <DetailPanel.Section style={{ gap: 0 }} />
     </>
   );
 }

@@ -3,8 +3,8 @@ import { useMemo, useState } from "react";
 import type { Key, SortDescriptor } from "react-aria-components";
 import { expect, fn, userEvent, waitFor, within } from "storybook/test";
 import { Table, type TableColumn } from "./Table";
-import { Menu } from "../Menu/Menu";
-import { StatusDot } from "../StatusBadge/StatusBadge";
+import { DropdownMenu } from "../DropdownMenu/DropdownMenu";
+import { BadgeDot } from "../Badge/Badge";
 import { MoreHorizontal } from "../../icons";
 import { Doc } from "../../../.storybook/story-icons";
 
@@ -67,7 +67,7 @@ function Demo(props: { isLoading?: boolean; hasError?: boolean; terms?: string[]
         sortDescriptor={sort}
         onSortChange={setSort}
         onAction={onOpen}
-        rowActions={() => [{ icon: <MoreHorizontal />, label: "Plus d'actions", menu: <><Menu.Item label="Renommer" /><Menu.Item label="Supprimer" danger /></> }]}
+        rowActions={() => [{ icon: <MoreHorizontal />, label: "Plus d'actions", menu: <><DropdownMenu.Item label="Renommer" /><DropdownMenu.Item label="Supprimer" danger /></> }]}
         {...(props.isLoading ? { isLoading: true } : {})}
         {...(props.hasError ? { hasError: true, onRetry: () => {} } : {})}
         {...(props.terms ? { searchTerms: props.terms, onClearSearch: () => {} } : {})}
@@ -221,7 +221,7 @@ function Dense(props: { density?: "compact"; group?: boolean; double?: boolean; 
         columns={VAR_COLS}
         rows={VARS}
         // Un état se dit par une pastille dans la case, pas par un fond (D-276).
-        renderCell={(r, c) => (c === "state" ? <StatusDot tone={r.state} label={STATE_LABEL[r.state]} /> : String(r[c as keyof Variable]))}
+        renderCell={(r, c) => (c === "state" ? <BadgeDot tone={r.state} label={STATE_LABEL[r.state]} /> : String(r[c as keyof Variable]))}
         selectionMode="multiple"
         onSelectionChange={setSel}
         onAction={onOpen}
@@ -323,5 +323,32 @@ export const EnTeteCoupe: Story = {
     await userEvent.hover(header);
     await waitFor(() => expect(body().getByRole("tooltip")).toHaveTextContent("Dernière modification"), { timeout: 2000 });
     await userEvent.unhover(header);
+  },
+};
+
+/** Un `BadgeDot` dans une case n'ajoute pas d'arrêt de tabulation : un seul pour la grille ; les flèches l'atteignent avec sa case, info-bulle comprise. */
+export const PointDansLaGrille: Story = {
+  render: () => (
+    <>
+      <Dense />
+      <button type="button">Après le tableau</button>
+    </>
+  ),
+  play: async ({ canvasElement }) => {
+    const c = within(canvasElement);
+    const dots = c.getAllByRole("img");
+    await expect(dots).toHaveLength(VARS.length);
+    for (const d of dots) await expect(d).toHaveAttribute("tabindex", "-1");
+    // Tab entre dans la grille, puis en sort d'un coup : aucun arrêt par point.
+    const row = c.getByRole("row", { name: /SMTP_HOST/ });
+    await expect(within(row).getByRole("img")).toHaveAccessibleName("Défini");
+    await userEvent.click(within(row).getByRole("rowheader"));
+    await userEvent.tab();
+    await expect(c.getByRole("button", { name: "Après le tableau" })).toHaveFocus();
+    // Flèches : la case « État » donne le focus au point, qui montre son nom.
+    await userEvent.click(within(row).getByRole("rowheader"));
+    await userEvent.keyboard("{ArrowRight}{ArrowRight}");
+    await waitFor(() => expect(within(row).getByRole("img", { name: "Défini" })).toHaveFocus());
+    await waitFor(() => expect(body().getByRole("tooltip")).toHaveTextContent("Défini"));
   },
 };

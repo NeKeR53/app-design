@@ -34,6 +34,16 @@ for (const kind of ["components", "patterns", "templates"]) {
   }
 }
 
+// Anciens noms dépréciés : « export const Dialog = Modal; » dans index.ts (D-336).
+const deprecated = [...index.matchAll(/^export const ([A-Z]\w*) = ([A-Z]\w*);/gm)].map((m) => [m[1], m[2]]);
+const deprecatedSection = deprecated.length
+  ? `## Anciens noms (dépréciés, retirés en 2.0.0)
+Ces noms marchent encore. Ne pas les utiliser dans du code neuf (D-336).
+${deprecated.map(([old, name]) => `- \`${old}\` → \`${name}\``).join("\n")}
+
+`
+  : "";
+
 // 3. Point d'entrée.
 const kindLabel = { components: "Composant", patterns: "Pattern", templates: "Gabarit" };
 const ai = `# ${pkg.name} ${pkg.version} — guide pour l'IA
@@ -48,7 +58,7 @@ Ce fichier est livré avec le package. Il décrit la version installée : lis-le
 - Avant d'utiliser un composant, lire sa spec dans [specs/](specs/) : options, comportements, contenu, accessibilité.
 
 ## Mise en place
-1. À la racine de l'app : \`import "${pkg.name}/styles.css";\` puis envelopper l'app dans \`<SocleProvider>\` (accent, densité, plateforme, préfixe de mémorisation, libellés traduits avec \`messages\`).
+1. À la racine de l'app : \`import "${pkg.name}/styles.css";\` puis envelopper l'app dans \`<SocleProvider>\` (accent, densité, plateforme, préfixe de mémorisation, libellés traduits avec \`messages\`, thème d'organisation avec \`theme\`).
 2. Avec Tailwind, dans le CSS principal : \`@import "tailwindcss";\` puis \`@import "${pkg.name}/theme.css";\` (seules les couleurs Socle existent).
 3. Garde-fous, selon le linter de l'app :
    - **Biome** (2.6 ou plus récent) : \`"extends": ["${pkg.name}/biome"]\` dans \`biome.json\`. \`biome lint\` (ou \`biome check\`) signale les imports interdits (librairie headless, chemins internes de \`${pkg.name}\`), \`style\` et \`className\` sur un composant Socle, et les couleurs en dur dans le code et le CSS. Limite : la règle reconnaît un composant Socle par son nom ; un import renommé (\`Button as B\`) lui échappe. Une exception justifiée : \`// biome-ignore lint/plugin: <raison>\`.
@@ -60,7 +70,7 @@ Ce fichier est livré avec le package. Il décrit la version installée : lis-le
 | \`SocleProvider\`, \`useSocle\` | Fournisseur | Réglages de l'app et choix de l'utilisateur (D-029) ; libellés \`messages\` (D-089). | [AppShell](specs/AppShell.md) |
 ${entries.map((e) => `| \`${e.name}\` | ${kindLabel[e.kind]} | ${e.role.replace(/\|/g, "\\|")} | [${e.name}](specs/${e.name}.md) |`).join("\n")}
 
-## Options par composant
+${deprecatedSection}## Options par composant
 ${entries.map((e) => `### ${e.name}\n${e.options || "Voir la spec."}\n`).join("\n")}
 ## Références
 - [Principes](docs/principles.md)

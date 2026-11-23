@@ -15,7 +15,7 @@ Ne pas l'utiliser pour :
 ## Variantes
 | Variante | Rendu |
 |---|---|
-| Avec `href` | Lien (`<a>`). Externe si `http:`, `https:` ou `mailto:` : nouvel onglet, flèche. |
+| Avec `href` | Lien (`<a>`). Externe si `http:` ou `https:` : nouvel onglet, flèche. `mailto:` et `tel:` ne sont pas externes : même onglet, sans flèche. |
 | Sans `href` | Bouton à l'apparence de lien. |
 
 ## Options

@@ -8,7 +8,7 @@ Ne pas l'utiliser pour : une console où l'on tape (prendre `Terminal`) ; une li
 
 ## Anatomie
 1. **Cadre** : 1 px `--line`, rayon 8 px (D-285).
-2. **Barre d'outils** (`role="toolbar"`) : réglages de l'app (`tools`), filtre « Niveau » (si `levels`), `SearchField`, « n sur N », résultat précédent et suivant ; à droite : Suivre (si `live`), Retour à la ligne, Horodatage (si des lignes ont une heure), Liste des erreurs (si `levels`), Copier, actions de l'app (`ActionBar` zone `toolbar`).
+2. **Barre d'outils** (`role="toolbar"`) : réglages de l'app (`tools`), filtre « Niveau » (si `levels`), `SearchInput`, « n sur N », résultat précédent et suivant ; à droite : Suivre (si `live`), Retour à la ligne, Horodatage (si des lignes ont une heure), Liste des erreurs (si `levels`), Copier, actions de l'app (`ActionBar` zone `toolbar`).
 3. **Lignes**, liste virtualisée, `--font-mono` 12,5 px, hauteur 18 px : numéro (`--fg-3`, gouttière à marque de niveau de 3 px), heure HH:MM:SS.mmm (`--fg-3`), texte aux couleurs ANSI (`--ansi-n`, D-281).
 4. **Liste des erreurs** (si ouverte) : panneau de 260 px à droite, `List` « Erreurs · n » (D-287).
 5. **Barre d'état**, 28 px, sur `--surface-side` : « n lignes » (et les plus anciennes oubliées), « n erreurs » en `--danger`, « n alertes » en `--warning`, « En direct », « Suivi en pause » avec « Revenir à la fin ».
@@ -58,7 +58,7 @@ Simple (défaut) ; à niveaux (`levels`) ; en direct (`live`).
 | Liste virtualisée, numéro et heure en colonnes (D-285) | verrouillé | `Statique` |
 | Couleurs ANSI en tokens, jamais de HTML (D-281, D-289) | verrouillé | `CouleursAnsi` |
 | Suivre la fin, pause en remontant, « Revenir à la fin » (D-288) | réglable (`live`) | `EnDirect` |
-| Filtre de niveau par Menu à choix avec compteurs, liste des erreurs (D-286, D-287) | réglable (`levels`) | `Niveaux` |
+| Filtre de niveau par DropdownMenu à choix avec compteurs, liste des erreurs (D-286, D-287) | réglable (`levels`) | `Niveaux` |
 | Recherche : « n sur N », Entrée et F3, Maj pour revenir (D-289) | verrouillé | `Recherche` |
 | Copie : sélection, sinon lignes affichées sans ANSI (D-289) | verrouillé | `Copie` |
 | Retour à la ligne et horodatage (D-289) | réglable (`wrap`, `timestamps`) | `Affichage` |
@@ -87,7 +87,7 @@ Copie refusée par le navigateur : « Copie impossible ». Ligne de plus de 10 0
 Onglet « Journal » d'une page de détail, page plein écran (`fill`).
 
 ## Composition
-Contient `Button`, `Menu`, `SearchField`, `IconButton`, `List`, `EmptyState`, `StatusBadge`, `ActionBar`.
+Contient `Button`, `DropdownMenu`, `SearchInput`, `IconButton`, `List`, `EmptyState`, `Badge`, `ActionBar`.
 
 ## Décisions
 D-281, D-285, D-286, D-287, D-288, D-289

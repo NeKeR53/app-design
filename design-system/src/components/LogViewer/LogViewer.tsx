@@ -27,9 +27,9 @@ import { Button } from "../Button/Button";
 import { EmptyState } from "../EmptyState/EmptyState";
 import { IconButton } from "../IconButton/IconButton";
 import { List } from "../List/List";
-import { Menu } from "../Menu/Menu";
-import { SearchField } from "../SearchField/SearchField";
-import { StatusBadge } from "../StatusBadge/StatusBadge";
+import { DropdownMenu } from "../DropdownMenu/DropdownMenu";
+import { SearchInput } from "../SearchInput/SearchInput";
+import { Badge } from "../Badge/Badge";
 import { detectLevel, findLines, LineStore, type LogLine } from "./logLines";
 
 export type { LogLine, LogLevel } from "./logLines";
@@ -598,21 +598,21 @@ export function LogViewer({
       <Toolbar aria-label={m.logTools} className="flex flex-none flex-wrap items-center gap-1.5 border-b border-solid border-line px-2 py-1.5">
         {tools}
         {levelInfo ? (
-          <Menu label={m.logLevel(levelName)} trigger={<Button size="sm">{m.logLevel(levelName)}</Button>}>
-            <Menu.Section selectionMode="single" selectedKeys={[level]} onSelectionChange={(keys) => {
+          <DropdownMenu label={m.logLevel(levelName)} trigger={<Button size="sm">{m.logLevel(levelName)}</Button>}>
+            <DropdownMenu.Section selectionMode="single" selectedKeys={[level]} onSelectionChange={(keys) => {
               const next = [...keys][0] as LogLevelFilter | undefined;
               if (!next) return;
               setLevel(next);
               setMatchPos(-1);
               setRevealed(undefined);
             }}>
-              <Menu.Item id="all" label={`${m.levelAllLines} (${total.toLocaleString()})`} />
-              <Menu.Item id="warning" label={`${m.levelWarnings} (${levelInfo.alerts.length.toLocaleString()})`} />
-              <Menu.Item id="error" label={`${m.levelErrors} (${levelInfo.errors.length.toLocaleString()})`} />
-            </Menu.Section>
-          </Menu>
+              <DropdownMenu.Item id="all" label={`${m.levelAllLines} (${total.toLocaleString()})`} />
+              <DropdownMenu.Item id="warning" label={`${m.levelWarnings} (${levelInfo.alerts.length.toLocaleString()})`} />
+              <DropdownMenu.Item id="error" label={`${m.levelErrors} (${levelInfo.errors.length.toLocaleString()})`} />
+            </DropdownMenu.Section>
+          </DropdownMenu>
         ) : null}
-        <SearchField label={m.logSearch} onChange={(criteria) => setQuery(criteria.text)} />
+        <SearchInput label={m.logSearch} onChange={(criteria) => setQuery(criteria.text)} />
         <span id={searchId} aria-live="polite" className="min-w-16 text-sm whitespace-nowrap text-fg-3 tabular-nums">
           {needle ? (matches.length ? m.matchOf(Math.max(matchPos, 0) + 1, matches.length) : m.noMatchingLine) : ""}
         </span>
@@ -672,7 +672,7 @@ export function LogViewer({
           }}
           style={{ "--log-gutter": `${digits + 2}ch` } as CSSProperties}
           className={cx(
-            "min-h-0 min-w-0 flex-1 overflow-auto py-1 font-mono text-[12.5px] leading-[18px] outline-none focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-accent",
+            "min-h-0 min-w-0 flex-1 overflow-auto py-1 font-mono text-[12.5px] leading-[18px] outline-none focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-focus",
             viewEmpty && "hidden",
           )}
         >
@@ -710,7 +710,7 @@ export function LogViewer({
         </span>
         {levelInfo?.errors.length ? <span className="text-danger">{m.errorCount(levelInfo.errors.length)}</span> : null}
         {levelInfo?.warnings ? <span className="text-warning">{m.warningCount(levelInfo.warnings)}</span> : null}
-        {live ? <StatusBadge tone="success">{m.logLive}</StatusBadge> : null}
+        {live ? <Badge tone="success">{m.logLive}</Badge> : null}
         {live && !follow ? (
           <span className="ml-auto flex items-center gap-2">
             <span aria-live="polite">{m.followPaused(newLines)}</span>

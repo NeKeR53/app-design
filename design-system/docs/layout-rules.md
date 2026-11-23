@@ -26,7 +26,7 @@ Ces règles s'appliquent à toutes les apps. Si aucune règle ne couvre un cas, 
 - **Points de rupture** : 640 et 1024 px (D-013).
 - **Messages** (D-159) : le résultat d'une action va dans un toast (D-154), avec « Annuler » si l'action se défait (D-007) ; un événement passé va dans le centre de notifications (D-156) ; un état durable de la page ou de l'app (hors ligne, lecture seule) va dans la barre du haut, après le titre, par `pageStatus` : un seul à la fois (D-251, D-252) ; un message local reste un encart dans la zone concernée (D-085). Jamais de bandeau pleine largeur.
 - **Échap** ferme ce qui flotte (overlay, feuille, détail en overlay, modale, menu).
-- **Fenêtre secondaire** : `Dialog`, au-dessus de l'AppShell. Pied calé à droite : « Annuler », puis l'action (D-124). Sur mobile, `sm` et `md` centrées, `lg` et `xl` en plein écran (D-121).
+- **Fenêtre secondaire** : `Modal`, au-dessus de l'AppShell. Pied calé à droite : « Annuler », puis l'action (D-124). Sur mobile, `sm` et `md` centrées, `lg` et `xl` en plein écran (D-121).
 - **Confirmation** : seulement avant une action irréversible (D-007), par `useConfirm` : titre en question, phrase de conséquence, bouton au verbe de l'action (D-126 à D-128).
 
 ## Actions (D-111)
@@ -84,7 +84,13 @@ Une app décrit ses actions par des données (`Action`) et les passe à `ActionB
 - `content` : titre de section, puis lignes de réglage pleine largeur. Le libellé et la description sont à gauche, le contrôle calé à droite. Les changements s'appliquent immédiatement (D-007).
 - L'app décrit ses réglages par des données ; le gabarit choisit le contrôle (D-200). Un texte s'applique à Entrée ou en quittant le champ (D-204).
 - Une liste gérée dans les réglages (environnements, clés) : lignes `item`, actions de ligne par `Action` (D-206).
-- Conteneur : `Dialog` `xl` sans pied, ou zone `main` ; sous 640 px de large, liste puis rubrique (D-208).
+- Conteneur : `Modal` `xl` sans pied, ou zone `main` ; sous 640 px de large, liste puis rubrique (D-208).
+
+### LoginPage (D-339)
+- Seule dans la fenêtre, avant AppShell : panneau centré de 464 px au plus sur `--surface-side`.
+- `header` : logo de l'app, titre, sous-titre. Puis les fournisseurs d'identité et « ou », s'il y en a.
+- Champs : identifiant, mot de passe ; libellés visibles. Puis « Se souvenir de moi » et « Mot de passe oublié ? », puis « Se connecter » en pleine largeur.
+- Un échec de connexion est un seul message en haut du panneau, jamais sous un champ.
 
 ## Petites règles
 

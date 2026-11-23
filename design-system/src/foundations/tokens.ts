@@ -37,6 +37,10 @@ export const COLOR_TOKENS = [
   ["--ansi-15", "ANSI 15 : blanc vif (D-281)"],
 ] as const;
 
+/** Couleurs des graphiques (D-338) : catégories dans un ordre fixe, jamais répétées ; paliers séquentiels du clair au foncé. */
+export const CHART_TOKENS = ["--chart-1", "--chart-2", "--chart-3", "--chart-4", "--chart-5", "--chart-6", "--chart-7", "--chart-8"] as const;
+export const CHART_SEQ_TOKENS = ["--chart-seq-1", "--chart-seq-2", "--chart-seq-3", "--chart-seq-4", "--chart-seq-5"] as const;
+
 export const TEXT_TOKENS = ["--fs-xs", "--fs-sm", "--fs-md", "--fs-lg", "--fs-xl", "--fs-2xl"] as const;
 export const SPACE_TOKENS = ["--sp-1", "--sp-1-5", "--sp-2", "--sp-3", "--sp-4", "--sp-5", "--sp-6", "--sp-8", "--sp-10", "--sp-12"] as const;
 export const RADIUS_TOKENS = ["--radius-sm", "--radius-md", "--radius-lg"] as const;

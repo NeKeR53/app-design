@@ -428,7 +428,7 @@ export function ComboBox(props: ComboBoxProps) {
                 className={cx(
                   "inline-flex h-[calc(var(--row-h)-10px)] max-w-[200px] shrink-0 items-center gap-0.5 rounded-sm bg-selected text-sm text-fg",
                   isReadOnly ? "px-1.5" : "pl-1.5",
-                  armed === i && "outline-2 outline-accent outline-solid",
+                  armed === i && "outline-2 outline-focus outline-solid",
                 )}
               >
                 <span className="truncate" title={labelOf(id)}>

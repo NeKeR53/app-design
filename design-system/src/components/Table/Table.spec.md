@@ -7,20 +7,22 @@ Tableau de données : des éléments en lignes, leurs propriétés en colonnes, 
 Ne pas l'utiliser pour :
 - une liste où chaque élément se lit seul (titre, sous-titre, méta) : prendre `List` ;
 - la navigation : prendre la `Sidebar` ;
-- les propriétés d'un seul élément : prendre `DetailPanel`.
+- les propriétés d'un seul élément : prendre `Drawer`.
 
 ## Anatomie
 1. **En-tête** (obligatoire) : un libellé par colonne, en `--fs-sm`, `--fg-2` ; collé en haut quand le tableau défile. Le bord droit de chaque en-tête se glisse pour régler la largeur, de 80 à 480 px (D-067).
 2. **Ligne** (au moins une) : une cellule par colonne.
 3. **Colonne principale** (obligatoire, la première après la sélection) : le nom de l'élément, en `--fg`, avec une icône facultative.
 4. **Case de sélection** (si la sélection multiple est activée) : visible au survol et au focus, puis sur toutes les lignes dès qu'une est cochée ; la case « Tout sélectionner » de l'en-tête est toujours visible, avec un état mixte ; toujours visible sur tactile (D-065).
-5. **Actions de ligne** (facultatives, deux au plus) : à droite, dans une colonne réservée ; visibles au survol, au focus et sur la ligne sélectionnée ; « … » ouvre un `Menu`, comme le clic droit (D-066).
+5. **Actions de ligne** (facultatives, deux au plus) : à droite, dans une colonne réservée ; visibles au survol, au focus et sur la ligne sélectionnée ; « … » ouvre un `DropdownMenu`, comme le clic droit (D-066).
 6. **Ligne de groupe** (si `groupBy`) : sur toute la largeur, chevron de 12 px en `--fg-3`, nom en `--fw-semibold`, « · n lignes » en `--fg-3`, sans fond ; elle se replie (D-272).
 7. **Précision** (si `rowDescription`) : sous le nom, dans la colonne principale, en `--fs-sm` et `--fg-3` (D-273).
 8. **Barre de sélection** (automatique) : quand au moins une ligne est cochée, la barre d'outils du gabarit affiche « n sélectionnés » et les actions groupées.
 
 ## Variantes
 Aucune. Le tableau occupe toute la largeur, sans cadre (D-062). Lignes compactes (D-063), séparées par un trait horizontal `--line` ; pas de trait vertical ni de zébrage (D-064). Le tableau dense n'est pas un second composant : ce sont les options `density`, `groupBy` et `rowDescription` (D-270).
+
+Variante signature d'un thème d'organisation (`theme.signature.tableHeader`, D-337) ; valeur par défaut : inchangée. `plain` (défaut) : en-tête sans fond propre. `tinted` : en-tête teinté en `--table-head-bg`.
 
 ## Options
 | Option | Type | Défaut | Description |
@@ -40,7 +42,7 @@ Aucune. Le tableau occupe toute la largeur, sans cadre (D-062). Lignes compactes
 ## Exclus
 - Pas de cellule modifiable sur place dans cette version : on modifie dans le panneau de détail ou dans `FormPage`.
 - Pas de colonne figée à gauche ni de lignes virtualisées dans cette version.
-- Pas de couleur de fond par ligne ni par case ; la couleur sert seulement aux pastilles de statut : `StatusDot` ou `StatusBadge` dans `renderCell` (D-276).
+- Pas de couleur de fond par ligne ni par case ; la couleur sert seulement aux pastilles de statut : `BadgeDot` ou `Badge` dans `renderCell` (D-276).
 - Pas de menu propre à une case : les actions passent par le menu de la ligne (D-066, D-277).
 - Pas de ligne de groupe en bande teintée ; pas de tri des groupes par le tableau (l'app trie `rows`).
 - Pas de `className` ni de `style`.
@@ -110,10 +112,10 @@ Voir États (erreur de chargement). Une action groupée qui échoue affiche une 
 Zone `list` de `ListPage`, seul. Jamais dans le panneau de détail ni dans la sidebar.
 
 ## Composition
-Contient `Checkbox` (à spécifier), `IconButton`, `Menu`, `Tooltip` `Skeleton` (D-165) et `EmptyState` (D-166) pour ses états (D-169). Une cellule de statut reçoit un `StatusBadge` ou un `StatusDot` (D-160, D-162).
+Contient `Checkbox` (à spécifier), `IconButton`, `DropdownMenu`, `Tooltip` `Skeleton` (D-165) et `EmptyState` (D-166) pour ses états (D-169). Une cellule de statut reçoit un `Badge` ou un `BadgeDot` (D-160, D-162).
 
 ## Décisions
-D-004, D-007, D-021, D-025, D-026, D-039, D-040, D-053, D-054, D-062, D-063, D-064, D-065, D-066, D-067, D-084, D-085, D-086, D-087, D-270, D-271, D-272, D-273, D-274, D-275, D-276, D-277
+D-004, D-007, D-021, D-025, D-026, D-039, D-040, D-053, D-054, D-062, D-063, D-064, D-065, D-066, D-067, D-084, D-085, D-086, D-087, D-270, D-271, D-272, D-273, D-274, D-275, D-276, D-277, D-337
 
 ## Questions ouvertes
 Aucune.

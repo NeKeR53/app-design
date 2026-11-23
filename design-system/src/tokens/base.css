@@ -61,12 +61,46 @@
   --paper-fg: #1a1a1a;
   --paper-link: #1d4ed8;
 
+  /* Thème d'organisation (D-337) : rôles dédiés, égaux par défaut aux rôles génériques (rendu neutre inchangé). */
+  --side-bg: var(--surface-side);        /* fond de la sidebar */
+  --side-fg: var(--fg);                  /* texte de la sidebar */
+  --side-fg-2: var(--fg-2);              /* texte secondaire de la sidebar */
+  --side-fg-3: var(--fg-3);              /* texte tertiaire de la sidebar : sections, méta */
+  --side-hover: var(--hover);
+  --side-selected: var(--selected);      /* fond de l'entrée active */
+  --side-selected-fg: var(--side-fg);    /* texte de l'entrée active */
+  --side-indicator: var(--accent);       /* barre de l'entrée active (navIndicator « bar ») */
+  --side-line: var(--line);              /* traits de la sidebar */
+  --primary: var(--fg);                  /* bouton principal, étape en cours (D-102 : monochrome inversé) */
+  --primary-fg: var(--surface);          /* texte sur --primary */
+  --focus: var(--accent);                /* anneau de focus */
+  --highlight: var(--accent);            /* pastilles non lu, nouveaux éléments */
+  --table-head-bg: transparent;          /* en-tête de tableau (tableHeader « tinted ») */
+  --side-highlight: var(--accent-text);  /* texte accentué dans la sidebar : résumé « n non lus » */
+
+  /* Graphiques (D-338) : 8 couleurs de catégories, dans un ordre fixe, jamais répétées ;
+     5 paliers séquentiels, du clair au foncé. Les couleurs d'état ne servent pas aux graphiques. */
+  --chart-1: #2a78d6;
+  --chart-2: #eb6834;
+  --chart-3: #1baf7a;
+  --chart-4: #eda100;
+  --chart-5: #e87ba4;
+  --chart-6: #008300;
+  --chart-7: #6250d6;
+  --chart-8: #e34948;
+  --chart-seq-1: #cde2fb;
+  --chart-seq-2: #86b6ef;
+  --chart-seq-3: #3987e5;
+  --chart-seq-4: #256abf;
+  --chart-seq-5: #104281;
+
   /* ---------- Typographie ---------- */
   --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
   --font-mono: ui-monospace, "SF Mono", "Cascadia Code", Consolas, monospace;
   --fw-regular: 400;
   --fw-medium: 500;
   --fw-semibold: 600;
+  --fw-heading: var(--fw-semibold);  /* titres : page, section, modale, panneau (D-338) */
   /* Tailles : définies par la densité (themes/web.css, themes/desktop.css). */
 
   /* ---------- Espacements (base 4 px) ---------- */
@@ -160,6 +194,19 @@
     --ansi-13: #f0a6e6;
     --ansi-14: #82dbe9;
     --ansi-15: #f5f5f5;
+    --chart-1: #3987e5;
+    --chart-2: #d95926;
+    --chart-3: #199e70;
+    --chart-4: #c98500;
+    --chart-5: #d55181;
+    --chart-6: #0ca30c;
+    --chart-7: #9085e9;
+    --chart-8: #e66767;
+    --chart-seq-1: #104281;
+    --chart-seq-2: #1c5cab;
+    --chart-seq-3: #2a78d6;
+    --chart-seq-4: #5598e7;
+    --chart-seq-5: #86b6ef;
     color-scheme: dark;
   }
 }
@@ -208,6 +255,19 @@
   --ansi-13: #f0a6e6;
   --ansi-14: #82dbe9;
   --ansi-15: #f5f5f5;
+  --chart-1: #3987e5;
+  --chart-2: #d95926;
+  --chart-3: #199e70;
+  --chart-4: #c98500;
+  --chart-5: #d55181;
+  --chart-6: #0ca30c;
+  --chart-7: #9085e9;
+  --chart-8: #e66767;
+  --chart-seq-1: #104281;
+  --chart-seq-2: #1c5cab;
+  --chart-seq-3: #2a78d6;
+  --chart-seq-4: #5598e7;
+  --chart-seq-5: #86b6ef;
   color-scheme: dark;
 }
 

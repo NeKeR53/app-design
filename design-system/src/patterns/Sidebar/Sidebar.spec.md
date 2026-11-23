@@ -29,13 +29,13 @@ Ne pas l'utiliser pour :
 1. Ligne 1 : titre, chevron s'il a des enfants, icône d'état facultative à droite (alerte, en cours).
 2. Ligne 2 : sous-titre en `--fg-2`, coupé ; étiquette facultative à droite en `--fg-3`.
 3. Enfants (facultatifs) : des `TreeItem` d'un seul niveau, en retrait. Une fois dépliés, ils sont reliés au parent par un trait vertical de 1 px en `--tree-line` ; le dernier enfant se termine par un coude arrondi de 8 px (D-042). Une fois repliés, ils sont résumés par une ligne de 24 px sous le parent (« 4 éléments · 2 non lus ») ; un clic sur la ligne les déplie (D-043).
-4. Bouton « … » (automatique si l'app fournit des actions) : visible au survol et sur l'élément sélectionné ; il ouvre un `Menu`.
+4. Bouton « … » (automatique si l'app fournit des actions) : visible au survol et sur l'élément sélectionné ; il ouvre un `DropdownMenu`.
 
 ### `Sidebar.Section`
 Titre en `--fs-sm`, `--fg-3`, sans majuscules, suivi d'un chevron. Un clic sur le titre replie ou déplie la section.
 
 ### `Sidebar.Workspace` (D-231)
-Repère carré de 24 px (rayon 4 px, fond `--selected`, initiale), nom de l'espace ouvert, chevron haut-bas en `--fg-3`. Il ouvre un `Menu` au-dessus du pied : section « Espaces de travail » en choix unique, l'espace ouvert coché, puis un trait et les actions de l'app. Un seul espace sans action : simple étiquette.
+Repère carré de 24 px (rayon 4 px, fond `--selected`, initiale), nom de l'espace ouvert, chevron haut-bas en `--fg-3`. Il ouvre un `DropdownMenu` au-dessus du pied : section « Espaces de travail » en choix unique, l'espace ouvert coché, puis un trait et les actions de l'app. Un seul espace sans action : simple étiquette.
 
 ### `Sidebar.Account`
 Avatar (initiales), nom, plan ou rôle en `--fg-3`, puis le bouton Réglages (roue dentée, `IconButton`, Mod+,). Un clic sur l'avatar et le nom ouvre le menu du compte, au-dessus du pied, si l'app fournit des entrées ; un chevron double le signale (D-046).
@@ -43,11 +43,17 @@ Avatar (initiales), nom, plan ou rôle en `--fg-3`, puis le bouton Réglages (ro
 ## Variantes
 Aucune.
 
+Variante signature d'un thème d'organisation (`theme.signature.navIndicator`, D-337) ; valeur par défaut : inchangée.
+- `fill` (défaut) : l'élément actif a un fond plein (D-039).
+- `bar` : le même fond, plus une barre de 3 px à gauche, en `--side-indicator`.
+
+Couleurs : la sidebar lit des rôles dédiés, égaux par défaut aux rôles génériques : `--side-bg`, `--side-fg`, `--side-fg-2`, `--side-fg-3`, `--side-hover`, `--side-selected`, `--side-selected-fg`, `--side-indicator`, `--side-line`. Tout ce qu'elle contient les suit : sections, compteurs, pied, espace de travail, compte. Le point non lu est en `--highlight`. Le texte accentué (« · n non lus » de la ligne résumé, un lien) est en `--side-highlight`, égal par défaut à `--accent-text` : dans la sidebar, `--accent-text` pointe sur `--side-highlight`, pour qu'une sidebar sombre reste lisible (AA, D-338).
+
 ## Options
 | Option | Type | Défaut | Description |
 |---|---|---|---|
 | `Sidebar.Item` : `id`, `icon`, `label` | — | — (obligatoires) | Élément de navigation. |
-| `Sidebar.Item` : `actions` | `{ icon, label, onPress }[]` (2 au plus) | aucune | Actions à droite (D-002, D-007, D-053). « … » ouvre un `Menu`. |
+| `Sidebar.Item` : `actions` | `{ icon, label, onPress }[]` (2 au plus) | aucune | Actions à droite (D-002, D-007, D-053). « … » ouvre un `DropdownMenu`. |
 | `Sidebar.Item` : `count` | `number` | aucun | Compteur gris à droite ; « 99+ » au-delà de 99 (D-044). Exclu avec `indicator`. |
 | `Sidebar.Item` : `indicator` | `"external" \| "locked" \| "activity"` | aucun | Indicateur permanent à droite, avec info-bulle (D-055). Exclu avec `count`. |
 | `Sidebar.Item` : `children` | `Sidebar.Item[]` sans icône | aucun | Sous-pages, sur un seul niveau (D-056). |
@@ -56,13 +62,13 @@ Aucune.
 | `Sidebar.Section` : `limit` | `number` | `5` | Nombre d'éléments affichés avant « Afficher plus (n) » (D-045). |
 | `Sidebar.TreeItem` : `id`, `title` | — | — (obligatoires) | Élément sur deux lignes. |
 | `Sidebar.TreeItem` : `subtitle`, `meta`, `status`, `children`, `actions` | — | aucun | Sous-titre, étiquette, icône d'état, enfants, actions du menu « … ». |
-| `Sidebar.TreeItem` : `unread` | `boolean` | `false` | Point accent de 6 px à droite du titre ; compté dans la ligne résumé du parent (D-044). |
+| `Sidebar.TreeItem` : `unread` | `boolean` | `false` | Point de 6 px en `--highlight` (l'accent par défaut) à droite du titre ; compté dans la ligne résumé du parent (D-044). |
 | `Sidebar.Account` : `name`, `detail`, `avatar`, `onSettings` | — | — | Compte et accès aux réglages. |
-| `Sidebar.Account` : `menu` | entrées de `Menu` | aucune | Menu du compte ; sans entrée, le nom est une simple étiquette (D-046). |
+| `Sidebar.Account` : `menu` | entrées de `DropdownMenu` | aucune | Menu du compte ; sans entrée, le nom est une simple étiquette (D-046). |
 | `footer` | `Sidebar.Item` (3 au plus) | aucune | Entrées fixes du bas, au-dessus du compte (D-230). |
 | `workspace` | `Sidebar.Workspace` | aucun | Sélecteur d'espace de travail, entre les entrées fixes et le compte (D-231). |
 | `Sidebar.Workspace` : `workspaces`, `currentId`, `onChange` | `{ id, name }[]`, `string`, `(id) => void` | — (obligatoires) | Espaces proposés, espace ouvert, choix d'un autre espace. |
-| `Sidebar.Workspace` : `actions` | entrées de `Menu` | aucune | Après un trait : « Créer un espace… », « Ouvrir un autre dossier… ». |
+| `Sidebar.Workspace` : `actions` | entrées de `DropdownMenu` | aucune | Après un trait : « Créer un espace… », « Ouvrir un autre dossier… ». |
 | `Sidebar.Workspace` : `isDisabled` | `boolean` | `false` | Désactivé (opacité 40 %), par exemple pendant une ouverture. |
 | `selectedId` / `onSelectionChange` | — | — (obligatoire) | Élément sélectionné (page courante). |
 
@@ -102,7 +108,7 @@ Aucune.
 ## Contenu
 - Libellé ou titre trop long : coupé avec une ellipse, et texte complet dans une info-bulle.
 - Sous-titre : une seule ligne, coupée.
-- Nom d'espace de travail trop long : coupé avec une ellipse, nom complet en info-bulle ; dans le menu, ellipse au-delà de 320 px (spec Menu).
+- Nom d'espace de travail trop long : coupé avec une ellipse, nom complet en info-bulle ; dans le menu, ellipse au-delà de 320 px (spec DropdownMenu).
 - Section longue : 5 éléments, puis « Afficher plus (n) » ; ensuite « Afficher moins ». Choix mémorisé par section. Si l'élément sélectionné est au-delà, la section s'affiche en entier (D-045).
 
 ## Densité
@@ -134,10 +140,10 @@ Sans objet : une section qui ne peut pas charger son contenu affiche une ligne �
 Uniquement dans la zone `sidebar` d'AppShell. Une seule sidebar par fenêtre.
 
 ## Composition
-Contient `IconButton`, `Tooltip` et `Menu`. Utilisée par `AppShell`.
+Contient `IconButton`, `Tooltip` et `DropdownMenu`. Utilisée par `AppShell`.
 
 ## Décisions
-D-002, D-003, D-006, D-007, D-016, D-017, D-019, D-021, D-026, D-039, D-040, D-042, D-043, D-044, D-045, D-046, D-052, D-053, D-054, D-055, D-056, D-230, D-231, D-232, D-260
+D-002, D-003, D-006, D-007, D-016, D-017, D-019, D-021, D-026, D-039, D-040, D-042, D-043, D-044, D-045, D-046, D-052, D-053, D-054, D-055, D-056, D-230, D-231, D-232, D-260, D-337, D-338
 
 ## Questions ouvertes
 Aucune.

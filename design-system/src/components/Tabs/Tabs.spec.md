@@ -18,12 +18,16 @@ Ne pas les utiliser pour :
 ## Variantes
 Une seule. L'onglet actif a un fond plein et un texte `--fg`, comme l'élément actif de la sidebar (D-038).
 
+Variante signature d'un thème d'organisation (`theme.signature.tabs`, D-337) ; valeur par défaut : inchangée.
+- `pill` (défaut) : le rendu ci-dessus.
+- `underline` : l'onglet actif n'a plus de fond ; texte en `--accent-text` et trait de 3 px en `--accent` sous le libellé. Le survol garde son fond `--hover`. Tailles et espacements inchangés.
+
 ## Options
 | Option | Type | Défaut | Description |
 |---|---|---|---|
 | `items` | `{ id, label, closable? }[]` | — (obligatoire) | Vues de la page. Les vues déclarées par la page sont fixes ; une vue ouverte depuis un élément est fermable (D-021). |
 | `selectedId` / `onSelectionChange` | `string` / `(id) => void` | — (obligatoire) | Vue active. |
-| `onClose` | `(id) => void` | aucun | Fermeture d'une vue fermable. Obligatoire si une vue a `closable`. |
+| `onClose` | `(id) => void \| boolean` | aucun | Fermeture d'une vue fermable, appelée avant tout changement de vue. Rendre `false` annule (par exemple pour confirmer). La vue de gauche ne s'active que quand l'app retire la vue active de `items`. Obligatoire si une vue a `closable`. |
 
 ## Exclus
 - Pas d'icône ni de badge dans un onglet dans cette version.
@@ -77,10 +81,10 @@ Sans objet.
 Uniquement dans la barre supérieure d'AppShell, après le nom de la page et un séparateur. Une seule liste d'onglets par écran.
 
 ## Composition
-Contient `IconButton` (chevron), `Tooltip` (libellés tronqués) et un `Menu` (liste des vues). Utilisé par `AppShell`.
+Contient `IconButton` (chevron), `Tooltip` (libellés tronqués) et un `DropdownMenu` (liste des vues). Utilisé par `AppShell`.
 
 ## Décisions
-D-006, D-021, D-026, D-027, D-038, D-039, D-040, D-041
+D-006, D-021, D-026, D-027, D-038, D-039, D-040, D-041, D-337
 
 ## Questions ouvertes
 Aucune.

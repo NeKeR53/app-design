@@ -23,6 +23,7 @@
 
 ### Contraintes
 - **Marque** : style neutre, sans marque imposée. Une seule couleur d'accent, configurable par app.
+  - une organisation peut imposer sa marque par un thème passé au `SocleProvider` (option `theme`, D-337) : tokens et variantes signature, jamais la mise en page ni la densité ; il peut aussi fixer les couleurs des graphiques, la graisse des titres, le bouton secondaire et un jeu d'icônes (D-338).
 - **Langues** : apps en français, composants prêts pour d'autres langues :
   - aucun texte en dur : les libellés internes viennent d'un dictionnaire, en français par défaut, que l'app traduit avec l'option `messages` de `SocleProvider` (D-089) ;
   - les mises en page tolèrent des textes plus longs.
@@ -40,6 +41,12 @@
 - **Monochrome** : la couleur d'accent ne porte que du sens (sélection forte, interrupteur actif, non-lu, lien). Les états succès, alerte, erreur et info ont leurs propres couleurs.
 - **Surfaces par rôle** : surface principale, surface secondaire (sidebar), sélection, survol, champ, trait. La hiérarchie s'inverse entre clair et sombre.
 - **Pas de décoration** : pas de dégradés, des ombres réservées à ce qui flotte (overlay, menus, feuilles), des traits fins pour séparer.
+
+### Graphiques (D-338)
+- **Couleurs de série** : `--chart-1` à `--chart-8`, dans cet ordre, toujours. La série 1 prend `--chart-1`, la 2 `--chart-2`. On ne reprend jamais la liste au début : au-delà de 8 séries, on regroupe le reste (« Autres ») ou on change de graphique.
+- **Échelle séquentielle** : `--chart-seq-1` à `--chart-seq-5`, du clair au foncé en mode clair (l'ordre suit l'intensité en sombre). Pour une valeur qui monte (carte de chaleur, densité).
+- **Les couleurs d'état ne sont pas des couleurs de graphique** : `--success`, `--warning`, `--danger` et `--info` disent un état, pas une série.
+- Un thème d'organisation peut redéfinir ces tokens, clair et sombre.
 
 ### Densité
 - **Deux densités portées par les tokens** (D-004) : web confortable, desktop compact. Les composants sont les mêmes dans les deux cas.

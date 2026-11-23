@@ -19,12 +19,12 @@ Un champ est un objet. Le `type` choisit le composant (D-190).
 
 | `type` | Composant | Valeur rendue (D-191) | Options propres |
 |---|---|---|---|
-| `text` (défaut), `email`, `url`, `tel`, `password` | `TextField` | `string` (sans espaces autour, sauf `password`) | `placeholder`, `autoComplete`, `maxLength` |
-| `number` | `TextField` | `number \| null` (virgule acceptée) | `placeholder`, `min`, `max` |
+| `text` (défaut), `email`, `url`, `tel`, `password` | `TextInput` | `string` (sans espaces autour, sauf `password`) | `placeholder`, `autoComplete`, `maxLength` |
+| `number` | `TextInput` | `number \| null` (virgule acceptée) | `placeholder`, `min`, `max` |
 | `textarea` | `TextArea` | `string` | `placeholder`, `maxLength`, `minRows`, `maxRows` |
 | `select` | `Select` | `string \| null` | `options` (obligatoire, à plat ou en sections), `placeholder` |
 | `combobox` | `ComboBox` | `string \| null`, ou `string[]` si `selectionMode: "multiple"` | `items` ou `loadItems`, `selectedItems`, `allowsCustomValue`, `onCreate`, `placeholder` |
-| `radio` | `RadioGroup` | `string \| null` | `options` (`value`, `label`, `description`), `orientation` |
+| `radio` | `RadioButtonGroup` | `string \| null` | `options` (`value`, `label`, `description`), `orientation` |
 | `checkbox` | `Checkbox` | `boolean` | — (le `label` est à droite de la case) |
 | `checkboxGroup` | `CheckboxGroup` | `string[]` | `options`, `orientation` |
 | `fieldset` | `Fieldset` | — (ses champs rendent leurs valeurs) | `legend`, `fields`, `isOptional` ; pas de `name` |
@@ -135,7 +135,7 @@ L'app choisit les champs, leur ordre et leurs textes. Le reste est fixe.
 Dans le `main` d'AppShell (layout-rules : FormPage).
 
 ## Composition
-`TextField`, `TextArea`, `Select`, `ComboBox`, `RadioGroup`, `Checkbox`, `CheckboxGroup`, `Fieldset`, `Button`, `Skeleton`, `useConfirm`.
+`TextInput`, `TextArea`, `Select`, `ComboBox`, `RadioButtonGroup`, `Checkbox`, `CheckboxGroup`, `Fieldset`, `Button`, `Skeleton`, `useConfirm`.
 
 ## Décisions
 D-022, D-130 à D-138, D-190 à D-196.

@@ -150,6 +150,24 @@ export const Pile: Story = {
   },
 };
 
+/** Une erreur reste dans la pile : au-delà de trois, le plus ancien toast à minuterie se ferme (D-153, D-154). */
+export const PileErreur: Story = {
+  render: () => (
+    <Host>
+      <p>Une erreur, puis trois succès.</p>
+    </Host>
+  ),
+  play: async () => {
+    current.notify({ tone: "danger", title: "Envoi impossible" });
+    for (let k = 1; k <= 3; k++) current.notify({ tone: "success", title: `Succès ${k}` });
+    await waitFor(() => expect(toasts()).toHaveLength(3));
+    const names = toasts().map((t) => t.textContent ?? "");
+    await expect(names.some((n) => n.includes("Envoi impossible"))).toBe(true);
+    await expect(names.some((n) => n.includes("Succès 1"))).toBe(false);
+    await expect(names.some((n) => n.includes("Succès 3"))).toBe(true);
+  },
+};
+
 /** L'action exécute `onAction` puis ferme le toast (D-155). */
 const onUndo = fn();
 export const Action: Story = {

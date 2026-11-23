@@ -8,9 +8,9 @@ import { IconButton } from "../../components/IconButton/IconButton";
 import { Button } from "../../components/Button/Button";
 import { ActionBar, type Action } from "../ActionBar/ActionBar";
 import { ArrowDown, Bell, Plus, Settings } from "../../icons";
-import { Menu } from "../../components/Menu/Menu";
+import { DropdownMenu } from "../../components/DropdownMenu/DropdownMenu";
 import type { PageStatus } from "./AppShell";
-import { DemoDetail } from "../DetailPanel/DetailPanel.stories";
+import { DemoDetail } from "../Drawer/Drawer.stories";
 import { Doc } from "../../../.storybook/story-icons";
 import { SocleProvider } from "../../provider/SocleProvider";
 
@@ -387,7 +387,7 @@ export const ResumeDePage: Story = {
 export const EtatDePage: Story = {
   render: () => (
     <SummaryDemo
-      status={{ label: "Exemple", tone: "warning", description: "Cette page affiche des données d'exemple", menu: <Menu.Item label="Quitter les données d'exemple" /> }}
+      status={{ label: "Exemple", tone: "warning", description: "Cette page affiche des données d'exemple", menu: <DropdownMenu.Item label="Quitter les données d'exemple" /> }}
     />
   ),
   play: async ({ canvasElement }) => {
@@ -404,5 +404,110 @@ export const EtatDePage: Story = {
     await userEvent.click(c.getByRole("button", { name: "Retirer l'état" }));
     await waitFor(() => expect(bar.getByRole("status")).toHaveTextContent(""));
     await expect(bar.queryByRole("img", { name: /Hors ligne/ })).toBeNull();
+  },
+};
+
+/* ---------- Panneau de détail modal pour le focus (tablette, mobile) ---------- */
+/** Simule une largeur d'écran : `useMedia` lit `matchMedia` (même méthode que DiffView, story `Etroit`). */
+function fakeScreen(query: string) {
+  return () => {
+    const original = window.matchMedia;
+    window.matchMedia = ((q: string) => {
+      const result = original.call(window, q);
+      if (q !== "(max-width: 640px)" && q !== "(min-width: 641px) and (max-width: 1024px)") return result;
+      return { ...result, matches: q === query, media: q, addEventListener: () => {}, removeEventListener: () => {} } as MediaQueryList;
+    }) as typeof window.matchMedia;
+    return () => {
+      window.matchMedia = original;
+    };
+  };
+}
+
+/** Tab et Maj+Tab, n fois : le focus ne sort jamais du panneau. */
+async function expectTabContained(panel: HTMLElement, n: number) {
+  for (let i = 0; i < n; i++) {
+    await userEvent.tab();
+    await expect(panel).toContainElement(document.activeElement as HTMLElement);
+  }
+  for (let i = 0; i < n; i++) {
+    await userEvent.tab({ shift: true });
+    await expect(panel).toContainElement(document.activeElement as HTMLElement);
+  }
+}
+
+/** Tablette : le panneau en overlay prend le focus, le garde à la tabulation et le rend au bouton à la fermeture (Échap, ×). */
+export const DetailOverlayFocus: Story = {
+  beforeEach: fakeScreen("(min-width: 641px) and (max-width: 1024px)"),
+  render: () => <Demo />,
+  play: async ({ canvasElement }) => {
+    const c = within(canvasElement);
+    const toggle = c.getByRole("button", { name: "Panneau de détail" });
+    await expect(c.queryByRole("complementary", { name: "Détail" })).toBeNull();
+    await userEvent.click(toggle);
+    const panel = await waitFor(() => c.getByRole("complementary", { name: "Détail" }));
+    await waitFor(() => expect(panel).toContainElement(document.activeElement as HTMLElement));
+    await expectTabContained(panel, 12);
+    // Échap ferme et rend le focus au bouton qui a ouvert le panneau.
+    await userEvent.keyboard("{Escape}");
+    await waitFor(() => expect(c.queryByRole("complementary", { name: "Détail" })).toBeNull());
+    await expect(toggle).toHaveFocus();
+    // Le bouton × aussi.
+    await userEvent.click(toggle);
+    const again = await waitFor(() => c.getByRole("complementary", { name: "Détail" }));
+    await userEvent.click(within(again).getByRole("button", { name: "Fermer le détail" }));
+    await waitFor(() => expect(c.queryByRole("complementary", { name: "Détail" })).toBeNull());
+    await expect(toggle).toHaveFocus();
+  },
+};
+
+/** Mobile : le panneau plein écran est modal pour le focus, comme l'overlay de tablette. */
+export const DetailPleinEcranFocus: Story = {
+  beforeEach: fakeScreen("(max-width: 640px)"),
+  render: () => <Demo />,
+  play: async ({ canvasElement }) => {
+    const c = within(canvasElement);
+    const toggle = c.getByRole("button", { name: "Panneau de détail" });
+    await userEvent.click(toggle);
+    const panel = await waitFor(() => c.getByRole("complementary", { name: "Détail" }));
+    await waitFor(() => expect(panel).toContainElement(document.activeElement as HTMLElement));
+    await expectTabContained(panel, 8);
+    await userEvent.keyboard("{Escape}");
+    await waitFor(() => expect(c.queryByRole("complementary", { name: "Détail" })).toBeNull());
+    await expect(toggle).toHaveFocus();
+  },
+};
+
+/** Bureau : la colonne de détail n'est pas modale ; le focus reste sur le bouton et la tabulation en sort. */
+export const DetailColonneNonModale: Story = {
+  render: () => <Demo />,
+  play: async ({ canvasElement }) => {
+    const c = within(canvasElement);
+    const toggle = c.getByRole("button", { name: "Panneau de détail" });
+    await userEvent.click(toggle);
+    await waitFor(() => expect(c.queryByRole("complementary", { name: "Détail" })).toBeNull());
+    await userEvent.click(toggle);
+    const panel = await waitFor(() => c.getByRole("complementary", { name: "Détail" }));
+    await expect(toggle).toHaveFocus();
+    // La poignée est le premier élément du panneau ; Maj+Tab en sort, vers le contenu.
+    c.getByRole("separator", { name: "Largeur du panneau de détail" }).focus();
+    await userEvent.tab({ shift: true });
+    await expect(panel).not.toContainElement(document.activeElement as HTMLElement);
+  },
+};
+
+/** Repères : la sidebar n'ajoute pas de repère `complementary` sans nom ; seul le détail en est un, nommé (AppShell.spec.md). */
+export const ReperesNommes: Story = {
+  render: () => <Demo />,
+  play: async ({ canvasElement }) => {
+    const c = within(canvasElement);
+    const complementary = c.getAllByRole("complementary");
+    await expect(complementary).toHaveLength(1);
+    await expect(complementary[0]).toHaveAccessibleName("Détail");
+    await expect(c.getByRole("navigation", { name: "Navigation principale" })).toBeVisible();
+    // Sidebar repliée, en overlay : pas de repère sans nom non plus.
+    await userEvent.click(c.getByRole("button", { name: "Replier la sidebar" }));
+    await userEvent.hover(c.getByRole("button", { name: "Déplier la sidebar" }));
+    await waitFor(() => expect(c.getByRole("navigation", { name: "Navigation principale" })).toBeVisible());
+    for (const el of c.getAllByRole("complementary")) await expect(el).toHaveAccessibleName();
   },
 };

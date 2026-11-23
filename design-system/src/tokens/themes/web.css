@@ -17,7 +17,7 @@
   --detail-w: 300px;      /* panneau de détail */
   --detail-w-form: 460px; /* panneau de détail d'un formulaire (D-240) */
   --target-min: 24px;     /* cible minimale (AA) */
-  --dlg-pad: 20px;        /* marge intérieure d'une modale (Dialog) */
+  --dlg-pad: 20px;        /* marge intérieure d'une modale (Modal) */
   --icon-btn: 28px;       /* bouton-icône (D-035) */
   --btn-h-sm: 26px;       /* bouton à texte, taille sm (D-101) */
   --settings-nav-w: 220px; /* navigation de SettingsPage (D-201) */

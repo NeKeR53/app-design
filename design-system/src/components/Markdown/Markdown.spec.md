@@ -19,7 +19,7 @@ Une colonne de blocs, sans cadre ni fond :
 4. citations ;
 5. blocs de code (`Code block`) avec « Copier le bloc » ;
 6. tableaux ;
-7. traits (`Divider`) ;
+7. traits (`Separator`) ;
 8. images, seulement par `renderImage` (sinon un lien).
 
 ## Variantes
@@ -90,10 +90,10 @@ Un Markdown mal formé s'affiche comme du texte (règle de GFM). Copie impossibl
 Typographie verrouillée. `headingLevel`, `onLinkPress`, `renderImage`, `renderCode` : par page.
 
 ## Placement
-Corps d'une `DetailPage`, section du `DetailPanel`, corps d'une `Dialog`, message d'une liste, aperçu de `MarkdownEditor`. Jamais dans une barre (`toolbar`, `topbar`) ni dans une cellule de `Table`.
+Corps d'une `DetailPage`, section du `Drawer`, corps d'une `Modal`, message d'une liste, aperçu de `MarkdownEditor`. Jamais dans une barre (`toolbar`, `topbar`) ni dans une cellule de `Table`.
 
 ## Composition
-Contient `Link`, `Code`, `Divider`, `IconButton`. Ne contient pas de `Table` (D-304) ni de `Checkbox`.
+Contient `Link`, `Code`, `Separator`, `IconButton`. Ne contient pas de `Table` (D-304) ni de `Checkbox`.
 
 ## Décisions
 D-089, D-167, D-168, D-300, D-301, D-302, D-303, D-304

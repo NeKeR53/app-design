@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from "@storybook/react-vite";
 import { useState } from "react";
 import { expect, userEvent, waitFor, within } from "storybook/test";
 import { Sidebar } from "./Sidebar";
-import { Menu } from "../../components/Menu/Menu";
+import { DropdownMenu } from "../../components/DropdownMenu/DropdownMenu";
 import { MoreHorizontal, Plus } from "../../icons";
 
 const meta: Meta<typeof Sidebar> = {
@@ -48,10 +48,10 @@ function Demo({ initial = "home" }: { initial?: string }) {
               onSettings={() => setSel("settings")}
               menu={
                 <>
-                  <Menu.Item label="Profil" />
-                  <Menu.Item label="Changer de compte" />
-                  <Menu.Separator />
-                  <Menu.Item label="Se déconnecter" />
+                  <DropdownMenu.Item label="Profil" />
+                  <DropdownMenu.Item label="Changer de compte" />
+                  <DropdownMenu.Separator />
+                  <DropdownMenu.Item label="Se déconnecter" />
                 </>
               }
             />
@@ -64,7 +64,7 @@ function Demo({ initial = "home" }: { initial?: string }) {
             label="Documents"
             actions={[
               { icon: <Plus />, label: "Nouveau document" },
-              { icon: <MoreHorizontal />, label: "Plus d'actions", menu: <Menu.Item label="Importer" /> },
+              { icon: <MoreHorizontal />, label: "Plus d'actions", menu: <DropdownMenu.Item label="Importer" /> },
             ]}
           >
             <Sidebar.Item id="rep" label="Rapports" count={12} />
@@ -73,7 +73,7 @@ function Demo({ initial = "home" }: { initial?: string }) {
           <Sidebar.Item id="valid" icon={<Doc />} label="À valider" count={3} />
           <Sidebar.Item id="arch" icon={<Doc />} label="Archives" indicator="locked" />
           <Sidebar.Section id="todo" title="À traiter" limit={3}>
-            <Sidebar.TreeItem id="t1" title="Relance fournisseur" subtitle="Validation du devis attendue" meta="Achats" status="warning" actions={<Menu.Item label="Archiver" />}>
+            <Sidebar.TreeItem id="t1" title="Relance fournisseur" subtitle="Validation du devis attendue" meta="Achats" status="warning" actions={<DropdownMenu.Item label="Archiver" />}>
               <Sidebar.TreeItem id="t1a" title="Devis Atelier Nord" subtitle="Envoyé le 12 nov." meta="Achats" unread />
               <Sidebar.TreeItem id="t1b" title="Devis Méca Services" subtitle="Reçu le 14 nov." meta="Achats" />
             </Sidebar.TreeItem>
@@ -246,8 +246,8 @@ function FooterDemo({ single = false }: { single?: boolean }) {
                 : {
                     actions: (
                       <>
-                        <Menu.Item label="Créer un espace de travail…" icon={<Plus />} />
-                        <Menu.Item label="Ouvrir un autre dossier…" icon={<Doc />} />
+                        <DropdownMenu.Item label="Créer un espace de travail…" icon={<Plus />} />
+                        <DropdownMenu.Item label="Ouvrir un autre dossier…" icon={<Doc />} />
                       </>
                     ),
                   })}
@@ -318,5 +318,38 @@ export const EspaceUnique: Story = {
     const c = within(canvasElement);
     await expect(c.queryByRole("button", { name: /Espace de travail/ })).toBeNull();
     await expect(c.getByText("Atelier")).toBeVisible();
+  },
+};
+
+/** Les flèches déplacent le focus sans changer de page ; Entrée sélectionne (Sidebar.spec.md, Clavier). */
+export const FlechesSansChangerDePage: Story = {
+  render: () => <Demo />,
+  play: async ({ canvasElement }) => {
+    const c = within(canvasElement);
+    await userEvent.click(c.getByRole("row", { name: /Accueil/ }));
+    await userEvent.keyboard("{ArrowDown}");
+    await waitFor(() => expect(c.getByRole("row", { name: /^Documents/ })).toHaveFocus());
+    await expect(sel(canvasElement)).toBe("home");
+    await userEvent.keyboard("{ArrowDown}");
+    await waitFor(() => expect(c.getByRole("row", { name: /À valider/ })).toHaveFocus());
+    await expect(sel(canvasElement)).toBe("home");
+    await expect(c.getByRole("row", { name: /Accueil/ })).toHaveAttribute("aria-selected", "true");
+    await userEvent.keyboard("{Enter}");
+    await expect(sel(canvasElement)).toBe("valid");
+    await expect(c.getByRole("row", { name: /À valider/ })).toHaveAttribute("aria-selected", "true");
+  },
+};
+
+/** L'élément de la page courante porte `aria-current="page"`, et lui seul (Sidebar.spec.md, Accessibilité). */
+export const PageCourante: Story = {
+  render: () => <Demo />,
+  play: async ({ canvasElement }) => {
+    const c = within(canvasElement);
+    await expect(c.getByRole("row", { name: /Accueil/ })).toHaveAttribute("aria-current", "page");
+    await expect(canvasElement.querySelectorAll('[aria-current="page"]')).toHaveLength(1);
+    await userEvent.click(within(c.getByRole("row", { name: /^Relance fournisseur/ })).getByText("Relance fournisseur"));
+    await waitFor(() => expect(c.getByRole("row", { name: /^Relance fournisseur/ })).toHaveAttribute("aria-current", "page"));
+    await expect(c.getByRole("row", { name: /Accueil/ })).not.toHaveAttribute("aria-current");
+    await expect(canvasElement.querySelectorAll('[aria-current="page"]')).toHaveLength(1);
   },
 };

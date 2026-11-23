@@ -1,16 +1,18 @@
 /**
  * SocleProvider (D-029) : placé une seule fois à la racine de l'app.
  * Il fixe quatre réglages par app : accent, densité par défaut, plateforme,
- * préfixe des données mémorisées. Les choix de l'utilisateur (mode, densité)
+ * préfixe des données mémorisées. Une organisation peut y ajouter son thème (D-337, D-338). Les choix de l'utilisateur (mode, densité)
  * passent avant les défauts de l'app (D-005). Tout le reste est verrouillé.
  */
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
 import { contrast, mixWithWhite, parseHex, toHex } from "../lib/color";
 import { frenchMessages, type SocleMessages } from "../i18n/messages";
-import { ConfirmProvider } from "../components/Dialog/useConfirm";
+import { ConfirmProvider } from "../components/Modal/useConfirm";
 import { FormDialogProvider } from "../templates/FormDialog/FormDialog";
 import type { Notifications, NotifyOptions } from "../components/Toast/notifications";
 import { ToastRegion } from "../components/Toast/Toast";
+import { ThemeIconsContext } from "../icons";
+import { ACCENT_KEYS, themeAttributes, themeContrastIssues, themeVariables, type SocleTheme, type ThemeMode } from "./theme";
 
 export type Platform = "web" | "macos" | "windows";
 export type Density = "web" | "desktop";
@@ -29,6 +31,8 @@ export interface SocleProviderProps {
   messages?: Partial<SocleMessages>;
   /** File de notifications de l'app (`createNotifications()`). Si elle est fournie, le provider affiche les toasts (Toast.spec.md). */
   notifications?: Notifications;
+  /** Thème d'organisation (D-337) : tokens et variantes signature. Sans thème : rendu neutre. `accent` passe avant l'accent du thème. */
+  theme?: SocleTheme;
   children: ReactNode;
 }
 
@@ -108,7 +112,7 @@ function accentCss(vars: NonNullable<ReturnType<typeof accentVariables>>): strin
   );
 }
 
-export function SocleProvider({ accent, density, platform, storageKey = "socle", messages, notifications, children }: SocleProviderProps) {
+export function SocleProvider({ accent, density, platform, storageKey = "socle", messages, notifications, theme, children }: SocleProviderProps) {
   const resolvedPlatform = useMemo(() => platform ?? detectPlatform(), [platform]);
   const isMac = resolvedPlatform === "macos" || (resolvedPlatform === "web" && detectIsMac());
   const defaultDensity: Density = density ?? (resolvedPlatform === "web" ? "web" : "desktop");
@@ -129,10 +133,10 @@ export function SocleProvider({ accent, density, platform, storageKey = "socle",
     const root = document.documentElement;
     if (userScheme !== "system") {
       root.dataset.theme = userScheme;
-      root.dataset.socleTheme = "user";
-    } else if (root.dataset.socleTheme) {
+      root.dataset.socleScheme = "user";
+    } else if (root.dataset.socleScheme) {
       delete root.dataset.theme;
-      delete root.dataset.socleTheme;
+      delete root.dataset.socleScheme;
     }
   }, [userScheme]);
 
@@ -151,6 +155,45 @@ export function SocleProvider({ accent, density, platform, storageKey = "socle",
     return () => style.remove();
   }, [accent]);
 
+  // Thème d'organisation (D-337) : variables en style en ligne sur <html> pour le mode actif,
+  // réécrites quand le mode change ; attributs des variantes signature. Rien sans thème.
+  const themeKey = theme ? JSON.stringify(theme) : "";
+  const accentWins = Boolean(accent && accentVariables(accent));
+  useEffect(() => {
+    if (!themeKey) return;
+    const t = JSON.parse(themeKey) as SocleTheme;
+    const root = document.documentElement;
+    // Contrastes vérifiés comme pour l'accent (D-029), mais le thème est gardé :
+    // ses couleurs relèvent de l'organisation qui le publie.
+    const issues = themeContrastIssues(t);
+    if (issues.length)
+      console.warn(`[socle-ui] Thème « ${t.name} » : contraste insuffisant (AA) — ${issues.join(" ; ")}. Le thème est appliqué tel quel.`);
+    const attrs = themeAttributes(t);
+    for (const [k, v] of Object.entries(attrs)) root.setAttribute(k, v);
+    const omit = accentWins ? ACCENT_KEYS : [];
+    const media = typeof window.matchMedia === "function" ? window.matchMedia("(prefers-color-scheme: dark)") : null;
+    let applied: string[] = [];
+    const apply = () => {
+      const forced = root.dataset.theme;
+      const mode: ThemeMode = forced === "light" || forced === "dark" ? forced : media?.matches ? "dark" : "light";
+      const vars = themeVariables(t, mode, omit);
+      for (const k of applied) if (!(k in vars)) root.style.removeProperty(k);
+      for (const [k, v] of Object.entries(vars)) root.style.setProperty(k, v);
+      applied = Object.keys(vars);
+    };
+    apply();
+    const observer = new MutationObserver(apply);
+    observer.observe(root, { attributes: true, attributeFilter: ["data-theme"] });
+    media?.addEventListener("change", apply);
+    return () => {
+      observer.disconnect();
+      media?.removeEventListener("change", apply);
+      for (const k of applied) root.style.removeProperty(k);
+      for (const k of Object.keys(attrs)) root.removeAttribute(k);
+      if (root.getAttribute("style") === "") root.removeAttribute("style");
+    };
+  }, [themeKey, accentWins]);
+
   const setDensity = useCallback(
     (d: Density) => {
       setUserDensity(d);
@@ -165,6 +208,9 @@ export function SocleProvider({ accent, density, platform, storageKey = "socle",
     },
     [storageKey],
   );
+
+  // Jeu d'icônes du thème (D-338) : passé par contexte aux icônes internes, sans état global.
+  const iconSet = useMemo(() => (themeKey ? ((JSON.parse(themeKey) as SocleTheme).icons ?? null) : null), [themeKey]);
 
   const merged = useMemo<SocleMessages>(() => ({ ...frenchMessages, ...messages }), [messages]);
   const value = useMemo<SocleContextValue>(
@@ -184,10 +230,12 @@ export function SocleProvider({ accent, density, platform, storageKey = "socle",
   // La confirmation (D-127) et la région des toasts (D-154) sont affichées ici, une seule fois pour toute l'app.
   return (
     <SocleContext.Provider value={value}>
-      <ConfirmProvider>
-        <FormDialogProvider>{children}</FormDialogProvider>
-      </ConfirmProvider>
-      {notifications ? <ToastRegion notifications={notifications} /> : null}
+      <ThemeIconsContext.Provider value={iconSet}>
+        <ConfirmProvider>
+          <FormDialogProvider>{children}</FormDialogProvider>
+        </ConfirmProvider>
+        {notifications ? <ToastRegion notifications={notifications} /> : null}
+      </ThemeIconsContext.Provider>
     </SocleContext.Provider>
   );
 }

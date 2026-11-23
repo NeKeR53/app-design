@@ -151,3 +151,60 @@ export const LibelleTronque: Story = {
     await waitFor(() => expect(body().queryByRole("tooltip")).toBeNull());
   },
 };
+
+/** L'app confirme avant de fermer : `onClose` vient d'abord ; la vue reste active tant que l'onglet est là. Annuler ou renvoyer `false` ne change rien. */
+export const FermetureConfirmee: Story = {
+  render: () => {
+    const [items, setItems] = useState(BASE);
+    const [sel, setSel] = useState("r1");
+    const [asking, setAsking] = useState<string | null>(null);
+    const [refuse, setRefuse] = useState(false);
+    return (
+      <div className="flex flex-col gap-2">
+        <div className="flex items-center gap-2">
+          <Tabs
+            pageTitle="Documents"
+            items={items}
+            selectedId={sel}
+            onSelectionChange={setSel}
+            onClose={(id) => {
+              if (refuse) return false;
+              setAsking(id);
+            }}
+          />
+          <output data-testid="sel" className="ml-auto text-sm text-fg-3">{sel}</output>
+        </div>
+        <label className="text-sm"><input type="checkbox" checked={refuse} onChange={(e) => setRefuse(e.target.checked)} /> Refuser</label>
+        {asking && (
+          <div role="alertdialog" aria-label="Fermer la vue ?" className="flex gap-2">
+            <button type="button" onClick={() => setAsking(null)}>Annuler</button>
+            <button type="button" onClick={() => { setItems((xs) => xs.filter((x) => x.id !== asking)); setAsking(null); }}>Fermer</button>
+          </div>
+        )}
+      </div>
+    );
+  },
+  play: async ({ canvasElement }) => {
+    const c = within(canvasElement);
+    const closeBtn = () => c.getByRole("button", { name: /Fermer la vue Rapport/ });
+    // Demande, puis annulation : la vue active ne bouge pas.
+    await userEvent.click(closeBtn());
+    await expect(c.getByRole("alertdialog")).toBeVisible();
+    await expect(sel(canvasElement)).toBe("r1");
+    await userEvent.click(c.getByRole("button", { name: "Annuler" }));
+    await expect(sel(canvasElement)).toBe("r1");
+    await expect(c.getByRole("tab", { name: /Rapport trimestriel/ })).toHaveAttribute("aria-selected", "true");
+    // `onClose` renvoie `false` : rien ne change.
+    await userEvent.click(c.getByRole("checkbox", { name: "Refuser" }));
+    await userEvent.click(closeBtn());
+    await expect(c.queryByRole("alertdialog")).toBeNull();
+    await expect(sel(canvasElement)).toBe("r1");
+    await userEvent.click(c.getByRole("checkbox", { name: "Refuser" }));
+    // Confirmation : l'onglet part, la voisine de gauche s'active.
+    await userEvent.click(closeBtn());
+    await userEvent.click(c.getByRole("button", { name: "Fermer" }));
+    await waitFor(() => expect(sel(canvasElement)).toBe("arch"));
+    await expect(c.queryByRole("tab", { name: /Rapport trimestriel/ })).toBeNull();
+    await expect(c.getByRole("tab", { name: /Archives/ })).toHaveAttribute("aria-selected", "true");
+  },
+};

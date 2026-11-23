@@ -42,14 +42,19 @@ const pending = "data-pending:opacity-100 data-pending:bg-transparent";
 const selected = "data-selected:bg-hover data-selected:text-fg data-selected:data-hovered:bg-selected";
 
 export function IconButton({ icon, label, shortcut, onPress, isDisabled, isPending = false, isSelected, onChange, tooltipPlacement = "bottom" }: IconButtonProps) {
+  // Sans raccourci, l'info-bulle répète le nom accessible : on ne la relie pas par `aria-describedby`,
+  // sinon le lecteur d'écran lit le nom deux fois (Tooltip.spec.md, Accessibilité).
+  // Une valeur vide remplace celle de React Aria ; avec un raccourci, la description reste.
+  const describedBy = shortcut ? {} : { "aria-describedby": "" };
   const button =
     isSelected === undefined ? (
-      <Button aria-label={label} className={cx(base, pending)} isPending={isPending} {...(onPress ? { onPress } : {})} {...(isDisabled ? { isDisabled } : {})}>
+      <Button aria-label={label} {...describedBy} className={cx(base, pending)} isPending={isPending} {...(onPress ? { onPress } : {})} {...(isDisabled ? { isDisabled } : {})}>
         {isPending ? <PendingSpinner /> : icon}
       </Button>
     ) : (
       <ToggleButton
         aria-label={label}
+        {...describedBy}
         className={cx(base, selected)}
         isSelected={isSelected}
         {...(onChange ? { onChange } : {})}

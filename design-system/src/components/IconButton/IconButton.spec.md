@@ -6,7 +6,7 @@ Validation : docs/validation/components/IconButton-v1.html
 Bouton qui ne montre qu'une icône. Il sert aux actions fréquentes et connues : barre supérieure, actions d'une ligne, pied de sidebar, en-tête du panneau de détail.
 Ne pas l'utiliser pour :
 - l'action principale d'un écran ou d'un formulaire : prendre `Button` avec un libellé ;
-- une action rare ou dont l'icône n'est pas évidente : prendre `Button` ou une entrée de `Menu` ;
+- une action rare ou dont l'icône n'est pas évidente : prendre `Button` ou une entrée de `DropdownMenu` ;
 - un lien de navigation : prendre un élément de `Sidebar`.
 
 ## Anatomie

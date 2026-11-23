@@ -2,6 +2,7 @@ import type { Meta, StoryObj } from "@storybook/react-vite";
 import { Button } from "react-aria-components/Button";
 import { expect, fn, userEvent, within } from "storybook/test";
 import { EmptyState } from "./EmptyState";
+import { Link } from "../Link/Link";
 
 /** Icône d'app pour l'exemple (dossier). */
 const Folder = () => (
@@ -34,7 +35,7 @@ export const ParDefaut: Story = {
   },
   play: async ({ canvasElement }) => {
     const c = within(canvasElement);
-    await expect(c.getByText("Aucun projet")).toBeVisible();
+    await expect(c.getByRole("heading", { level: 2, name: "Aucun projet" })).toBeVisible();
     const icon = canvasElement.querySelector("svg")!;
     await expect(Math.round(icon.getBoundingClientRect().width)).toBe(32);
     await userEvent.tab();
@@ -50,5 +51,23 @@ export const Compact: Story = {
   args: { size: "compact", title: "Aucune pièce jointe", description: "Déposez un fichier ici." },
   play: async ({ canvasElement }) => {
     await expect(canvasElement.querySelector("svg")).toBeNull();
+  },
+};
+
+/** Phrase avec un `Link` (action secondaire) ; titre de niveau 3 dans une page qui a déjà un `h2`. Même apparence. */
+export const AvecLien: Story = {
+  args: {
+    headingLevel: 3,
+    description: (
+      <>
+        Créez un projet ou <Link href="#import">importez un fichier</Link>.
+      </>
+    ),
+  },
+  play: async ({ canvasElement }) => {
+    const c = within(canvasElement);
+    const heading = c.getByRole("heading", { level: 3, name: "Aucun projet" });
+    await expect(getComputedStyle(heading).fontSize).toBe(getComputedStyle(heading.parentElement!).fontSize);
+    await expect(c.getByRole("link", { name: "importez un fichier" })).toHaveAttribute("href", "#import");
   },
 };

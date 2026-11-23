@@ -6,15 +6,15 @@ Validation : docs/validation/components/FormFields-v1.html
 Choix d'une valeur dans une liste fermée et courte (2 à 15 options environ), sans saisie de texte.
 Ne pas l'utiliser pour :
 - plus de 15 options, une recherche dans les options, ou plusieurs valeurs : prendre `ComboBox` (P5) ;
-- 2 à 5 options qu'on veut toutes voir : prendre `RadioGroup` ;
-- un oui/non : prendre `Checkbox` ou `Switch` ;
-- une action : prendre `Menu`.
+- 2 à 5 options qu'on veut toutes voir : prendre `RadioButtonGroup` ;
+- un oui/non : prendre `Checkbox` ou `Toggle` ;
+- une action : prendre `DropdownMenu`.
 
 ## Anatomie
 Celle de `Field` (Field.spec.md), avec dans le cadre (D-134) :
 1. **Valeur choisie** à gauche, ou le texte d'aide « Choisir… » (ou `placeholder`) en `--fg-3` ;
 2. **Chevron** vers le bas, 16 px, `--fg-2`, à droite.
-Puis la **liste flottante** : style du Menu (rayon 12 px, fond `--surface-raised`, bord `--line`, ombre `--shadow-md`, marge de 4 px), au moins aussi large que le cadre ; chaque option fait `--row-h`, avec la coche à droite sur la valeur choisie (D-050). Les options peuvent être rangées en sections titrées.
+Puis la **liste flottante** : style du DropdownMenu (rayon 12 px, fond `--surface-raised`, bord `--line`, ombre `--shadow-md`, marge de 4 px), au moins aussi large que le cadre ; chaque option fait `--row-h`, avec la coche à droite sur la valeur choisie (D-050). Les options peuvent être rangées en sections titrées.
 
 ## Variantes
 Aucune.
@@ -69,7 +69,7 @@ Celles de `Field`.
 Celui de `Field`. Aussi dans une ligne de réglage de `SettingsPage`, libellé masqué, largeur `md`.
 
 ## Composition
-`Field`, un bouton et une liste au style du `Menu`. La liste est partagée avec `ComboBox`.
+`Field`, un bouton et une liste au style du `DropdownMenu`. La liste est partagée avec `ComboBox`.
 
 ## Décisions
 D-022, D-040, D-050, D-130, D-132, D-133, D-134

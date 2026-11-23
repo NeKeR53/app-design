@@ -5,8 +5,8 @@ Validation : docs/validation/components/Divers-v1.html (par délégation de l'ut
 ## Rôle
 Texte modifiable sur place : le titre d'un élément, une valeur du panneau de détail (layout-rules : « propriétés modifiables sur place »), le nom d'une liste ou d'une vue.
 Ne pas l'utiliser pour :
-- un formulaire de plusieurs champs : prendre `TextField` et `FormPage` ;
-- un choix dans une liste : action de ligne avec `Menu` (D-059) ou `Select` ;
+- un formulaire de plusieurs champs : prendre `TextInput` et `FormPage` ;
+- un choix dans une liste : action de ligne avec `DropdownMenu` (D-059) ou `Select` ;
 - une date, un nombre avec unité, une saisie riche (mentions) : solution de l'app, hors de cette version (D-324).
 
 ## Anatomie
@@ -87,7 +87,7 @@ Identique sur toutes les tailles ; sur un écran tactile, un appui ouvre la sais
 Vérification : message sous le champ (D-132). Échec de `onSave` : message `actionFailed` sous le champ, saisie ouverte (D-323). L'app peut aussi afficher une notification.
 
 ## Placement
-Titre d'un élément (en-tête de `DetailPage`, haut du panneau de détail) ; valeur d'une `PropertyRow` de `DetailPanel` (D-324). Jamais dans une cellule de `Table` dans cette version.
+Titre d'un élément (en-tête de `DetailPage`, haut du panneau de détail) ; valeur d'une `PropertyRow` de `Drawer` (D-324). Jamais dans une cellule de `Table` dans cette version.
 
 ## Composition
 Reprend les pièces internes de `Field` (cadre D-130, libellé, erreur) et le `TextField` de React Aria.
