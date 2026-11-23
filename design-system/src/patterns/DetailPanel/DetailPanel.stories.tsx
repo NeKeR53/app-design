@@ -154,7 +154,11 @@ export const Declaratif: Story = {
     // hideEmpty retire « Fax » ; une valeur vide sans hideEmpty affiche « — ».
     await expect(c.queryByText("Fax")).toBeNull();
     await expect(c.getByText("Relance", { selector: "dt" })).toBeVisible();
-    await expect(c.getByText("Étiquettes", { selector: "dt" })).toBeVisible();
+    // Valeurs typées, rendues par FormattedValue (D-182).
+    await expect(c.getByText(/12\s480,00\s€/)).toBeVisible();
+    await expect(c.getByText("14 mars 2019")).toBeVisible();
+    await expect(c.getByRole("link", { name: new RegExp(CLIENT.mail) })).toHaveAttribute("href", `mailto:${CLIENT.mail}`);
+    await expect(c.getByText("Bois, Grands comptes")).toBeVisible();
     // Section sans champ ni contenu : texte vide ; texte libre : paragraphe.
     await expect(c.getByText(/Trois sites/)).toBeVisible();
     await expect(c.getByRole("button", { name: /Notes/ })).toHaveAttribute("aria-expanded", "false");

@@ -9,7 +9,8 @@ import { StatusBadge, type StatusTone } from "../../components/StatusBadge/Statu
 import { Skeleton, SkeletonGroup } from "../../components/Skeleton/Skeleton";
 import { EmptyState } from "../../components/EmptyState/EmptyState";
 import { CenterMessage, ErrorBanner, ReloadBar, RetryButton } from "../../lib/results";
-import { DetailValue, isEmptyValue, type DetailValueOptions } from "./value";
+import { useFieldValue } from "./value";
+import { isEmptyValue, type ValueFormat } from "../../components/FormattedValue/FormattedValue";
 import { Button } from "react-aria-components/Button";
 import { useMessages, useStoredState } from "../../provider/SocleProvider";
 import { buttonReset, cx, focusRing } from "../../lib/cx";
@@ -68,7 +69,7 @@ export interface DetailHeader {
 }
 
 /** Une ligne de la forme déclarative : valeur brute, mise en forme selon son type (D-182). */
-export interface DetailField extends DetailValueOptions {
+export interface DetailField extends ValueFormat {
   /** Identifiant de la ligne. Défaut : le libellé. */
   id?: string;
   label: string;
@@ -217,6 +218,7 @@ function Header({ header }: { header: DetailHeader }) {
 
 function DeclarativeSection({ section }: { section: DetailSection }) {
   const m = useMessages();
+  const fieldValue = useFieldValue();
   const { id, title, fields, content, empty, actions, summary, defaultCollapsed } = section;
   const rows = (fields ?? []).filter((f) => !(f.hideEmpty && isEmptyValue(f.value)));
   const hasContent = content !== undefined && content !== null && content !== "" && content !== false;
@@ -239,7 +241,7 @@ function DeclarativeSection({ section }: { section: DetailSection }) {
           key={f.id ?? f.label}
           {...(f.id ? { id: f.id } : {})}
           label={f.label}
-          value={isEmptyValue(f.value) ? undefined : <DetailValue field={f} />}
+          value={isEmptyValue(f.value) ? undefined : fieldValue(f)}
           {...(f.icon ? { icon: f.icon } : {})}
           {...(f.action ? { action: f.action } : {})}
           {...(f.details ? { details: f.details } : {})}

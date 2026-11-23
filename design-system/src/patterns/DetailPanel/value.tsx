@@ -1,19 +1,17 @@
 /*
- * Valeur d'un champ déclaratif (D-182). Provisoire : à remplacer par le formateur
- * des valeurs typées de ListPage (P8), dès que sa spec est publiée.
+ * Valeur d'un champ déclaratif (D-182) : rendue par FormattedValue (D-170).
+ * Un texte simple reste une chaîne, pour garder la coupe à trois lignes et l'info-bulle de PropertyRow (D-058).
  */
 import type { ReactNode } from "react";
+import { FormattedValue, useFormatValue, type ValueFormat } from "../../components/FormattedValue/FormattedValue";
 
-export interface DetailValueOptions {
-  type?: string;
-}
+const PLAIN = new Set(["text", "tags", "boolean"]);
 
-export function isEmptyValue(value: unknown): boolean {
-  return value === undefined || value === null || value === "" || (Array.isArray(value) && value.length === 0);
-}
-
-export function DetailValue({ field }: { field: DetailValueOptions & { value: unknown } }): ReactNode {
-  const v = field.value;
-  if (Array.isArray(v)) return v.join(", ");
-  return typeof v === "string" || typeof v === "number" ? String(v) : (v as ReactNode);
+export function useFieldValue(): (field: ValueFormat & { value: unknown }) => ReactNode {
+  const format = useFormatValue();
+  return ({ value, type = "text", statuses, currency, decimals, durationUnit }) => {
+    const fmt: ValueFormat = { type, ...(statuses ? { statuses } : {}), ...(currency ? { currency } : {}), ...(decimals !== undefined ? { decimals } : {}), ...(durationUnit ? { durationUnit } : {}) };
+    if (PLAIN.has(type)) return format(value, fmt);
+    return <FormattedValue value={value} {...fmt} />;
+  };
 }
