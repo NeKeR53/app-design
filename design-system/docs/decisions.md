@@ -1393,3 +1393,51 @@
 - Raison : c'est la barre de sélection prévue par `Table` (anatomie, pièce 6), au même endroit que les outils, sans décaler la liste.
 - Options écartées : barre flottante en bas de l'écran ; actions groupées dans l'en-tête.
 - Validation : par délégation de l'utilisateur, 2026-11-23 — docs/validation/components/ListPage-v1.html
+
+## D-180 — DetailPanel : forme déclarative, à côté de la forme à composants
+- Date : 2026-11-23
+- Portée : DetailPanel
+- Décision : `DetailPanel` accepte, en option, des données au lieu d'enfants : `header` (en-tête de l'objet) et `sections` (sections et champs typés), plus les états `isLoading`, `hasError`, `onRetry`, `isNotFound` et `emptyMessage`. Le panneau dessine tout avec les pièces existantes (`DetailPanel.Section`, `PropertyRow`, `ActionBar`, `StatusBadge`, `Skeleton`, `EmptyState`). La forme à composants reste. Les deux formes s'excluent : avec `header` ou `sections`, les enfants ne sont pas acceptés (types TypeScript). Le panneau ne charge rien : l'app lit la sélection, charge l'objet et passe les états.
+- Raison : une app « liste + détail » décrit son objet sans recomposer le panneau ; le chargement reste à l'app, qui seule connaît sa source. Validation : par délégation de l'utilisateur, 2026-11-23.
+- Options écartées : nouveau composant `DetailView` (deux noms pour un seul panneau) ; fonction qui renvoie des éléments ; option `load(id)` dans le panneau (lié au transport de l'app).
+- Validation : docs/validation/components/DetailPanel-v2.html
+
+## D-181 — DetailPanel : en-tête de l'objet
+- Date : 2026-11-23
+- Portée : DetailPanel
+- Décision : `header` = `{ title, subtitle?, status?, actions? }`. En haut du panneau, collé en haut pendant le défilement, séparé des sections par un trait `--line`. Ligne 1 : titre en `--fs-lg`, gras, sur deux lignes au plus (puis « … » et info-bulle) ; actions à droite, dessinées par `ActionBar` avec la règle de la zone `section` (2 icônes au plus, « … », action principale en `Button` `secondary` `sm`, D-113). Ligne 2 : statut en `StatusBadge`, puis sous-titre en `--fs-sm`, `--fg-2`, sur une ligne avec « … ». Le groupe d'actions est nommé « Actions sur {title} ».
+- Raison : à 320 px, la règle `header` (3 icônes et bouton à texte) écrase le titre ; la zone `section` garde le titre lisible. Validation : par délégation de l'utilisateur, 2026-11-23.
+- Options écartées : règle de la zone `header` ; actions sur une ligne à part sous le titre (plus haut, pour rien) ; actions dans l'en-tête d'AppShell (changerait AppShell).
+- Validation : docs/validation/components/DetailPanel-v2.html
+
+## D-182 — DetailPanel : champ typé
+- Date : 2026-11-23
+- Portée : DetailPanel
+- Décision : un champ = `{ id?, label, value, type?, hideEmpty?, icon?, action?, details? }`, plus les options de format `ValueFormat` (D-170). La valeur est rendue par `FormattedValue`, comme les colonnes de ListPage : un type rend la même chose dans une liste et dans le panneau. Valeur vide : « — » (D-058), ou ligne masquée avec `hideEmpty`. `icon`, `action` (un des trois types de D-059) et `details` (ligne qui s'ouvre, D-060) sont ceux de `PropertyRow`. Le champ devient une `PropertyRow`.
+- Raison : une seule définition des types pour tout le design system ; aucune mise en forme dans l'app. Validation : par délégation de l'utilisateur, 2026-11-23.
+- Options écartées : formateur propre au panneau ; valeur `ReactNode` seule (l'app formate elle-même).
+- Validation : docs/validation/components/DetailPanel-v2.html
+
+## D-183 — DetailPanel : section déclarative ; résumé et section repliée par défaut
+- Date : 2026-11-23
+- Portée : DetailPanel
+- Décision : une section = `{ id, title, fields?, content?, empty?, actions?, summary?, defaultCollapsed? }`. Elle montre ses champs, puis son contenu libre (un texte devient un paragraphe en `--fg`). Sans champ visible ni contenu, elle affiche `empty` en `--fg-3` (défaut : « Aucune information »). `actions` va à droite de la ligne du titre, hors du bouton qui replie, par `ActionBar` zone `section` (D-113). `summary` (`string` ou `{ label, tone }`) est un état court après le chevron, lisible même section repliée, en `StatusBadge`. `defaultCollapsed` replie la section tant que l'utilisateur ne l'a pas ouverte ; le choix de l'utilisateur est mémorisé (D-061). `summary`, `actions` et `defaultCollapsed` sont aussi ajoutés à `DetailPanel.Section`.
+- Raison : les mêmes sections dans les deux formes ; le résumé évite d'ouvrir une section pour lire son état. Validation : par délégation de l'utilisateur, 2026-11-23.
+- Options écartées : actions en pied de section (le pied garde le bouton à texte de la forme à composants, D-059) ; résumé en couleur seule.
+- Validation : docs/validation/components/DetailPanel-v2.html
+
+## D-184 — DetailPanel : chargement, erreur, introuvable, vide
+- Date : 2026-11-23
+- Portée : DetailPanel
+- Décision : priorité, de haut en bas. (1) `hasError` sans données : message centré « Impossible de charger le détail », phrase, bouton « Réessayer » (`onRetry`) (comme D-085). (2) `isLoading` sans données : squelettes d'un titre et de six lignes à deux colonnes (`SkeletonGroup`, après 200 ms, D-165). (3) `isNotFound` : `EmptyState` compact « Élément introuvable », « Il a peut-être été supprimé. ». (4) Ni `header` ni `sections` : la phrase vide existante, ou `emptyMessage`. Avec des données : `isLoading` ajoute la barre fine de 2 px en haut (D-084) ; `hasError` ajoute sous l'en-tête le bandeau « Le détail n'a pas pu être mis à jour » avec « Réessayer » (D-085). « Données » = `header` ou `sections` fournis.
+- Raison : les mêmes états que Table et List ; l'ancien détail reste lisible pendant un rechargement. Validation : par délégation de l'utilisateur, 2026-11-23.
+- Options écartées : bandeau `danger` en rouge (Alfred) ; état introuvable laissé à l'app.
+- Validation : docs/validation/components/DetailPanel-v2.html
+
+## D-185 — DetailPanel : pas de déplacement des sections
+- Date : 2026-11-23
+- Portée : DetailPanel
+- Décision : l'utilisateur replie les sections, mais ne les déplace pas (ni poignée, ni Alt+↑/↓). L'ordre est celui que donne l'app.
+- Raison : besoin rare, coût élevé (glisser, clavier, mémoire de l'ordre) ; à revoir si une deuxième app le demande. Validation : par délégation de l'utilisateur, 2026-11-23.
+- Options écartées : sections déplaçables comme dans Alfred (`PanelSections`).
+- Validation : docs/validation/components/DetailPanel-v2.html

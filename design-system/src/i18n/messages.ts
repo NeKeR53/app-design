@@ -41,6 +41,12 @@ export interface SocleMessages {
   currentView: (label: string) => string;
   /* DetailPanel */
   detailEmpty: string;
+  detailLoadErrorTitle: string;
+  detailLoadErrorText: string;
+  detailNotUpdated: string;
+  detailNotFoundTitle: string;
+  detailNotFoundText: string;
+  detailSectionEmpty: string;
   /* Table et List */
   selectAll: string;
   columnWidth: (label: string) => string;
@@ -167,6 +173,12 @@ export const frenchMessages: SocleMessages = {
   allViews: "Toutes les vues",
   currentView: (l) => `Vue : ${l}`,
   detailEmpty: "Sélectionnez un élément pour voir son détail.",
+  detailLoadErrorTitle: "Impossible de charger le détail",
+  detailLoadErrorText: "Le service ne répond pas.",
+  detailNotUpdated: "Le détail n'a pas pu être mis à jour.",
+  detailNotFoundTitle: "Élément introuvable",
+  detailNotFoundText: "Il a peut-être été supprimé.",
+  detailSectionEmpty: "Aucune information",
   selectAll: "Tout sélectionner",
   columnWidth: (l) => `Largeur de la colonne ${l}`,
   rowActions: "Actions",
