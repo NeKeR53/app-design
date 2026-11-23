@@ -801,7 +801,8 @@
 ## D-105 — Bouton à texte : chargement avec roue et libellé
 - Date : 2026-11-23
 - Portée : Button
-- Décision : avec `isPending`, une roue remplace l'icône, ou se place devant le libellé ; le libellé reste. La largeur ne change pas. Le bouton garde le focus, ignore les clics, porte `aria-busy` et annonce l'attente (`progressbar` nommé par le dictionnaire `messages`). Pas de libellé de remplacement.
+- Décision : avec `isPending`, une roue remplace l'icône, ou se place devant le libellé ; le libellé reste. Avec une icône, la largeur ne change pas ; sans icône, le bouton s'élargit de la place de la roue (22 px). Le bouton garde le focus, ignore les clics, porte `aria-disabled` et annonce l'attente (`progressbar` nommé par le dictionnaire `messages`). Pas de libellé de remplacement.
+- Précision au codage (2026-11-23) : la page de validation montrait déjà l'élargissement sans icône ; React Aria ne pose pas `aria-busy`, il pose `aria-disabled` et annonce l'attente.
 - Raison : le libellé reste lisible et le bouton ne saute pas.
 - Options écartées : roue seule au centre, libellé caché ; libellé de remplacement (`loadingLabel`).
 - Validation : docs/validation/components/Button-v1.html
@@ -817,7 +818,7 @@
 ## D-107 — Bouton-icône : état de chargement facultatif
 - Date : 2026-11-23
 - Portée : IconButton
-- Décision : `IconButton` gagne l'option facultative `isPending`. L'icône devient une roue ; le bouton garde le focus, ignore les clics, porte `aria-busy` et garde son info-bulle. Elle sert par exemple à « Actualiser ». Cela retire l'exclusion « pas d'état de chargement » de la spec.
+- Décision : `IconButton` gagne l'option facultative `isPending`. L'icône devient une roue ; le bouton garde le focus, ignore les clics, porte `aria-disabled` et garde son info-bulle. Elle sert par exemple à « Actualiser ». Cela retire l'exclusion « pas d'état de chargement » de la spec.
 - Raison : la barre d'outils n'accepte que des boutons-icônes, et une action « Actualiser » doit montrer son attente.
 - Options écartées : un `Button` discret « Actualiser » avec icône ; un composant `RefreshButton` dédié.
 - Validation : docs/validation/components/Button-v1.html

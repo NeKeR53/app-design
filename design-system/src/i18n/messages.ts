@@ -68,6 +68,8 @@ export interface SocleMessages {
   suggestionsUnavailable: string;
   noElements: string;
   clearAll: string;
+  /* Button et IconButton */
+  loading: string;
 }
 
 const s = (n: number) => (n > 1 ? "s" : "");
@@ -131,4 +133,5 @@ export const frenchMessages: SocleMessages = {
   suggestionsUnavailable: "Suggestions indisponibles",
   noElements: "Aucun élément trouvé",
   clearAll: "Tout effacer",
+  loading: "Chargement",
 };

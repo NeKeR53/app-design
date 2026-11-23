@@ -29,6 +29,7 @@
   --success: #15803d;
   --warning: #b45309;
   --danger: #c62828;
+  --danger-fg: #ffffff;         /* texte sur fond danger (D-104) */
   --info: #1d4ed8;
 
   /* Info-bulle : sombre dans les deux modes (D-030) */
@@ -111,6 +112,7 @@
     --success: #5cc98a;
     --warning: #e0a24a;
     --danger: #f07167;
+    --danger-fg: #1f0a08;
     --info: #5b8def;
     --tip-bg: #3a3a3a;
     --tip-fg: #f2f2f2;
@@ -142,6 +144,7 @@
   --success: #5cc98a;
   --warning: #e0a24a;
   --danger: #f07167;
+  --danger-fg: #1f0a08;
   --info: #5b8def;
   --tip-bg: #3a3a3a;
   --tip-fg: #f2f2f2;

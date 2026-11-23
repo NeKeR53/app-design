@@ -35,6 +35,7 @@
   --color-success: var(--success);
   --color-warning: var(--warning);
   --color-danger: var(--danger);
+  --color-danger-fg: var(--danger-fg);
   --color-info: var(--info);
   --color-tip-bg: var(--tip-bg);
   --color-tip-fg: var(--tip-fg);

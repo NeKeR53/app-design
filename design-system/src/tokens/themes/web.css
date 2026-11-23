@@ -17,6 +17,7 @@
   --detail-w: 300px;      /* panneau de détail */
   --target-min: 24px;     /* cible minimale (AA) */
   --icon-btn: 28px;       /* bouton-icône (D-035) */
+  --btn-h-sm: 26px;       /* bouton à texte, taille sm (D-101) */
 }
 
 /* Sur mobile, cibles tactiles plus grandes. */

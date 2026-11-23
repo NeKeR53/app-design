@@ -65,3 +65,31 @@ export const Desactive: Story = {
     await expect(body().queryByRole("tooltip")).toBeNull();
   },
 };
+
+/** Icône de l'app (D-011), ici « actualiser ». */
+const RefreshIcon = () => (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <path d="M3 12a9 9 0 0 1 15-6.7L21 8M21 3v5h-5M21 12a9 9 0 0 1-15 6.7L3 16M3 21v-5h5" />
+  </svg>
+);
+
+/** Chargement (D-107) : l'icône devient une roue, les clics sont ignorés, le focus et l'info-bulle restent. */
+export const Chargement: Story = {
+  render: (args) => {
+    const [pending, setPending] = useState(false);
+    return <IconButton icon={<RefreshIcon />} label="Actualiser" shortcut="F5" isPending={pending} onPress={() => { args.onPress?.(); setPending(true); }} />;
+  },
+  play: async ({ canvasElement, args }) => {
+    const button = within(canvasElement).getByRole("button", { name: /Actualiser/ });
+    await userEvent.click(button);
+    await waitFor(() => expect(button).toHaveAttribute("data-pending", "true"));
+    await expect(button).toHaveFocus();
+    await expect(within(button).getByRole("progressbar", { name: "Chargement" })).toBeInTheDocument();
+    await userEvent.click(button);
+    await expect(args.onPress).toHaveBeenCalledTimes(1);
+    // Un clic ferme l'info-bulle ; elle revient au survol suivant.
+    await userEvent.unhover(button);
+    await userEvent.hover(button);
+    await waitFor(() => expect(body().getByRole("tooltip")).toHaveTextContent("Actualiser"), { timeout: 1500 });
+  },
+};

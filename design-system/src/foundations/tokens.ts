@@ -15,6 +15,7 @@ export const COLOR_TOKENS = [
   ["--success", "Succès"],
   ["--warning", "Alerte"],
   ["--danger", "Erreur"],
+  ["--danger-fg", "Texte sur fond danger"],
   ["--info", "Information"],
   ["--tip-bg", "Fond des info-bulles (sombre dans les deux modes)"],
   ["--tip-fg", "Texte des info-bulles"],

@@ -55,14 +55,14 @@ Ne pas l'utiliser pour :
 | Pressé | `primary` : mélange à 28 %. `secondary` et `subtle` : fond `--selected`. `danger` : mélange plus marqué. |
 | Focus clavier | Anneau `--accent`, 2 px, décalé de 1 px. |
 | Désactivé | Opacité 40 %, ni survol ni action. |
-| Chargement | La roue remplace l'icône, ou se place devant le libellé ; la largeur ne change pas ; ni survol ni action (D-105). |
+| Chargement | La roue remplace l'icône : la largeur ne change pas. Sans icône, la roue se place devant le libellé et le bouton s'élargit de 22 px. Ni survol ni action (D-105). |
 
 ## Comportement
 | Règle | Niveau de réglage | Test (story) |
 |---|---|---|
 | Un clic, Entrée ou Espace appelle `onPress` | verrouillé | `Clavier` |
-| Chargement : clics ignorés, focus gardé, `aria-busy`, attente annoncée au lecteur d'écran (D-105) | verrouillé | `Chargement` |
-| Chargement : la largeur du bouton ne change pas (D-105) | verrouillé | `Chargement` |
+| Chargement : clics ignorés, focus gardé, `aria-disabled`, attente annoncée au lecteur d'écran (D-105) | verrouillé | `Chargement` |
+| Chargement avec icône : la largeur du bouton ne change pas (D-105) | verrouillé | `Chargement` |
 | Désactivé : aucune action | verrouillé | `Desactive` |
 | `type="submit"` envoie le formulaire, même hors du `<form>` avec `form` | verrouillé | `Formulaire` |
 | Changements d'état sans transition de couleur supérieure à 120 ms (D-014) | verrouillé | `Etats` |
@@ -85,7 +85,7 @@ Focusable avec Tab. Entrée ou Espace déclenche l'action. Pendant le chargement
 
 ## Accessibilité
 - Rôle `button`, nom accessible = libellé visible, ou `aria-label` s'il est fourni.
-- Chargement : `aria-busy="true"` et un indicateur `progressbar` nommé « Chargement » (dictionnaire `messages`, D-089), annoncé par le lecteur d'écran.
+- Chargement : `aria-disabled="true"` et un indicateur `progressbar` nommé « Chargement » (dictionnaire `messages`, D-089). L'entrée et la sortie de l'attente sont annoncées au lecteur d'écran quand le bouton a le focus (React Aria).
 - Contraste du libellé d'au moins 4,5:1 dans toutes les variantes et les deux modes : `--danger-fg` est blanc en clair et sombre en mode sombre (D-104).
 - Cible d'au moins `--target-min` : 24 px, 44 px sur mobile.
 
