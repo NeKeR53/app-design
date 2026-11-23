@@ -1,0 +1,410 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ComboBox — validation v1</title>
+<style>
+/* ---------- Page de validation ---------- */
+:root{--pg-bg:#f6f6f6;--pg-fg:#1a1a1a;--pg-muted:#5c5c5c;--pg-line:#e2e2e2;--pg-card:#fff;--pg-badge:#fff4d6;--pg-badge-fg:#7a5a00;--pg-reco:#e7f0ff;--pg-reco-fg:#1d4ed8}
+:root[data-theme="dark"]{--pg-bg:#121212;--pg-fg:#ececec;--pg-muted:#9a9a9a;--pg-line:#2c2c2c;--pg-card:#1b1b1b;--pg-badge:#3a2f10;--pg-badge-fg:#f3d27a;--pg-reco:#16233d;--pg-reco-fg:#9cc0ff}
+*{box-sizing:border-box}html,body{margin:0}
+body{background:var(--pg-bg);color:var(--pg-fg);font:15px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif}
+.pg{max-width:1180px;margin:0 auto;padding:24px 16px 64px}
+h1{font-size:22px;font-weight:600;margin:0 0 4px;display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+h2.sec{font-size:16px;margin:28px 0 10px}
+.intro{color:var(--pg-muted);margin:0 0 20px}
+.badge{font-size:12px;font-weight:600;letter-spacing:.04em;padding:3px 8px;border-radius:6px;background:var(--pg-badge);color:var(--pg-badge-fg)}
+.boxes{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px}
+@media (max-width:760px){.boxes{grid-template-columns:1fr}}
+.box{background:var(--pg-card);border:1px solid var(--pg-line);border-radius:10px;padding:14px 16px;font-size:14px}
+.box h2{font-size:14px;margin:0 0 8px;font-weight:600}.box ul,.box ol{margin:0;padding-left:20px}.box li{margin:6px 0}
+.box p{margin:6px 0}
+.reco{font-size:11.5px;font-weight:600;padding:1px 6px;border-radius:5px;background:var(--pg-reco);color:var(--pg-reco-fg);margin-left:4px;white-space:nowrap}
+.opt{color:var(--pg-muted)}
+table.rule{width:100%;border-collapse:collapse;font-size:13.5px}
+table.rule th,table.rule td{text-align:left;vertical-align:top;padding:7px 8px;border-top:1px solid var(--pg-line)}
+table.rule th{font-weight:600;background:transparent}
+.scroll{overflow-x:auto}
+.toolbar{position:sticky;top:0;z-index:100;background:var(--pg-bg);padding:10px 0;border-bottom:1px solid var(--pg-line);margin-bottom:16px;display:flex;flex-wrap:wrap;gap:10px 16px;align-items:center}
+.seg{display:inline-flex;border:1px solid var(--pg-line);border-radius:8px;overflow:hidden;background:var(--pg-card)}
+.seg button{border:0;background:transparent;color:var(--pg-fg);padding:5px 10px;font:inherit;font-size:13px;cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--pg-fg);color:var(--pg-bg)}
+.tlabel{font-size:12px;color:var(--pg-muted);margin-right:6px}
+.hint{margin:8px 0 0;color:var(--pg-muted);font-size:13px}
+code{font:12.5px ui-monospace,"SF Mono",Consolas,monospace}
+
+/* ---------- Tokens (copie de src/tokens) ---------- */
+.tk{--surface:#fff;--surface-2:#f7f7f7;--surface-raised:#fff;--field:#f2f2f2;--hover:#e9e9e9;--selected:#dedede;--line:#e4e4e4;--line-strong:#cfcfcf;--fg:#1a1a1a;--fg-2:#5c5c5c;--fg-3:#6b6b6b;--danger:#c62828;
+  --accent:#1d4ed8;--font-sans:-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;
+  --radius-sm:4px;--radius-md:8px;--radius-lg:12px;--shadow-md:0 6px 20px rgb(0 0 0/.10);--icon:16px;--icon-stroke:1.6;--fs-xs:11.5px;--fs-sm:12.5px;--fs-md:14px;--lh:1.45;--row-h:34px;--fw-semibold:600;
+  --chip:#e3e3e3;--chip-on:#cfcfcf}
+.tk.dark{--surface:#181818;--surface-2:#1f1f1f;--surface-raised:#262626;--field:#2a2a2a;--hover:#303030;--selected:#3d3d3d;--line:#333;--line-strong:#4a4a4a;--fg:#ececec;--fg-2:#ababab;--fg-3:#8f8f8f;--accent:#5b8def;--danger:#f07167;--shadow-md:0 6px 20px rgb(0 0 0/.5);--chip:#3a3a3a;--chip-on:#4f4f4f}
+.tk.desktop{--fs-xs:10.5px;--fs-sm:11.5px;--fs-md:13px;--lh:1.4;--row-h:28px}
+
+/* ---------- Scène : un formulaire dans l'app ---------- */
+.stage{border:1px solid var(--pg-line);border-radius:12px;background:var(--surface);color:var(--fg);font-family:var(--font-sans);font-size:var(--fs-md);line-height:var(--lh);display:grid;grid-template-columns:200px 1fr;min-height:560px;overflow:hidden}
+@media (max-width:760px){.stage{grid-template-columns:1fr}.side{display:none}}
+.stage *{box-sizing:border-box}.stage button,.stage input{font:inherit;color:inherit}
+.side{background:var(--surface-2);border-right:1px solid var(--line);padding:12px 8px}
+.nav{display:flex;align-items:center;gap:8px;height:var(--row-h);padding:0 10px;border-radius:var(--radius-md);color:var(--fg-2);font-size:var(--fs-md)}
+.nav.on{background:var(--selected);color:var(--fg)}
+.main{padding:20px 24px 40px;min-width:0}
+.ph{font-size:18px;font-weight:600;margin:0 0 2px}.pd{color:var(--fg-3);font-size:var(--fs-sm);margin:0 0 20px}
+.form{max-width:480px;display:flex;flex-direction:column;gap:18px}
+.ic{width:var(--icon);height:var(--icon);flex:none;stroke:currentColor;fill:none;stroke-width:var(--icon-stroke);stroke-linecap:round;stroke-linejoin:round}
+
+/* Champ (anatomie héritée de P4 : libellé au-dessus, aide ou erreur en dessous, D-022) */
+.fld{display:flex;flex-direction:column;gap:4px;position:relative}
+.lbl{font-size:var(--fs-sm);font-weight:500;color:var(--fg)}
+.lbl .facu{color:var(--fg-3);font-weight:400}
+.help{font-size:var(--fs-sm);color:var(--fg-3)}
+.err{font-size:var(--fs-sm);color:var(--danger);display:none}
+.fld.invalid .err{display:block}.fld.invalid .help{display:none}
+.cb{position:relative;display:flex;align-items:center;flex-wrap:nowrap;gap:4px;min-height:var(--row-h);padding:0 3px 0 10px;border-radius:var(--radius-md);background:var(--surface);border:1px solid var(--line-strong);cursor:text}
+.cb:hover{border-color:var(--fg-3)}
+.cb:focus-within{outline:2px solid var(--accent);outline-offset:1px}
+.fld.invalid .cb{border-color:var(--danger)}
+.fld.disabled{opacity:.4;pointer-events:none}
+.cb .lead{color:var(--fg-3);margin-right:2px}
+.chips{display:flex;gap:4px;align-items:center;min-width:0;flex-wrap:nowrap}
+.tk.ov-wrap .cb.multi.has{flex-wrap:wrap;padding-top:3px;padding-bottom:3px}
+.tk.ov-wrap .cb.multi .chips{display:contents}
+.tk.ov-more .cb.multi .chips{overflow:hidden}
+.chip{display:inline-flex;align-items:center;gap:2px;height:calc(var(--row-h) - 10px);max-width:200px;padding:0 2px 0 7px;border-radius:var(--radius-sm);background:var(--chip);color:var(--fg);font-size:var(--fs-sm);flex:none;border:0}
+.chip.on{background:var(--chip-on);box-shadow:0 0 0 2px var(--accent)}
+.chip .lab{overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.chip button{width:18px;height:18px;border:0;background:transparent;border-radius:3px;display:inline-grid;place-items:center;color:var(--fg-2);padding:0;flex:none;cursor:pointer}
+.chip button:hover{background:var(--chip-on);color:var(--fg)}.chip button .ic{width:12px;height:12px}
+.chip.more{padding:0 7px;color:var(--fg-2)}
+.cb input{flex:1 1 60px;min-width:60px;border:0;background:transparent;outline:none;color:var(--fg);height:calc(var(--row-h) - 2px);padding:0 2px}
+.cb input::placeholder{color:var(--fg-3)}
+.cb .tail{display:flex;align-items:center;gap:2px;margin-left:auto;align-self:center}
+.tk.ov-wrap .cb.multi.has .tail{align-self:flex-start;margin-top:calc((var(--row-h) - 30px)/2)}
+.chev{width:24px;height:24px;border:0;background:transparent;border-radius:var(--radius-sm);display:inline-grid;place-items:center;color:var(--fg-2);padding:0;cursor:pointer}
+.chev:hover{background:var(--hover);color:var(--fg)}
+.spin{width:14px;height:14px;border:2px solid var(--line-strong);border-top-color:var(--fg-2);border-radius:50%;animation:spin .8s linear infinite;flex:none;display:none}
+.cb.loading .tail .spin{display:inline-block}
+@keyframes spin{to{transform:rotate(360deg)}}
+@media (prefers-reduced-motion: reduce){.spin{animation-duration:2.4s}}
+
+/* Liste */
+.lst{position:absolute;z-index:50;left:0;right:0;top:calc(100% + 4px);background:var(--surface-raised);border:1px solid var(--line);border-radius:var(--radius-lg);box-shadow:var(--shadow-md);padding:4px;display:none;max-height:calc(var(--row-h) * 8 + 8px);overflow:auto}
+.lst.open{display:block}
+.op{display:flex;align-items:center;gap:8px;min-height:var(--row-h);padding:0 10px;border-radius:var(--radius-md);cursor:default}
+.op.hl{background:var(--hover)}
+.op .ic{color:var(--fg-2)}
+.op .l{flex:0 1 auto;min-width:0;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.op .d{flex:1 1 auto;min-width:0;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;color:var(--fg-3);font-size:var(--fs-sm)}
+.op .ck{margin-left:auto;color:var(--fg);visibility:hidden}
+.op.sel .ck{visibility:visible}
+.op .two{display:flex;flex-direction:column;min-width:0;padding:4px 0}
+.op .two .d{line-height:1.3}
+.op.add .l b{font-weight:var(--fw-semibold)}
+.op .l b,.op .d b{font-weight:var(--fw-semibold)}
+.op.info{color:var(--fg-3);font-size:var(--fs-sm)}
+.op.info .spin{display:inline-block}
+.op.info button{margin-left:auto;border:0;background:transparent;color:var(--accent);font-size:var(--fs-sm);padding:2px 4px;border-radius:var(--radius-sm);cursor:pointer}
+.sgt{font-size:var(--fs-sm);color:var(--fg-3);padding:6px 10px 2px}
+
+/* Valeurs transmises */
+.emit{margin-top:16px}
+.emit pre{margin:0;font:12.5px/1.5 ui-monospace,"SF Mono",Consolas,monospace;white-space:pre-wrap;color:var(--pg-fg)}
+
+/* Avant / après */
+.ba{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media (max-width:760px){.ba{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="pg">
+  <h1>ComboBox — v1 <span class="badge" id="status">VALIDÉ le 2026-11-23</span></h1>
+  <p class="intro">Mode <code>propose</code>, depuis Alfred (proposition P5 du lot 1). Un champ de formulaire qui propose une liste de choix pendant la saisie. Trois cas : choix simple, choix multiple (étiquettes), recherche dans une longue liste, éventuellement par une API. Spec prévue : <code>src/components/ComboBox/ComboBox.spec.md</code>. Version : mineure (nouveau composant).</p>
+
+  <div class="boxes">
+    <div class="box">
+      <h2>Test du générique</h2>
+      <p><b>Oui.</b> Choisir un pays, des étiquettes, un responsable parmi des milliers de personnes : toute app de travail en a besoin. Le composant ne connaît que des éléments <code>{ id, label }</code> ; rien de métier.</p>
+      <p class="opt">Dans Alfred : <code>Combobox</code>, <code>MultiSelectCombobox</code> et <code>SearchCombobox</code> sont exportés par <code>＠alfred/ui</code>, mais aucun écran ne les utilise encore. La migration n'a donc rien à reprendre écran par écran.</p>
+    </div>
+    <div class="box">
+      <h2>Déjà décidé (s'applique ici)</h2>
+      <ul>
+        <li>Libellé au-dessus, aide ou erreur en dessous ; erreur à la sortie du champ, jamais pendant la saisie ; « (facultatif) » sans astérisque (D-022). <span class="opt">L'apparence exacte du champ vient de P4 (en cours) ; la page reprend le bord fin de D-073.</span></li>
+        <li>Rayons : champ 8 px, étiquettes 4 px, liste flottante 12 px (D-040).</li>
+        <li>Liste au style du <code>Menu</code> : icône facultative, libellés alignés (D-047), coche à droite (D-050).</li>
+        <li>Texte cherché en gras, sans casse ni accents (D-087, D-074).</li>
+        <li>Attente : indicateur de 14 px et ligne « Recherche… » (D-081) ; erreur en une ligne avec « Réessayer » (D-082).</li>
+        <li>Aucun texte en dur : libellés internes dans <code>messages</code> (D-089).</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="box" style="margin-bottom:20px">
+    <h2>À décider (tout est tranché)</h2>
+    <ol>
+      <li><b>Un composant ou trois.</b> A : un seul <code>ComboBox</code>, avec <code>selectionMode="single" | "multiple"</code> et une source locale (<code>items</code>) ou asynchrone (<code>loadItems</code>). B : trois composants, comme dans Alfred. <span class="reco">validé : A (D-140)</span> — même anatomie et même clavier ; React Aria 1.22 gère déjà le choix multiple dans un seul ComboBox ; c'est la logique de <code>selectionMode</code> du Menu.</li>
+      <li><b>Frontière avec <code>SearchField</code> et <code>Select</code>.</b> Règle du tableau ci-dessous : la barre de recherche produit des <i>critères</i> qui filtrent la page ; le ComboBox produit une <i>valeur</i> enregistrée dans un formulaire. Le ComboBox ne va jamais dans la <code>toolbar</code>. <span class="reco">validé (D-141)</span> — on choisit par le résultat, pas par l'apparence ; deux règles nettes évitent le doublon.</li>
+      <li><b>Valeur libre.</b> Option facultative <code>allowsCustomValue</code>, désactivée par défaut. Activée : la ligne « Ajouter « texte » » s'affiche en tête de liste quand aucun élément n'a exactement ce libellé ; le premier élément trouvé reste mis en avant, et Entrée le choisit ; « Ajouter » est mis en avant seulement s'il n'y a aucun élément. <span class="reco">validé (D-142)</span> — même forme que « Rechercher « texte » » (D-074) ; par défaut, on ne garde que des valeurs connues.</li>
+      <li><b>Étiquettes qui débordent</b> (choix multiple). A : retour à la ligne, toutes visibles. B : « +n », comme la barre de recherche (D-078). <span class="reco">validé : A (D-143)</span> — dans un formulaire, on doit voir tout ce qu'on enregistre ; « +n » sert une barre d'outils à largeur fixe.</li>
+      <li><b>Élément déjà choisi</b> (choix multiple). A : il reste dans la liste, coché à droite, et la liste reste ouverte. B : il disparaît de la liste. <span class="reco">validé : A (D-144)</span> — même règle que le Menu à choix multiple (D-050) ; on retire aussi un choix depuis la liste.</li>
+      <li><b>Longue liste et API.</b> A : source locale, filtre à chaque lettre, défilement au-delà de 8 lignes ; source asynchrone, mêmes seuils que la barre de recherche (2 caractères, 300 ms, D-080), même attente (D-081) et même erreur (D-082). B : l'API est appelée dès l'ouverture, sans texte. <span class="reco">validé : A (D-145)</span> — un seul rythme pour toutes les recherches distantes ; une liste vide sans texte n'aide pas à choisir parmi des milliers.</li>
+      <li><b>Contenu d'un élément.</b> A : libellé, icône facultative à gauche, description courte facultative en <code>--fg-3</code> sur la même ligne. B : description sur une deuxième ligne. C : libellé seul. <span class="reco">validé : A (D-146)</span> — une ligne de <code>--row-h</code>, comme le Menu ; la description distingue deux homonymes (une adresse, un code).</li>
+    </ol>
+    <p class="opt">Comportements montrés dans la page et repris sans question (D-147) : chevron à droite ; ouverture à la frappe, au chevron ou à flèche bas, pas au focus ; Échap ferme puis rétablit ; en choix simple, un texte non reconnu revient à la valeur choisie à la sortie du champ ; Retour arrière deux fois retire la dernière étiquette.</p>
+  </div>
+
+  <h2 class="sec">ComboBox, SearchField ou Select : la règle (question 2)</h2>
+  <div class="box scroll" style="margin-bottom:20px">
+    <table class="rule">
+      <thead><tr><th>Besoin</th><th>Composant</th><th>Pourquoi</th></tr></thead>
+      <tbody>
+        <tr><td>Filtrer ou trier le tableau ou la liste d'une page, par du texte et des mots-clés</td><td><code>SearchField</code></td><td>Le résultat est un ensemble de <i>critères</i> (<code>{ text, tags }</code>) que l'app applique (D-077). Texte libre toujours accepté. Place : <code>toolbar</code>.</td></tr>
+        <tr><td>Filtrer par une propriété (statut, type, personne)</td><td>Bouton de filtre + <code>Menu</code> à choix</td><td>Les filtres par propriété sont des boutons dans la <code>toolbar</code> (D-074). Pas de ComboBox.</td></tr>
+        <tr><td>Choisir une valeur dans une liste courte (7 éléments au plus), sans taper</td><td><code>Select</code> (P4)</td><td>Tout est visible d'un coup d'œil ; taper n'apporte rien.</td></tr>
+        <tr><td>Choisir une ou plusieurs valeurs d'un formulaire dans une liste plus longue, connue ou distante</td><td><code>ComboBox</code></td><td>Le résultat est une <i>valeur</i> (un id ou une liste d'ids) enregistrée avec le formulaire. Place : formulaire, modale, panneau de détail.</td></tr>
+        <tr><td>Saisir un texte libre, sans liste</td><td><code>TextField</code> (P4)</td><td>Pas de choix à proposer.</td></tr>
+        <tr><td>Chercher dans toute l'app ou lancer une commande</td><td>Palette Mod+K</td><td>D-006.</td></tr>
+      </tbody>
+    </table>
+    <p class="hint">Signe d'un mauvais choix : un ComboBox dont la valeur n'est jamais enregistrée, ou une barre de recherche dans un formulaire.</p>
+  </div>
+
+  <div class="toolbar">
+    <span><span class="tlabel">Q3 Valeur libre (Étiquettes)</span><span class="seg" data-k="custom"><button aria-pressed="true" data-v="on">Activée</button><button aria-pressed="false" data-v="off">Désactivée</button></span></span>
+    <span><span class="tlabel">Q4 Débordement</span><span class="seg" data-k="ov"><button aria-pressed="true" data-v="wrap">A · retour à la ligne</button><button aria-pressed="false" data-v="more">B · +n</button></span></span>
+    <span><span class="tlabel">Q5 Déjà choisi</span><span class="seg" data-k="picked"><button aria-pressed="true" data-v="keep">A · coché</button><button aria-pressed="false" data-v="hide">B · retiré</button></span></span>
+    <span><span class="tlabel">Q6 API</span><span class="seg" data-k="async"><button aria-pressed="true" data-v="a">A · 2 car. 300 ms</button><button aria-pressed="false" data-v="b">B · dès l'ouverture</button></span></span>
+    <span><span class="tlabel">Q7 Élément</span><span class="seg" data-k="content"><button aria-pressed="true" data-v="a">A · une ligne</button><button aria-pressed="false" data-v="b">B · deux lignes</button><button aria-pressed="false" data-v="c">C · libellé seul</button></span></span>
+    <span><span class="tlabel">API (simulation)</span><span class="seg" data-k="src"><button aria-pressed="true" data-v="ok">700 ms</button><button aria-pressed="false" data-v="err">En erreur</button></span></span>
+    <span><span class="tlabel">État</span><span class="seg" data-k="st"><button aria-pressed="true" data-v="normal">Normal</button><button aria-pressed="false" data-v="error">Erreur</button><button aria-pressed="false" data-v="disabled">Désactivé</button></span></span>
+    <span><span class="tlabel">Mode</span><span class="seg" data-k="mode"><button aria-pressed="true" data-v="light">Clair</button><button aria-pressed="false" data-v="dark">Sombre</button></span></span>
+    <span><span class="tlabel">Densité</span><span class="seg" data-k="density"><button aria-pressed="true" data-v="web">Web</button><button aria-pressed="false" data-v="desktop">Desktop</button></span></span>
+  </div>
+
+  <div class="stage tk ov-wrap" id="app">
+    <div class="side">
+      <div class="nav"><svg class="ic" viewBox="0 0 24 24"><path d="M3 12l9-8 9 8M5 10v10h14V10"/></svg>Accueil</div>
+      <div class="nav on"><svg class="ic" viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M8 9h8M8 13h8M8 17h5"/></svg>Projets</div>
+      <div class="nav"><svg class="ic" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 20c1.5-4 5-5 8-5s6.5 1 8 5"/></svg>Équipe</div>
+    </div>
+    <div class="main">
+      <p class="ph">Nouveau projet</p>
+      <p class="pd">Formulaire de démonstration (gabarit FormPage). Les trois champs ci-dessous sont des <code>ComboBox</code>.</p>
+      <div class="form">
+        <div class="fld" id="f-country"></div>
+        <div class="fld" id="f-tags"></div>
+        <div class="fld" id="f-owner"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="box emit"><h2>Valeurs transmises au formulaire (<code>onChange</code>)</h2><pre id="vals"></pre></div>
+  <p class="hint">À essayer : « Pays » : tapez « fra », Entrée ; tapez « zz » puis Tab (le texte revient à la valeur choisie). « Étiquettes » : chevron, choisissez-en cinq ; tapez « urg » ; tapez « Nouveau » puis Entrée (valeur libre) ; Retour arrière deux fois. « Responsable » : tapez « ma » et attendez ; passez la simulation sur « En erreur » ; passez Q7 sur B ou C. Flèches haut et bas, Échap (ferme la liste, puis rétablit le texte).</p>
+
+  <h2 class="sec">Avant (Alfred) et après (Socle)</h2>
+  <div class="ba">
+    <div class="box">
+      <h2>Avant : trois composants dans ＠alfred/ui</h2>
+      <ul>
+        <li><code>Combobox</code> : texte libre avec suggestions ; la valeur est le texte ; pas de chevron, la liste n'est pas visible avant la frappe.</li>
+        <li><code>MultiSelectCombobox</code> : étiquettes, deux affichages (<code>compact</code> « +n » pour les barres de filtres, <code>all</code> pour les formulaires) ; valeur libre en option.</li>
+        <li><code>SearchCombobox</code> : loupe, recherche distante, l'app gère <code>loading</code> et le délai elle-même ; minimum d'1 caractère.</li>
+        <li>Trois claviers et trois positionnements de liste écrits à la main.</li>
+      </ul>
+    </div>
+    <div class="box">
+      <h2>Après : un <code>ComboBox</code></h2>
+<pre style="margin:0;font:12.5px/1.5 ui-monospace,Consolas,monospace;white-space:pre-wrap">&lt;ComboBox label="Pays" items={pays}
+  value={id} onChange={setId} /&gt;
+
+&lt;ComboBox label="Étiquettes" selectionMode="multiple"
+  items={etiquettes} allowsCustomValue
+  value={ids} onChange={setIds} /&gt;
+
+&lt;ComboBox label="Responsable"
+  loadItems={(texte, signal) =&gt; api.personnes(texte, signal)}
+  value={id} onChange={setId} /&gt;</pre>
+      <p class="opt">Éléments : <code>{ id, label, description?, icon?, isDisabled? }</code>. Le libellé, l'aide et l'erreur suivent l'API de P4.</p>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  var state = {custom:'on', ov:'wrap', picked:'keep', async:'a', content:'a', src:'ok', st:'normal', mode:'light', density:'web'};
+  var X = '<svg class="ic" viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12"/></svg>';
+  var CHEV = '<svg class="ic" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg>';
+  var CHECK = '<svg class="ic ck" viewBox="0 0 24 24"><path d="M5 12l5 5 9-10"/></svg>';
+  var PERSON = '<svg class="ic" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 20c1.5-4 5-5 8-5s6.5 1 8 5"/></svg>';
+  var TAG = '<svg class="ic" viewBox="0 0 24 24"><path d="M3 12V4h8l10 10-8 8z"/><circle cx="7.5" cy="7.5" r="1.2"/></svg>';
+  function norm(s){ return s.normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase(); }
+  function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;'); }
+  function bold(s, q){ if (!q) return esc(s); var i = norm(s).indexOf(norm(q)); if (i < 0) return esc(s); return esc(s.slice(0,i)) + '<b>' + esc(s.slice(i, i+q.length)) + '</b>' + esc(s.slice(i+q.length)); }
+
+  var COUNTRIES = ['Allemagne','Autriche','Belgique','Canada','Danemark','Espagne','Finlande','France','Grèce','Irlande','Italie','Luxembourg','Maroc','Norvège','Pays-Bas','Pologne','Portugal','Royaume-Uni','Sénégal','Suède','Suisse','Tunisie'].map(function(l,i){ return {id:'c'+i, label:l}; });
+  var TAGS = ['Urgent','Interne','Client','Juridique','Finance','Ressources humaines','Achats','Marketing','Support','Sécurité','Qualité','Formation'].map(function(l,i){ return {id:'t'+i, label:l}; });
+  var FIRST = ['Marie','Martin','Camille','Mathis','Léa','Malik','Manon','Hugo','Inès','Maxime','Chloé','Thomas','Amandine','Samuel','Emma','Marc'];
+  var LAST = ['Durand','Lefèvre','Moreau','Garnier','Martinez','Roux','Fontaine','Marchand','Bernard','Mallet'];
+  var PEOPLE = []; FIRST.forEach(function(f,i){ LAST.forEach(function(l,j){ PEOPLE.push({id:'p'+i+'-'+j, label:f+' '+l, description:(f[0]+l).toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'')+'@exemple.org'}); }); });
+
+  var fields = [];
+  function make(el, conf){
+    var f = {el:el, conf:conf, value: conf.multiple ? [] : null, text:'', open:false, hl:-1, rows:[], armed:false, loading:false, failed:false, res:null, req:0, timer:null};
+    el.innerHTML = '<label class="lbl" for="'+conf.id+'">'+esc(conf.label)+(conf.optional?' <span class="facu">(facultatif)</span>':'')+'</label>'
+      + '<div class="cb'+(conf.multiple?' multi':'')+'"><span class="chips" role="group" aria-label="'+esc(conf.label)+' choisis"></span>'
+      + '<input id="'+conf.id+'" role="combobox" aria-expanded="false" aria-autocomplete="list" aria-controls="'+conf.id+'-l" autocomplete="off" placeholder="'+esc(conf.placeholder||'')+'">'
+      + '<span class="tail"><span class="spin" role="status" aria-label="Recherche en cours"></span><button class="chev" tabindex="-1" aria-label="Afficher les choix">'+CHEV+'</button></span>'
+      + '<div class="lst" role="listbox" id="'+conf.id+'-l"'+(conf.multiple?' aria-multiselectable="true"':'')+'></div></div>'
+      + '<span class="help">'+esc(conf.help)+'</span><span class="err">'+esc(conf.error)+'</span>';
+    f.cb = el.querySelector('.cb'); f.input = el.querySelector('input'); f.chips = el.querySelector('.chips'); f.lst = el.querySelector('.lst');
+    var inp = f.input;
+    inp.addEventListener('input', function(){ f.text = inp.value; f.armed = false; renderChips(f); query(f, false); });
+    inp.addEventListener('keydown', function(e){ key(f, e); });
+    inp.addEventListener('blur', function(){ setTimeout(function(){ if (!f.el.contains(document.activeElement)) leave(f); }, 0); });
+    el.querySelector('.chev').addEventListener('mousedown', function(e){ e.preventDefault(); inp.focus(); if (f.open) close(f); else query(f, true); });
+    f.cb.addEventListener('mousedown', function(e){ if (e.target === f.cb || e.target === f.chips){ e.preventDefault(); inp.focus(); } });
+    f.chips.addEventListener('mousedown', function(e){ var b = e.target.closest('[data-rm]'); if (!b) return; e.preventDefault(); f.value.splice(+b.getAttribute('data-rm'),1); renderChips(f); if (f.open) render(f); showVals(); inp.focus(); });
+    f.lst.addEventListener('mousedown', function(e){ e.preventDefault(); var r = e.target.closest('[data-i]'); var rt = e.target.closest('[data-retry]'); if (rt){ query(f, true); return; } if (r) pick(f, +r.getAttribute('data-i')); });
+    f.lst.addEventListener('mousemove', function(e){ var r = e.target.closest('[data-i]'); if (r && +r.getAttribute('data-i') !== f.hl){ f.hl = +r.getAttribute('data-i'); paintHl(f); } });
+    fields.push(f); renderChips(f); return f;
+  }
+  function isSel(f, it){ return f.conf.multiple ? f.value.some(function(v){ return v.id === it.id; }) : (f.value && f.value.id === it.id); }
+  function query(f, fromChevron){
+    var c = f.conf, q = f.text.trim();
+    if (!c.async){
+      f.res = c.items.filter(function(it){ return !q || norm(it.label).indexOf(norm(q)) >= 0; });
+      f.open = true; f.hl = -1; render(f); return;
+    }
+    clearTimeout(f.timer); var id = ++f.req;
+    var tooShort = q.length < 2 && !(state.async === 'b');
+    if (tooShort){ f.loading = false; f.cb.classList.remove('loading'); f.res = null; f.failed = false; if (fromChevron){ f.open = true; render(f); } else close(f); return; }
+    f.open = true; f.res = null; f.failed = false;
+    f.timer = setTimeout(function(){
+      f.loading = true; f.cb.classList.add('loading'); render(f);
+      setTimeout(function(){
+        if (id !== f.req) return; // seule la réponse à la dernière saisie compte
+        f.loading = false; f.cb.classList.remove('loading');
+        if (state.src === 'err'){ f.failed = true; f.res = []; }
+        else f.res = c.items.filter(function(it){ return !q || norm(it.label).indexOf(norm(q)) >= 0 || norm(it.description).indexOf(norm(q)) >= 0; }).slice(0, 50);
+        f.hl = -1; render(f);
+      }, 700);
+    }, q.length ? 300 : 0);
+    render(f);
+  }
+  function render(f){
+    var c = f.conf, q = f.text.trim(), html = '', rows = [];
+    if (!f.open){ f.lst.classList.remove('open'); f.input.setAttribute('aria-expanded','false'); return; }
+    var list = (f.res || []).filter(function(it){ return !(c.multiple && state.picked === 'hide' && isSel(f, it)); });
+    var exact = (f.res || []).some(function(it){ return norm(it.label) === norm(q); });
+    if (c.custom && state.custom === 'on' && q && !exact){ rows.push({add:q}); html += '<div class="op add" role="option" data-i="0"><svg class="ic" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg><span class="l">Ajouter « <b>'+esc(q)+'</b> »</span></div>'; }
+    if (c.async && f.res === null && !f.loading && !f.timer && q.length < 2 && state.async === 'a') html += '<div class="op info" role="status">Tapez au moins 2 caractères.</div>';
+    else if (c.async && f.loading) html += '<div class="op info" role="status"><span class="spin"></span>Recherche…</div>';
+    else if (c.async && f.res === null) html += '<div class="op info" role="status"><span class="spin"></span>Recherche…</div>';
+    else if (f.failed) html += '<div class="op info" role="alert">Résultats indisponibles<button data-retry>Réessayer</button></div>';
+    else if (!list.length && !rows.length) html += '<div class="op info" role="status">Aucun résultat</div>';
+    var hasIcon = c.icon && state.content !== 'c';
+    list.forEach(function(it){
+      var i = rows.length; rows.push({it:it});
+      var desc = state.content !== 'c' && it.description;
+      var body = state.content === 'b' && desc
+        ? '<span class="two"><span class="l">'+bold(it.label,q)+'</span><span class="d">'+bold(it.description,q)+'</span></span>'
+        : '<span class="l">'+bold(it.label,q)+'</span>' + (desc ? '<span class="d">'+bold(it.description,q)+'</span>' : '');
+      html += '<div class="op'+(isSel(f,it)?' sel':'')+'" role="option" aria-selected="'+isSel(f,it)+'" data-i="'+i+'" id="'+c.id+'-o'+i+'">'+(hasIcon?c.icon:'')+body+CHECK+'</div>';
+    });
+    f.rows = rows; f.lst.innerHTML = html; f.lst.classList.add('open'); f.input.setAttribute('aria-expanded','true');
+    if (f.hl < 0 && rows.length && ((q && !c.async) || (c.async && f.res))){
+      // le premier élément trouvé est mis en avant ; « Ajouter » seulement s'il n'y en a aucun
+      var first = rows.findIndex(function(r){ return r.it; }); f.hl = first >= 0 ? first : 0;
+    }
+    paintHl(f);
+  }
+  function paintHl(f){
+    f.lst.querySelectorAll('[data-i]').forEach(function(r){ r.classList.toggle('hl', +r.getAttribute('data-i') === f.hl); });
+    var h = f.lst.querySelector('.hl'); if (h){ h.scrollIntoView({block:'nearest'}); f.input.setAttribute('aria-activedescendant', h.id || ''); } else f.input.removeAttribute('aria-activedescendant');
+  }
+  function pick(f, i){
+    var r = f.rows[i]; if (!r) return; var c = f.conf;
+    var it = r.add ? {id:'new-'+norm(r.add), label:r.add} : r.it;
+    if (c.multiple){
+      var k = f.value.findIndex(function(v){ return v.id === it.id; });
+      if (k >= 0) f.value.splice(k,1); else f.value.push(it);
+      f.text = ''; f.input.value = ''; renderChips(f); query(f, true); f.hl = Math.min(i, f.rows.length-1); paintHl(f);
+    } else {
+      f.value = it; f.text = it.label; f.input.value = it.label; close(f);
+    }
+    showVals();
+  }
+  function close(f){ f.open = false; f.hl = -1; clearTimeout(f.timer); f.timer = null; render(f); }
+  function leave(f){ // sortie du champ : le texte revient à la valeur choisie
+    close(f); f.armed = false;
+    if (!f.conf.multiple){ f.text = f.value ? f.value.label : ''; f.input.value = f.text; }
+    else { f.text = ''; f.input.value = ''; }
+    renderChips(f);
+  }
+  function key(f, e){
+    var n = f.rows.length;
+    if (e.key === 'ArrowDown' || e.key === 'ArrowUp'){
+      e.preventDefault();
+      if (!f.open){ query(f, true); return; }
+      if (!n) return; var d = e.key === 'ArrowDown' ? 1 : -1;
+      f.hl = f.hl < 0 ? (d > 0 ? 0 : n-1) : (f.hl + d + n) % n; paintHl(f); return;
+    }
+    if (e.key === 'Enter'){ if (f.open && f.hl >= 0){ e.preventDefault(); pick(f, f.hl); } return; }
+    if (e.key === 'Escape'){
+      e.preventDefault();
+      if (f.open){ close(f); return; }
+      if (!f.conf.multiple){ f.text = f.value ? f.value.label : ''; f.input.value = f.text; }
+      else { f.text = ''; f.input.value = ''; }
+      return;
+    }
+    if (e.key === 'Backspace' && f.conf.multiple && !f.input.value && f.value.length){
+      e.preventDefault();
+      if (f.armed){ f.value.pop(); f.armed = false; showVals(); if (f.open) render(f); } else f.armed = true;
+      renderChips(f); return;
+    }
+    if (e.key === 'Tab'){ close(f); }
+  }
+  function renderChips(f){
+    var c = f.conf; if (!c.multiple) return;
+    f.cb.classList.toggle('has', f.value.length > 0);
+    function draw(k){
+      var more = f.value.length - k;
+      f.chips.innerHTML = (more ? '<span class="chip more" title="'+esc(f.value.slice(0,more).map(function(v){return v.label;}).join(', '))+'">+'+more+'</span>' : '')
+        + f.value.slice(more).map(function(v){ var i = f.value.indexOf(v);
+          return '<span class="chip'+(f.armed && i===f.value.length-1?' on':'')+'" title="'+esc(v.label)+'"><span class="lab">'+esc(v.label)+'</span><button tabindex="-1" aria-label="Retirer '+esc(v.label)+'" data-rm="'+i+'">'+X+'</button></span>'; }).join('');
+    }
+    var keep = f.value.length; draw(keep);
+    if (state.ov === 'more'){ while (keep > 1 && f.chips.scrollWidth > f.chips.clientWidth + 1){ keep--; draw(keep); } }
+    f.input.placeholder = f.value.length ? '' : (c.placeholder || '');
+  }
+  function showVals(){
+    var o = {};
+    fields.forEach(function(f){ o[f.conf.key] = f.conf.multiple ? f.value.map(function(v){ return v.id; }) : (f.value ? f.value.id : null); });
+    document.getElementById('vals').textContent = JSON.stringify(o, null, 2);
+  }
+
+  make(document.getElementById('f-country'), {id:'country', key:'pays', label:'Pays', help:'Pays de facturation du projet.', error:'Choisissez un pays dans la liste.', placeholder:'Choisir un pays', items:COUNTRIES});
+  make(document.getElementById('f-tags'), {id:'tags', key:'etiquettes', label:'Étiquettes', optional:true, multiple:true, custom:true, icon:TAG, help:'Plusieurs choix possibles.', error:'Choisissez au moins une étiquette.', placeholder:'Ajouter des étiquettes', items:TAGS});
+  make(document.getElementById('f-owner'), {id:'owner', key:'responsable', label:'Responsable', async:true, icon:PERSON, help:'Recherche parmi les 160 personnes de l\'annuaire (API simulée).', error:'Choisissez un responsable.', placeholder:'Rechercher une personne', items:PEOPLE});
+  showVals();
+
+  function apply(){
+    var app = document.getElementById('app');
+    app.classList.toggle('dark', state.mode === 'dark'); app.classList.toggle('desktop', state.density === 'desktop');
+    app.classList.toggle('ov-wrap', state.ov === 'wrap'); app.classList.toggle('ov-more', state.ov === 'more');
+    document.documentElement.setAttribute('data-theme', state.mode);
+    fields.forEach(function(f){ f.el.classList.toggle('invalid', state.st === 'error'); f.el.classList.toggle('disabled', state.st === 'disabled'); f.input.disabled = state.st === 'disabled'; f.input.setAttribute('aria-invalid', String(state.st === 'error')); renderChips(f); if (f.open) render(f); });
+  }
+  document.querySelectorAll('.seg').forEach(function(seg){
+    seg.addEventListener('click', function(e){
+      var b = e.target.closest('button'); if (!b) return;
+      seg.querySelectorAll('button').forEach(function(x){ x.setAttribute('aria-pressed', String(x===b)); });
+      state[seg.getAttribute('data-k')] = b.getAttribute('data-v'); apply();
+    });
+  });
+  apply();
+})();
+</script>
+</body>
+</html>

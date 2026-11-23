@@ -8,7 +8,8 @@ Elle peut proposer des suggestions pendant la frappe et transformer chaque crit�
 Ne pas l'utiliser pour :
 - chercher dans toute l'app ou lancer une commande : prendre la palette de commandes (Mod+K, D-006) ;
 - saisir une valeur de formulaire : prendre `TextField` ;
-- choisir une valeur dans une liste fermée : prendre `ComboBox` ou `Select`.
+- choisir une ou plusieurs valeurs enregistrées avec un formulaire : prendre `ComboBox` (liste longue ou distante) ou `Select` (7 éléments au plus) (D-141) ;
+- filtrer par une propriété (statut, type, personne) : un bouton de filtre avec un `Menu` à choix (D-074, D-141).
 
 ## Anatomie
 1. **Champ** (obligatoire), hauteur `--row-h`, largeur fixe de 320 px (D-078), rayon de 8 px (D-040), fond `--surface` et bord de 1 px `--line-strong` (D-073).
@@ -94,7 +95,7 @@ Seules les erreurs de suggestions sont gérées ici : une ligne « Suggestions i
 Contient une icône interne (D-028), des `IconButton` (×) et une liste au style du `Menu`. Se combine avec `Table` ou `List`, sans les contenir.
 
 ## Décisions
-D-006, D-028, D-040, D-047, D-071, D-072, D-073, D-074, D-075, D-077, D-078, D-079, D-080, D-006, D-081, D-082, D-083
+D-006, D-028, D-040, D-047, D-071, D-072, D-073, D-074, D-075, D-077, D-078, D-079, D-080, D-081, D-082, D-083, D-141
 
 ## Questions ouvertes
 Aucune.
