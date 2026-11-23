@@ -55,10 +55,18 @@ Une app décrit ses actions par des données (`Action`) et les passe à `ActionB
 - `empty` : icône, titre, phrase d'explication et action principale (D-176).
 - Les cellules suivent le type de leur colonne (D-170 à D-172).
 
-### DetailPage
-- `header` : lien de retour vers la vue principale, titre, statut, méta, actions.
-- `content` : sections titrées, séparées par des traits.
+### DetailPage (D-210 à D-216)
+- `header` : lien de retour vers la vue principale, titre, statut, méta, actions (zone `header`). Il reste fixe ; seul le contenu défile.
+- `content` : sections titrées, séparées par des traits. Colonne de lecture de 760 px par défaut.
 - Les propriétés vont dans le panneau de détail.
+- États : chargement, erreur et introuvable sont rendus par le gabarit ; le lien de retour reste visible.
+
+### Page composée (D-217, D-218)
+- Seulement quand aucun gabarit ne convient : tableau de bord, éditeur, graphique.
+- `toolbar` : une ligne fixe ; contenu libre à gauche, actions (zone `toolbar`) à droite.
+- `content` : blocs (`PageSection` ou composants du socle) espacés de 24 px ; seule zone qui défile.
+- `footer` : pied fixe, contenu libre (total, sélection).
+- Pas d'en-tête : le nom de la page est dans la barre du haut. Aucun HTML stylé côté app.
 
 ### FormPage (D-022)
 - `header` : titre et phrase d'intention.

@@ -1,0 +1,289 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DetailPage et Page — validation v1</title>
+<style>
+/* ---------- Page de validation ---------- */
+:root{--pg-bg:#f6f6f6;--pg-fg:#1a1a1a;--pg-muted:#5c5c5c;--pg-line:#e2e2e2;--pg-card:#fff;--pg-badge:#e3f5e8;--pg-badge-fg:#15602f;--pg-reco:#e7f0ff;--pg-reco-fg:#1d4ed8}
+:root[data-theme="dark"]{--pg-bg:#121212;--pg-fg:#ececec;--pg-muted:#9a9a9a;--pg-line:#2c2c2c;--pg-card:#1b1b1b;--pg-badge:#16301f;--pg-badge-fg:#8fe0aa;--pg-reco:#16233d;--pg-reco-fg:#9cc0ff}
+*{box-sizing:border-box}html,body{margin:0}
+body{background:var(--pg-bg);color:var(--pg-fg);font:15px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif}
+.pg{max-width:1180px;margin:0 auto;padding:24px 16px 64px}
+h1{font-size:22px;font-weight:600;margin:0 0 4px;display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+h2.part{font-size:17px;margin:32px 0 8px}
+.intro{color:var(--pg-muted);margin:0 0 20px}
+.badge{font-size:12px;font-weight:600;letter-spacing:.04em;padding:3px 8px;border-radius:6px;background:var(--pg-badge);color:var(--pg-badge-fg)}
+.boxes{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px}
+@media (max-width:760px){.boxes{grid-template-columns:1fr}}
+.box{background:var(--pg-card);border:1px solid var(--pg-line);border-radius:10px;padding:14px 16px;font-size:14px}
+.box h2{font-size:14px;margin:0 0 8px;font-weight:600}.box ul,.box ol{margin:0;padding-left:20px}.box li{margin:5px 0}
+.reco{font-size:11.5px;font-weight:600;padding:1px 6px;border-radius:5px;background:var(--pg-reco);color:var(--pg-reco-fg);margin-left:4px}
+.toolbar{position:sticky;top:0;z-index:100;background:var(--pg-bg);padding:10px 0;border-bottom:1px solid var(--pg-line);margin-bottom:16px;display:flex;flex-wrap:wrap;gap:10px 16px;align-items:center}
+.seg{display:inline-flex;border:1px solid var(--pg-line);border-radius:8px;overflow:hidden;background:var(--pg-card)}
+.seg button{border:0;background:transparent;color:var(--pg-fg);padding:5px 10px;font:inherit;font-size:13px;cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--pg-fg);color:var(--pg-bg)}
+.tlabel{font-size:12px;color:var(--pg-muted);margin-right:6px}
+.hint{margin:8px 0 0;color:var(--pg-muted);font-size:13px}
+.opts{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:8px 0 16px}
+@media (max-width:760px){.opts{grid-template-columns:1fr}}
+.opt{background:var(--pg-card);border:1px solid var(--pg-line);border-radius:10px;padding:12px;font-size:13px}
+.opt b{display:block;margin-bottom:6px}
+
+/* ---------- Tokens T2 (copie de src/tokens) ---------- */
+.tk{--surface:#fff;--surface-side:#f3f3f3;--field:#f2f2f2;--hover:#e9e9e9;--selected:#dedede;--line:#e4e4e4;--line-strong:#cfcfcf;--fg:#1a1a1a;--fg-2:#5c5c5c;--fg-3:#6b6b6b;
+  --accent:#1d4ed8;--accent-fg:#fff;--accent-text:#1d4ed8;--success:#15803d;--warning:#b45309;--danger:#c62828;--font-sans:-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;
+  --radius-sm:4px;--radius-md:8px;--radius-lg:12px;--icon:16px;--icon-stroke:1.6;
+  --fs-xs:11.5px;--fs-sm:12.5px;--fs-md:14px;--fs-lg:16px;--fs-xl:20px;--lh:1.45;--row-h:34px;--bar-h:44px;--pad:16px;--side-w:200px;--icon-btn:28px;--btn-h-sm:26px}
+.tk.dark{--surface:#181818;--surface-side:#222;--field:#2a2a2a;--hover:#303030;--selected:#3d3d3d;--line:#333;--line-strong:#4a4a4a;--fg:#ececec;--fg-2:#ababab;--fg-3:#8f8f8f;
+  --accent:#5b8def;--accent-text:#8fb3ff;--success:#5cc98a;--warning:#e0a24a;--danger:#f07070}
+.tk.desktop{--fs-xs:10.5px;--fs-sm:11.5px;--fs-md:13px;--fs-lg:15px;--fs-xl:19px;--lh:1.4;--row-h:28px;--bar-h:38px;--pad:12px;--icon-btn:24px;--btn-h-sm:24px}
+
+/* ---------- Mini AppShell ---------- */
+.app{position:relative;height:600px;border:1px solid var(--pg-line);border-radius:12px;overflow:hidden;background:var(--surface);color:var(--fg);font-family:var(--font-sans);font-size:var(--fs-md);line-height:var(--lh);display:grid;grid-template-columns:var(--side-w) minmax(0,1fr) 240px;grid-template-rows:var(--bar-h) 1fr}
+.app.narrow{grid-template-columns:minmax(0,1fr);max-width:380px;margin:0 auto}
+.app.narrow .side,.app.narrow .bar-side,.app.narrow .det,.app.narrow .bar-det{display:none}
+.app *{box-sizing:border-box}.app button{font:inherit;color:inherit;cursor:pointer}
+.ic{width:var(--icon);height:var(--icon);flex:none;stroke:currentColor;fill:none;stroke-width:var(--icon-stroke);stroke-linecap:round;stroke-linejoin:round}
+.bar-side{background:var(--surface-side);border-right:1px solid var(--line)}
+.bar{display:flex;align-items:center;gap:8px;padding:0 12px;border-bottom:1px solid var(--line)}
+.bar .name{font-weight:600}
+.vtab{display:inline-flex;align-items:center;gap:6px;height:calc(var(--row-h) - 6px);padding:0 10px;border-radius:var(--radius-md);color:var(--fg-2);font-size:var(--fs-sm)}
+.vtab.on{background:var(--selected);color:var(--fg)}
+.bar-det{border-left:1px solid var(--line);border-bottom:1px solid var(--line);display:flex;align-items:center;padding:0 12px;font-weight:600;font-size:var(--fs-sm)}
+.side{background:var(--surface-side);border-right:1px solid var(--line);padding:6px}
+.nav{display:flex;align-items:center;gap:8px;height:var(--row-h);padding:0 8px;border-radius:var(--radius-md);color:var(--fg-2)}
+.nav.on{background:var(--selected);color:var(--fg)}
+.det{border-left:1px solid var(--line);padding:8px 12px;font-size:var(--fs-sm);overflow:auto}
+.det .st{color:var(--fg-3);margin:8px 0 4px}
+.det .pr{display:grid;grid-template-columns:84px 1fr;gap:6px;min-height:calc(var(--row-h) - 4px);align-items:center}
+.det .pr span:first-child{color:var(--fg-2)}
+
+/* ---------- Gabarit ---------- */
+.main{display:flex;flex-direction:column;min-width:0;min-height:0}
+.col{width:100%;margin:0 auto;padding:0 var(--pad)}
+.wtext .col{max-width:calc(760px + 2 * var(--pad))}
+.dp-head{flex:none;border-bottom:1px solid var(--line);padding:var(--pad) 0 calc(var(--pad) - 2px)}
+.back{display:inline-flex;align-items:center;gap:4px;border:0;background:none;padding:0 2px;margin:0 0 6px -2px;border-radius:var(--radius-sm);color:var(--fg-2);font-size:var(--fs-sm)}
+.back:hover{color:var(--fg);text-decoration:underline}
+.back:focus-visible,.ibtn:focus-visible,.btn:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+.back .ic{width:14px;height:14px}
+.backB{display:inline-flex;width:var(--icon-btn);height:var(--icon-btn);align-items:center;justify-content:center;border:0;background:none;border-radius:var(--radius-md);color:var(--fg-2);flex:none}
+.backB:hover{background:var(--hover)}
+.crumb{color:var(--fg-3);font-size:var(--fs-sm);margin:0 0 4px}.crumb a{color:var(--fg-2);text-decoration:none}.crumb a:hover{text-decoration:underline}
+.row1{display:flex;align-items:flex-start;gap:12px}
+.ttl{flex:1;min-width:0;display:flex;flex-wrap:wrap;align-items:center;gap:4px 10px}
+.ttl h3{margin:0;font-size:var(--fs-xl);font-weight:600;line-height:1.25;overflow-wrap:anywhere}
+.sb{display:inline-flex;align-items:center;gap:6px;height:20px;padding:0 8px;border-radius:999px;font-size:var(--fs-xs);font-weight:500;background:color-mix(in srgb,var(--warning) 14%,transparent);color:var(--warning)}
+.sb i{width:6px;height:6px;border-radius:50%;background:currentColor}
+.meta{margin:4px 0 0;color:var(--fg-2);font-size:var(--fs-sm)}
+.meta .sep{color:var(--fg-3);margin:0 6px}
+.acts{display:flex;align-items:center;gap:2px;flex:none}
+.ibtn{display:inline-flex;width:var(--icon-btn);height:var(--icon-btn);align-items:center;justify-content:center;border:0;background:none;border-radius:var(--radius-md);color:var(--fg-2)}
+.ibtn:hover{background:var(--hover);color:var(--fg)}
+.btn{height:var(--row-h);padding:0 12px;border:0;border-radius:var(--radius-md);background:var(--accent);color:var(--accent-fg)!important;font-weight:500;margin-left:8px}
+.btn2{height:var(--btn-h-sm);padding:0 10px;border:0;border-radius:var(--radius-md);background:var(--field);font-size:var(--fs-sm)}
+.btn2:hover{background:var(--hover)}
+.body{flex:1;min-height:0;overflow:auto}
+.sec{padding:20px 0}
+.sec+.sec{border-top:1px solid var(--line)}
+.sec-h{display:flex;align-items:flex-start;gap:12px;margin-bottom:10px}
+.sec-h div{flex:1;min-width:0}
+.sec-h h4{margin:0;font-size:var(--fs-lg);font-weight:600}
+.sec-h p{margin:2px 0 0;color:var(--fg-2);font-size:var(--fs-sm)}
+.sec p.t{margin:0 0 8px}
+table{border-collapse:collapse;width:100%}
+td{height:var(--row-h);border-bottom:1px solid var(--line);padding:0 8px;font-size:var(--fs-sm)}
+td.end{text-align:right;font-variant-numeric:tabular-nums}
+.li{display:flex;gap:8px;align-items:center;min-height:var(--row-h);font-size:var(--fs-sm);border-bottom:1px solid var(--line)}
+.av{width:22px;height:22px;border-radius:50%;background:var(--selected);display:inline-flex;align-items:center;justify-content:center;font-size:10px;font-weight:600;flex:none}
+.li .w{color:var(--fg-3);margin-left:auto}
+.sk{display:block;height:10px;border-radius:var(--radius-sm);background:var(--field);margin:8px 0}
+.center{text-align:center;padding:48px 16px;color:var(--fg-2);max-width:420px;margin:0 auto}
+.center b{display:block;color:var(--fg);font-weight:500;margin-bottom:4px}
+.center p{margin:0 0 14px;font-size:var(--fs-sm)}
+.center.compact{padding:20px 12px}
+.center .ico{display:block;margin:0 auto 12px;width:32px;height:32px;color:var(--fg-3)}
+
+/* Page composée */
+.pz-tools{flex:none;display:flex;align-items:center;gap:8px;padding:10px 0;border-bottom:1px solid var(--line)}
+.pz-tools .free{flex:1;min-width:0;display:flex;gap:8px;align-items:center;overflow-x:auto;white-space:nowrap}
+.seg2{display:inline-flex;background:var(--field);border-radius:var(--radius-md);padding:2px}
+.seg2 span{padding:0 10px;height:calc(var(--row-h) - 6px);display:inline-flex;align-items:center;border-radius:6px;font-size:var(--fs-sm);color:var(--fg-2)}
+.seg2 span.on{background:var(--surface);color:var(--fg);box-shadow:0 1px 2px rgb(0 0 0/.12)}
+.sel{display:inline-flex;align-items:center;gap:6px;height:var(--row-h);padding:0 10px;border:1px solid var(--line-strong);border-radius:var(--radius-md);font-size:var(--fs-sm)}
+.pz-body{flex:1;min-height:0;overflow:auto}
+.pz-body .col{display:flex;flex-direction:column;gap:24px;padding-top:var(--pad);padding-bottom:var(--pad)}
+.pz-foot{flex:none;border-top:1px solid var(--line);padding:8px 0;font-size:var(--fs-sm);color:var(--fg-3);font-variant-numeric:tabular-nums}
+.chart{height:180px;border:1px solid var(--line);border-radius:var(--radius-lg);display:flex;align-items:flex-end;gap:10px;padding:16px}
+.chart i{flex:1;background:var(--accent);opacity:.75;border-radius:3px 3px 0 0}
+.hidden{display:none!important}
+</style>
+</head>
+<body>
+<div class="pg">
+  <h1>DetailPage et Page — gabarits <span class="badge" id="status">VALIDÉ le 2026-11-23 — par délégation de l'utilisateur</span></h1>
+  <p class="intro">Specs : <code>src/templates/DetailPage/DetailPage.spec.md</code> et <code>src/templates/Page/Page.spec.md</code>. Décisions D-210 à D-218. DetailPage montre un élément ouvert depuis une liste : retour, titre, statut, méta, actions, puis des sections. Page pose les zones standard quand aucun gabarit ne convient.</p>
+
+  <div class="boxes">
+    <div class="box">
+      <h2>Déjà décidé</h2>
+      <ul>
+        <li>Zones de DetailPage (layout-rules) : <code>header</code> (retour, titre, statut, méta, actions), <code>content</code> (sections titrées séparées par des traits). Les propriétés vont dans le panneau de détail.</li>
+        <li>Actions par <code>Action</code> et <code>ActionBar</code> : zone <code>header</code> (bouton à texte à droite, 3 icônes, « … ») ; zone <code>section</code> dans un titre de section (D-111, D-113).</li>
+        <li>Ouvrir un élément ajoute une vue fermable (D-021). Le nom de la page reste dans la barre du haut.</li>
+        <li>Squelettes après 200 ms (D-165), message d'erreur avec « Réessayer » (D-085), état vide <code>EmptyState</code> (D-166).</li>
+        <li>Aucun bandeau pleine largeur (D-159). Une ombre est réservée à ce qui flotte : on sépare par des traits.</li>
+      </ul>
+    </div>
+    <div class="box">
+      <h2>Décisions (par délégation de l'utilisateur)</h2>
+      <ol>
+        <li><b>En-tête fixe</b>, contenu qui défile seul (D-210). <span class="reco">retenu</span></li>
+        <li><b>Retour</b> : lien texte « ← Demandes » au-dessus du titre (A), plutôt qu'un bouton-icône (B) ou un fil d'Ariane (C) (D-211). <span class="reco">retenu : A</span></li>
+        <li><b>Titre</b> <code>h1</code> en <code>--fs-xl</code>, statut en <code>StatusBadge</code> juste après, méta sur une ligne séparée par « · » ; titre long à la ligne, jamais tronqué (D-212). <span class="reco">retenu</span></li>
+        <li><b>Sections</b> : titre <code>h2</code> en <code>--fs-lg</code>, description, actions zone <code>section</code> ; trait entre deux sections ; pas de repli (D-213). <span class="reco">retenu</span></li>
+        <li><b>Largeur</b> : colonne de lecture de 760 px, centrée, pour DetailPage ; toute la largeur pour Page ; option <code>width</code> (D-214). <span class="reco">retenu</span></li>
+        <li><b>États de la page</b> : <code>state</code> = chargement, erreur ou introuvable ; le lien de retour reste visible ; le rechargement passe par l'attente de l'action (D-215). <span class="reco">retenu</span></li>
+        <li><b>États d'une section</b> : chargement, erreur, vide compact, dans la section seulement (D-216). <span class="reco">retenu</span></li>
+        <li><b>Page composée</b> : barre d'outils (une ligne, contenu libre à gauche, actions zone <code>toolbar</code> à droite), contenu en blocs espacés de 24 px, pied ; pas d'en-tête (D-217). <span class="reco">retenu</span></li>
+        <li><b>Page <code>fill</code></b> : le contenu prend la hauteur sans défiler (éditeur, grand tableau) (D-218). <span class="reco">retenu</span></li>
+      </ol>
+    </div>
+  </div>
+
+  <div class="toolbar">
+    <span><span class="tlabel">Mode</span><span class="seg" data-k="theme"><button aria-pressed="true" data-v="light">Clair</button><button aria-pressed="false" data-v="dark">Sombre</button></span></span>
+    <span><span class="tlabel">Densité</span><span class="seg" data-k="density"><button aria-pressed="true" data-v="web">Web</button><button aria-pressed="false" data-v="desktop">Desktop</button></span></span>
+    <span><span class="tlabel">Écran</span><span class="seg" data-k="screen"><button aria-pressed="true" data-v="wide">Bureau</button><button aria-pressed="false" data-v="narrow">Mobile</button></span></span>
+    <span><span class="tlabel">État de la page</span><span class="seg" data-k="state"><button aria-pressed="true" data-v="ready">Prêt</button><button aria-pressed="false" data-v="loading">Chargement</button><button aria-pressed="false" data-v="error">Erreur</button><button aria-pressed="false" data-v="notfound">Introuvable</button></span></span>
+    <span><span class="tlabel">Section « Historique »</span><span class="seg" data-k="sec"><button aria-pressed="true" data-v="ready">Prête</button><button aria-pressed="false" data-v="loading">Chargement</button><button aria-pressed="false" data-v="error">Erreur</button><button aria-pressed="false" data-v="empty">Vide</button></span></span>
+    <span><span class="tlabel">Largeur</span><span class="seg" data-k="width"><button aria-pressed="true" data-v="text">Lecture</button><button aria-pressed="false" data-v="full">Pleine</button></span></span>
+    <span><span class="tlabel">Retour</span><span class="seg" data-k="back"><button aria-pressed="true" data-v="A">A</button><button aria-pressed="false" data-v="B">B</button><button aria-pressed="false" data-v="C">C</button></span></span>
+  </div>
+
+  <h2 class="part">1. DetailPage — une demande ouverte depuis la liste</h2>
+  <div class="opts">
+    <div class="opt"><b>A — lien texte au-dessus du titre <span class="reco">recommandé</span></b>Nomme la destination (« ← Demandes »), petit, en <code>--fg-2</code>. Le titre reste aligné sur les sections.</div>
+    <div class="opt"><b>B — bouton-icône à gauche du titre</b>Plus compact, mais ne dit pas où il mène et décale le titre par rapport aux sections.</div>
+    <div class="opt"><b>C — fil d'Ariane « Demandes / DEM-1042 »</b>Répète le titre, et suggère une hiérarchie que les vues (D-021) ne portent pas.</div>
+  </div>
+
+  <div class="tk" id="tk1">
+    <div class="app" id="app1">
+      <div class="bar-side"></div>
+      <div class="bar"><span class="name">Demandes</span><span class="vtab">Toutes</span><span class="vtab on">DEM-1042 ×</span></div>
+      <div class="bar-det">Détail</div>
+      <div class="side">
+        <div class="nav"><svg class="ic" viewBox="0 0 24 24"><path d="M3 10l9-7 9 7v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1z"/></svg>Accueil</div>
+        <div class="nav on"><svg class="ic" viewBox="0 0 24 24"><path d="M4 4h16v16H4z"/><path d="M4 9h16"/></svg>Demandes</div>
+        <div class="nav"><svg class="ic" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg>Contacts</div>
+      </div>
+      <div class="main wtext" id="dp">
+        <header class="dp-head"><div class="col">
+          <button class="back" id="backA"><svg class="ic" viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg>Demandes</button>
+          <p class="crumb hidden" id="backC"><a href="#">Demandes</a> / DEM-1042</p>
+          <div class="row1">
+            <button class="backB hidden" id="backB" aria-label="Retour à Demandes"><svg class="ic" viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7"/></svg></button>
+            <div style="flex:1;min-width:0">
+              <div id="h-ready">
+                <div class="ttl"><h3>Remboursement de frais de déplacement — mission Lyon</h3><span class="sb"><i></i>En attente</span></div>
+                <p class="meta">DEM-1042<span class="sep">·</span>Créée le 3 mars par Léa Martin<span class="sep">·</span>Modifiée il y a 2 h</p>
+              </div>
+              <div id="h-load" class="hidden"><i class="sk" style="width:55%;height:16px"></i><i class="sk" style="width:35%"></i></div>
+            </div>
+            <div class="acts" id="acts">
+              <button class="ibtn" title="Copier le lien"><svg class="ic" viewBox="0 0 24 24"><path d="M10 14a5 5 0 0 0 7 0l3-3a5 5 0 0 0-7-7l-1 1"/><path d="M14 10a5 5 0 0 0-7 0l-3 3a5 5 0 0 0 7 7l1-1"/></svg></button>
+              <button class="ibtn" title="Plus d'actions"><svg class="ic" viewBox="0 0 24 24"><circle cx="5" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/></svg></button>
+              <button class="btn">Approuver</button>
+            </div>
+          </div>
+        </div></header>
+        <div class="body"><div class="col">
+          <div id="c-ready">
+            <section class="sec">
+              <div class="sec-h"><div><h4>Description</h4></div></div>
+              <p class="t">Déplacement à Lyon du 28 au 29 février pour l'atelier client. Billets de train et une nuit d'hôtel, sur justificatifs.</p>
+            </section>
+            <section class="sec">
+              <div class="sec-h"><div><h4>Lignes de frais</h4><p>Montants TTC, en euros.</p></div><button class="btn2">Ajouter une ligne</button></div>
+              <table><tr><td>Train Paris – Lyon (A/R)</td><td class="end">124,00</td></tr><tr><td>Hôtel, une nuit</td><td class="end">96,50</td></tr><tr><td>Repas</td><td class="end">31,20</td></tr></table>
+            </section>
+            <section class="sec">
+              <div class="sec-h"><div><h4>Historique</h4></div></div>
+              <div id="s-ready">
+                <div class="li"><span class="av">LM</span>Léa Martin a créé la demande<span class="w">3 mars</span></div>
+                <div class="li"><span class="av">HB</span>Hugo Bernard a ajouté un justificatif<span class="w">hier</span></div>
+              </div>
+              <div id="s-load" class="hidden" role="status" aria-label="Chargement…"><i class="sk" style="width:70%"></i><i class="sk" style="width:50%"></i></div>
+              <div id="s-error" class="center compact hidden" role="alert"><b>Impossible de charger l'historique</b><p>Le service ne répond pas.</p><button class="btn2">Réessayer</button></div>
+              <div id="s-empty" class="center compact hidden"><b>Aucun événement</b><p>Les changements de la demande s'afficheront ici.</p></div>
+            </section>
+          </div>
+          <div id="c-load" class="hidden" role="status" aria-label="Chargement…">
+            <section class="sec"><i class="sk" style="width:25%;height:14px"></i><i class="sk"></i><i class="sk" style="width:80%"></i></section>
+            <section class="sec"><i class="sk" style="width:30%;height:14px"></i><i class="sk"></i><i class="sk" style="width:60%"></i></section>
+          </div>
+          <div id="c-error" class="center hidden" role="alert"><b>Impossible de charger l'élément</b><p>Le service ne répond pas. Réessayez dans un instant.</p><button class="btn2">Réessayer</button></div>
+          <div id="c-notfound" class="center hidden"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4-4"/></svg><b>Demande introuvable</b><p>Elle a peut-être été supprimée ou déplacée.</p><button class="btn" style="margin:0">Revenir aux demandes</button></div>
+        </div></div>
+      </div>
+      <div class="det">
+        <div class="st">Propriétés</div>
+        <div class="pr"><span>Demandeur</span><span>Léa Martin</span></div>
+        <div class="pr"><span>Montant</span><span>251,70 €</span></div>
+        <div class="pr"><span>Échéance</span><span>15 mars</span></div>
+        <div class="pr"><span>Service</span><span>Ventes</span></div>
+      </div>
+    </div>
+  </div>
+  <p class="hint">Jouable : bascules d'état, de largeur et de retour. Tabulation : retour, puis actions de l'en-tête, puis le contenu. Mobile : les icônes de l'en-tête passent dans « … » (D-117) ; le panneau de détail s'ouvre par son bouton (D-018).</p>
+
+  <h2 class="part">2. Page — page composée libre (un tableau de bord)</h2>
+  <div class="tk" id="tk2">
+    <div class="app" id="app2">
+      <div class="bar-side"></div>
+      <div class="bar"><span class="name">Rapports</span></div>
+      <div class="bar-det">Détail</div>
+      <div class="side">
+        <div class="nav"><svg class="ic" viewBox="0 0 24 24"><path d="M3 10l9-7 9 7v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1z"/></svg>Accueil</div>
+        <div class="nav on"><svg class="ic" viewBox="0 0 24 24"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>Rapports</div>
+      </div>
+      <div class="main" id="pz">
+        <div class="pz-tools"><div class="col" style="display:flex;gap:8px;align-items:center">
+          <div class="free"><span class="seg2"><span>Semaine</span><span class="on">Mois</span><span>Année</span></span><span class="sel">Service : tous ▾</span></div>
+          <div class="acts"><button class="ibtn" title="Actualiser"><svg class="ic" viewBox="0 0 24 24"><path d="M21 12a9 9 0 1 1-3-6.7L21 8"/><path d="M21 3v5h-5"/></svg></button><button class="btn">Exporter</button></div>
+        </div></div>
+        <div class="pz-body"><div class="col">
+          <section class="sec" style="padding:0"><div class="sec-h"><div><h4>Demandes par semaine</h4><p>Mars, tous services.</p></div></div><div class="chart"><i style="height:40%"></i><i style="height:65%"></i><i style="height:52%"></i><i style="height:80%"></i><i style="height:30%"></i></div></section>
+          <section class="sec" style="padding:0"><div class="sec-h"><div><h4>Plus gros montants</h4></div></div><table><tr><td>DEM-1042</td><td class="end">251,70</td></tr><tr><td>DEM-1037</td><td class="end">198,00</td></tr></table></section>
+        </div></div>
+        <div class="pz-foot"><div class="col">128 demandes ce mois-ci</div></div>
+      </div>
+      <div class="det"><div class="st">Aide</div><p style="margin:0;color:var(--fg-2)">Choisissez une période dans la barre d'outils.</p></div>
+    </div>
+  </div>
+  <p class="hint">Zones fixes : barre d'outils (une ligne ; elle défile à l'horizontale si la place manque) et pied. Seul le contenu défile. Les blocs sont espacés de 24 px. Aucun HTML stylé côté app : l'app pose des composants du socle dans les zones.</p>
+</div>
+<script>
+const st={theme:"light",density:"web",screen:"wide",state:"ready",sec:"ready",width:"text",back:"A"};
+const $=id=>document.getElementById(id);
+function render(){
+  document.documentElement.dataset.theme=st.theme;
+  for(const t of [$("tk1"),$("tk2")]){t.classList.toggle("dark",st.theme==="dark");t.classList.toggle("desktop",st.density==="desktop");}
+  for(const a of [$("app1"),$("app2")]) a.classList.toggle("narrow",st.screen==="narrow");
+  $("dp").classList.toggle("wtext",st.width==="text");
+  for(const s of ["ready","load","error","notfound"]){const k=s==="load"?"loading":s;$("c-"+s).classList.toggle("hidden",st.state!==k);}
+  $("h-ready").classList.toggle("hidden",st.state==="loading");$("h-load").classList.toggle("hidden",st.state!=="loading");
+  $("acts").classList.toggle("hidden",st.state!=="ready");
+  for(const s of ["ready","load","error","empty"]){const k=s==="load"?"loading":s;$("s-"+s).classList.toggle("hidden",st.sec!==k);}
+  $("backA").classList.toggle("hidden",st.back!=="A");$("backB").classList.toggle("hidden",st.back!=="B");$("backC").classList.toggle("hidden",st.back!=="C");
+  document.querySelectorAll(".narrow #acts .ibtn[title='Copier le lien']").forEach(b=>b.classList.add("hidden"));
+  if(st.screen==="wide") document.querySelectorAll("#acts .ibtn").forEach(b=>b.classList.remove("hidden"));
+}
+document.querySelectorAll(".seg").forEach(seg=>seg.addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;st[seg.dataset.k]=b.dataset.v;seg.querySelectorAll("button").forEach(x=>x.setAttribute("aria-pressed",String(x===b)));render();}));
+render();
+</script>
+</body>
+</html>
