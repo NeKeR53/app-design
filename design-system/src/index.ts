@@ -50,3 +50,5 @@ export { Code } from "./components/Code/Code";
 export type { CodeProps } from "./components/Code/Code";
 export { Divider } from "./components/Divider/Divider";
 export type { DividerProps } from "./components/Divider/Divider";
+export { ActionBar, arrangeActions } from "./patterns/ActionBar/ActionBar";
+export type { Action, ActionZone, ActionBarProps, ArrangedActions } from "./patterns/ActionBar/ActionBar";

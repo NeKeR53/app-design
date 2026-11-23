@@ -902,3 +902,75 @@
 - Raison : un seul dessin par élément, sans doublon.
 - Options écartées : garder des copies internes.
 - Validation : par délégation de l'utilisateur, 2026-11-23 — docs/validation/components/Display-v1.html
+
+## D-110 — Modèle Action : les champs
+- Date : 2026-11-23
+- Portée : ActionBar
+- Décision : une action est une donnée `{ id, label, icon?, onPress, primary?, danger?, confirm?, shortcut?, isDisabled?, isHidden? }`. `confirm` est un texte (la question) ou `{ title, message?, confirmLabel? }`. `shortcut` est seulement affiché (info-bulle, menu) ; l'app déclare le raccourci elle-même. `onPress` peut rendre une promesse.
+- Raison : l'app décrit ce que fait l'action ; Socle choisit sa forme. Les noms suivent Socle (`onPress`, `isDisabled`).
+- Options écartées : bascule de vue dans le modèle (`group`, `selected` : les vues vont dans `Tabs`, D-021) ; message de réussite (`success` : les notifications restent au gabarit, D-115).
+- Validation : docs/validation/components/ActionBar-v1.html
+
+## D-111 — Modèle Action : six zones et une règle par zone
+- Date : 2026-11-23
+- Portée : ActionBar, layout-rules
+- Décision : `ActionBar` reçoit une `zone` parmi `topbar`, `header`, `toolbar`, `section`, `row` et `empty`. La règle de la zone décide de la forme : action principale en `Button` à texte, actions à icône en `IconButton` (3 au plus en `topbar`, `header`, `toolbar` ; 2 en `section` ; voir D-113 pour `row`), le reste dans le menu « … ». Ordre : icônes, « … », action principale tout à droite. Une seule action principale par zone (la première marquée) ; une action `danger` n'est jamais principale ni icône. `isHidden` retire l'action ; `isDisabled` la garde à sa place. En `empty`, seule l'action principale s'affiche.
+- Raison : les gabarits ne posent plus de boutons ; la même donnée prend la bonne forme partout.
+- Options écartées : fusionner `header` et `toolbar`.
+- Validation : docs/validation/components/ActionBar-v1.html
+
+## D-112 — Modèle Action : action principale en icône dans la barre du haut
+- Date : 2026-11-23
+- Portée : ActionBar (zone `topbar`)
+- Décision : dans la zone `topbar`, l'action principale reste un bouton-icône, placé en premier. Sans icône, elle va en tête du menu « … ». La spec AppShell (boutons-icônes uniquement) ne change pas.
+- Raison : respecter AppShell aujourd'hui ; P13 pourra ajouter le texte en option, sans casser cette règle.
+- Options écartées : bouton à texte dans la barre du haut dès maintenant.
+- Validation : docs/validation/components/ActionBar-v1.html
+
+## D-113 — Modèle Action : action principale d'une section en bouton secondaire
+- Date : 2026-11-23
+- Portée : ActionBar (zone `section`)
+- Décision : dans la zone `section`, l'action principale est un `Button` `secondary` de taille `sm`.
+- Raison : un seul bouton plein par écran reste lisible ; un panneau a souvent plusieurs sections.
+- Options écartées : bouton principal plein.
+- Validation : docs/validation/components/ActionBar-v1.html
+
+## D-114 — Modèle Action : une icône puis « … » dans une ligne
+- Date : 2026-11-23
+- Portée : ActionBar (zone `row`)
+- Décision : dans la zone `row`, deux contrôles au plus (D-066) : une icône, puis « … » s'il reste des actions. Si la ligne n'a que deux actions, toutes deux à icône et sans danger, elles s'affichent en deux icônes. `primary` n'a pas d'effet dans une ligne. Le gabarit (Table, List) garde la règle d'apparition au survol et le clic droit (D-066).
+- Raison : respecter D-066 ; une ligne reste calme.
+- Options écartées : deux icônes puis « … » (trois contrôles).
+- Validation : docs/validation/components/ActionBar-v1.html
+
+## D-115 — Modèle Action : danger dans « … », après un trait, confirmé
+- Date : 2026-11-23
+- Portée : ActionBar
+- Décision : une action `danger` va toujours dans le menu « … », en dernier, après un séparateur, en rouge (D-049), sans titre de groupe. Elle est toujours confirmée ; une action non danger l'est si elle a `confirm`. La question par défaut est « {label} ? » ; le bouton de confirmation reprend le libellé de l'action.
+- Raison : suivre D-049 ; le rouge et la confirmation suffisent à signaler le risque.
+- Options écartées : titre « Actions définitives » au-dessus des actions danger.
+- Validation : docs/validation/components/ActionBar-v1.html
+
+## D-116 — Modèle Action : exécution (confirmation, attente, erreur)
+- Date : 2026-11-23
+- Portée : ActionBar
+- Décision : au clic, `ActionBar` confirme si besoin (D-115), appelle `onPress`, puis montre l'attente tant que la promesse court (`isPending` du bouton). Une erreur, levée ou rejetée, est rendue à `onError(action, error)` ; `onDone(action)` est appelé après une réussite. `ActionBar` n'affiche aucune notification : le gabarit les branche (P6). Pendant l'attente, l'action ne se relance pas.
+- Raison : aucune dépendance aux notifications ; les gabarits du lot 2 gardent la main sur le message.
+- Options écartées : notifications de réussite et d'échec dans `ActionBar` (champ `success`).
+- Validation : docs/validation/components/ActionBar-v1.html
+
+## D-117 — Modèle Action : petit écran
+- Date : 2026-11-23
+- Portée : ActionBar
+- Décision : sous 640 px (D-013), dans les zones `topbar`, `header` et `toolbar`, les icônes passent dans « … » ; l'action principale reste visible (bouton à texte, ou icône en `topbar`). Les zones `section`, `row` et `empty` ne changent pas.
+- Raison : la barre tient sur un téléphone, et l'action attendue reste en vue.
+- Options écartées : garder une icône avant « … » sur mobile.
+- Validation : docs/validation/components/ActionBar-v1.html
+
+## D-118 — Modèle Action : attente d'une action à icône
+- Date : 2026-11-23
+- Portée : ActionBar
+- Décision : une action à icône qui attend sa promesse prend l'état `isPending` d'`IconButton` (D-107) : roue, focus gardé, `aria-busy`. Une entrée du menu « … » ferme le menu tout de suite ; l'attente n'y est pas montrée.
+- Raison : une seule règle d'attente pour `Button` et `IconButton`. La question posée proposait « désactivé et `aria-busy` », car `IconButton` n'avait pas de chargement ; P1 l'a ajouté le même jour (D-107).
+- Options écartées : bouton-icône désactivé sans roue.
+- Validation : docs/validation/components/ActionBar-v1.html

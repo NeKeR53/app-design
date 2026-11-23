@@ -73,6 +73,9 @@ export interface SocleMessages {
   /* Petits éléments d'affichage (D-160 à D-169) */
   codeSample: string;
   progressOf: (value: string, max: string) => string;
+  /* ActionBar */
+  moreActions: string;
+  confirmQuestion: (label: string) => string;
 }
 
 const s = (n: number) => (n > 1 ? "s" : "");
@@ -139,4 +142,6 @@ export const frenchMessages: SocleMessages = {
   loading: "Chargement…",
   codeSample: "Extrait de code",
   progressOf: (v, max) => `${v} sur ${max}`,
+  moreActions: "Plus d'actions",
+  confirmQuestion: (l) => `${l} ?`,
 };
