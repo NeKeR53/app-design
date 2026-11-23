@@ -757,3 +757,67 @@
 - Raison : plus de 40 libellés ; une app les traduit une seule fois, au même endroit, et l'API des composants reste simple.
 - Options écartées : une prop par libellé dans chaque composant.
 - Validation : aucune page (règle technique).
+
+## D-100 — Bouton à texte : un composant `Button`, quatre variantes
+- Date : 2026-11-23
+- Portée : Button
+- Décision : `Button` affiche un libellé texte (`children: string`) et une icône facultative. Il a quatre variantes : `primary`, `secondary` (par défaut), `subtle` et `danger`. `subtle` a un fond transparent et un texte `--fg-2`, avec un fond `--hover` au survol, comme IconButton. Un `aria-label` facultatif précise le nom accessible et commence par le libellé visible. Pas de `className`, pas de pleine largeur, pas de lien.
+- Raison : toute app a besoin d'un bouton à texte ; le pied de section du panneau de détail en attend un (D-059).
+- Options écartées : contenu libre (`ReactNode`) dans le bouton ; variante « lien ».
+- Validation : docs/validation/components/Button-v1.html
+
+## D-101 — Bouton à texte : deux tailles, `md` et `sm`
+- Date : 2026-11-23
+- Portée : Button, tokens
+- Décision : `md` (par défaut) a la hauteur d'une ligne, `--row-h` (34 px web, 28 px desktop). `sm` a la hauteur du nouveau token `--btn-h-sm` (26 px web, 24 px desktop), pour le pied de section du panneau de détail et les zones denses. Sur mobile, la hauteur minimale passe à `--target-min` (44 px).
+- Raison : le bouton s'aligne sur les champs ; le rendu de 26 px du pied de section est déjà validé (D-059).
+- Options écartées : une seule taille.
+- Validation : docs/validation/components/Button-v1.html
+
+## D-102 — Bouton à texte : principale monochrome
+- Date : 2026-11-23
+- Portée : Button
+- Décision : la variante `primary` a un fond `--fg` et un texte `--surface` : noir en mode clair, clair en mode sombre.
+- Raison : le principe monochrome réserve l'accent au sens (sélection, lien, non-lu).
+- Options écartées : fond `--accent`.
+- Validation : docs/validation/components/Button-v1.html
+
+## D-103 — Bouton à texte : secondaire sur fond, sans contour
+- Date : 2026-11-23
+- Portée : Button
+- Décision : la variante `secondary` a un fond `--field` et un texte `--fg`, sans contour ; `--hover` au survol, `--selected` à la pression.
+- Raison : même rendu que le pied de section validé (D-059), sans trait décoratif.
+- Options écartées : fond `--surface` avec contour `--line-strong`.
+- Validation : docs/validation/components/Button-v1.html
+
+## D-104 — Bouton à texte : danger en rouge plein
+- Date : 2026-11-23
+- Portée : Button, tokens
+- Décision : la variante `danger` a un fond `--danger` et un texte `--danger-fg`, nouveau token : blanc en clair, #1f0a08 en sombre (le rouge du mode sombre est clair). Elle sert au bouton qui exécute l'action destructrice, en général dans la confirmation.
+- Raison : l'action destructrice doit se voir, et c'est la confirmation qui porte le rouge (spec IconButton).
+- Options écartées : texte rouge sur fond `--field` ; contour rouge.
+- Validation : docs/validation/components/Button-v1.html
+
+## D-105 — Bouton à texte : chargement avec roue et libellé
+- Date : 2026-11-23
+- Portée : Button
+- Décision : avec `isPending`, une roue remplace l'icône, ou se place devant le libellé ; le libellé reste. La largeur ne change pas. Le bouton garde le focus, ignore les clics, porte `aria-busy` et annonce l'attente (`progressbar` nommé par le dictionnaire `messages`). Pas de libellé de remplacement.
+- Raison : le libellé reste lisible et le bouton ne saute pas.
+- Options écartées : roue seule au centre, libellé caché ; libellé de remplacement (`loadingLabel`).
+- Validation : docs/validation/components/Button-v1.html
+
+## D-106 — Bouton à texte : icône au début seulement
+- Date : 2026-11-23
+- Portée : Button
+- Décision : l'icône facultative se place avant le libellé. Pas d'icône en fin, pas de chevron.
+- Raison : un chevron de menu relève du déclencheur de `Menu`, pas du bouton.
+- Options écartées : option `iconPosition` (début ou fin).
+- Validation : docs/validation/components/Button-v1.html
+
+## D-107 — Bouton-icône : état de chargement facultatif
+- Date : 2026-11-23
+- Portée : IconButton
+- Décision : `IconButton` gagne l'option facultative `isPending`. L'icône devient une roue ; le bouton garde le focus, ignore les clics, porte `aria-busy` et garde son info-bulle. Elle sert par exemple à « Actualiser ». Cela retire l'exclusion « pas d'état de chargement » de la spec.
+- Raison : la barre d'outils n'accepte que des boutons-icônes, et une action « Actualiser » doit montrer son attente.
+- Options écartées : un `Button` discret « Actualiser » avec icône ; un composant `RefreshButton` dédié.
+- Validation : docs/validation/components/Button-v1.html

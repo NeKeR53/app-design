@@ -1,0 +1,319 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Button — validation v1</title>
+<style>
+/* ---------- Page de validation ---------- */
+:root{--pg-bg:#f6f6f6;--pg-fg:#1a1a1a;--pg-muted:#5c5c5c;--pg-line:#e2e2e2;--pg-card:#fff;--pg-badge:#fff4d6;--pg-badge-fg:#7a5a00;--pg-reco:#e7f0ff;--pg-reco-fg:#1d4ed8;--pg-ok:#e3f5e8;--pg-ok-fg:#15803d}
+:root[data-theme="dark"]{--pg-bg:#121212;--pg-fg:#ececec;--pg-muted:#9a9a9a;--pg-line:#2c2c2c;--pg-card:#1b1b1b;--pg-badge:#3a2f10;--pg-badge-fg:#f3d27a;--pg-reco:#16233d;--pg-reco-fg:#9cc0ff;--pg-ok:#12301c;--pg-ok-fg:#7ad79b}
+*{box-sizing:border-box}html,body{margin:0}
+body{background:var(--pg-bg);color:var(--pg-fg);font:15px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif}
+.pg{max-width:1100px;margin:0 auto;padding:24px 16px 64px}
+h1{font-size:22px;font-weight:600;margin:0 0 4px;display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.sub{color:var(--pg-muted);margin:0 0 20px}
+.badge{font-size:12px;font-weight:600;letter-spacing:.04em;padding:3px 8px;border-radius:8px;background:var(--pg-badge);color:var(--pg-badge-fg)}
+.badge.ok{background:var(--pg-ok);color:var(--pg-ok-fg)}
+.boxes{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px}
+@media (max-width:760px){.boxes{grid-template-columns:1fr}}
+.box{background:var(--pg-card);border:1px solid var(--pg-line);border-radius:10px;padding:14px 16px;font-size:14px}
+.box.wide{grid-column:1/-1}
+.box h2{font-size:14px;margin:0 0 8px;font-weight:600}.box ul,.box ol{margin:0;padding-left:20px}.box li{margin:6px 0}
+.reco{font-size:11.5px;font-weight:600;padding:1px 6px;border-radius:5px;background:var(--pg-reco);color:var(--pg-reco-fg);margin-left:4px;white-space:nowrap}
+.toolbar{position:sticky;top:0;z-index:100;background:var(--pg-bg);padding:10px 0;border-bottom:1px solid var(--pg-line);margin-bottom:16px;display:flex;flex-wrap:wrap;gap:10px 16px;align-items:center}
+.seg{display:inline-flex;border:1px solid var(--pg-line);border-radius:8px;overflow:hidden;background:var(--pg-card)}
+.seg button{border:0;background:transparent;color:var(--pg-fg);padding:5px 10px;font:inherit;font-size:13px;cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--pg-fg);color:var(--pg-bg)}
+.tlabel{font-size:12px;color:var(--pg-muted);margin-right:6px}
+.hint{margin:8px 0 0;color:var(--pg-muted);font-size:13px}
+h3.sec{font-size:15px;margin:28px 0 10px}
+code{font-size:.92em}
+
+/* ---------- Tokens T2 (copie de src/tokens) ---------- */
+.tk{--surface:#fff;--surface-side:#f3f3f3;--surface-raised:#fff;--field:#f2f2f2;--hover:#e9e9e9;--selected:#dedede;--line:#e4e4e4;--line-strong:#cfcfcf;--fg:#1a1a1a;--fg-2:#5c5c5c;--fg-3:#6b6b6b;--scrim:rgb(0 0 0/.25);
+  --accent:#1d4ed8;--accent-fg:#fff;--accent-text:#1d4ed8;--danger:#c62828;--danger-fg:#fff;
+  --font-sans:-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;--fw-medium:500;
+  --radius-sm:4px;--radius-md:8px;--radius-lg:12px;--shadow-lg:0 12px 32px rgb(0 0 0/.14);
+  --icon:16px;--icon-stroke:1.6;--ease:cubic-bezier(.2,0,0,1);--dur-fast:120ms;
+  --fs-sm:12.5px;--fs-md:14px;--lh:1.45;--row-h:34px;--bar-h:44px;--side-w:220px;--detail-w:300px;--pad:16px;--icon-btn:28px;
+  --btn-h:var(--row-h);--btn-h-sm:26px;--btn-px:12px;--btn-px-sm:10px}
+.tk.dark{--surface:#181818;--surface-side:#222;--surface-raised:#262626;--field:#2a2a2a;--hover:#303030;--selected:#3d3d3d;--line:#333;--line-strong:#4a4a4a;--fg:#ececec;--fg-2:#ababab;--fg-3:#8f8f8f;--scrim:rgb(0 0 0/.5);
+  --accent:#5b8def;--accent-fg:#0b1630;--accent-text:#7da4f2;--danger:#f07167;--danger-fg:#1f0a08;--shadow-lg:0 12px 32px rgb(0 0 0/.6)}
+.tk.desktop{--fs-sm:11.5px;--fs-md:13px;--lh:1.4;--row-h:28px;--bar-h:38px;--side-w:200px;--detail-w:272px;--pad:12px;--icon-btn:24px;--btn-h-sm:24px;--btn-px:10px;--btn-px-sm:8px}
+@media (prefers-reduced-motion: reduce){.tk{--dur-fast:0ms}}
+
+/* ---------- Button (proposition) ---------- */
+.b{display:inline-flex;align-items:center;justify-content:center;gap:6px;height:var(--btn-h);padding:0 var(--btn-px);border:0;border-radius:var(--radius-md);font:inherit;font-size:var(--fs-md);font-weight:var(--fw-medium);line-height:1;white-space:nowrap;cursor:default;flex:none;position:relative;
+  transition:background-color var(--dur-fast) var(--ease),color var(--dur-fast) var(--ease),border-color var(--dur-fast) var(--ease)}
+.b.sm{height:var(--btn-h-sm);padding:0 var(--btn-px-sm);font-size:var(--fs-sm)}
+.tk.no-sm .b.sm{height:var(--btn-h);padding:0 var(--btn-px);font-size:var(--fs-md)}
+.b .ic{width:var(--icon);height:var(--icon);margin-left:-2px}
+.b:focus-visible,.b.f-focus{outline:2px solid var(--accent);outline-offset:1px}
+.b[disabled],.b.f-disabled{opacity:.4;pointer-events:none}
+
+/* principale */
+.b.primary{background:var(--fg);color:var(--surface)}
+.b.primary:hover,.b.primary.f-hover{background:color-mix(in srgb,var(--fg) 82%,var(--surface))}
+.b.primary:active{background:color-mix(in srgb,var(--fg) 72%,var(--surface))}
+.tk.p-accent .b.primary{background:var(--accent);color:var(--accent-fg)}
+.tk.p-accent .b.primary:hover,.tk.p-accent .b.primary.f-hover{background:color-mix(in srgb,var(--accent) 85%,#000)}
+/* secondaire */
+.b.secondary{background:var(--field);color:var(--fg)}
+.b.secondary:hover,.b.secondary.f-hover{background:var(--hover)}
+.b.secondary:active{background:var(--selected)}
+.tk.s-outline .b.secondary{background:var(--surface);box-shadow:inset 0 0 0 1px var(--line-strong)}
+.tk.s-outline .b.secondary:hover,.tk.s-outline .b.secondary.f-hover{background:var(--hover)}
+/* discrète */
+.b.subtle{background:transparent;color:var(--fg-2)}
+.b.subtle:hover,.b.subtle.f-hover{background:var(--hover);color:var(--fg)}
+.b.subtle:active{background:var(--selected)}
+/* danger : A plein */
+.b.danger{background:var(--danger);color:var(--danger-fg)}
+.b.danger:hover,.b.danger.f-hover{background:color-mix(in srgb,var(--danger) 85%,#000)}
+.tk.dark .b.danger:hover,.tk.dark .b.danger.f-hover{background:color-mix(in srgb,var(--danger) 85%,#fff)}
+/* danger : B texte rouge sur fond */
+.tk.d-soft .b.danger{background:var(--field);color:var(--danger)}
+.tk.d-soft .b.danger:hover,.tk.d-soft .b.danger.f-hover{background:var(--hover)}
+/* danger : C contour rouge (Alfred aujourd'hui) */
+.tk.d-outline .b.danger{background:var(--surface);color:var(--danger);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--danger) 55%,transparent)}
+.tk.d-outline .b.danger:hover,.tk.d-outline .b.danger.f-hover{background:color-mix(in srgb,var(--danger) 10%,var(--surface))}
+
+/* chargement */
+.spin{width:var(--icon);height:var(--icon);animation:spin .8s linear infinite;margin-left:-2px}
+@keyframes spin{to{transform:rotate(360deg)}}
+@media (prefers-reduced-motion: reduce){.spin{animation-duration:2.4s}}
+.b.pending{pointer-events:none}
+/* chargement B : libellé caché, rond centré */
+.tk.l-hide .b.pending .lbl,.tk.l-hide .b.pending .ic{visibility:hidden}
+.tk.l-hide .b.pending .spin{position:absolute;left:50%;top:50%;margin:-8px 0 0 -8px}
+
+.ic{stroke:currentColor;fill:none;stroke-width:var(--icon-stroke);stroke-linecap:round;stroke-linejoin:round;flex:none}
+.ib{width:var(--icon-btn);height:var(--icon-btn);display:inline-grid;place-items:center;border:0;padding:0;background:transparent;color:var(--fg-2);border-radius:var(--radius-md);cursor:default}
+.ib:hover{background:var(--hover);color:var(--fg)}
+.ib .ic{width:var(--icon);height:var(--icon)}
+.ib .spin{margin:0}
+.ib.pending{pointer-events:none}
+
+/* ---------- Grille d'états ---------- */
+.grid{border:1px solid var(--pg-line);border-radius:10px;overflow:auto;background:var(--surface);color:var(--fg);font-family:var(--font-sans)}
+.grid table{border-collapse:collapse;width:100%;min-width:720px}
+.grid th,.grid td{padding:12px 10px;text-align:left;border-bottom:1px solid var(--line);font-size:12px;font-weight:400;color:var(--fg-2);vertical-align:middle}
+.grid tr:last-child td{border-bottom:0}
+.grid th{font-weight:600;color:var(--fg)}
+
+/* ---------- Mini AppShell ---------- */
+.app{position:relative;height:540px;border:1px solid var(--pg-line);border-radius:12px;overflow:hidden;background:var(--surface);color:var(--fg);font-family:var(--font-sans);font-size:var(--fs-md);line-height:var(--lh);display:grid;grid-template-columns:var(--side-w) minmax(0,1fr) var(--detail-w);grid-template-rows:var(--bar-h) 1fr}
+@media (max-width:860px){.app{grid-template-columns:0 minmax(0,1fr) var(--detail-w)}.app .side,.app .bar-side{display:none}}
+@media (max-width:620px){.app{grid-template-columns:0 minmax(0,1fr) 0}.app .detail{display:none}}
+.app *{box-sizing:border-box}
+.bar-side{grid-column:1;grid-row:1;background:var(--surface-side);border-right:1px solid var(--line)}
+.bar{grid-column:2/4;grid-row:1;display:flex;align-items:center;gap:8px;padding:0 8px 0 16px;border-bottom:1px solid var(--line);min-width:0}
+.ptitle{font-weight:600}.sp{flex:1}
+.side{grid-column:1;grid-row:2;background:var(--surface-side);border-right:1px solid var(--line);padding:6px}
+.it{display:flex;align-items:center;gap:8px;height:var(--row-h);padding:0 8px;border-radius:var(--radius-md);color:var(--fg-2)}
+.it.on{background:var(--selected);color:var(--fg)}
+.main{grid-column:2;grid-row:2;overflow:auto;min-width:0;display:flex;flex-direction:column}
+.form{flex:1;padding:var(--pad);display:flex;flex-direction:column;gap:14px}
+.form h4{margin:0;font-size:calc(var(--fs-md) + 2px)}
+.form p{margin:0;color:var(--fg-2);font-size:var(--fs-sm)}
+.fld{display:flex;flex-direction:column;gap:4px;max-width:360px}
+.fld label{font-size:var(--fs-sm);color:var(--fg-2)}
+.fld input{height:var(--row-h);border:1px solid var(--line-strong);border-radius:var(--radius-md);background:var(--surface);color:var(--fg);font:inherit;padding:0 10px}
+.inline{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.ffoot{position:sticky;bottom:0;display:flex;align-items:center;gap:8px;padding:10px var(--pad);border-top:1px solid var(--line);background:var(--surface)}
+.ffoot .state{color:var(--fg-3);font-size:var(--fs-sm)}
+.detail{grid-column:3;grid-row:2;border-left:1px solid var(--line);overflow:auto;padding:12px var(--pad)}
+.dsec{padding:6px 0 10px;border-bottom:1px solid var(--line)}
+.dsec:last-child{border-bottom:0}
+.dsec h5{margin:4px 0 4px;font-size:var(--fs-sm);font-weight:400;color:var(--fg-3)}
+.prow{display:flex;justify-content:space-between;gap:8px;min-height:var(--row-h);align-items:center;font-size:var(--fs-sm)}
+.prow .k{color:var(--fg-2)}
+.sfoot{padding-top:6px}
+/* Modale de confirmation */
+.scrim{position:absolute;inset:0;background:var(--scrim);display:none;place-items:center;z-index:5}
+.scrim.open{display:grid}
+.dlg{width:min(380px,calc(100% - 32px));background:var(--surface-raised);border-radius:var(--radius-lg);box-shadow:var(--shadow-lg);padding:18px}
+.dlg h4{margin:0 0 6px;font-size:calc(var(--fs-md) + 1px)}
+.dlg p{margin:0 0 16px;color:var(--fg-2);font-size:var(--fs-sm)}
+.dlg .acts{display:flex;justify-content:flex-end;gap:8px}
+
+/* Avant / après */
+.ba{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media (max-width:760px){.ba{grid-template-columns:1fr}}
+.pane{border:1px solid var(--pg-line);border-radius:10px;padding:16px;background:var(--surface);color:var(--fg);font-family:var(--font-sans)}
+.pane h4{margin:0 0 12px;font-size:13px;color:var(--fg-2);font-weight:600}
+.before .b{height:32px;padding:0 12px;font-size:13px}
+.before .b.primary{background:#2563eb;color:#fff}
+.before .b.secondary{background:var(--surface);box-shadow:inset 0 0 0 1px var(--line-strong)}
+.before .b.danger{background:var(--surface);color:var(--danger);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--danger) 50%,transparent)}
+.before .b.subtle{color:var(--fg)}
+</style>
+</head>
+<body>
+<div class="pg">
+  <h1>Button — v1 <span class="badge ok" id="status">VALIDÉ le 2026-11-23</span></h1>
+  <p class="sub">Mode <code>propose "Button à texte"</code>, depuis Alfred. Spec : <code>src/components/Button/Button.spec.md</code>. Remplace dans Alfred <code>Button.tsx</code>, <code>primitives/button.tsx</code> et <code>RefreshButton.tsx</code>. Impact : version mineure (nouveau composant, nouveau token <code>--danger-fg</code>).</p>
+
+  <div class="boxes">
+    <div class="box">
+      <h2>Test du générique</h2>
+      <p style="margin:0">Oui : toute app a besoin d'un bouton à texte (envoyer un formulaire, confirmer, annuler, réessayer). Rien de métier.</p>
+    </div>
+    <div class="box">
+      <h2>Déjà décidé</h2>
+      <ul>
+        <li>Rayon 8 px, comme tout contrôle (D-040) ; focus : anneau <code>--accent</code> de 2 px.</li>
+        <li>Transitions de couleur ≤ 120 ms (D-014) ; icône de 16 px en <code>currentColor</code> (D-011).</li>
+        <li>Pied de section du panneau de détail : un <code>Button</code> (D-059), rendu validé de 26 px sur fond <code>--field</code>.</li>
+        <li><code>IconButton</code> reste le bouton sans libellé, sans couleur ni danger (D-037).</li>
+        <li>Une action principale au plus par zone (layout-rules, ListPage et FormPage).</li>
+        <li>Pas de <code>className</code> ni de <code>style</code>, comme les autres composants.</li>
+      </ul>
+    </div>
+    <div class="box wide">
+      <h2>Proposé sans question (dites-le si un point ne va pas)</h2>
+      <ul>
+        <li>API : <code>&lt;Button variant icon size isPending isDisabled onPress type form aria-label autoFocus&gt;Libellé&lt;/Button&gt;</code>. Le libellé est un texte (<code>children: string</code>). Toutes les options sont facultatives ; <code>variant</code> vaut <code>"secondary"</code> par défaut.</li>
+        <li><b>Discrète</b> : fond transparent, texte <code>--fg-2</code> ; au survol, fond <code>--hover</code> et texte <code>--fg</code>. Même logique que IconButton.</li>
+        <li>Texte en <code>--fw-medium</code>, sur une ligne, jamais tronqué : la largeur suit le libellé. Pas de pleine largeur dans cette version.</li>
+        <li><code>aria-label</code> facultatif : il complète le libellé visible quand il est ambigu (« Approuver Projet X »). Il doit commencer par le libellé visible (WCAG 2.5.3).</li>
+        <li>Désactivé : opacité 40 %, ni survol ni action. Boutons voisins espacés de 8 px.</li>
+      </ul>
+    </div>
+    <div class="box wide">
+      <h2>À décider — tranché le 2026-11-23 (D-100 à D-107)</h2>
+      <ol id="todo">
+        <li><b>Hauteur</b> : la hauteur normale suit <code>--row-h</code> (34 px web, 28 px desktop), comme un champ. Faut-il aussi une taille <code>size="sm"</code> (26 px web, 24 px desktop) pour le pied de section du panneau de détail et les zones denses ? <span class="reco">Validé : oui</span> — le rendu de 26 px est déjà validé (D-059) et 24 px reste la cible minimale.</li>
+        <li><b>Principale</b> : A monochrome inversé (fond <code>--fg</code>) ; B couleur d'accent. <span class="reco">Validé : A</span> — le principe « monochrome » réserve l'accent au sens (sélection, lien, non-lu).</li>
+        <li><b>Secondaire</b> : A fond <code>--field</code> sans contour ; B fond <code>--surface</code> et contour <code>--line-strong</code> (Alfred aujourd'hui). <span class="reco">Validé : A</span> — même rendu que le pied de section validé, et pas de trait décoratif.</li>
+        <li><b>Danger</b> : A rouge plein ; B texte rouge sur fond <code>--field</code> ; C contour rouge (Alfred). <span class="reco">Validé : A</span> — IconButton dit déjà que « c'est la confirmation qui est en rouge » : le bouton qui exécute doit se voir. A demande un nouveau token <code>--danger-fg</code> (texte sombre sur le rouge clair du mode sombre, contraste AA).</li>
+        <li><b>Chargement</b> (<code>isPending</code>) : A une roue remplace l'icône (ou se place devant le libellé), le libellé reste ; B la roue seule au centre, le libellé est caché. Dans les deux cas, la largeur ne change pas, le bouton garde le focus, ignore les clics, et le lecteur d'écran annonce l'attente. <span class="reco">Validé : A</span> — le libellé reste lisible ; le <code>loadingLabel</code> d'Alfred (« Enregistrement… ») change la largeur et n'est pas repris.</li>
+        <li><b>Icône</b> : au début seulement, ou aussi en fin (flèche, chevron) ? <span class="reco">Validé : au début seulement</span> — un chevron de menu est le rôle du déclencheur de <code>Menu</code>, pas du bouton.</li>
+        <li><b>« Actualiser » (RefreshButton)</b> : A <code>IconButton</code> gagne <code>isPending</code> (l'icône devient une roue) ; B un <code>Button</code> discret « Actualiser » avec icône. <span class="reco">Validé : A</span> — la barre d'outils n'accepte que des boutons-icônes, et Alfred montre l'attente sur 6 de ses 8 boutons « Actualiser ». Cela retire une exclusion de la spec IconButton (option facultative, version mineure).</li>
+      </ol>
+    </div>
+  </div>
+
+  <div class="toolbar">
+    <span><span class="tlabel">Q1 sm</span><span class="seg" data-k="sm"><button aria-pressed="true" data-v="yes">Oui</button><button aria-pressed="false" data-v="no">Non</button></span></span>
+    <span><span class="tlabel">Q2 Principale</span><span class="seg" data-k="primary"><button aria-pressed="true" data-v="mono">A</button><button aria-pressed="false" data-v="accent">B</button></span></span>
+    <span><span class="tlabel">Q3 Secondaire</span><span class="seg" data-k="secondary"><button aria-pressed="true" data-v="field">A</button><button aria-pressed="false" data-v="outline">B</button></span></span>
+    <span><span class="tlabel">Q4 Danger</span><span class="seg" data-k="danger"><button aria-pressed="true" data-v="solid">A</button><button aria-pressed="false" data-v="soft">B</button><button aria-pressed="false" data-v="outline">C</button></span></span>
+    <span><span class="tlabel">Q5 Chargement</span><span class="seg" data-k="loading"><button aria-pressed="true" data-v="keep">A</button><button aria-pressed="false" data-v="hide">B</button></span></span>
+    <span><span class="tlabel">Mode</span><span class="seg" data-k="mode"><button aria-pressed="true" data-v="light">Clair</button><button aria-pressed="false" data-v="dark">Sombre</button></span></span>
+    <span><span class="tlabel">Densité</span><span class="seg" data-k="density"><button aria-pressed="true" data-v="web">Web</button><button aria-pressed="false" data-v="desktop">Desktop</button></span></span>
+  </div>
+
+  <div id="tk" class="tk">
+    <h3 class="sec">1. Variantes et états</h3>
+    <div class="grid"><table>
+      <thead><tr><th></th><th>Par défaut</th><th>Survol</th><th>Focus clavier</th><th>Désactivé</th><th>Chargement</th><th>Avec icône</th><th>Petite (sm)</th></tr></thead>
+      <tbody id="rows"></tbody>
+    </table></div>
+    <p class="hint">Survolez et tabulez sur la colonne « Par défaut » : les états sont aussi jouables. Les colonnes Survol et Focus sont figées pour la comparaison.</p>
+
+    <h3 class="sec">2. Dans un écran : formulaire, panneau de détail, confirmation</h3>
+    <div class="app">
+      <div class="bar-side"></div>
+      <div class="bar">
+        <span class="ptitle">Projet Atlas</span><span class="sp"></span>
+        <button class="ib" id="refresh" aria-label="Actualiser"><svg class="ic" viewBox="0 0 24 24"><path d="M3 12a9 9 0 0 1 15-6.7L21 8M21 3v5h-5M21 12a9 9 0 0 1-15 6.7L3 16M3 21v-5h5"/></svg></button>
+      </div>
+      <div class="side">
+        <div class="it">Accueil</div><div class="it on">Projets</div><div class="it">Équipe</div><div class="it">Archives</div>
+      </div>
+      <div class="main">
+        <div class="form">
+          <h4>Modifier le projet</h4>
+          <p>Ces informations sont visibles par toute l'équipe.</p>
+          <div class="fld"><label for="n">Nom</label><input id="n" value="Projet Atlas"></div>
+          <div class="fld"><label for="d">Dossier de travail</label>
+            <div class="inline"><input id="d" style="flex:1;min-width:0" value="Documents/Atlas"><button class="b secondary">Parcourir…</button></div>
+          </div>
+          <div class="inline" style="margin-top:4px">
+            <button class="b subtle"><svg class="ic" viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"/></svg><span class="lbl">Tous les projets</span></button>
+            <button class="b danger" id="del"><span class="lbl">Supprimer le projet</span></button>
+          </div>
+        </div>
+        <div class="ffoot">
+          <span class="state" id="saved">Modifications non enregistrées</span><span class="sp"></span>
+          <button class="b secondary">Annuler</button>
+          <button class="b primary" id="save"><span class="lbl">Enregistrer</span></button>
+        </div>
+      </div>
+      <div class="detail">
+        <div class="dsec"><h5>Propriétés</h5>
+          <div class="prow"><span class="k">Statut</span><span>En cours</span></div>
+          <div class="prow"><span class="k">Responsable</span><span>Camille</span></div>
+        </div>
+        <div class="dsec"><h5>Activité</h5>
+          <div class="prow"><span class="k">Historique</span><span>14 modifications</span></div>
+          <div class="sfoot"><button class="b secondary sm"><span class="lbl">Exporter l'historique</span></button></div>
+        </div>
+      </div>
+      <div class="scrim" id="scrim"><div class="dlg" role="dialog" aria-modal="true" aria-labelledby="dt">
+        <h4 id="dt">Supprimer « Projet Atlas » ?</h4>
+        <p>Le projet et ses 14 modifications seront supprimés. Cette action est définitive.</p>
+        <div class="acts"><button class="b secondary" id="cancel">Annuler</button><button class="b danger" id="confirm"><span class="lbl">Supprimer</span></button></div>
+      </div></div>
+    </div>
+    <p class="hint">Jouable : « Enregistrer » et « Actualiser » passent en chargement 2 s ; « Supprimer le projet » ouvre la confirmation (Échap ou « Annuler » la ferme). Fenêtre étroite : la sidebar puis le panneau disparaissent.</p>
+
+    <h3 class="sec">3. Avant (Alfred aujourd'hui) et après (proposition)</h3>
+    <div class="ba">
+      <div class="pane before"><h4>Avant : 32 px, accent, contours</h4>
+        <div class="inline"><button class="b primary">Enregistrer</button><button class="b secondary">Annuler</button><button class="b subtle">Tous les modules</button><button class="b danger">Tout retirer</button></div>
+      </div>
+      <div class="pane"><h4>Après : hauteur de ligne, monochrome, sans contour</h4>
+        <div class="inline"><button class="b primary">Enregistrer</button><button class="b secondary">Annuler</button><button class="b subtle">Tous les modules</button><button class="b danger">Tout retirer</button></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const tk = document.getElementById('tk');
+const icon = '<svg class="ic" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>';
+const spinner = '<svg class="spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M21 12a9 9 0 1 1-6.2-8.6"/></svg>';
+const variants = [['primary','Principale','Enregistrer'],['secondary','Secondaire','Annuler'],['subtle','Discrète','Tous les projets'],['danger','Danger','Supprimer']];
+const btn = (v, label, cls = '', inner) => `<button class="b ${v} ${cls}" ${cls.includes('f-disabled') ? 'disabled' : ''}>${inner ?? `<span class="lbl">${label}</span>`}</button>`;
+document.getElementById('rows').innerHTML = variants.map(([v, name, label]) => `<tr><th>${name}</th>
+  <td>${btn(v, label)}</td><td>${btn(v, label, 'f-hover')}</td><td>${btn(v, label, 'f-focus')}</td><td>${btn(v, label, 'f-disabled')}</td>
+  <td>${btn(v, label, 'pending', spinner + `<span class="lbl">${label}</span>`)}</td>
+  <td>${btn(v, label, '', icon + `<span class="lbl">Ajouter</span>`)}</td>
+  <td>${btn(v, label, 'sm')}</td></tr>`).join('');
+
+const state = { sm: 'yes', primary: 'mono', secondary: 'field', danger: 'solid', loading: 'keep', mode: 'light', density: 'web' };
+function apply() {
+  tk.className = 'tk' + (state.mode === 'dark' ? ' dark' : '') + (state.density === 'desktop' ? ' desktop' : '')
+    + (state.sm === 'no' ? ' no-sm' : '') + (state.primary === 'accent' ? ' p-accent' : '')
+    + (state.secondary === 'outline' ? ' s-outline' : '') + (state.danger === 'soft' ? ' d-soft' : state.danger === 'outline' ? ' d-outline' : '')
+    + (state.loading === 'hide' ? ' l-hide' : '');
+  document.documentElement.dataset.theme = state.mode;
+}
+document.querySelectorAll('.seg').forEach(seg => seg.addEventListener('click', e => {
+  const b = e.target.closest('button'); if (!b) return;
+  seg.querySelectorAll('button').forEach(x => x.setAttribute('aria-pressed', x === b));
+  state[seg.dataset.k] = b.dataset.v; apply();
+}));
+apply();
+
+function pend(el, ms = 2000, done) {
+  if (el.classList.contains('pending')) return;
+  const html = el.innerHTML; const w = el.offsetWidth;
+  el.classList.add('pending'); el.setAttribute('aria-busy', 'true'); el.style.minWidth = w + 'px';
+  const ic = el.querySelector('.ic'); if (ic) ic.outerHTML = spinner; else el.insertAdjacentHTML('afterbegin', spinner);
+  setTimeout(() => { el.innerHTML = html; el.classList.remove('pending'); el.removeAttribute('aria-busy'); el.style.minWidth = ''; done && done(); }, ms);
+}
+document.getElementById('save').onclick = e => pend(e.currentTarget, 2000, () => document.getElementById('saved').textContent = 'Enregistré à l\'instant');
+document.getElementById('refresh').onclick = e => pend(e.currentTarget, 1500);
+const scrim = document.getElementById('scrim');
+document.getElementById('del').onclick = () => { scrim.classList.add('open'); document.getElementById('cancel').focus(); };
+const close = () => { scrim.classList.remove('open'); document.getElementById('del').focus(); };
+document.getElementById('cancel').onclick = close;
+document.getElementById('confirm').onclick = e => pend(e.currentTarget, 1200, close);
+document.addEventListener('keydown', e => { if (e.key === 'Escape' && scrim.classList.contains('open')) close(); });
+</script>
+</body>
+</html>

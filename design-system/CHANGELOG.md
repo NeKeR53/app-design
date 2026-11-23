@@ -4,6 +4,12 @@ Versions selon semver (règle 6 du skill design) : une nouvelle option facultati
 
 ## [Non publié]
 
+### Ajouté
+- `Button` : bouton à texte avec icône facultative au début (D-100, D-106). Variantes `primary` monochrome (D-102), `secondary` par défaut sur fond `--field` (D-103), `subtle`, `danger` en rouge plein (D-104). Tailles `md` et `sm` (D-101). Chargement `isPending` : roue, libellé gardé, largeur fixe (D-105). Options `type`, `form`, `aria-label`, `autoFocus`.
+- `IconButton` : option facultative `isPending` (chargement, par exemple « Actualiser ») (D-107).
+- Tokens `--btn-h-sm` (26 px web, 24 px desktop) et `--danger-fg` (D-101, D-104).
+- Libellé interne `loading` (« Chargement ») dans le dictionnaire `messages`.
+
 ## [0.1.0] — 2026-11-22
 
 Première version de Socle, issue de l'init (décisions D-001 à D-089, dans docs/decisions.md).
