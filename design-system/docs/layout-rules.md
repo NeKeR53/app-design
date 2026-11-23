@@ -23,6 +23,8 @@ Ces règles s'appliquent à toutes les apps. Si aucune règle ne couvre un cas, 
 - **Réglages** : modale sur bureau et tablette, plein écran sur mobile (D-015).
 - **Points de rupture** : 640 et 1024 px (D-013).
 - **Échap** ferme ce qui flotte (overlay, feuille, détail en overlay, modale, menu).
+- **Fenêtre secondaire** : `Dialog`, au-dessus de l'AppShell. Pied calé à droite : « Annuler », puis l'action (D-124). Sur mobile, `sm` et `md` centrées, `lg` et `xl` en plein écran (D-121).
+- **Confirmation** : seulement avant une action irréversible (D-007), par `useConfirm` : titre en question, phrase de conséquence, bouton au verbe de l'action (D-126 à D-128).
 
 ## Gabarits
 

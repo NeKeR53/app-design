@@ -13,7 +13,7 @@ const meta: Meta<typeof Dialog> = {
 export default meta;
 type Story = StoryObj<typeof Dialog>;
 const body = () => within(document.body);
-const wait = (ms: number) => new Promise((r) => setTimeout(r, ms));
+const wait = (ms: number) => new Promise<void>((r) => setTimeout(r, ms));
 
 /* ---------- Exemples (données factices génériques) ---------- */
 
@@ -158,11 +158,12 @@ export const Tailles: Story = {
     for (const [s, w] of Object.entries(widths)) {
       await userEvent.click(within(canvasElement).getByRole("button", { name: `Taille ${s}` }));
       const dialog = await waitFor(() => body().getByRole("dialog"));
-      const box = dialog.parentElement!.getBoundingClientRect();
+      // offsetWidth : mesure sans le zoom d'ouverture (97 %).
+      const width = dialog.parentElement!.offsetWidth;
       // Mobile (D-121) : sm et md sur toute la largeur moins 16 px de marge, lg en plein écran.
-      const vw = document.documentElement.clientWidth;
+      const vw = window.innerWidth;
       const expected = vw < 641 ? (s === "lg" ? vw : vw - 32) : Math.min(w, vw - 64);
-      await expect(Math.round(box.width)).toBe(expected);
+      await expect(width).toBe(expected);
       await userEvent.keyboard("{Escape}");
       await waitFor(() => expect(body().queryByRole("dialog")).toBeNull());
     }
@@ -379,7 +380,7 @@ export const ConfirmationErreur: StoryObj = {
     const alert = await waitFor(() => within(dialog).getByRole("alert"));
     await expect(alert).toHaveTextContent("le serveur ne répond pas");
     await expect(within(dialog).getByRole("button", { name: "Annuler" })).toBeEnabled();
-    await expect(dialog).not.toHaveAttribute("aria-busy");
+    await waitFor(() => expect(dialog).not.toHaveAttribute("aria-busy"));
     await userEvent.click(within(dialog).getByRole("button", { name: "Annuler" }));
     await waitFor(() => expect(c.getByTestId("result")).toHaveTextContent("annulé"));
   },

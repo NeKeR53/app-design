@@ -9,6 +9,9 @@ Versions selon semver (règle 6 du skill design) : une nouvelle option facultati
 - `IconButton` : option facultative `isPending` (chargement, par exemple « Actualiser ») (D-107).
 - Tokens `--btn-h-sm` (26 px web, 24 px desktop) et `--danger-fg` (D-101, D-104).
 - Libellé interne `loading` (« Chargement ») dans le dictionnaire `messages`.
+- `Dialog` : modale avec titre, description, corps et pied d'actions. Tailles `sm`, `md` (défaut), `lg`, `xl` (corps sans marge, pour SettingsPage) (D-120) ; centrée ou plein écran sur mobile (D-121). Échap, × et clic hors ferment, sauf clic hors après une saisie (rebond) et action en cours `isBusy` (D-122). Traits seulement quand le corps défile (D-123). Focus sur le premier champ, rendu au déclencheur (D-125).
+- `useConfirm` : `await confirm({ title, message, confirmLabel, tone, onConfirm })` rend `true` ou `false`. Sans × ni icône (D-126), affichée par `SocleProvider` (D-127), action longue avec chargement et erreur sur place (D-128). Même ordre des boutons partout : « Annuler », puis l'action (D-124).
+- Token `--dlg-pad` (20 px web, 16 px desktop). Libellés internes `close`, `cancel` et `actionFailed`.
 
 ## [0.1.0] — 2026-11-22
 

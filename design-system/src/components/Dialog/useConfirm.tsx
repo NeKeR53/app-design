@@ -2,14 +2,14 @@
  * Confirmation d'une action irréversible (D-007). Spec : Dialog.spec.md.
  * L'hôte est rendu par SocleProvider (D-127) : `useConfirm()` renvoie seulement `confirm`.
  */
-import { createContext, useCallback, useContext, useEffect, useId, useRef, useState, type KeyboardEvent, type ReactNode } from "react";
+import { createContext, useCallback, useContext, useEffect, useId, useRef, useState, type ReactNode } from "react";
 import { Dialog as AriaDialog } from "react-aria-components/Dialog";
 import { Modal, ModalOverlay } from "react-aria-components/Modal";
 import { cx } from "../../lib/cx";
 import { AlertTriangle } from "../../icons";
 import { useMessages } from "../../provider/SocleProvider";
 import { Button } from "../Button/Button";
-import { modalClass, nudge, overlayClass } from "./Dialog";
+import { modalClass, nudge, overlayClass, useAriaBusy } from "./Dialog";
 
 export interface ConfirmOptions {
   /** La question (« Supprimer « Atelier » ? »). */
@@ -54,6 +54,7 @@ export function ConfirmProvider({ children }: { children: ReactNode }) {
   const [error, setError] = useState<string | null>(null);
   const current = useRef<Request | null>(null);
   const busy = useRef(false);
+  const dialogRef = useAriaBusy(pending);
 
   const settle = useCallback((ok: boolean) => {
     const r = current.current;
@@ -105,27 +106,19 @@ export function ConfirmProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const onKeyDown = (e: KeyboardEvent) => {
-    if (e.key !== "Escape" || e.nativeEvent.isComposing) return;
-    e.stopPropagation();
-    e.preventDefault();
-    cancel();
-  };
-
   const o = request?.options;
   return (
     <ConfirmContext.Provider value={confirm}>
       {children}
-      <ModalOverlay isOpen={isOpen} onOpenChange={(open) => !open && cancel()} isDismissable isKeyboardDismissDisabled className={overlayClass("sm")}>
+      <ModalOverlay isOpen={isOpen} onOpenChange={(open) => !open && cancel()} isDismissable className={overlayClass("sm")}>
         <Modal ref={modalRef} className={modalClass("sm")}>
           {o && (
             <AriaDialog
               role="alertdialog"
               aria-labelledby={`${id}-title`}
               {...(o.message ? { "aria-describedby": `${id}-msg` } : {})}
-              {...(pending ? { "aria-busy": true } : {})}
+              ref={dialogRef}
               className="flex min-h-0 flex-1 flex-col outline-none"
-              onKeyDown={onKeyDown}
             >
               <div className="px-(--dlg-pad) pt-(--dlg-pad) pb-2">
                 <h2 id={`${id}-title`} className="m-0 text-lg leading-[1.35] font-semibold [overflow-wrap:anywhere]">

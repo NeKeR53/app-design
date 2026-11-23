@@ -3,7 +3,7 @@
  * Moteur : ModalOverlay, Modal et Dialog de React Aria (D-008) : piège du focus,
  * retour du focus, page figée et reste de l'app masqué aux lecteurs d'écran.
  */
-import { useCallback, useEffect, useId, useLayoutEffect, useRef, useState, type KeyboardEvent, type ReactNode, type RefObject } from "react";
+import { useCallback, useEffect, useId, useLayoutEffect, useRef, useState, type ReactNode, type RefObject } from "react";
 import { Dialog as AriaDialog } from "react-aria-components/Dialog";
 import { Modal, ModalOverlay } from "react-aria-components/Modal";
 import { cx } from "../../lib/cx";
@@ -37,8 +37,8 @@ export interface DialogProps {
 /** Fond : `--scrim`, 32 px de marge ; fondu en 260 ms à l'ouverture, 180 ms à la fermeture (D-014). */
 export function overlayClass(size: DialogSize) {
   return cx(
-    "fixed inset-0 z-50 flex items-center justify-center bg-scrim p-8 max-tablet:p-4",
-    (size === "lg" || size === "xl") && "max-tablet:p-0",
+    "fixed inset-0 z-50 flex items-center justify-center bg-scrim p-8",
+    size === "lg" || size === "xl" ? "max-tablet:p-0" : "max-tablet:p-4",
     "data-entering:animate-[socle-fade_var(--dur-slow)_var(--ease)] data-exiting:animate-[socle-fade_var(--dur-base)_var(--ease)_reverse]",
   );
 }
@@ -93,6 +93,34 @@ function useScrollEdges(open: boolean) {
   return { ref, edges, update };
 }
 
+/** `aria-busy` sur la modale : React Aria ne le transmet pas, on le pose sur l'élément. */
+export function useAriaBusy(busy: boolean) {
+  const ref = useRef<HTMLElement>(null);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    if (busy) el.setAttribute("aria-busy", "true");
+    else el.removeAttribute("aria-busy");
+  });
+  return ref;
+}
+
+/** Vrai pendant la frappe d'Échap : écouté en capture, remis à faux juste après. */
+function useEscapeFlag(open: boolean) {
+  const flag = useRef(false);
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (e: globalThis.KeyboardEvent) => {
+      if (e.key !== "Escape") return;
+      flag.current = true;
+      setTimeout(() => (flag.current = false));
+    };
+    document.addEventListener("keydown", onKey, true);
+    return () => document.removeEventListener("keydown", onKey, true);
+  }, [open]);
+  return flag;
+}
+
 const FIELD = "input:not([type=hidden]):not(:disabled), textarea:not(:disabled), select:not(:disabled), [role=combobox]:not([aria-disabled=true])";
 
 /** Focus à l'ouverture (D-125) : `autoFocus` (déjà posé), sinon le premier champ du corps ; sinon React Aria focalise la modale. */
@@ -129,31 +157,31 @@ export function Dialog({ isOpen, onOpenChange, title, description, children, foo
   // Clic hors (React Aria, `isDismissable`) : refusé si une saisie a commencé ou si une action est en cours (D-122).
   const onOverlayChange = (open: boolean) => {
     if (open) return onOpenChange(true);
+    if (escape.current) return close();
     if (busy.current || edited.current) return nudge(modalRef.current);
     onOpenChange(false);
   };
 
-  // Échap : géré ici pour ne pas passer par le chemin du clic hors (qui refuse après une saisie).
-  const onKeyDown = (e: KeyboardEvent) => {
-    if (e.key !== "Escape" || e.nativeEvent.isComposing) return;
-    e.stopPropagation();
-    e.preventDefault();
-    close();
-  };
+  // Échap passe par React Aria (qui ne ferme que la modale la plus haute, et laisse un menu ou une liste se fermer d'abord).
+  // Le drapeau distingue Échap du clic hors : Échap ferme même après une saisie (D-122).
+  const escape = useEscapeFlag(isOpen);
+  const dialogRef = useAriaBusy(isBusy);
 
+  const markEdited = () => {
+    edited.current = true;
+  };
   const flush = size === "xl";
   return (
-    <ModalOverlay isOpen={isOpen} onOpenChange={onOverlayChange} isDismissable isKeyboardDismissDisabled className={overlayClass(size)}>
+    <ModalOverlay isOpen={isOpen} onOpenChange={onOverlayChange} isDismissable className={overlayClass(size)}>
       <Modal ref={modalRef} className={modalClass(size)}>
         <AriaDialog
           aria-labelledby={`${id}-title`}
           {...(description ? { "aria-describedby": `${id}-desc` } : {})}
-          {...(isBusy ? { "aria-busy": true } : {})}
+          ref={dialogRef}
           className="flex min-h-0 flex-1 flex-col outline-none"
-          onKeyDown={onKeyDown}
-          onInputCapture={() => (edited.current = true)}
-          onChangeCapture={() => (edited.current = true)}
         >
+          {/* Repère la saisie pour le clic hors (D-122). */}
+          <div className="flex min-h-0 flex-1 flex-col" onInputCapture={markEdited} onChangeCapture={markEdited}>
           <header
             className={cx(
               "flex shrink-0 items-start gap-2 pt-(--dlg-pad) pr-[calc(var(--dlg-pad)-8px)] pb-2 pl-(--dlg-pad)",
@@ -195,6 +223,7 @@ export function Dialog({ isOpen, onOpenChange, title, description, children, foo
               {footer}
             </footer>
           )}
+          </div>
         </AriaDialog>
       </Modal>
     </ModalOverlay>
