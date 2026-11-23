@@ -111,15 +111,15 @@ export interface ActionBarProps {
   onDone?: (action: Action) => void;
 }
 
-/** Barre d'actions dessinée d'après des `Action` : icônes, « … », action principale à droite. */
-export function ActionBar({ actions, zone, subject, onError, onDone }: ActionBarProps) {
+/**
+ * Lance une action selon D-115 et D-116 : confirmation, attente pendant la promesse, `onDone` ou `onError`.
+ * Usage interne (ActionBar, actions de ligne des gabarits).
+ */
+export function useActionRunner({ onError, onDone }: { onError?: ActionBarProps["onError"] | undefined; onDone?: ActionBarProps["onDone"] | undefined } = {}) {
   const m = useMessages();
   const confirm = useConfirmFn();
-  const narrow = useMedia("(max-width: 640px)");
   const [pending, setPending] = useState<ReadonlySet<string>>(new Set());
   const running = useRef(new Set<string>());
-  const { primary, icons, menu, danger } = arrangeActions(actions, zone, { narrow });
-
   const run = async (action: Action) => {
     if (action.isDisabled || running.current.has(action.id)) return;
     const request = confirmRequest(action, m.confirmQuestion);
@@ -147,6 +147,15 @@ export function ActionBar({ actions, zone, subject, onError, onDone }: ActionBar
       setPending(new Set(running.current));
     }
   };
+  return { run, pending };
+}
+
+/** Barre d'actions dessinée d'après des `Action` : icônes, « … », action principale à droite. */
+export function ActionBar({ actions, zone, subject, onError, onDone }: ActionBarProps) {
+  const m = useMessages();
+  const narrow = useMedia("(max-width: 640px)");
+  const { run, pending } = useActionRunner({ onError, onDone });
+  const { primary, icons, menu, danger } = arrangeActions(actions, zone, { narrow });
 
   if (zone === "empty") {
     return primary ? (

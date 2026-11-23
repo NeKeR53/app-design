@@ -114,6 +114,21 @@ export interface SocleMessages {
   typeMoreChars: (n: number) => string;
   resultsUnavailable: string;
   noResults: string;
+  /* Valeurs typées (D-170, D-171) */
+  locale: string;
+  yes: string;
+  no: string;
+  justNow: string;
+  emptyValue: string;
+  /* ListPage (D-173 à D-178) */
+  itemCount: (n: string) => string;
+  rangeOf: (first: string, last: string, total: string) => string;
+  shownOf: (n: string, total: string) => string;
+  pagination: string;
+  previousPage: string;
+  nextPage: string;
+  selectedCount: (n: string) => string;
+  clearSelection: string;
 }
 
 const s = (n: number) => (n > 1 ? "s" : "");
@@ -217,4 +232,19 @@ export const frenchMessages: SocleMessages = {
   typeMoreChars: (n) => `Tapez au moins ${n} caractères.`,
   resultsUnavailable: "Résultats indisponibles",
   noResults: "Aucun résultat",
+
+  locale: "fr-FR",
+  yes: "Oui",
+  no: "Non",
+  justNow: "à l'instant",
+  emptyValue: "vide",
+
+  itemCount: (n) => `${n} élément${n === "0" || n === "1" ? "" : "s"}`,
+  rangeOf: (a, b, t) => `${a}–${b} sur ${t}`,
+  shownOf: (n, t) => `${n} sur ${t}`,
+  pagination: "Pagination",
+  previousPage: "Page précédente",
+  nextPage: "Page suivante",
+  selectedCount: (n) => `${n} sélectionné${n === "1" ? "" : "s"}`,
+  clearSelection: "Tout désélectionner",
 };
