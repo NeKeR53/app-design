@@ -74,3 +74,5 @@ Une app décrit ses actions par des données (`Action`) et les passe à `ActionB
 - Une info-bulle se place du côté où il y a de la place ; elle n'est jamais coupée par un bord.
 - Une ombre est réservée à ce qui flotte ; le reste se sépare par des traits.
 - Rayons (D-040) : 8 px pour un contrôle (bouton, bouton-icône, onglet, élément de sidebar ou de menu, champ, info-bulle) ; 4 px pour un petit contrôle placé dans un autre (× d'un onglet, case à cocher) ; 12 px pour un conteneur (carte, menu flottant, modale). Aucun autre rayon.
+- Interrupteur ou case (D-137) : un interrupteur s'applique tout de suite (réglage, ligne du panneau de détail) ; une case fait partie d'un formulaire qu'on envoie.
+- Champs (D-130, D-133) : libellé au-dessus, aide ou erreur en dessous ; la largeur du champ annonce la longueur attendue (`xs` à `lg`), sinon toute la colonne.

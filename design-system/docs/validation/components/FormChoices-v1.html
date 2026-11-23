@@ -1,0 +1,243 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cases, radios, interrupteurs — validation v1</title>
+<style>
+/* ---------- Page de validation ---------- */
+:root{--pg-bg:#f6f6f6;--pg-fg:#1a1a1a;--pg-muted:#5c5c5c;--pg-line:#e2e2e2;--pg-card:#fff;--pg-badge:#fff4d6;--pg-badge-fg:#7a5a00;--pg-reco:#e7f0ff;--pg-reco-fg:#1d4ed8;--pg-ok:#e3f5e9;--pg-ok-fg:#15803d}
+:root[data-theme="dark"]{--pg-bg:#121212;--pg-fg:#ececec;--pg-muted:#9a9a9a;--pg-line:#2c2c2c;--pg-card:#1b1b1b;--pg-badge:#3a2f10;--pg-badge-fg:#f3d27a;--pg-reco:#16233d;--pg-reco-fg:#9cc0ff;--pg-ok:#12301d;--pg-ok-fg:#5cc98a}
+*{box-sizing:border-box}html,body{margin:0}
+body{background:var(--pg-bg);color:var(--pg-fg);font:15px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif}
+.pg{max-width:1180px;margin:0 auto;padding:24px 16px 64px}
+h1{font-size:22px;font-weight:600;margin:0 0 4px;display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.intro{color:var(--pg-muted);margin:0 0 20px}
+.badge{font-size:12px;font-weight:600;letter-spacing:.04em;padding:3px 8px;border-radius:6px;background:var(--pg-badge);color:var(--pg-badge-fg)}
+.badge.ok{background:var(--pg-ok);color:var(--pg-ok-fg)}
+.boxes{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px}
+@media (max-width:760px){.boxes{grid-template-columns:1fr}}
+.box{background:var(--pg-card);border:1px solid var(--pg-line);border-radius:10px;padding:14px 16px;font-size:14px}
+.box h2{font-size:14px;margin:0 0 8px;font-weight:600}.box ul,.box ol{margin:0;padding-left:20px}.box li{margin:5px 0}
+.reco{font-size:11.5px;font-weight:600;padding:1px 6px;border-radius:5px;background:var(--pg-reco);color:var(--pg-reco-fg);margin-left:4px;white-space:nowrap}
+.toolbar{position:sticky;top:0;z-index:100;background:var(--pg-bg);padding:10px 0;border-bottom:1px solid var(--pg-line);margin-bottom:16px;display:flex;flex-wrap:wrap;gap:10px 16px;align-items:center}
+.seg{display:inline-flex;border:1px solid var(--pg-line);border-radius:8px;overflow:hidden;background:var(--pg-card)}
+.seg button{border:0;background:transparent;color:var(--pg-fg);padding:5px 10px;font:inherit;font-size:13px;cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--pg-fg);color:var(--pg-bg)}
+.tlabel{font-size:12px;color:var(--pg-muted);margin-right:6px}
+.hint{margin:8px 0 0;color:var(--pg-muted);font-size:13px}
+code{font:12.5px ui-monospace,"SF Mono",Consolas,monospace}
+
+/* ---------- Tokens T2 (copie de src/tokens) ---------- */
+.tk{--surface:#fff;--surface-side:#f3f3f3;--surface-raised:#fff;--field:#f2f2f2;--hover:#e9e9e9;--selected:#dedede;--line:#e4e4e4;--line-strong:#cfcfcf;--fg:#1a1a1a;--fg-2:#5c5c5c;--fg-3:#6b6b6b;
+  --accent:#1d4ed8;--accent-text:#1d4ed8;--danger:#c62828;--font-sans:-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;
+  --radius-sm:4px;--radius-md:8px;--radius-lg:12px;--shadow-md:0 6px 20px rgb(0 0 0/.10);--icon:16px;--icon-stroke:1.6;--fs-xs:11.5px;--fs-sm:12.5px;--fs-md:14px;--fs-lg:16px;--lh:1.45;--row-h:34px;--pad:16px}
+.tk.dark{--surface:#181818;--surface-side:#222;--surface-raised:#262626;--field:#2a2a2a;--hover:#303030;--selected:#3d3d3d;--line:#333;--line-strong:#4a4a4a;--fg:#ececec;--fg-2:#ababab;--fg-3:#8f8f8f;--accent:#5b8def;--accent-text:#7da4f2;--danger:#f07167;--shadow-md:0 6px 20px rgb(0 0 0/.5)}
+.tk.desktop{--fs-xs:10.5px;--fs-sm:11.5px;--fs-md:13px;--fs-lg:15px;--lh:1.4;--row-h:28px;--pad:12px}
+
+/* ---------- Scène ---------- */
+.stage{border:1px solid var(--pg-line);border-radius:12px;overflow:hidden;background:var(--surface);color:var(--fg);font-family:var(--font-sans);font-size:var(--fs-md);line-height:var(--lh);position:relative}
+.stage *{box-sizing:border-box}.stage button,.stage input{font:inherit;color:inherit}
+.ic{width:var(--icon);height:var(--icon);flex:none;stroke:currentColor;fill:none;stroke-width:var(--icon-stroke);stroke-linecap:round;stroke-linejoin:round}
+.cols{display:grid;grid-template-columns:minmax(0,1fr) var(--detail-w,300px)}
+@media (max-width:860px){.cols{grid-template-columns:1fr}}
+.top{height:44px;display:flex;align-items:center;padding:0 var(--pad);border-bottom:1px solid var(--line);font-weight:600}
+.fp{padding:8px var(--pad) 16px}
+.sec{display:grid;grid-template-columns:200px minmax(0,1fr);gap:24px;padding:20px 0;border-top:1px solid var(--line)}
+.sec:first-child{border-top:0}
+.sec .st{font-weight:600}.sec .sh{color:var(--fg-3);font-size:var(--fs-sm);margin-top:2px}
+@media (max-width:760px){.sec{grid-template-columns:1fr;gap:12px}}
+.fields{display:flex;flex-direction:column;gap:20px;min-width:0}
+.lab{color:var(--fg);font-size:var(--fs-sm);font-weight:500}
+.opt{color:var(--fg-3);font-weight:400}
+.desc{font-size:var(--fs-sm);color:var(--fg-3)}
+.err{font-size:var(--fs-sm);color:var(--danger);display:none}
+.invalid .err{display:block}.invalid .gdesc{display:none}
+/* Groupe */
+fieldset{border:0;margin:0;padding:0;min-width:0}
+legend{padding:0;margin-bottom:6px}
+.grp{display:flex;flex-direction:column;gap:2px}
+.tk.hz .grp.can-h{flex-direction:row;flex-wrap:wrap;gap:2px 20px}
+.gdesc,.err{margin-top:4px}
+/* Choix : case, radio, interrupteur */
+.ch{display:inline-flex;align-items:flex-start;gap:8px;min-height:var(--target,24px);padding:3px 0;cursor:default;user-select:none;max-width:100%}
+.ch input{position:absolute;opacity:0;width:1px;height:1px;margin:0}
+.ch .t{display:flex;flex-direction:column}
+.ch .t small{font-size:var(--fs-sm);color:var(--fg-3)}
+.mk{flex:none;width:16px;height:16px;margin-top:calc((var(--fs-md)*var(--lh) - 16px)/2);border:1px solid var(--line-strong);background:var(--surface);display:inline-grid;place-items:center;transition:background 120ms,border-color 120ms}
+.ch:hover .mk{border-color:var(--fg-3)}
+.cb .mk{border-radius:var(--radius-sm)}
+.cb .mk svg{grid-area:1/1;width:12px;height:12px;stroke:var(--on);stroke-width:2.4;fill:none;opacity:0}
+.cb input:checked+.mk,.cb.mixed .mk{background:var(--on-bg);border-color:var(--on-bg)}
+.cb input:checked+.mk svg.v{opacity:1}.cb.mixed .mk svg.m{opacity:1}.cb.mixed .mk svg.v{opacity:0}
+.rd .mk{border-radius:50%}
+.rd .mk::after{content:"";width:6px;height:6px;border-radius:50%;background:var(--on);opacity:0}
+.rd input:checked+.mk{background:var(--on-bg);border-color:var(--on-bg)}
+.rd input:checked+.mk::after{opacity:1}
+.ch input:focus-visible+.mk,.sw input:focus-visible+.trk{outline:2px solid var(--accent);outline-offset:1px}
+.tk{--on-bg:var(--accent);--on:#fff}
+.tk.dark{--on:#0b1630}
+.tk.mono{--on-bg:var(--fg);--on:var(--surface)}
+.invalid .mk{border-color:var(--danger)}
+.dis{opacity:.4;pointer-events:none}
+/* Interrupteur : 30 × 18, comme le panneau de détail */
+.sw{display:inline-flex;align-items:flex-start;gap:8px;padding:3px 0;cursor:default;user-select:none}
+.sw .t{display:flex;flex-direction:column}.sw .t small{font-size:var(--fs-sm);color:var(--fg-3)}
+.sw input{position:absolute;opacity:0;width:1px;height:1px;margin:0}
+.trk{flex:none;position:relative;width:30px;height:18px;border-radius:999px;background:var(--selected);margin-top:calc((var(--fs-md)*var(--lh) - 18px)/2);transition:background 120ms}
+.tk.big .trk{width:36px;height:20px;margin-top:calc((var(--fs-md)*var(--lh) - 20px)/2)}
+.trk::after{content:"";position:absolute;top:2px;left:2px;width:14px;height:14px;border-radius:50%;background:#fff;box-shadow:0 1px 2px rgb(0 0 0/.2);transition:transform 120ms}
+.tk.big .trk::after{width:16px;height:16px}
+.sw input:checked+.trk{background:var(--accent)}
+.sw input:checked+.trk::after{transform:translateX(12px)}
+.tk.big .sw input:checked+.trk::after{transform:translateX(16px)}
+.tk.sw-right .sw.form{flex-direction:row-reverse;justify-content:space-between;width:100%;max-width:360px}
+/* Champ texte (repris de la page 1) */
+.f{display:flex;flex-direction:column;gap:4px;min-width:0}
+.box-f{display:flex;align-items:center;min-height:var(--row-h);border-radius:var(--radius-md);background:var(--surface);border:1px solid var(--line-strong)}
+.box-f input{flex:1;min-width:0;border:0;background:transparent;outline:none;padding:0 10px;height:calc(var(--row-h) - 2px)}
+.box-f:focus-within{outline:2px solid var(--accent);outline-offset:1px}
+.row2{display:flex;gap:12px;flex-wrap:wrap}
+/* Panneau de détail */
+.det{border-left:1px solid var(--line);background:var(--surface)}
+.dsec{padding:12px var(--pad) 10px;border-bottom:1px solid var(--line)}
+.dsec h4{margin:0 0 4px;font-size:var(--fs-sm);color:var(--fg-3);font-weight:400}
+.prow{display:flex;align-items:flex-start;gap:8px;padding:4px 0}
+.prow dt{width:96px;color:var(--fg-2);flex:none}.prow dd{margin:0;flex:1}
+.prow .sw{padding:0}
+/* Ligne de réglage */
+.srow{display:flex;align-items:center;gap:16px;padding:10px 0;border-top:1px solid var(--line)}
+.srow .t{flex:1}.srow .t small{display:block;color:var(--fg-3);font-size:var(--fs-sm)}
+</style>
+</head>
+<body>
+<div class="pg">
+  <h1>Champs de formulaire — 2/2 : cases, radios, interrupteurs <span class="badge ok" id="status">VALIDÉ le 2026-11-23</span></h1>
+  <p class="intro">Composants : <code>Checkbox</code>, <code>CheckboxGroup</code>, <code>RadioGroup</code>, <code>Switch</code>, <code>Fieldset</code>. Remplacent dans Alfred <code>CheckboxControl</code>, <code>RadioControl</code>, <code>SwitchControl</code>, <code>Fieldset</code>. Le <code>Switch</code> remplace aussi l'interrupteur interne de <code>PropertyRow</code> (D-059), sans changer son rendu. Version mineure. Questions tranchées selon les recommandations, par délégation de l'utilisateur (2026-11-23).</p>
+
+  <div class="boxes">
+    <div class="box">
+      <h2>Déjà décidé</h2>
+      <ul>
+        <li>Rayon 4 px pour une case à cocher (D-040).</li>
+        <li>Libellé de groupe au-dessus, aide ou erreur en dessous (D-022) ; textes au style des champs (D-130).</li>
+        <li>Erreur au moment de D-132 : en quittant le groupe modifié, ou à l'envoi.</li>
+        <li>Un réglage s'applique tout de suite (D-007) ; une ligne du panneau de détail a un interrupteur à droite (D-059).</li>
+        <li>Désactivé : opacité 40 % ; focus : anneau <code>--accent</code> de 2 px ; animation <code>--dur-fast</code> (D-014).</li>
+      </ul>
+    </div>
+    <div class="box">
+      <h2>Tranché le 2026-11-23 (par délégation)</h2>
+      <ol>
+        <li><b>Case et radio cochées</b> : A fond <code>--accent</code>, coche ou point clair ; B fond <code>--fg</code> (monochrome). <span class="reco">validé A (D-135)</span> — l'accent porte l'état choisi, comme l'interrupteur actif (principes : « l'accent ne porte que du sens »).</li>
+        <li><b>Taille de l'interrupteur</b> : A une seule taille, 30 × 18 px, celle du panneau de détail ; B 36 × 20 dans un formulaire, 30 × 18 dans une ligne. <span class="reco">validé A (D-136)</span> — un seul interrupteur, partout le même.</li>
+        <li><b>Libellé de l'interrupteur</b> : A dans un formulaire, interrupteur à gauche et libellé à droite, comme une case ; dans une ligne (réglage, détail), libellé masqué et interrupteur calé à droite ; B toujours libellé à gauche, interrupteur à droite. <span class="reco">validé A (D-136)</span> — même lecture que les cases dans un formulaire ; la ligne donne déjà le libellé.</li>
+        <li><b>Interrupteur ou case</b> : l'interrupteur s'applique tout de suite (D-007) ; la case fait partie d'un formulaire qu'on envoie. <span class="reco">validé (D-137)</span> — l'utilisateur sait si son geste agit tout de suite.</li>
+        <li><b>Sens des groupes</b> : vertical par défaut ; option horizontale pour 2 ou 3 options courtes, qui repasse à la ligne. <span class="reco">validé (D-138)</span> — la liste verticale se lit d'un coup d'œil.</li>
+        <li><b>Fieldset</b> : A <code>RadioGroup</code> et <code>CheckboxGroup</code> portent leur propre libellé ; <code>Fieldset</code> regroupe des champs différents (une adresse) ; B un seul <code>Fieldset</code> enveloppe tout. <span class="reco">validé A (D-138)</span> — le rôle accessible du groupe (<code>radiogroup</code>) vient avec le composant.</li>
+      </ol>
+      <p class="hint">Hors lot : le contrôle segmenté d'Alfred (<code>ChoiceGroup appearance="segmented"</code>) est un composant à part, à proposer séparément.</p>
+    </div>
+  </div>
+
+  <div class="toolbar">
+    <span><span class="tlabel">Q1 Cochée</span><span class="seg" data-k="col"><button aria-pressed="true" data-v="acc">A accent</button><button aria-pressed="false" data-v="mono">B monochrome</button></span></span>
+    <span><span class="tlabel">Q2 Taille</span><span class="seg" data-k="size"><button aria-pressed="true" data-v="one">A 30×18</button><button aria-pressed="false" data-v="big">B 36×20 en formulaire</button></span></span>
+    <span><span class="tlabel">Q3 Libellé</span><span class="seg" data-k="swpos"><button aria-pressed="true" data-v="left">A à droite</button><button aria-pressed="false" data-v="right">B à gauche</button></span></span>
+    <span><span class="tlabel">Q5 Sens</span><span class="seg" data-k="dir"><button aria-pressed="true" data-v="v">Vertical</button><button aria-pressed="false" data-v="h">Horizontal</button></span></span>
+    <span><span class="tlabel">États</span><span class="seg" data-k="st"><button aria-pressed="true" data-v="live">Réel</button><button aria-pressed="false" data-v="err">Erreurs</button><button aria-pressed="false" data-v="dis">Désactivés</button></span></span>
+    <span><span class="tlabel">Mode</span><span class="seg" data-k="mode"><button aria-pressed="true" data-v="light">Clair</button><button aria-pressed="false" data-v="dark">Sombre</button></span></span>
+    <span><span class="tlabel">Densité</span><span class="seg" data-k="density"><button aria-pressed="true" data-v="web">Web</button><button aria-pressed="false" data-v="desktop">Desktop</button></span></span>
+  </div>
+
+  <div class="stage tk" id="app">
+    <div class="top">Nouvelle commande</div>
+    <div class="cols">
+      <form class="fp" id="form" novalidate>
+        <div class="sec">
+          <div><div class="st">Livraison</div><div class="sh">Où et comment livrer.</div></div>
+          <div class="fields">
+            <fieldset class="g" id="fs-addr">
+              <legend class="lab">Adresse de livraison</legend>
+              <div class="fields" style="gap:12px">
+                <div class="f"><label class="lab" for="a1">Rue</label><div class="box-f"><input id="a1" value="12 rue des Lilas"></div></div>
+                <div class="row2"><div class="f" style="width:96px"><label class="lab" for="a2">Code postal</label><div class="box-f"><input id="a2" value="69003"></div></div>
+                <div class="f" style="width:240px"><label class="lab" for="a3">Ville</label><div class="box-f"><input id="a3" value="Lyon"></div></div></div>
+              </div>
+            </fieldset>
+            <div class="g" role="radiogroup" aria-labelledby="l-mode" id="g-mode" data-req>
+              <div class="lab" id="l-mode" style="margin-bottom:6px">Mode de livraison</div>
+              <div class="grp can-h">
+                <label class="ch rd"><input type="radio" name="mode"><span class="mk"></span><span class="t">Standard<small>3 à 5 jours ouvrés</small></span></label>
+                <label class="ch rd"><input type="radio" name="mode"><span class="mk"></span><span class="t">Express<small>Le lendemain avant 13 h</small></span></label>
+                <label class="ch rd"><input type="radio" name="mode" disabled><span class="mk"></span><span class="t" style="opacity:.4">Retrait en magasin<small>Indisponible pour cette adresse</small></span></label>
+              </div>
+              <div class="gdesc desc">Le délai court à partir de la validation.</div>
+              <div class="err" role="alert">Choisissez un mode de livraison.</div>
+            </div>
+          </div>
+        </div>
+        <div class="sec">
+          <div><div class="st">Avis</div><div class="sh">Messages envoyés au client.</div></div>
+          <div class="fields">
+            <fieldset class="g" id="g-notif" data-min>
+              <legend class="lab">Prévenir le client <span class="opt">(facultatif)</span></legend>
+              <label class="ch cb mixed" id="all"><input type="checkbox"><span class="mk"><svg class="v" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg><svg class="m" viewBox="0 0 24 24"><path d="M5 12h14"/></svg></span><span class="t">Tous les avis</span></label>
+              <div class="grp can-h" style="padding-left:24px">
+                <label class="ch cb"><input type="checkbox" checked data-n><span class="mk"><svg class="v" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg></span><span class="t">À l'expédition</span></label>
+                <label class="ch cb"><input type="checkbox" data-n><span class="mk"><svg class="v" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg></span><span class="t">À la livraison</span></label>
+                <label class="ch cb"><input type="checkbox" data-n><span class="mk"><svg class="v" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg></span><span class="t">En cas de retard</span></label>
+              </div>
+              <div class="gdesc desc">Par e-mail, à l'adresse du client.</div>
+            </fieldset>
+            <div class="g" id="g-cgv" data-req>
+              <label class="ch cb"><input type="checkbox" id="cgv"><span class="mk"><svg class="v" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg></span><span class="t">Le client a accepté les conditions de vente</span></label>
+              <div class="err" role="alert">Cochez cette case pour continuer.</div>
+            </div>
+            <div class="g"><label class="sw form"><input type="checkbox" role="switch" checked><span class="trk"></span><span class="t">Facture en PDF jointe<small>S'applique tout de suite à cette commande (D-137).</small></span></label></div>
+          </div>
+        </div>
+        <div style="display:flex;justify-content:flex-end;gap:8px;padding-top:12px;border-top:1px solid var(--line)"><span id="save" class="desc" style="margin-right:auto;align-self:center">Non enregistré</span><button type="submit" style="height:var(--row-h);padding:0 12px;border:0;border-radius:8px;background:var(--accent);color:#fff">Valider la commande</button></div>
+        <div class="sec" style="margin-top:16px">
+          <div><div class="st">Ligne de réglage</div><div class="sh">SettingsPage : libellé à gauche, contrôle à droite.</div></div>
+          <div>
+            <div class="srow"><div class="t">Rappels par e-mail<small>Un e-mail la veille de chaque échéance.</small></div><label class="sw"><input type="checkbox" role="switch" aria-label="Rappels par e-mail" checked><span class="trk"></span></label></div>
+            <div class="srow"><div class="t">Mode avion<small>Coupe la synchronisation.</small></div><label class="sw"><input type="checkbox" role="switch" aria-label="Mode avion"><span class="trk"></span></label></div>
+          </div>
+        </div>
+      </form>
+      <aside class="det" aria-label="Détail">
+        <div class="dsec"><h4>Partage</h4>
+          <dl style="margin:0">
+            <div class="prow"><dt>Lien public</dt><dd id="pub">Activé</dd><label class="sw"><input type="checkbox" role="switch" aria-label="Lien public" checked id="pubsw"><span class="trk"></span></label></div>
+            <div class="prow"><dt>Commentaires</dt><dd id="com">Désactivé</dd><label class="sw"><input type="checkbox" role="switch" aria-label="Commentaires" id="comsw"><span class="trk"></span></label></div>
+          </dl>
+        </div>
+        <p class="desc" style="padding:0 var(--pad)">PropertyRow <code>action type "switch"</code> : même composant <code>Switch</code>, libellé masqué, nom accessible repris de la ligne.</p>
+      </aside>
+    </div>
+  </div>
+  <p class="hint">À essayer : « Valider la commande » sans rien choisir (erreurs du groupe radio et de la case obligatoire, focus sur la première) ; « Tous les avis » coche ou décoche les trois, et passe à l'état mixte ; flèches dans le groupe radio ; Espace sur un interrupteur.</p>
+</div>
+<script>
+(function(){
+  var state={col:'acc',size:'one',swpos:'left',dir:'v',st:'live',mode:'light',density:'web'};
+  var app=document.getElementById('app');
+  var kids=[].slice.call(document.querySelectorAll('[data-n]')),all=document.getElementById('all'),allIn=all.querySelector('input');
+  function syncAll(){var n=kids.filter(function(k){return k.checked}).length;allIn.checked=n===kids.length;all.classList.toggle('mixed',n>0&&n<kids.length);allIn.indeterminate=n>0&&n<kids.length;}
+  allIn.addEventListener('change',function(){kids.forEach(function(k){k.checked=allIn.checked});syncAll();});
+  kids.forEach(function(k){k.addEventListener('change',syncAll)});syncAll();
+  function valid(g){if(g.id==='g-mode')return !!g.querySelector('input:checked');if(g.id==='g-cgv')return document.getElementById('cgv').checked;return true;}
+  document.querySelectorAll('[data-req] input').forEach(function(i){i.addEventListener('change',function(){var g=i.closest('[data-req]');if(g.classList.contains('invalid'))g.classList.toggle('invalid',!valid(g));});});
+  document.getElementById('form').addEventListener('submit',function(e){e.preventDefault();var first=null;document.querySelectorAll('#app [data-req]').forEach(function(g){var ok=valid(g);g.classList.toggle('invalid',!ok);if(!ok&&!first)first=g;});
+    if(first){first.querySelector('input:not(:disabled)').focus();document.getElementById('save').textContent='Corrigez les champs signalés';}else document.getElementById('save').textContent='Commande validée';});
+  [['pubsw','pub'],['comsw','com']].forEach(function(p){var s=document.getElementById(p[0]);s.addEventListener('change',function(){document.getElementById(p[1]).textContent=s.checked?'Activé':'Désactivé';});});
+  function apply(){app.classList.toggle('mono',state.col==='mono');app.classList.toggle('big',state.size==='big');app.classList.toggle('sw-right',state.swpos==='right');app.classList.toggle('hz',state.dir==='h');
+    app.classList.toggle('dark',state.mode==='dark');app.classList.toggle('desktop',state.density==='desktop');document.documentElement.setAttribute('data-theme',state.mode);
+    document.querySelectorAll('#app .g').forEach(function(g){g.classList.toggle('dis',state.st==='dis');if(state.st==='err'&&g.hasAttribute('data-req'))g.classList.add('invalid');if(state.st!=='err')g.classList.remove('invalid');});}
+  document.querySelectorAll('.seg').forEach(function(seg){seg.addEventListener('click',function(e){var b=e.target.closest('button');if(!b)return;state[seg.dataset.k]=b.dataset.v;seg.querySelectorAll('button').forEach(function(x){x.setAttribute('aria-pressed',x===b)});apply();});});
+  apply();
+})();
+</script>
+</body>
+</html>

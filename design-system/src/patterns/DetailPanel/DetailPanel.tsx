@@ -1,16 +1,16 @@
 /*
  * Contenu du panneau de détail d'AppShell. Spec : DetailPanel.spec.md.
- * Décisions : D-057 à D-061. Switch adapté du starter Tailwind de React Aria (Apache 2.0).
+ * Décisions : D-057 à D-061. Interrupteur : composant Switch (D-136).
  */
 import { Children, createContext, isValidElement, useContext, useId, type ReactNode } from "react";
 import { Button } from "react-aria-components/Button";
-import { Switch } from "react-aria-components/Switch";
 import { useMessages, useStoredState } from "../../provider/SocleProvider";
 import { buttonReset, cx, focusRing } from "../../lib/cx";
 import { ChevronDown, ChevronRight } from "../../icons";
 import { Menu } from "../../components/Menu/Menu";
 import { Tooltip } from "../../components/Tooltip/Tooltip";
 import { OverflowTooltip } from "../../components/Tooltip/OverflowTooltip";
+import { Switch } from "../../components/Switch/Switch";
 
 /** Une action à droite, parmi trois types (D-059). */
 export type PropertyAction =
@@ -94,10 +94,8 @@ function Action({ action, label }: { action: PropertyAction; label: string }) {
     );
   if (action.type === "switch")
     return (
-      <Switch isSelected={action.isSelected} onChange={action.onChange} aria-label={label} className={cx("group flex cursor-default items-center", focusRing, "rounded-full")}>
-        <span className="relative h-[18px] w-[30px] rounded-full bg-selected transition-colors duration-[var(--dur-fast)] group-data-selected:bg-accent">
-          <span className="absolute top-[2px] left-[2px] size-[14px] rounded-full bg-white shadow-sm transition-transform duration-[var(--dur-fast)] group-data-selected:translate-x-3" />
-        </span>
+      <Switch hideLabel isSelected={action.isSelected} onChange={action.onChange}>
+        {label}
       </Switch>
     );
   const button = (

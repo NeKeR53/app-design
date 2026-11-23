@@ -80,6 +80,8 @@ Uniquement dans le slot `detail` d'AppShell.
 ## Composition
 Contient `IconButton`, `Menu`, `Switch` (à spécifier), `Button` et `Tooltip`.
 
+Contient `IconButton`, `Menu`, `Switch` (D-136), `Button` (à spécifier) et `Tooltip`.
+
 ## Décisions
 D-007, D-015, D-018, D-025, D-026, D-040, D-047, D-057, D-058, D-059, D-060, D-061
 

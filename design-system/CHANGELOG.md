@@ -36,6 +36,17 @@ Versions selon semver (règle 6 du skill design) : une nouvelle option facultati
 - `useConfirm` : `await confirm({ title, message, confirmLabel, tone, onConfirm })` rend `true` ou `false`. Sans × ni icône (D-126), affichée par `SocleProvider` (D-127), action longue avec chargement et erreur sur place (D-128). Même ordre des boutons partout : « Annuler », puis l'action (D-124).
 - Token `--dlg-pad` (20 px web, 16 px desktop). Libellés internes `close`, `cancel` et `actionFailed`.
 
+- Champs de formulaire (D-130 à D-138) : `TextField`, `TextArea`, `Select`, `Checkbox`, `CheckboxGroup`, `RadioGroup`, `Switch`, `Fieldset`. Libellé au-dessus, aide ou erreur en dessous (D-022) ; cadre `--surface` et bord `--line-strong` (D-130) ; lecture seule en cadre gris avec cadenas (D-131) ; vérification par le composant (`isRequired`, `validate`), affichée en quittant un champ modifié ou à l'envoi, et erreur imposée par l'app (`error`) (D-132) ; cinq largeurs `width` et `TextArea` qui grandit de 3 à 10 lignes (D-133) ; `Select` en liste flottante au style du Menu (D-134).
+- Anatomie commune interne `Field` (non exportée), reprise par `ComboBox`.
+- Libellés du dictionnaire : `optional`, `requiredField`, `requiredChoice`, `requiredCheckbox`, `requiredGroup`, `invalidEmail`, `invalidUrl`, `invalidValue`, `choose`, `charCount` (D-089).
+- Règles de placement : interrupteur ou case (D-137), champs (docs/layout-rules.md).
+
+### Modifié
+- `PropertyRow` (`action type "switch"`) utilise le composant `Switch` (D-136). Même rendu, même API.
+
+### Corrigé
+- Interrupteur du panneau de détail : la pastille blanche n'apparaissait pas (`bg-white` n'existe pas dans le thème Socle).
+
 ## [0.1.0] — 2026-11-22
 
 Première version de Socle, issue de l'init (décisions D-001 à D-089, dans docs/decisions.md).

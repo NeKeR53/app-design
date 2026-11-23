@@ -1126,3 +1126,81 @@
 - Raison : l'utilisateur voit le résultat là où il a agi, sans dépendre des notifications.
 - Options écartées : fermer tout de suite et montrer la suite par une notification.
 - Validation : docs/validation/components/Dialog-v1.html
+
+## D-130 — Champs : surface et bord marqué ; libellé, aide et erreur
+- Date : 2026-11-23
+- Portée : Field (TextField, TextArea, Select, ComboBox)
+- Décision :
+  - Le cadre d'un champ a le fond `--surface` et un bord de 1 px `--line-strong` ; au survol, le bord passe en `--fg-3` ; au focus, anneau `--accent` de 2 px (comme la barre de recherche, D-073). En erreur, le bord passe en `--danger`.
+  - Le libellé est en `--fs-sm`, `--fw-medium`, `--fg`. L'aide est en `--fs-sm`, `--fg-3`. L'erreur est en `--fs-sm`, `--danger`, et prend la place de l'aide : une seule ligne sous le champ.
+- Raison : un champ se distingue d'un bouton secondaire (fond `--field`) et garde la forme de la barre de recherche ; un libellé net mais discret.
+- Options écartées : fond `--field` sans bord (ressemble à un bouton) ; fond `--field` et bord `--line` (contraste du bord sous 3:1) ; libellé `--fs-md` en `--fg-2` ; aide gardée sous l'erreur.
+- Validation : docs/validation/components/FormFields-v1.html
+
+## D-131 — Champs : lecture seule en cadre gris, avec cadenas
+- Date : 2026-11-23
+- Portée : Field (TextField, TextArea, Select, ComboBox)
+- Décision : un champ en lecture seule garde son cadre, avec le fond `--surface-side`, le bord `--line` et un cadenas de 14 px en `--fg-3` à droite. Le texte reste en `--fg` et se sélectionne. Il prend le focus, sans anneau de modification, et n'a pas d'état de survol.
+- Raison : on voit que c'est un champ figé, et on peut copier sa valeur.
+- Options écartées : texte nu sans cadre ; bord en pointillé.
+- Validation : docs/validation/components/FormFields-v1.html
+
+## D-132 — Champs : le composant vérifie, au moment fixé par D-022
+- Date : 2026-11-23
+- Portée : Field (TextField, TextArea, Select, ComboBox)
+- Décision : un champ accepte `isRequired` et `validate`, et vérifie seul. L'erreur s'affiche quand on quitte un champ qu'on a modifié, ou à l'envoi du formulaire ; jamais pendant la frappe. Elle se met à jour quand on quitte à nouveau le champ. À l'envoi, le focus va au premier champ en erreur. L'app peut aussi imposer une erreur (option `error`, par exemple une réponse du serveur) ; elle s'affiche tout de suite. Un champ obligatoire vide reçoit le message « Ce champ est obligatoire. » du dictionnaire (D-089). Précise D-022 : un champ quitté sans modification n'affiche pas d'erreur avant l'envoi.
+- Raison : la règle de D-022 est écrite une fois, dans Socle, au lieu d'une fois par app.
+- Options écartées : l'app seule passe le message d'erreur.
+- Validation : docs/validation/components/FormFields-v1.html
+
+## D-133 — Champs : cinq largeurs ; TextArea qui grandit
+- Date : 2026-11-23
+- Portée : Field (TextField, TextArea, Select, ComboBox)
+- Décision :
+  - Option `width` : `xs` 96 px (code, nombre), `sm` 160 px, `md` 240 px, `lg` 360 px, `full` (défaut : toute la largeur du conteneur). Un champ n'est jamais plus large que son conteneur.
+  - `TextArea` commence à 3 lignes, grandit avec le texte jusqu'à 10 lignes, puis défile. Les deux bornes sont réglables par l'app (`minRows`, `maxRows`). Pas de poignée de redimensionnement.
+- Raison : la largeur annonce la longueur attendue ; pas de défilement interne pour un texte court, pas de poignée à viser.
+- Options écartées : champs toujours pleine largeur ; TextArea de hauteur fixe avec poignée.
+- Validation : docs/validation/components/FormFields-v1.html
+
+## D-134 — Select : liste flottante au style du Menu
+- Date : 2026-11-23
+- Portée : Select (et la liste de ComboBox)
+- Décision : `Select` est un bouton au style du champ (D-130), avec la valeur à gauche et un chevron à droite, qui ouvre une liste flottante React Aria au style du Menu : rayon 12 px, éléments de `--row-h`, élément mis en avant en `--hover`, coche à droite sur la valeur choisie (D-050). La liste est au moins aussi large que le bouton. Taper des lettres saute à l'option qui commence par elles.
+- Raison : même rendu sur macOS, Windows et web ; même liste que ComboBox.
+- Options écartées : `<select>` natif (rendu propre à chaque système, peu stylable).
+- Validation : docs/validation/components/FormFields-v1.html
+
+## D-135 — Case et bouton radio : accent quand c'est coché
+- Date : 2026-11-23
+- Portée : Checkbox, CheckboxGroup, RadioGroup
+- Décision : une case fait 16 px, rayon 4 px (D-040) ; un bouton radio fait 16 px, rond. Non coché : fond `--surface`, bord 1 px `--line-strong` (`--fg-3` au survol, `--danger` en erreur). Coché : fond et bord `--accent`, coche (ou point de 6 px) en `--accent-fg`. État mixte d'une case : un trait à la place de la coche. Le libellé est à droite, en `--fs-md`, `--fg`, avec une description facultative en dessous en `--fs-sm`, `--fg-3` ; un clic sur le libellé coche.
+- Raison : l'accent porte l'état choisi, comme l'interrupteur actif ; le principe « l'accent ne porte que du sens » le permet.
+- Options écartées : fond `--fg` (monochrome).
+- Validation : docs/validation/components/FormChoices-v1.html — par délégation de l'utilisateur, 2026-11-23.
+
+## D-136 — Interrupteur : une seule taille ; libellé selon le contexte
+- Date : 2026-11-23
+- Portée : Switch, PropertyRow, SettingsPage
+- Décision : l'interrupteur fait 30 × 18 px, rond, partout (celui du panneau de détail). Éteint : fond `--selected` ; allumé : fond `--accent` ; pastille blanche de 14 px qui glisse en `--dur-fast`. Dans un formulaire, l'interrupteur est à gauche et son libellé à droite, comme une case. Dans une ligne (ligne de réglage, `PropertyRow`), le libellé est masqué et l'interrupteur calé à droite ; son nom accessible reprend le libellé de la ligne. `PropertyRow` (`action type "switch"`) utilise le composant `Switch`, sans changer son rendu.
+- Raison : un seul interrupteur, partout le même ; la ligne donne déjà le libellé.
+- Options écartées : 36 × 20 px dans un formulaire ; libellé toujours à gauche.
+- Validation : docs/validation/components/FormChoices-v1.html — par délégation de l'utilisateur, 2026-11-23.
+
+## D-137 — Interrupteur ou case : selon le moment où ça s'applique
+- Date : 2026-11-23
+- Portée : Switch, Checkbox
+- Décision : un interrupteur s'applique tout de suite (D-007) : réglage, ligne du panneau de détail. Une case fait partie d'un formulaire qu'on envoie, ou d'une sélection (lignes d'un tableau). On ne met jamais un interrupteur dans un formulaire qui a un bouton d'envoi pour une valeur qui attend cet envoi.
+- Raison : l'utilisateur sait si son geste agit tout de suite.
+- Options écartées : laisser le choix à l'app.
+- Validation : docs/validation/components/FormChoices-v1.html — par délégation de l'utilisateur, 2026-11-23.
+
+## D-138 — Groupes de choix et Fieldset
+- Date : 2026-11-23
+- Portée : CheckboxGroup, RadioGroup, Fieldset
+- Décision :
+  - `RadioGroup` et `CheckboxGroup` portent leur propre libellé (au style de D-130), leurs options, puis l'aide ou l'erreur du groupe. Les options sont l'une sous l'autre par défaut, avec 4 px d'écart ; l'option `orientation="horizontal"` les met côte à côte (20 px d'écart), avec retour à la ligne, pour 2 ou 3 options courtes.
+  - `Fieldset` regroupe des champs différents qui forment un tout (une adresse) : légende au style d'un libellé, champs avec 12 px d'écart, aide ou erreur du groupe en dessous. Il n'enveloppe pas un `RadioGroup` ou un `CheckboxGroup` seul.
+- Raison : le rôle accessible du groupe (`radiogroup`, `group`) vient avec le composant ; une liste verticale se lit d'un coup d'œil.
+- Options écartées : un seul `Fieldset` pour tous les groupes.
+- Validation : docs/validation/components/FormChoices-v1.html — par délégation de l'utilisateur, 2026-11-23.
