@@ -24,6 +24,23 @@ Ces règles s'appliquent à toutes les apps. Si aucune règle ne couvre un cas, 
 - **Points de rupture** : 640 et 1024 px (D-013).
 - **Échap** ferme ce qui flotte (overlay, feuille, détail en overlay, modale, menu).
 
+## Actions (D-111)
+
+Une app décrit ses actions par des données (`Action`) et les passe à `ActionBar` avec la zone. La forme suit la zone, jamais la page.
+
+| Zone | Où | Action principale | Icônes visibles | Reste |
+|---|---|---|---|---|
+| `topbar` | `actions` d'AppShell | Première icône (D-112) | 3 | « … » |
+| `header` | En-tête de ListPage, DetailPage | Bouton à texte, à droite | 3 | « … » |
+| `toolbar` | Barre d'outils (sélection) | Bouton à texte, à droite | 3 | « … » |
+| `section` | Titre de section | Bouton secondaire `sm` (D-113) | 2 | « … » |
+| `row` | Ligne de Table, List | Sans effet | 1 (D-114) | « … » |
+| `empty` | État vide | Bouton à texte, seul | 0 | rien |
+
+- Ordre : icônes, « … », action principale à droite.
+- Action `danger` : dans « … », en dernier, après un trait, confirmée (D-115).
+- Sous 640 px : les icônes de `topbar`, `header` et `toolbar` passent dans « … » (D-117).
+
 ## Gabarits
 
 ### ListPage
