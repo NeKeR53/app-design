@@ -78,8 +78,7 @@ Texte `--fs-md` (titre) et `--fs-sm` (texte) selon la densité. Marges 10 px × 
 
 ## Accessibilité
 - Région : repère `region`, nommée « Notifications ».
-- Chaque toast a le rôle `alertdialog`, nommé par son titre et décrit par son texte ; le ton est annoncé (« Succès », « Alerte »…, D-152).
-- Annonce : poli (`status`) pour succès, info et alerte ; immédiat (`alert`) pour `danger`.
+- Chaque toast a le rôle `alertdialog` (non modal), nommé par son titre et décrit par son texte ; son contenu est annoncé dès l'apparition (`role="alert"`, React Aria). Le ton est lu avant le titre (« Succès », « Alerte »…, D-152).
 - La croix et l'action font 24 px au moins ; contrastes AA sur `--surface-raised`.
 
 ## Taille d'écran
