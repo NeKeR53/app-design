@@ -4,6 +4,15 @@ Versions selon semver (règle 6 du skill design) : une nouvelle option facultati
 
 ## [Non publié]
 
+### Ajouté — Markdown et MarkdownEditor (D-300 à D-309)
+- Deux sous-entrées, avec des dépendances facultatives (D-300) : `socle-ui/markdown` (`Markdown`) et `socle-ui/markdown-editor` (`MarkdownEditor`). `react-markdown`, `remark-gfm`, `@codemirror/state`, `@codemirror/view`, `@codemirror/commands`, `@codemirror/language`, `@codemirror/lang-markdown` et `@lezer/highlight` sont des peer dependencies facultatives : une app les installe seulement si elle importe ces sous-entrées. `socle-ui` reste l'entrée de tout le reste ; `scripts/check.js` et `socle-ui/eslint-config` autorisent ces deux sous-entrées.
+- `Markdown` : rendu de GFM avec la typographie de Socle (D-301) ; `headingLevel` (D-302) ; liens en `Link`, `onLinkPress` qui annule la navigation, adresses dangereuses retirées, HTML ignoré, images seulement par `renderImage` (D-303) ; blocs de code en `Code` avec « Copier le bloc », `renderCode`, tableaux statiques au style de `Table`, cases de tâches statiques (D-304).
+- `MarkdownEditor` : champ de formulaire sur CodeMirror 6, chargé à la première ouverture (D-305) ; chasse fixe et coloration aux tokens, en clair et en sombre (D-306) ; barre de mise en forme et raccourcis (D-307) ; images collées ou déposées par `onPasteImage` (D-308) ; aperçu facultatif en bascule ou côte à côte (D-309). États du lot 1 : désactivé, lecture seule, erreur ; compteur avec `maxLength`.
+- Libellés internes ajoutés au dictionnaire `messages` : `copyBlock`, `blockCopied`, `copyFailed`, `table`, `taskDone`, `taskTodo`, `image`, `formatting`, `heading`, `bold`, `italic`, `inlineCode`, `link`, `bulletList`, `orderedList`, `quote`, `preview`, `nothingToPreview`, `imageUploading`, `imageNotAdded`, `linkTextPlaceholder`, `linkUrlPlaceholder`.
+
+### Modifié
+- Spec `TextArea` : renvoie à `MarkdownEditor` pour un texte mis en forme.
+
 ## [0.2.0] — 2026-11-23
 
 Lot 1 de la migration d'Alfred : bouton à texte, actions, modale, champs, ComboBox, notifications et petits éléments d'affichage (décisions D-100 à D-169). Version mineure : tout est nouveau ou facultatif, rien ne casse.

@@ -114,6 +114,29 @@ export interface SocleMessages {
   typeMoreChars: (n: number) => string;
   resultsUnavailable: string;
   noResults: string;
+  /* Markdown et MarkdownEditor (D-303 à D-309) */
+  copyBlock: string;
+  blockCopied: string;
+  copyFailed: string;
+  table: string;
+  taskDone: string;
+  taskTodo: string;
+  image: string;
+  formatting: string;
+  heading: (level: number) => string;
+  bold: string;
+  italic: string;
+  inlineCode: string;
+  link: string;
+  bulletList: string;
+  orderedList: string;
+  quote: string;
+  preview: string;
+  nothingToPreview: string;
+  imageUploading: (name: string) => string;
+  imageNotAdded: (name: string) => string;
+  linkTextPlaceholder: string;
+  linkUrlPlaceholder: string;
 }
 
 const s = (n: number) => (n > 1 ? "s" : "");
@@ -217,4 +240,27 @@ export const frenchMessages: SocleMessages = {
   typeMoreChars: (n) => `Tapez au moins ${n} caractères.`,
   resultsUnavailable: "Résultats indisponibles",
   noResults: "Aucun résultat",
+
+  copyBlock: "Copier le bloc",
+  blockCopied: "Bloc copié",
+  copyFailed: "Copie impossible",
+  table: "Tableau",
+  taskDone: "Fait",
+  taskTodo: "À faire",
+  image: "Image",
+  formatting: "Mise en forme",
+  heading: (n) => `Titre ${n}`,
+  bold: "Gras",
+  italic: "Italique",
+  inlineCode: "Code",
+  link: "Lien",
+  bulletList: "Liste à puces",
+  orderedList: "Liste numérotée",
+  quote: "Citation",
+  preview: "Aperçu",
+  nothingToPreview: "Rien à afficher",
+  imageUploading: (n) => `Envoi de ${n}…`,
+  imageNotAdded: (n) => `Image non ajoutée : ${n}`,
+  linkTextPlaceholder: "texte",
+  linkUrlPlaceholder: "adresse",
 };

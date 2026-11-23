@@ -117,3 +117,34 @@ export const CircleAlert = icon(
   </>,
   "CircleAlert",
 );
+
+/* Markdown et MarkdownEditor (D-304, D-307) */
+export const Copy = icon(
+  <>
+    <rect x="8" y="8" width="14" height="14" rx="2" />
+    <path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2" />
+  </>,
+  "Copy",
+);
+export const Heading1 = icon(<path d="M4 12h8M4 18V6M12 18V6M17 12l3-2v8" />, "Heading1");
+export const Heading2 = icon(<path d="M4 12h8M4 18V6M12 18V6M21 18h-4c0-4 4-3 4-6 0-1.5-2-2.5-4-1" />, "Heading2");
+export const Heading3 = icon(
+  <path d="M4 12h8M4 18V6M12 18V6M17.5 10.5c1.7-1 3.5 0 3.5 1.5a2 2 0 0 1-2 2M17 17.5c2 1.5 4 .3 4-1.5a2 2 0 0 0-2-2" />,
+  "Heading3",
+);
+export const Bold = icon(<path d="M6 12h9a4 4 0 0 1 0 8H7a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1h7a4 4 0 0 1 0 8" />, "Bold");
+export const Italic = icon(<path d="M19 4h-9M14 20H5M15 4 9 20" />, "Italic");
+export const CodeIcon = icon(<path d="m16 18 6-6-6-6M8 6l-6 6 6 6" />, "CodeIcon");
+export const LinkIcon = icon(
+  <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />,
+  "LinkIcon",
+);
+export const ListOrdered = icon(<path d="M10 12h11M10 18h11M10 6h11M4 10h2M4 6h1v4M6 18H4c0-1 2-2 2-3s-1-1.5-2-1" />, "ListOrdered");
+export const TextQuote = icon(<path d="M17 6H3M21 12H8M21 18H8M3 12v6" />, "TextQuote");
+export const Eye = icon(
+  <>
+    <path d="M2.06 12.35a1 1 0 0 1 0-.7 10.75 10.75 0 0 1 19.88 0 1 1 0 0 1 0 .7 10.75 10.75 0 0 1-19.88 0" />
+    <circle cx="12" cy="12" r="3" />
+  </>,
+  "Eye",
+);
