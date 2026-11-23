@@ -4,6 +4,10 @@ Versions selon semver (règle 6 du skill design) : une nouvelle option facultati
 
 ## [Non publié]
 
+## [0.4.0] — 2026-11-23
+
+Retrait de P16 à la relecture. Version qui casse l'existant (en 0.x, la version mineure monte).
+
 > **Changement qui casse l'existant** : `AppShell` perd les options `pageSummary` et `pageStatus`, et le type `PageStatus` n'est plus exporté (D-253).
 
 ### Retiré
