@@ -1,5 +1,5 @@
 # TextInput
-Statut : validé (2026-11-23) — Version : prochaine version mineure (non publiée)
+Statut : validé (2026-11-23) — Version : depuis 0.1.0
 Validation : docs/validation/components/FormFields-v1.html
 
 ## Rôle

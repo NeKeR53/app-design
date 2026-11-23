@@ -1,5 +1,5 @@
 # Markdown
-Statut : validé (2026-11-23) — Version : prochaine version mineure (non publiée)
+Statut : validé (2026-11-23) — Version : depuis 0.3.0
 Validation : docs/validation/components/Markdown-v1.html (par délégation de l'utilisateur, 2026-11-23)
 Import : `import { Markdown } from "socle-ui/markdown";` (sous-entrée, D-300)
 Dépendances facultatives à installer par l'app : `react-markdown` (10), `remark-gfm` (4).

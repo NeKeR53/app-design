@@ -1,5 +1,5 @@
 # LoginPage
-Statut : validé (2026-11-23) — Version : depuis la version qui suit 0.3.0
+Statut : validé (2026-11-23) — Version : depuis 1.0.0
 Validation : comportement validé par l'utilisateur, 2026-11-23
 
 ## Rôle

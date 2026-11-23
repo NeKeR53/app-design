@@ -1,5 +1,5 @@
 # MarkdownEditor
-Statut : validé (2026-11-23) — Version : prochaine version mineure (non publiée)
+Statut : validé (2026-11-23) — Version : depuis 0.3.0
 Validation : docs/validation/components/Markdown-v1.html (par délégation de l'utilisateur, 2026-11-23)
 Import : `import { MarkdownEditor } from "socle-ui/markdown-editor";` (sous-entrée, D-300)
 Dépendances facultatives à installer par l'app : `@codemirror/state`, `@codemirror/view`, `@codemirror/commands`, `@codemirror/language`, `@codemirror/lang-markdown`, `@lezer/highlight`, plus `react-markdown` et `remark-gfm` (aperçu).

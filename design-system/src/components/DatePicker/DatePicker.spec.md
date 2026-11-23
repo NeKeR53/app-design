@@ -1,5 +1,5 @@
 # DatePicker (et DateRangePicker)
-Statut : validé (2026-11-23) — Version : prochaine version mineure (non publiée)
+Statut : validé (2026-11-23) — Version : depuis 1.0.0
 Validation : docs/validation/components/Nouveaux-P1-v1.html (D1 à D4, options A)
 
 ## Rôle

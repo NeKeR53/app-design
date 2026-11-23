@@ -1,5 +1,5 @@
 # NumberField
-Statut : validé (2026-11-23) — Version : prochaine version mineure (non publiée)
+Statut : validé (2026-11-23) — Version : depuis 1.0.0
 Validation : docs/validation/components/Nouveaux-P1-v1.html (N1 à N3, options A)
 
 ## Rôle

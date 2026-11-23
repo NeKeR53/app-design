@@ -1,5 +1,5 @@
 # Fieldset
-Statut : validé (2026-11-23, par délégation de l'utilisateur) — Version : prochaine version mineure (non publiée)
+Statut : validé (2026-11-23, par délégation de l'utilisateur) — Version : depuis 0.2.0
 Validation : docs/validation/components/FormChoices-v1.html
 
 ## Rôle

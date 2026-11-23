@@ -1,6 +1,6 @@
 {
   "name": "app-design",
-  "version": "0.3.0",
+  "version": "1.0.0",
   "description": "Créer, faire évoluer et faire respecter un design system React partagé entre apps web et desktop, avec validation visuelle à chaque étape.",
   "author": {
     "name": "NeKeR53"

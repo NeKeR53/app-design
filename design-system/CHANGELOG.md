@@ -4,6 +4,10 @@ Versions selon semver (règle 6 du skill design) : une nouvelle option facultati
 
 ## [Non publié]
 
+## [1.0.0] — 2026-11-23
+
+Version majeure. Les composants prennent les noms de Component Gallery (D-336) ; les anciens noms restent exportés, dépréciés, jusqu'à 2.0.0. Avec : le thème d'organisation (D-337, D-338), LoginPage (D-339), la revue UX des groupes A et B (D-340 à D-353) et les nouveaux composants (D-354 à D-367). Deux changements de comportement : `maxLength` ne bloque plus la saisie (D-343) et le message d'un champ obligatoire cite le libellé (D-344).
+
 ### Cassé (1.0.0)
 Les composants prennent les noms de component.gallery (D-336). Les types de props suivent.
 - `Disclosure` → `Accordion`
