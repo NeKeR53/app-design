@@ -34,7 +34,7 @@ Aucune.
 | Option | Type | Défaut | Description |
 |---|---|---|---|
 | `DetailPanel.Section` : `title` | `string` | — (obligatoire) | Titre de la section. |
-| `PropertyRow` : `label`, `value` | `string`, `ReactNode` texte | — (obligatoires) | Libellé et valeur. Une valeur vide s'affiche « — » en `--fg-3`. |
+| `PropertyRow` : `label`, `value` | `string`, `ReactNode` texte | — (obligatoires) | Libellé et valeur. Une valeur vide s'affiche « — » en `--fg-3`. La valeur peut être un `InlineEdit` (D-324). |
 | `PropertyRow` : `icon` | `ReactNode` | aucune | Icône facultative, alignée par section (D-057). |
 | `PropertyRow` : `action` | `{ type: "link" \| "switch" \| "icon", … }` | aucune | Une action à droite, parmi trois types (D-059). |
 | `DetailPanel.Section` : `footer` | `Button` | aucun | Bouton à texte en pied de section, `size="sm"`, variante `secondary` (D-059, D-101). |
@@ -85,7 +85,7 @@ Aucune.
 
 ## Exclus
 - Pas de bouton à texte ni de deuxième action dans une ligne : le bouton à texte va en pied de section (D-059).
-- Pas de champ de saisie dans une ligne : une modification se fait par l'action de la ligne (menu, interrupteur, fenêtre) ou dans `FormPage`.
+- Pas de champ de saisie dans une ligne : une modification se fait par l'action de la ligne (menu, interrupteur, fenêtre) ou dans `FormPage`. Seule exception : un texte modifiable sur place, avec `InlineEdit` comme valeur (D-324).
 - Pas de couleur dans la valeur, sauf une pastille de statut (`Badge`, à spécifier).
 - Pas de `className` ni de `style`.
 - Pas d'enfants avec `header` ou `sections` : une seule forme à la fois (D-180).
@@ -153,6 +153,11 @@ Contient `IconButton`, `Menu`, `Switch` (D-136), `Button` (D-100) et `Tooltip`. 
 
 ## Décisions
 D-007, D-015, D-018, D-025, D-026, D-040, D-047, D-057, D-058, D-059, D-060, D-061, D-084, D-085, D-110, D-113, D-116, D-160, D-165, D-166, D-170, D-171, D-180, D-181, D-182, D-183, D-184, D-185
+
+Contient `IconButton`, `Menu`, `Switch` (D-136), `Button` (D-100) et `Tooltip`. Peut contenir `InlineEdit` comme valeur (D-324) et `Disclosure` dans une section (D-321).
+
+## Décisions
+D-007, D-015, D-018, D-025, D-026, D-040, D-047, D-057, D-058, D-059, D-060, D-061, D-321, D-324
 
 ## Questions ouvertes
 Aucune.

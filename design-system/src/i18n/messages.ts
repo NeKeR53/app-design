@@ -272,6 +272,10 @@ export interface SocleMessages {
   unknownFormat: string;
   imagesHidden: (n: number) => string;
   showImages: string;
+  /* InlineEdit, StepList (D-323, D-325) */
+  editValue: (label: string) => string;
+  stepDone: string;
+  stepError: string;
 }
 
 const s = (n: number) => (n > 1 ? "s" : "");
@@ -526,4 +530,7 @@ export const frenchMessages: SocleMessages = {
   unknownFormat: "inconnu",
   imagesHidden: (n) => (n > 1 ? `${n} images masquées.` : "1 image masquée."),
   showImages: "Afficher les images",
+  editValue: (l) => `Modifier « ${l} »`,
+  stepDone: "fait",
+  stepError: "erreur",
 };

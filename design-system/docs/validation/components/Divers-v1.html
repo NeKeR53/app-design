@@ -1,0 +1,350 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Disclosure, InlineEdit, StepList, Menu au clic droit, Popover — validation v1</title>
+<style>
+/* ---------- Page de validation ---------- */
+:root{--pg-bg:#f6f6f6;--pg-fg:#1a1a1a;--pg-muted:#5c5c5c;--pg-line:#e2e2e2;--pg-card:#fff;--pg-ok:#e3f4e8;--pg-ok-fg:#14532d;--pg-reco:#e7f0ff;--pg-reco-fg:#1d4ed8}
+:root[data-theme="dark"]{--pg-bg:#121212;--pg-fg:#ececec;--pg-muted:#9a9a9a;--pg-line:#2c2c2c;--pg-card:#1b1b1b;--pg-ok:#173323;--pg-ok-fg:#bfe8cf;--pg-reco:#16233d;--pg-reco-fg:#9cc0ff}
+*{box-sizing:border-box}html,body{margin:0}
+body{background:var(--pg-bg);color:var(--pg-fg);font:15px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif}
+.pg{max-width:1180px;margin:0 auto;padding:24px 16px 64px}
+h1{font-size:22px;font-weight:600;margin:0 0 4px;display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+h2.sec{font-size:17px;margin:36px 0 6px;padding-top:12px;border-top:1px solid var(--pg-line)}
+h3.sub{font-size:14px;margin:18px 0 8px}
+.intro{color:var(--pg-muted);margin:0 0 20px}
+.badge{font-size:12px;font-weight:600;letter-spacing:.04em;padding:3px 8px;border-radius:6px;background:var(--pg-ok);color:var(--pg-ok-fg)}
+.boxes{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:12px 0 16px}
+@media (max-width:760px){.boxes{grid-template-columns:1fr}}
+.box{background:var(--pg-card);border:1px solid var(--pg-line);border-radius:10px;padding:14px 16px;font-size:14px}
+.box h2{font-size:14px;margin:0 0 8px;font-weight:600}.box ul,.box ol{margin:0;padding-left:20px}.box li{margin:5px 0}
+.reco{font-size:11.5px;font-weight:600;padding:1px 6px;border-radius:5px;background:var(--pg-reco);color:var(--pg-reco-fg);margin-left:4px}
+.toolbar{position:sticky;top:0;z-index:100;background:var(--pg-bg);padding:10px 0;border-bottom:1px solid var(--pg-line);margin-bottom:16px;display:flex;flex-wrap:wrap;gap:10px 16px;align-items:center}
+.seg{display:inline-flex;border:1px solid var(--pg-line);border-radius:8px;overflow:hidden;background:var(--pg-card)}
+.seg button{border:0;background:transparent;color:var(--pg-fg);padding:5px 10px;font:inherit;font-size:13px;cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--pg-fg);color:var(--pg-bg)}
+.tlabel{font-size:12px;color:var(--pg-muted);margin-right:6px}
+.hint{margin:8px 0 0;color:var(--pg-muted);font-size:13px}
+.cmp{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+@media (max-width:760px){.cmp{grid-template-columns:1fr}}
+.opt{background:var(--pg-card);border:1px solid var(--pg-line);border-radius:10px;padding:12px 14px;font-size:13px;min-width:0}
+.opt h3{margin:0 0 2px;font-size:13px}.opt p{margin:0 0 10px;color:var(--pg-muted)}
+.opt .tk{border:1px solid var(--line);border-radius:8px;padding:10px 12px}
+
+/* ---------- Tokens (copie de src/tokens) ---------- */
+.tk{--surface:#fff;--surface-side:#f3f3f3;--surface-raised:#fff;--field:#f2f2f2;--hover:#e9e9e9;--selected:#dedede;--line:#e4e4e4;--line-strong:#cfcfcf;--fg:#1a1a1a;--fg-2:#5c5c5c;--fg-3:#6b6b6b;
+  --accent:#1d4ed8;--success:#15803d;--danger:#c62828;--shadow-md:0 4px 16px rgba(0,0,0,.10),0 1px 3px rgba(0,0,0,.06);
+  --font-sans:-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;
+  --radius-sm:4px;--radius-md:8px;--radius-lg:12px;--icon:16px;--fs-xs:11.5px;--fs-sm:12.5px;--fs-md:14px;--fs-lg:16px;--fs-xl:20px;--lh:1.45;--row-h:34px;--bar-h:44px;--side-w:220px;--detail-w:300px;--pad:16px;
+  background:var(--surface);color:var(--fg);font-family:var(--font-sans);font-size:var(--fs-md);line-height:var(--lh)}
+.tk.dark{--surface:#181818;--surface-side:#222;--surface-raised:#242424;--field:#2a2a2a;--hover:#303030;--selected:#3d3d3d;--line:#333;--line-strong:#4a4a4a;--fg:#ececec;--fg-2:#ababab;--fg-3:#8f8f8f;
+  --accent:#5b8def;--success:#5cc98a;--danger:#f07167;--shadow-md:0 6px 20px rgba(0,0,0,.5)}
+.tk.desktop{--fs-xs:10.5px;--fs-sm:11.5px;--fs-md:13px;--fs-lg:15px;--fs-xl:18px;--lh:1.4;--row-h:28px;--bar-h:38px;--side-w:200px;--detail-w:280px;--pad:12px}
+.tk *{box-sizing:border-box}.tk button{font:inherit;color:inherit}
+.ic{width:var(--icon);height:var(--icon);flex:none;stroke:currentColor;fill:none;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.focusring:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+
+/* ---------- Mini AppShell ---------- */
+.app{position:relative;height:600px;border:1px solid var(--pg-line);border-radius:12px;overflow:hidden;display:grid;grid-template-columns:var(--side-w) minmax(0,1fr) var(--detail-w);grid-template-rows:var(--bar-h) 1fr}
+@media (max-width:900px){.app{grid-template-columns:minmax(0,1fr);grid-template-rows:var(--bar-h) auto 1fr;height:auto}.side{display:none}}
+.side{grid-row:1 / span 2;background:var(--surface-side);border-right:1px solid var(--line);padding:6px;display:flex;flex-direction:column;gap:2px}
+.nav{display:flex;align-items:center;gap:8px;height:var(--row-h);padding:0 8px;border-radius:var(--radius-md);color:var(--fg-2)}
+.nav.on{background:var(--selected);color:var(--fg)}
+.bar{display:flex;align-items:center;gap:10px;padding:0 16px;border-bottom:1px solid var(--line);font-weight:600;grid-column:2 / span 2}
+@media (max-width:900px){.bar{grid-column:1}}
+.main{overflow:auto;min-width:0}
+.detail{border-left:1px solid var(--line);overflow:auto}
+@media (max-width:900px){.detail{border-left:0;border-top:1px solid var(--line)}}
+.li{display:flex;align-items:center;gap:10px;height:var(--row-h);padding:0 16px;border-bottom:1px solid var(--line);cursor:default;user-select:none}
+.li:hover{background:var(--hover)}.li.sel{background:var(--selected)}
+.li .meta{margin-left:auto;color:var(--fg-3);font-size:var(--fs-sm)}
+.ibtn{display:inline-grid;place-items:center;width:28px;height:28px;border:0;border-radius:var(--radius-md);background:transparent;color:var(--fg-2);cursor:pointer}
+.tk.desktop .ibtn{width:24px;height:24px}
+.ibtn:hover,.ibtn[aria-expanded="true"]{background:var(--hover);color:var(--fg)}
+.btn{height:var(--row-h);padding:0 12px;border:0;border-radius:var(--radius-md);background:var(--field);font-size:var(--fs-md);cursor:pointer}
+.btn:hover{background:var(--hover)}.btn.primary{background:var(--fg);color:var(--surface)}
+.btn.sm{height:26px;padding:0 10px;font-size:var(--fs-sm)}
+
+/* ---------- Section du panneau (existant, D-061) et Disclosure ---------- */
+.dsec{border-bottom:1px solid var(--line);padding:12px var(--pad) 10px}
+.dhead,.disc>button{display:flex;align-items:center;gap:4px;height:24px;border:0;background:transparent;padding:0 2px;margin:0 -2px 4px;border-radius:var(--radius-sm);color:var(--fg-3);font-size:var(--fs-sm);cursor:default}
+.dhead:hover,.disc>button:hover{color:var(--fg-2)}
+.chev{width:12px;height:12px;transition:none}
+[aria-expanded="false"] .chev{transform:rotate(-90deg)}
+.prop{display:flex;gap:8px;min-height:var(--row-h);padding:4px 0;align-items:flex-start}
+.prop dt{width:96px;flex:none;color:var(--fg-2);padding-top:2px}.prop dd{margin:0;min-width:0;flex:1;padding-top:2px}
+.disc{margin-top:4px}
+.disc .body{padding:2px 0 6px}
+/* Variantes de Disclosure (comparaison) */
+.dB>button{color:var(--fg);font-size:var(--fs-md);font-weight:500;flex-direction:row-reverse;justify-content:flex-end}
+.dB [aria-expanded="false"] .chev{transform:rotate(-90deg)}
+.dC{border:1px solid var(--line);border-radius:var(--radius-md);padding:0 8px}
+.dC>button{width:100%;height:var(--row-h);margin:0;color:var(--fg);font-size:var(--fs-md);justify-content:space-between}
+.dC .body{padding:0 0 8px}
+
+/* ---------- InlineEdit ---------- */
+.ie{display:block;margin:-3px -7px;padding:2px 6px;border:1px solid transparent;border-radius:var(--radius-md);min-width:0;position:relative}
+.ie.can:hover{border-color:var(--line-strong)}
+.ie.can:has(.ie-trig:focus-visible){border-color:var(--accent);box-shadow:0 0 0 1px var(--accent)}
+.ie .empty{color:var(--fg-3)}
+.ie input,.ie textarea{display:block;width:100%;margin:0;padding:0;border:0;outline:0;background:transparent;font:inherit;color:inherit;resize:none}
+.ie.on{background:var(--surface);border-color:var(--line-strong);outline:2px solid var(--accent);outline-offset:1px}
+.ie.busy{cursor:progress;opacity:.7}
+.ie-err{color:var(--danger);font-size:var(--fs-sm);margin:6px -7px 0}
+/* Options d'apparence */
+.ieB.can:hover{background:var(--hover);border-color:transparent}
+.ieB .pen{display:none;position:absolute;right:4px;top:50%;transform:translateY(-50%);color:var(--fg-3)}
+.ieB.can:hover .pen{display:block}
+.ieC{border-bottom:1px dashed var(--line-strong);border-radius:0}
+.title-xl{font-size:var(--fs-xl);font-weight:600;line-height:1.3}
+
+/* ---------- StepList ---------- */
+.steps{container-type:inline-size;margin:0;padding:0;list-style:none;display:flex;align-items:flex-start;gap:0}
+.steps li{display:flex;align-items:center;gap:8px;min-width:0;flex:0 1 auto}
+.steps li+li::before{content:"";flex:1 1 24px;min-width:12px;height:1px;background:var(--line-strong);margin-right:8px}
+.steps li.grow{flex:1 1 0}
+.step{display:flex;align-items:center;gap:8px;min-width:0;border:0;background:transparent;padding:4px 6px;margin:0 -6px;border-radius:var(--radius-md);text-align:left;cursor:default}
+button.step{cursor:pointer}button.step:hover{background:var(--hover)}
+button.step:disabled{cursor:default;background:transparent}
+.mark{display:inline-grid;place-items:center;flex:none;width:22px;height:22px;border-radius:50%;border:1px solid var(--line-strong);color:var(--fg-3);font-size:var(--fs-xs);font-weight:600}
+.st-current .mark{background:var(--fg);border-color:var(--fg);color:var(--surface)}
+.st-done .mark{border-color:var(--success);color:var(--success)}
+.st-error .mark{background:var(--danger);border-color:var(--danger);color:#fff}
+.stxt{display:flex;flex-direction:column;min-width:0}
+.stxt b{font-weight:500;color:var(--fg-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.st-current .stxt b{color:var(--fg)}.st-error .stxt b{color:var(--danger)}
+.stxt small{font-size:var(--fs-sm);color:var(--fg-3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+@container (max-width:560px){.stxt small{display:none}}
+@container (max-width:380px){.steps li:not(.st-current) .stxt{display:none}}
+.steps.v{flex-direction:column;gap:0}
+.steps.v li{flex-direction:column;align-items:stretch;gap:0}
+.steps.v li+li::before{flex:none;width:1px;height:12px;margin:0 0 0 11px}
+.steps.v .stxt small{display:block}
+/* Options de comparaison */
+.stA .step{border:1px solid var(--line);margin:0;padding:8px 12px}.stA li+li::before{display:none}.stA{gap:8px}.stA li{flex:1 1 0}
+.stA .st-current .step{border-color:var(--accent)}
+.stA .mark{border-radius:var(--radius-sm)}
+.stC .mark{display:none}.stC .stxt b{font-size:var(--fs-sm)}
+
+/* ---------- Menu et Popover flottants ---------- */
+.float{position:fixed;z-index:200;background:var(--surface-raised);border:1px solid var(--line);border-radius:var(--radius-lg);box-shadow:var(--shadow-md);font-family:var(--font-sans);font-size:var(--fs-md);color:var(--fg)}
+.menu{min-width:200px;max-width:320px;padding:4px}
+.menu .mt{padding:6px 10px 2px;font-size:var(--fs-sm);color:var(--fg-3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.menu .mi{display:flex;align-items:center;gap:8px;width:100%;height:var(--row-h);padding:0 10px;border:0;border-radius:var(--radius-md);background:transparent;text-align:left;cursor:default;outline:0}
+.menu .mi:hover,.menu .mi:focus{background:var(--hover)}
+.menu .mi.danger{color:var(--danger)}
+.menu hr{border:0;border-top:1px solid var(--line);margin:4px 6px}
+.menu kbd{margin-left:auto;font:inherit;font-size:var(--fs-sm);color:var(--fg-3)}
+.pop{width:min(360px,calc(100vw - 16px));display:flex;flex-direction:column;max-height:calc(100vh - 16px)}
+.pop.sm{width:min(280px,calc(100vw - 16px))}.pop.lg{width:min(440px,calc(100vw - 16px))}
+.pop header{display:flex;align-items:center;gap:8px;padding:10px 8px 4px 14px}
+.pop header h3{margin:0;font-size:var(--fs-md);font-weight:600;flex:1}
+.pop .pb{padding:8px 14px 14px;overflow:auto;display:flex;flex-direction:column;gap:10px}
+.pop .pb.notitle{padding-top:14px}
+.pop label{display:flex;flex-direction:column;gap:4px;font-size:var(--fs-sm);font-weight:500}
+.pop input,.pop textarea{height:var(--row-h);padding:0 10px;border:1px solid var(--line-strong);border-radius:var(--radius-md);background:var(--surface);color:var(--fg);font:inherit;font-weight:400}
+.pop textarea{height:auto;padding:6px 10px;resize:none}
+.pop input:focus,.pop textarea:focus{outline:2px solid var(--accent);outline-offset:1px}
+.pop .ft{display:flex;justify-content:flex-end;gap:8px}
+@keyframes nudge{0%,100%{scale:1}40%{scale:1.015}}.nudge{animation:nudge 260ms ease-out}
+@media (prefers-reduced-motion:reduce){.nudge{animation:none}}
+.ctx-hint{padding:8px 16px;color:var(--fg-3);font-size:var(--fs-sm)}
+.pnl{padding:16px;display:flex;flex-direction:column;gap:14px}
+</style>
+</head>
+<body>
+<div class="pg">
+<h1>Disclosure, InlineEdit, StepList, Menu au clic droit, Popover <span class="badge">VALIDÉ le 2026-11-23 — par délégation</span></h1>
+<p class="intro">Lot 4 de la migration d'Alfred : quatre besoins venus de <code>Disclosure</code>, <code>InlineEdit</code>, <code>StepList</code>, <code>AnchoredMenu</code> et <code>AnchoredPanel</code>. Chaque besoin passe le test du générique. Les options marquées <span class="reco">recommandée</span> sont retenues (validation par délégation de l'utilisateur). Décisions D-320 à D-329.</p>
+
+<div class="toolbar">
+  <span><span class="tlabel">Thème</span><span class="seg" data-tg="theme"><button aria-pressed="true" data-v="light">Clair</button><button aria-pressed="false" data-v="dark">Sombre</button></span></span>
+  <span><span class="tlabel">Densité</span><span class="seg" data-tg="dens"><button aria-pressed="true" data-v="web">Web</button><button aria-pressed="false" data-v="desktop">Desktop</button></span></span>
+  <span><span class="tlabel">Étapes</span><span class="seg" data-tg="step"><button aria-pressed="false" data-v="0">1</button><button aria-pressed="true" data-v="1">2</button><button aria-pressed="false" data-v="2">3</button><button aria-pressed="false" data-v="err">Erreur</button></span></span>
+  <span><span class="tlabel">Enregistrement</span><span class="seg" data-tg="save"><button aria-pressed="true" data-v="ok">Réussi</button><button aria-pressed="false" data-v="slow">Lent</button><button aria-pressed="false" data-v="fail">Échec</button></span></span>
+</div>
+
+<div class="boxes">
+  <div class="box"><h2>Déjà décidé</h2><ul>
+    <li>Sections repliables de <code>Sidebar</code> et de <code>DetailPanel</code> : titre <code>--fs-sm</code> <code>--fg-3</code> suivi d'un chevron, état mémorisé (D-007, D-061).</li>
+    <li>Panneaux sans animation (D-026). Rayons : 8 px contrôles, 12 px surfaces flottantes (D-040).</li>
+    <li>Menu : style, clavier, icônes alignées, danger en dernier (D-047 à D-051).</li>
+    <li>Modale : clic hors refusé après une saisie, rebond ; Échap ferme toujours ; <code>isBusy</code> (D-122).</li>
+    <li>Champs : cadre <code>--surface</code>, bord <code>--line-strong</code>, anneau accent (D-130).</li>
+    <li>Bouton principal monochrome (D-102). Le panneau de détail montre des propriétés « modifiables sur place » (layout-rules).</li>
+  </ul></div>
+  <div class="box"><h2>Tranché (par délégation)</h2><ol>
+    <li>Disclosure : même titre que les sections, chevron après le titre (A). D-320, D-321.</li>
+    <li>InlineEdit : fin contour au survol, sans icône ni fond (A). D-322 à D-324.</li>
+    <li>StepList : pastilles rondes reliées par un trait (B), horizontal ou vertical. D-325, D-326.</li>
+    <li>Clic droit : une option de <code>Menu</code> et le crochet <code>useContextMenu</code>, pas de nouveau composant (A). D-327.</li>
+    <li>Panneau ancré : composant <code>Popover</code> générique (A), fermeture de la modale. D-328, D-329.</li>
+  </ol></div>
+</div>
+
+<!-- ================= Écran réaliste ================= -->
+<h2 class="sec">Dans un écran réel</h2>
+<p class="hint">Liste de projets. Clic droit sur une ligne (ou Maj+F10) : menu au point, avec le nom en titre. Bouton « Partager » : Popover. Panneau de droite : titre et valeurs modifiables sur place, « Options avancées » en Disclosure.</p>
+<div class="tk app" id="app">
+  <aside class="side"><div class="nav on"><svg class="ic" viewBox="0 0 24 24"><path d="M3 7h18M3 12h18M3 17h18"/></svg>Projets</div><div class="nav"><svg class="ic" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/></svg>Équipe</div><div class="nav"><svg class="ic" viewBox="0 0 24 24"><path d="M12 3v18M3 12h18"/></svg>Installation</div></aside>
+  <div class="bar">Projets<span style="flex:1"></span>
+    <button class="ibtn focusring" id="shareBtn" aria-haspopup="dialog" aria-expanded="false" aria-label="Partager"><svg class="ic" viewBox="0 0 24 24"><path d="M4 12v7h16v-7M12 3v12M7 8l5-5 5 5"/></svg></button>
+  </div>
+  <div class="main" id="rows">
+    <div class="li sel" tabindex="0" data-n="Refonte du site">Refonte du site<span class="meta">12 tâches</span></div>
+    <div class="li" tabindex="0" data-n="Application mobile">Application mobile<span class="meta">8 tâches</span></div>
+    <div class="li" tabindex="0" data-n="Migration des données">Migration des données<span class="meta">23 tâches</span></div>
+    <div class="li" tabindex="0" data-n="Rapport annuel">Rapport annuel<span class="meta">4 tâches</span></div>
+    <div class="ctx-hint">Clic droit sur une ligne, ou focus puis Maj+F10.</div>
+    <div class="pnl">
+      <h3 style="margin:0;font-size:var(--fs-sm);color:var(--fg-3);font-weight:500">Assistant d'installation (StepList)</h3>
+      <ol class="steps" id="stepsMain" aria-label="Étapes de l'installation"></ol>
+      <div style="display:flex;gap:8px"><button class="btn sm" id="prevStep">Précédent</button><button class="btn sm primary" id="nextStep">Suivant</button></div>
+    </div>
+  </div>
+  <aside class="detail" aria-label="Détail">
+    <div class="dsec">
+      <div class="ie can" id="ieTitle" data-mode="line" data-label="Nom" data-req="1"><span class="val title-xl">Refonte du site</span></div>
+    </div>
+    <section class="dsec">
+      <button class="dhead focusring" aria-expanded="true">Propriétés<svg class="ic chev" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg></button>
+      <dl style="margin:0">
+        <div class="prop"><dt>Responsable</dt><dd><div class="ie can" data-mode="line" data-label="Responsable"><span class="val">Camille Martin</span></div></dd></div>
+        <div class="prop"><dt>Échéance</dt><dd>15 mars</dd></div>
+        <div class="prop"><dt>Description</dt><dd><div class="ie can" data-mode="multiline" data-label="Description" data-ph="Ajouter une description"><span class="val"></span></div></dd></div>
+      </dl>
+      <div class="disc"><button class="focusring" aria-expanded="false">Options avancées<svg class="ic chev" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg></button><div class="body" hidden><dl style="margin:0"><div class="prop"><dt>Identifiant</dt><dd>PRJ-0142</dd></div><div class="prop"><dt>Créé le</dt><dd>3 janvier</dd></div></dl></div></div>
+    </section>
+  </aside>
+</div>
+
+<!-- ================= Disclosure ================= -->
+<h2 class="sec">1. Disclosure — bloc repliable</h2>
+<p class="hint">Besoin : « ▸ Blocs repliés » du panneau de droite d'Alfred. Générique : « Options avancées » d'un formulaire, détails d'une erreur, questions fréquentes. Recouvrement : <code>Sidebar.Section</code> et <code>DetailPanel.Section</code> sont des titres de section repliables ; Disclosure est un bloc <em>dans</em> une section ou dans un contenu. Les trois gardent le même titre.</p>
+<div class="cmp" id="cmpDisc">
+  <div class="opt"><h3>A — titre de section <span class="reco">recommandée</span></h3><p>Même titre et même chevron que les sections (D-061). Une seule forme de repli dans le design system.</p>
+    <div class="tk"><div class="disc"><button class="focusring" aria-expanded="true">Options avancées<svg class="ic chev" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg></button><div class="body">Délai d'expiration, nombre d'essais, journal détaillé.</div></div></div></div>
+  <div class="opt"><h3>B — chevron devant, titre plein</h3><p>Forme « ▸ titre » d'Alfred, titre en <code>--fg</code>. Deux formes de repli dans le même panneau.</p>
+    <div class="tk"><div class="disc dB"><button class="focusring" aria-expanded="true">Options avancées<svg class="ic chev" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg></button><div class="body">Délai d'expiration, nombre d'essais, journal détaillé.</div></div></div></div>
+  <div class="opt"><h3>C — encadré</h3><p>Bloc avec bord, chevron à droite. Plus lourd ; ajoute un cadre dans un panneau déjà découpé par des traits.</p>
+    <div class="tk"><div class="disc dC"><button class="focusring" aria-expanded="true">Options avancées<svg class="ic chev" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg></button><div class="body">Délai d'expiration, nombre d'essais, journal détaillé.</div></div></div></div>
+</div>
+<p class="hint">Comportement retenu : clic, Entrée ou Espace sur le titre ; replié par défaut ; contenu créé seulement à l'ouverture ; aucune animation (D-026) ; avec un <code>id</code>, l'état est mémorisé (comme D-061). Écarté : apparence <code>subtle</code>, <code>className</code> du titre, élément natif <code>&lt;details&gt;</code>.</p>
+
+<!-- ================= InlineEdit ================= -->
+<h2 class="sec">2. InlineEdit — texte modifiable sur place</h2>
+<p class="hint">Besoin : titre et valeurs du panneau de détail (layout-rules : « propriétés modifiables sur place »). Générique : renommer un document, une liste, une vue. Essayez : clic ou Tab puis Entrée ; Entrée enregistre ; Échap annule ; clic à côté enregistre. « Plusieurs lignes » : Entrée passe à la ligne, Mod+Entrée enregistre. Bascule « Enregistrement » : attente et échec.</p>
+<div class="cmp">
+  <div class="opt"><h3>A — contour au survol <span class="reco">recommandée</span></h3><p>Fin bord <code>--line-strong</code> au survol, anneau accent au focus clavier. Le texte ne bouge pas à l'ouverture.</p>
+    <div class="tk"><div class="ie can" data-mode="line" data-label="Nom de la liste"><span class="val">Courses de la semaine</span></div></div></div>
+  <div class="opt"><h3>B — fond et crayon</h3><p>Fond <code>--hover</code> et crayon au survol. Plus visible, mais une icône de plus sur chaque valeur d'un panneau.</p>
+    <div class="tk"><div class="ie ieB can" data-mode="line" data-label="Nom de la liste"><span class="val">Courses de la semaine</span><svg class="ic pen" viewBox="0 0 24 24"><path d="M4 20h4L20 8l-4-4L4 16z"/></svg></div></div></div>
+  <div class="opt"><h3>C — souligné pointillé</h3><p>Trait pointillé permanent. Se lit comme un lien ou une abréviation ; bruit visuel au repos.</p>
+    <div class="tk"><div class="ie ieC can" data-mode="line" data-label="Nom de la liste"><span class="val">Courses de la semaine</span></div></div></div>
+</div>
+<h3 class="sub">Les états</h3>
+<div class="cmp">
+  <div class="opt"><h3>Vide</h3><p>Texte d'invite en <code>--fg-3</code>.</p><div class="tk"><div class="ie can" data-mode="line" data-label="Sous-titre" data-ph="Ajouter un sous-titre"><span class="val"></span></div></div></div>
+  <div class="opt"><h3>Obligatoire</h3><p>Valeur vide refusée : message sous le champ, la saisie reste ouverte.</p><div class="tk"><div class="ie can" data-mode="line" data-label="Titre" data-req="1"><span class="val">Plan de lancement</span></div></div></div>
+  <div class="opt"><h3>Désactivé</h3><p>Texte simple, sans contour ni focus.</p><div class="tk"><span>Créé par Camille Martin</span></div></div>
+</div>
+<p class="hint">Écarté : éditeur libre <code>renderEditor</code> (zone de mentions d'Alfred) : solution locale dans Alfred. Un choix dans une liste reste une action de ligne avec menu (D-059).</p>
+
+<!-- ================= StepList ================= -->
+<h2 class="sec">3. StepList — étapes numérotées</h2>
+<p class="hint">Besoin : parcours d'installation ou de configuration. Quatre états : à faire, en cours, fait, erreur. Une étape faite (ou en erreur) se rouvre d'un clic ; une étape à faire n'est pas cliquable. Réduisez la fenêtre : l'aide disparaît sous 560 px, puis seuls les numéros restent sauf l'étape en cours sous 380 px.</p>
+<div class="cmp" id="cmpSteps">
+  <div class="opt"><h3>A — cartes (Alfred)</h3><p>Chaque étape dans un cadre. Lourd ; le cadre accent se confond avec le focus.</p><div class="tk"><ol class="steps stA" data-steps></ol></div></div>
+  <div class="opt"><h3>B — pastilles et trait <span class="reco">recommandée</span></h3><p>Pastille ronde numérotée, trait entre les étapes. Sobre ; en cours monochrome comme le bouton principal.</p><div class="tk"><ol class="steps" data-steps></ol></div></div>
+  <div class="opt"><h3>C — texte seul</h3><p>Fil d'étapes sans pastilles. L'état « fait » ou « erreur » ne se voit plus.</p><div class="tk"><ol class="steps stC" data-steps></ol></div></div>
+</div>
+<h3 class="sub">Vertical (option <code>orientation="vertical"</code>)</h3>
+<div class="tk" style="border:1px solid var(--pg-line);border-radius:10px;padding:14px 16px;max-width:360px"><ol class="steps v" data-steps data-vertical></ol></div>
+
+<!-- ================= Menu au clic droit ================= -->
+<h2 class="sec">4. Menu au clic droit et Popover</h2>
+<p class="hint">Besoin : <code>AnchoredMenu</code> (menu contre un bouton ou au point du clic droit, avec titre) et <code>AnchoredPanel</code> (volet flottant sans voile). Le menu contre un bouton existe déjà (<code>Menu</code>). On ajoute au Menu l'ouverture à un point et un titre facultatif ; le volet devient le <code>Popover</code> générique que les specs de Menu, Tooltip et Dialog citent déjà.</p>
+<div class="cmp">
+  <div class="opt"><h3>A — options du Menu + Popover <span class="reco">recommandée</span></h3><p><code>Menu</code> reçoit <code>anchor</code> (point ou élément), <code>isOpen</code>, <code>onOpenChange</code>, <code>title</code> ; <code>useContextMenu()</code> branche le clic droit et Maj+F10. <code>Popover</code> : volet ancré.</p></div>
+  <div class="opt"><h3>B — ContextMenu à part</h3><p>Nouveau composant qui enveloppe la zone. Double le Menu (même contenu, même clic) : refusé par le brief.</p></div>
+  <div class="opt"><h3>C — reprise d'Alfred</h3><p><code>AnchoredMenu</code> et <code>AnchoredPanel</code> avec placement maison. Refait ce que React Aria fait déjà (placement, focus, fermeture).</p></div>
+</div>
+<p class="hint">Essayez dans l'écran réel : clic droit sur une ligne ; « Partager » en haut à droite. Dans le Popover, tapez dans un champ puis cliquez à côté : il rebondit au lieu de se fermer. Échap ferme toujours.</p>
+
+</div>
+
+<script>
+const $=(s,r=document)=>r.querySelector(s),$$=(s,r=document)=>[...r.querySelectorAll(s)];
+const state={step:1,save:"ok"};
+// Bascules
+$$(".seg").forEach(seg=>seg.addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;$$("button",seg).forEach(x=>x.setAttribute("aria-pressed",x===b));const t=seg.dataset.tg,v=b.dataset.v;
+  if(t==="theme"){document.documentElement.dataset.theme=v;$$(".tk").forEach(x=>x.classList.toggle("dark",v==="dark"))}
+  if(t==="dens")$$(".tk").forEach(x=>x.classList.toggle("desktop",v==="desktop"));
+  if(t==="step"){state.step=v==="err"?"err":+v;renderSteps()}
+  if(t==="save")state.save=v;}));
+// Disclosure et sections
+document.addEventListener("click",e=>{const b=e.target.closest(".disc>button,.dhead");if(!b)return;const open=b.getAttribute("aria-expanded")!=="true";b.setAttribute("aria-expanded",open);
+  const body=b.classList.contains("dhead")?b.nextElementSibling:b.nextElementSibling;if(b.classList.contains("dhead")){[...b.parentElement.children].slice(1).forEach(c=>c.hidden=!open)}else body.hidden=!open;});
+// InlineEdit
+function setupIE(el){const val=$(".val",el);const ph=el.dataset.ph;const label=el.dataset.label;
+  const show=()=>{if(!val.textContent.trim()&&ph){val.innerHTML='<span class="empty">'+ph+'</span>'}};show();
+  const trig=document.createElement("button");trig.className="sr ie-trig";trig.textContent="Modifier « "+label+" »";trig.setAttribute("aria-keyshortcuts","F2");el.appendChild(trig);
+  const open=()=>{if(el.classList.contains("on"))return;const cur=$(".empty",val)?"":val.textContent;const multi=el.dataset.mode==="multiline";
+    const f=document.createElement(multi?"textarea":"input");f.value=cur;f.setAttribute("aria-label",label);if(multi)f.rows=Math.max(2,cur.split("\n").length);
+    el.classList.remove("can");el.classList.add("on");val.hidden=true;trig.hidden=true;el.insertBefore(f,val);f.focus();f.select();let done=false;let err=null;
+    const close=(focus)=>{done=true;f.remove();err&&err.remove();val.hidden=false;trig.hidden=false;el.classList.remove("on","busy");el.classList.add("can");show();if(focus)trig.focus()};
+    const commit=(focus)=>{if(done)return;const v=f.value.trim();if(v===cur){close(focus);return}
+      if(el.dataset.req&&!v){if(!err){err=document.createElement("div");err.className="ie-err";el.after(err)}err.textContent="Saisissez "+label.toLowerCase()+".";f.focus();return}
+      done=true;el.classList.add("busy");f.readOnly=true;const wait=state.save==="slow"?1200:state.save==="fail"?600:0;
+      setTimeout(()=>{if(state.save==="fail"){done=false;el.classList.remove("busy");f.readOnly=false;if(!err){err=document.createElement("div");err.className="ie-err";el.after(err)}err.textContent="L'action a échoué. Réessayez.";f.focus();return}
+        val.textContent=v;close(focus)},wait)};
+    f.addEventListener("keydown",e=>{if(e.key==="Escape"){e.preventDefault();e.stopPropagation();done=false;close(true);done=true;return}
+      if(e.key==="Enter"&&(!multi||e.metaKey||e.ctrlKey)){e.preventDefault();commit(true)}});
+    f.addEventListener("input",()=>{if(multi)f.rows=Math.min(10,Math.max(2,f.value.split("\n").length))});
+    f.addEventListener("blur",()=>setTimeout(()=>{if(!done&&document.activeElement!==f)commit(false)},0));};
+  el.addEventListener("click",e=>{if(window.getSelection().toString())return;if(!el.classList.contains("on"))open()});
+  trig.addEventListener("click",e=>{e.stopPropagation();open()});
+  el.addEventListener("keydown",e=>{if(e.key==="F2"&&!el.classList.contains("on")){e.preventDefault();open()}});}
+$$(".ie.can").forEach(setupIE);
+// StepList
+const STEPS=[{t:"Compte",d:"Nom et adresse"},{t:"Connexion",d:"Serveur et clé"},{t:"Import",d:"Données de départ"},{t:"Vérification",d:"Résumé"}];
+function renderSteps(){const cur=state.step==="err"?2:state.step;$$("[data-steps]").forEach(ol=>{const vertical=ol.hasAttribute("data-vertical");ol.innerHTML="";STEPS.forEach((s,i)=>{
+  const st=state.step==="err"&&i===2?"error":i<cur?"done":i===cur?"current":"todo";const li=document.createElement("li");li.className="st-"+st+(i<STEPS.length-1?"":"");if(!vertical&&i>0)li.classList.add("grow");
+  const can=st!=="todo";const b=document.createElement(can?"button":"span");b.className="step focusring";if(can){b.type="button";b.addEventListener("click",()=>{if(st!=="current"){state.step=i;syncStepSeg();renderSteps()}})}
+  if(st==="current")li.setAttribute("aria-current","step");
+  const mark=st==="done"?'<svg class="ic" style="width:13px;height:13px" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg>':st==="error"?"!":(i+1);
+  const sr=st==="done"?" (fait)":st==="error"?" (erreur)":"";
+  b.innerHTML='<span class="mark" aria-hidden="true">'+mark+'</span><span class="stxt"><b>'+s.t+'<span class="sr">'+sr+'</span></b><small>'+(st==="error"?"Connexion refusée":s.d)+'</small></span>';li.appendChild(b);ol.appendChild(li)})})}
+function syncStepSeg(){$$('[data-tg="step"] button').forEach(x=>x.setAttribute("aria-pressed",x.dataset.v===String(state.step)))}
+renderSteps();
+$("#nextStep").onclick=()=>{state.step=state.step==="err"?2:Math.min(3,state.step+1);syncStepSeg();renderSteps()};
+$("#prevStep").onclick=()=>{state.step=state.step==="err"?1:Math.max(0,state.step-1);syncStepSeg();renderSteps()};
+// Surfaces flottantes
+let floating=null;
+function closeFloat(focus){if(!floating)return;const {el,ret,onClose}=floating;el.remove();floating=null;onClose&&onClose();if(focus&&ret)ret.focus()}
+function place(el,x,y,align){const w=el.offsetWidth,h=el.offsetHeight,W=innerWidth,H=innerHeight;let l=align==="end"?x-w:x,t=y;if(t+h>H-8)t=Math.max(8,y-h);l=Math.max(8,Math.min(l,W-w-8));el.style.left=l+"px";el.style.top=t+"px"}
+function tkWrap(el){const app=$("#app");el.className+=" tk"+(app.classList.contains("dark")?" dark":"")+(app.classList.contains("desktop")?" desktop":"");document.body.appendChild(el);return el}
+function openMenu(x,y,name,ret){closeFloat(false);const m=tkWrap(Object.assign(document.createElement("div"),{className:"float menu"}));m.setAttribute("role","menu");m.setAttribute("aria-label","Actions sur « "+name+" »");
+  m.innerHTML='<div class="mt" role="presentation">'+name+'</div>'+["Ouvrir","Renommer…","Dupliquer"].map(l=>'<button class="mi" role="menuitem" tabindex="-1">'+l+'</button>').join("")+'<hr><button class="mi danger" role="menuitem" tabindex="-1">Supprimer…</button>';
+  place(m,x,y);floating={el:m,ret,kind:"menu"};const items=$$(".mi",m);items[0].focus();
+  m.addEventListener("keydown",e=>{const i=items.indexOf(document.activeElement);if(e.key==="ArrowDown"){e.preventDefault();items[(i+1)%items.length].focus()}if(e.key==="ArrowUp"){e.preventDefault();items[(i-1+items.length)%items.length].focus()}if(e.key==="Escape"){e.preventDefault();closeFloat(true)}if(e.key==="Tab")closeFloat(false)});
+  m.addEventListener("click",e=>{if(e.target.closest(".mi"))closeFloat(true)})}
+$$("#rows .li").forEach(li=>{li.addEventListener("contextmenu",e=>{e.preventDefault();$$("#rows .li").forEach(x=>x.classList.toggle("sel",x===li));openMenu(e.clientX,e.clientY,li.dataset.n,li)});
+  li.addEventListener("keydown",e=>{if((e.key==="F10"&&e.shiftKey)||e.key==="ContextMenu"){e.preventDefault();const r=li.getBoundingClientRect();openMenu(r.left+16,r.bottom,li.dataset.n,li)}})});
+const share=$("#shareBtn");
+share.addEventListener("click",()=>{if(floating&&floating.kind==="pop"){closeFloat(true);return}closeFloat(false);const p=tkWrap(Object.assign(document.createElement("div"),{className:"float pop"}));p.setAttribute("role","dialog");p.setAttribute("aria-labelledby","popT");
+  p.innerHTML='<header><h3 id="popT">Partager le projet</h3><button class="ibtn focusring" aria-label="Fermer"><svg class="ic" viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12"/></svg></button></header><div class="pb"><label>Adresse e-mail<input type="email" placeholder="nom@exemple.fr"></label><label>Message (facultatif)<textarea rows="3"></textarea></label><div class="ft"><button class="btn sm">Annuler</button><button class="btn sm primary">Envoyer</button></div></div>';
+  share.setAttribute("aria-expanded","true");const r=share.getBoundingClientRect();place(p,r.right,r.bottom+4,"end");let edited=false;p.addEventListener("input",()=>edited=true);
+  floating={el:p,ret:share,kind:"pop",edited:()=>edited,onClose:()=>share.setAttribute("aria-expanded","false")};$("input",p).focus();
+  $("header .ibtn",p).onclick=()=>closeFloat(true);$$(".ft .btn",p).forEach(b=>b.onclick=()=>closeFloat(true));
+  p.addEventListener("keydown",e=>{if(e.key==="Escape"){e.preventDefault();closeFloat(true)}})});
+document.addEventListener("pointerdown",e=>{if(!floating||floating.el.contains(e.target))return;if(floating.kind==="pop"&&e.target.closest("#shareBtn"))return;
+  if(floating.kind==="pop"&&floating.edited()){const el=floating.el;el.classList.remove("nudge");void el.offsetWidth;el.classList.add("nudge");return}closeFloat(false)},true);
+addEventListener("scroll",()=>{if(floating&&floating.kind==="menu")closeFloat(false)},true);
+addEventListener("resize",()=>closeFloat(false));
+</script>
+</body>
+</html>
