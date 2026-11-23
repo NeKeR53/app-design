@@ -822,3 +822,83 @@
 - Raison : la barre d'outils n'accepte que des boutons-icônes, et une action « Actualiser » doit montrer son attente.
 - Options écartées : un `Button` discret « Actualiser » avec icône ; un composant `RefreshButton` dédié.
 - Validation : docs/validation/components/Button-v1.html
+
+## D-150 — Toasts : moteur React Aria, sans sonner
+- Date : 2026-11-23
+- Portée : Toast
+- Décision : les toasts reposent sur le Toast de React Aria (`UNSTABLE_ToastRegion`, `UNSTABLE_ToastQueue`), déjà dans les dépendances. Socle l'enveloppe : les apps n'importent jamais React Aria ni le préfixe `UNSTABLE_`. La librairie sonner n'entre pas dans socle-ui.
+- Raison : React Aria gère déjà la file, la minuterie, la pause, la région F6 et le retour du focus ; sonner ajouterait une dépendance à restyler.
+- Options écartées : garder sonner ; tout écrire nous-mêmes.
+- Validation : par délégation de l'utilisateur, 2026-11-23 — docs/validation/components/Notifications-v1.html
+
+## D-151 — Toasts : carte neutre, l'icône porte le ton
+- Date : 2026-11-23
+- Portée : Toast
+- Décision : un toast est une carte `--surface-raised`, trait `--line`, rayon 12 px (D-040), ombre `--shadow-lg`, 360 px de large au plus. Seule l'icône de 16 px prend la couleur du ton. Titre en `--fw-semibold`, texte en `--fs-sm` `--fg-2`.
+- Raison : style monochrome (D-001) ; même surface que tout ce qui flotte.
+- Options écartées : fond teinté par le ton ; sombre constant comme l'info-bulle.
+- Validation : par délégation de l'utilisateur, 2026-11-23 — docs/validation/components/Notifications-v1.html
+
+## D-152 — Notifications : quatre tons
+- Date : 2026-11-23
+- Portée : Toast, NotificationCenter
+- Décision : quatre tons, `success`, `info` (par défaut), `warning` et `danger`, avec les tokens `--success`, `--info`, `--warning`, `--danger` et une icône propre à chacun. Le ton est aussi dit au lecteur d'écran (« Succès », « Information », « Alerte », « Erreur »).
+- Raison : les tokens existent déjà ; une alerte n'est ni un succès ni une erreur.
+- Options écartées : trois tons, sans alerte.
+- Validation : par délégation de l'utilisateur, 2026-11-23 — docs/validation/components/Notifications-v1.html
+
+## D-153 — Toasts : durée
+- Date : 2026-11-23
+- Portée : Toast
+- Décision : un toast reste 5 s, ou 8 s s'il porte une action. Un toast `danger` reste jusqu'à sa fermeture. L'option `duration` le règle par appel (5 s au minimum ; `null` : jusqu'à fermeture). La minuterie s'arrête au survol, au focus et quand la fenêtre perd le focus.
+- Raison : temps de lecture suffisant (WCAG 2.2.1) ; une erreur ne disparaît pas avant d'être lue.
+- Options écartées : 8 s pour toute erreur (Alfred).
+- Validation : par délégation de l'utilisateur, 2026-11-23 — docs/validation/components/Notifications-v1.html
+
+## D-154 — Toasts : pile de trois, en bas à droite
+- Date : 2026-11-23
+- Portée : Toast
+- Décision : les toasts s'empilent en bas à droite, à 16 px des bords, 8 px entre eux, le plus récent en bas. Trois sont visibles au plus : au-delà, le plus ancien se ferme (il reste dans le centre). Sur mobile, la pile prend la largeur, au-dessus de la barre d'onglets. Entrée par un fondu et un glissement de 8 px (`--dur-base`), sortie par un fondu (`--dur-fast`) ; rien ne bouge si l'utilisateur réduit les animations.
+- Raison : une pile courte ne cache pas le contenu ; le centre garde ce qui sort.
+- Options écartées : quatre ou cinq visibles ; file d'attente qui ressort les anciens toasts.
+- Validation : par délégation de l'utilisateur, 2026-11-23 — docs/validation/components/Notifications-v1.html
+
+## D-155 — Toasts : une action au plus
+- Date : 2026-11-23
+- Portée : Toast
+- Décision : un toast a une action texte au plus (« Annuler », « Réessayer »), un `Button` petit et secondaire, et toujours la croix « Fermer la notification ». Choisir l'action ferme le toast.
+- Raison : un toast reste lisible d'un coup d'œil ; plus d'actions demandent une page ou un dialogue.
+- Options écartées : deux actions (Alfred).
+- Validation : par délégation de l'utilisateur, 2026-11-23 — docs/validation/components/Notifications-v1.html
+
+## D-156 — Notifications : toast et centre liés
+- Date : 2026-11-23
+- Portée : Toast, NotificationCenter
+- Décision : par défaut, `notify()` montre un toast et ajoute une ligne au centre. `history: false` donne un toast seul (confirmation triviale : « Lien copié ») ; `toast: false` donne une ligne seule (événement de fond). L'action d'un toast expire avec lui et ne passe pas dans le centre ; une ligne du centre peut s'ouvrir (option `onOpen`).
+- Raison : une seule fonction pour l'app ; un « Annuler » tardif depuis le centre serait trompeur.
+- Options écartées : reprendre l'action dans le centre ; deux fonctions séparées.
+- Validation : par délégation de l'utilisateur, 2026-11-23 — docs/validation/components/Notifications-v1.html
+
+## D-157 — Centre de notifications : cloche, compteur et panneau
+- Date : 2026-11-23
+- Portée : NotificationCenter
+- Décision : le centre s'ouvre depuis un bouton-icône cloche dans les `actions` de la barre du haut. Une pastille `--accent` (texte `--accent-fg`, `--fs-xs`, rayon plein) montre le nombre de non-lus, « 9+ » au-delà de 9, et disparaît à 0. Le panneau est ancré sous la cloche, 380 px de large, sur `--surface-raised` avec rayon 12 px et `--shadow-md` ; il est plein écran sur mobile. L'ouvrir marque tout comme lu ; les points de non-lu restent visibles jusqu'à sa fermeture.
+- Raison : le nombre dit l'urgence ; la couleur d'accent signale le non-lu (D-044).
+- Options écartées : simple point ; panneau dans la colonne de détail.
+- Validation : par délégation de l'utilisateur, 2026-11-23 — docs/validation/components/Notifications-v1.html
+
+## D-158 — Centre de notifications : contenu et mémoire
+- Date : 2026-11-23
+- Portée : NotificationCenter
+- Décision : en-tête « Notifications » et « Tout effacer ». Lignes groupées par jour (« Aujourd'hui », « Hier », puis la date), la plus récente en haut. Une ligne : icône du ton, titre, texte, « heure · source » en `--fg-3`, point de non-lu de 6 px, et × au survol ou au focus pour la retirer. État vide : « Aucune notification ». La file garde 100 notifications en mémoire ; l'app peut fournir `initial` et suivre `onChange` pour les garder entre deux ouvertures.
+- Raison : l'historique se lit comme une liste ; la persistance dépend de chaque app.
+- Options écartées : persistance intégrée au stockage local.
+- Validation : par délégation de l'utilisateur, 2026-11-23 — docs/validation/components/Notifications-v1.html
+
+## D-159 — Pas de bandeau pleine largeur ; avenir de FeedbackBanner
+- Date : 2026-11-23
+- Portée : global (layout-rules)
+- Décision : aucune app n'affiche de bandeau pleine largeur sous la barre du haut. Un état durable de la page ou de l'app (hors ligne, lecture seule) se signale dans la barre du haut, par un indicateur compact. Un message local reste un encart dans le contenu (comme D-085). Le résultat d'une action va dans un toast. L'indicateur de barre du haut et l'encart feront chacun une proposition à part ; l'apparence `bar` de `FeedbackBanner` (Alfred) n'a pas d'équivalent.
+- Raison : choix de l'utilisateur ; un bandeau décale tout le contenu et se confond avec la barre.
+- Options écartées : bandeau pleine largeur.
+- Validation : par délégation de l'utilisateur, 2026-11-23 — docs/validation/components/Notifications-v1.html

@@ -1,0 +1,469 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Notifications — validation v1</title>
+<style>
+/* ---------- Page de validation ---------- */
+:root{--pg-bg:#f6f6f6;--pg-fg:#1a1a1a;--pg-muted:#5c5c5c;--pg-line:#e2e2e2;--pg-card:#fff;--pg-badge:#fff4d6;--pg-badge-fg:#7a5a00;--pg-reco:#e7f0ff;--pg-reco-fg:#1d4ed8;--pg-ok:#e3f4e8;--pg-ok-fg:#166534}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--pg-bg:#121212;--pg-fg:#ececec;--pg-muted:#9a9a9a;--pg-line:#2c2c2c;--pg-card:#1b1b1b;--pg-badge:#3a2f10;--pg-badge-fg:#f3d27a;--pg-reco:#16233d;--pg-reco-fg:#9cc0ff;--pg-ok:#12301d;--pg-ok-fg:#86efac}}
+:root[data-theme="dark"]{--pg-bg:#121212;--pg-fg:#ececec;--pg-muted:#9a9a9a;--pg-line:#2c2c2c;--pg-card:#1b1b1b;--pg-badge:#3a2f10;--pg-badge-fg:#f3d27a;--pg-reco:#16233d;--pg-reco-fg:#9cc0ff;--pg-ok:#12301d;--pg-ok-fg:#86efac}
+*{box-sizing:border-box}html,body{margin:0}
+body{background:var(--pg-bg);color:var(--pg-fg);font:15px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif}
+.pg{max-width:1120px;margin:0 auto;padding:24px 16px 64px}
+h1{font-size:22px;font-weight:600;margin:0 0 4px;display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.sub{color:var(--pg-muted);margin:0 0 20px}
+.badge{font-size:12px;font-weight:600;letter-spacing:.04em;padding:3px 8px;border-radius:8px;background:var(--pg-badge);color:var(--pg-badge-fg)}
+.boxes{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px}
+@media (max-width:760px){.boxes{grid-template-columns:1fr}}
+.box{background:var(--pg-card);border:1px solid var(--pg-line);border-radius:10px;padding:14px 16px;font-size:14px}
+.box.wide{grid-column:1/-1}
+.box h2{font-size:14px;margin:0 0 8px;font-weight:600}.box ul,.box ol{margin:0;padding-left:20px}.box li{margin:6px 0}
+.box code{font-size:12.5px;background:var(--pg-bg);padding:1px 4px;border-radius:4px}
+.box pre{font-size:12.5px;background:var(--pg-bg);padding:10px 12px;border-radius:8px;overflow:auto;margin:8px 0 0}
+.reco{font-size:11.5px;font-weight:600;padding:1px 6px;border-radius:5px;background:var(--pg-reco);color:var(--pg-reco-fg);margin-left:4px;white-space:nowrap}
+.ok{font-size:11.5px;font-weight:600;padding:1px 6px;border-radius:5px;background:var(--pg-ok);color:var(--pg-ok-fg);margin-left:4px;white-space:nowrap}
+.toolbar{position:sticky;top:0;z-index:100;background:var(--pg-bg);padding:10px 0;border-bottom:1px solid var(--pg-line);margin-bottom:16px;display:flex;flex-wrap:wrap;gap:10px 16px;align-items:center}
+.seg{display:inline-flex;border:1px solid var(--pg-line);border-radius:8px;overflow:hidden;background:var(--pg-card)}
+.seg button{border:0;background:transparent;color:var(--pg-fg);padding:5px 10px;font:inherit;font-size:13px;cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--pg-fg);color:var(--pg-bg)}
+.tlabel{font-size:12px;color:var(--pg-muted);margin-right:6px}
+.fire{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 12px}
+.fire button{font:inherit;font-size:13px;padding:6px 10px;border-radius:8px;border:1px solid var(--pg-line);background:var(--pg-card);color:var(--pg-fg);cursor:pointer}
+.hint{margin:8px 0 0;color:var(--pg-muted);font-size:13px}
+h3.sec{font-size:15px;margin:28px 0 10px}
+
+/* ---------- Tokens T2 (copie de src/tokens) ---------- */
+.tk{--surface:#fff;--surface-side:#f3f3f3;--surface-raised:#fff;--field:#f2f2f2;--hover:#e9e9e9;--selected:#dedede;--line:#e4e4e4;--line-strong:#cfcfcf;--fg:#1a1a1a;--fg-2:#5c5c5c;--fg-3:#6b6b6b;
+  --accent:#1d4ed8;--accent-fg:#fff;--accent-text:#1d4ed8;--success:#15803d;--warning:#b45309;--danger:#c62828;--info:#1d4ed8;
+  --font-sans:-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;
+  --radius-sm:4px;--radius-md:8px;--radius-lg:12px;--radius-full:999px;
+  --shadow-md:0 6px 20px rgb(0 0 0/.10);--shadow-lg:0 12px 32px rgb(0 0 0/.14);--icon:16px;--icon-stroke:1.6;--ease:cubic-bezier(.2,0,0,1);--dur-fast:120ms;--dur-base:180ms;
+  --fs-xs:11.5px;--fs-sm:12.5px;--fs-md:14px;--lh:1.45;--row-h:34px;--bar-h:44px;--side-w:220px;--icon-btn:28px;--pad:16px;
+  --tint-success:#edf7f0;--tint-warning:#fdf3e7;--tint-danger:#fcecec;--tint-info:#ecf1fc}
+.tk.dark{--surface:#181818;--surface-side:#222;--surface-raised:#262626;--field:#2a2a2a;--hover:#303030;--selected:#3d3d3d;--line:#333;--line-strong:#4a4a4a;--fg:#ececec;--fg-2:#ababab;--fg-3:#8f8f8f;
+  --accent:#5b8def;--accent-fg:#0b1630;--accent-text:#7da4f2;--success:#5cc98a;--warning:#e0a24a;--danger:#f07167;--info:#5b8def;--shadow-md:0 6px 20px rgb(0 0 0/.5);--shadow-lg:0 12px 32px rgb(0 0 0/.55);
+  --tint-success:#1c2a21;--tint-warning:#2e2617;--tint-danger:#2f1d1c;--tint-info:#1b2333}
+.tk.desktop{--fs-xs:10.5px;--fs-sm:11.5px;--fs-md:13px;--lh:1.4;--row-h:28px;--bar-h:38px;--side-w:200px;--icon-btn:24px;--pad:12px}
+@media (prefers-reduced-motion: reduce){.tk{--dur-fast:0ms;--dur-base:0ms}}
+
+/* ---------- Mini AppShell ---------- */
+.app{position:relative;height:560px;border:1px solid var(--pg-line);border-radius:12px;overflow:hidden;background:var(--surface);color:var(--fg);font-family:var(--font-sans);font-size:var(--fs-md);line-height:var(--lh);display:grid;grid-template-columns:var(--side-w) minmax(0,1fr);grid-template-rows:var(--bar-h) 1fr}
+.app *{box-sizing:border-box}
+.app button{font:inherit;color:inherit;background:none;border:0;cursor:default}
+.app :focus-visible{outline:2px solid var(--accent);outline-offset:1px;border-radius:var(--radius-md)}
+.ic{width:var(--icon);height:var(--icon);flex:none;stroke:currentColor;fill:none;stroke-width:var(--icon-stroke);stroke-linecap:round;stroke-linejoin:round}
+.ibtn{position:relative;width:var(--icon-btn);height:var(--icon-btn);display:inline-grid;place-items:center;border-radius:var(--radius-md);color:var(--fg-2)}
+.ibtn:hover,.ibtn[aria-expanded="true"]{background:var(--hover);color:var(--fg)}
+.bar-side{grid-column:1;grid-row:1;background:var(--surface-side);border-right:1px solid var(--line);display:flex;align-items:center;gap:2px;padding:0 8px}
+.bar{grid-column:2;grid-row:1;display:flex;align-items:center;gap:4px;padding:0 8px 0 16px;border-bottom:1px solid var(--line);min-width:0}
+.ptitle{font-weight:600;margin-right:8px;white-space:nowrap}
+.bar .sp{flex:1}
+.side{grid-column:1;grid-row:2;background:var(--surface-side);border-right:1px solid var(--line);display:flex;flex-direction:column;min-height:0;padding:6px}
+.it{display:flex;align-items:center;gap:8px;height:var(--row-h);padding:0 8px;border-radius:var(--radius-md);width:100%;text-align:left;color:var(--fg-2)}
+.it:hover{background:var(--hover);color:var(--fg)}.it.on{background:var(--selected);color:var(--fg)}
+.main{grid-column:2;grid-row:2;overflow:auto;padding:var(--pad);position:relative}
+.rows{border-top:1px solid var(--line)}
+.row{display:grid;grid-template-columns:minmax(0,1fr) 90px auto;align-items:center;gap:12px;height:var(--row-h);padding:0 4px 0 8px;border-bottom:1px solid var(--line)}
+.row:hover{background:var(--hover)}
+.row .t{overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.row .d{color:var(--fg-3);font-size:var(--fs-sm)}
+.row .acts{display:flex;gap:2px;opacity:0}.row:hover .acts,.row:focus-within .acts{opacity:1}
+.mtitle{font-size:var(--fs-sm);color:var(--fg-3);margin:0 0 8px}
+
+/* Compteur sur la cloche */
+.count{position:absolute;top:1px;right:0;min-width:15px;height:15px;padding:0 4px;border-radius:var(--radius-full);background:var(--accent);color:var(--accent-fg);font-size:10px;font-weight:600;line-height:15px;text-align:center;box-shadow:0 0 0 2px var(--surface)}
+.count.dot{min-width:8px;width:8px;height:8px;padding:0;top:4px;right:4px;font-size:0}
+.count[hidden]{display:none}
+
+/* État de page dans la barre du haut (question 13) */
+.pstatus{display:none;align-items:center;gap:6px;height:24px;padding:0 8px;border-radius:var(--radius-md);background:var(--field);color:var(--fg-2);font-size:var(--fs-sm);white-space:nowrap}
+.pstatus .ic{width:14px;height:14px;color:var(--warning)}
+.pstatus a{color:var(--accent-text);text-decoration:none;font-weight:500}
+.app.status-on .pstatus{display:inline-flex}
+.fullbanner{display:none;grid-column:2;position:absolute;left:var(--side-w);right:0;top:var(--bar-h);height:32px;background:var(--tint-warning);color:var(--fg);border-bottom:1px solid var(--line);align-items:center;gap:8px;padding:0 16px;font-size:var(--fs-sm);z-index:5}
+.app.status-bar .fullbanner{display:flex}
+.fullbanner s{color:var(--danger)}
+
+/* ---------- Toasts ---------- */
+.region{position:absolute;right:16px;bottom:16px;z-index:50;display:flex;flex-direction:column;gap:8px;width:360px;max-width:calc(100% - 32px);pointer-events:none}
+.toast{pointer-events:auto;display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:4px 10px;align-items:start;padding:10px 6px 10px 12px;border-radius:var(--radius-lg);background:var(--surface-raised);color:var(--fg);border:1px solid var(--line);box-shadow:var(--shadow-lg);font-size:var(--fs-md);animation:tin var(--dur-base) var(--ease)}
+.toast.out{animation:tout var(--dur-fast) var(--ease) forwards}
+@keyframes tin{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+@keyframes tout{to{opacity:0;transform:translateY(4px)}}
+.toast .ti{margin-top:2px}
+.toast[data-tone="success"] .ti{color:var(--success)}.toast[data-tone="warning"] .ti{color:var(--warning)}.toast[data-tone="danger"] .ti{color:var(--danger)}.toast[data-tone="info"] .ti{color:var(--info)}
+.toast .tx{min-width:0;padding-top:1px}
+.toast .tt{font-weight:600;overflow-wrap:anywhere}
+.toast .td{color:var(--fg-2);font-size:var(--fs-sm);overflow-wrap:anywhere;margin-top:1px}
+.toast .tr{display:flex;align-items:center;gap:2px}
+.toast .act{height:24px;padding:0 8px;border-radius:var(--radius-md);font-weight:500;font-size:var(--fs-sm);color:var(--fg);background:var(--field)}
+.toast .act:hover{background:var(--hover)}
+.toast .x{width:24px;height:24px;display:grid;place-items:center;border-radius:var(--radius-sm);color:var(--fg-3)}
+.toast .x:hover{background:var(--hover);color:var(--fg)}
+.toast .x .ic{width:14px;height:14px}
+.toast .bar-t{grid-column:1/-1;height:2px;border-radius:2px;background:var(--line);overflow:hidden;display:none}
+/* B : fond teinté par le ton */
+.look-b .toast[data-tone="success"]{background:var(--tint-success)}.look-b .toast[data-tone="warning"]{background:var(--tint-warning)}.look-b .toast[data-tone="danger"]{background:var(--tint-danger)}.look-b .toast[data-tone="info"]{background:var(--tint-info)}
+.look-b .toast .act{background:transparent;border:1px solid var(--line-strong)!important}
+/* C : sombre constant, comme l'info-bulle */
+.look-c .toast{background:#1f1f1f;color:#f2f2f2;border-color:transparent}
+.look-c .toast .td{color:#b5b5b5}.look-c .toast .act{background:#333;color:#f2f2f2}.look-c .toast .act:hover{background:#444}
+.look-c .toast .x{color:#a8a8a8}.look-c .toast .x:hover{background:#333;color:#fff}
+.tk.dark.look-c .toast{background:#3a3a3a;border-color:#4a4a4a}
+.look-c .toast[data-tone="success"] .ti{color:#5cc98a}.look-c .toast[data-tone="danger"] .ti{color:#f07167}.look-c .toast[data-tone="warning"] .ti{color:#e0a24a}.look-c .toast[data-tone="info"] .ti{color:#7da4f2}
+
+/* ---------- Centre de notifications ---------- */
+.center{position:absolute;z-index:60;top:calc(var(--bar-h) - 2px);right:8px;width:380px;max-width:calc(100% - 16px);max-height:calc(100% - var(--bar-h) - 12px);display:none;flex-direction:column;background:var(--surface-raised);border:1px solid var(--line);border-radius:var(--radius-lg);box-shadow:var(--shadow-md)}
+.center.open{display:flex}
+.c-head{display:flex;align-items:center;gap:8px;padding:10px 8px 8px 14px;border-bottom:1px solid var(--line)}
+.c-head h2{margin:0;font-size:var(--fs-md);font-weight:600;flex:1}
+.c-head .lnk{font-size:var(--fs-sm);color:var(--fg-2);padding:2px 6px;border-radius:var(--radius-md)}
+.c-head .lnk:hover{background:var(--hover);color:var(--fg)}
+.c-list{overflow:auto;padding:4px 0 6px;min-height:0}
+.c-group{font-size:var(--fs-xs);color:var(--fg-3);padding:8px 14px 4px;font-weight:500;text-transform:none}
+.n{position:relative;display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:2px 10px;padding:8px 8px 8px 14px;margin:0 4px;border-radius:var(--radius-md)}
+.n:hover,.n:focus-within{background:var(--hover)}
+.n .ti{margin-top:2px}
+.n[data-tone="success"] .ti{color:var(--success)}.n[data-tone="warning"] .ti{color:var(--warning)}.n[data-tone="danger"] .ti{color:var(--danger)}.n[data-tone="info"] .ti{color:var(--info)}
+.n .tt{font-weight:500;overflow-wrap:anywhere}
+.n .td{color:var(--fg-2);font-size:var(--fs-sm);overflow-wrap:anywhere}
+.n .meta{color:var(--fg-3);font-size:var(--fs-xs);margin-top:2px}
+.n .unread{position:absolute;left:4px;top:15px;width:6px;height:6px;border-radius:50%;background:var(--accent)}
+.n .x{opacity:0;width:24px;height:24px;display:grid;place-items:center;border-radius:var(--radius-sm);color:var(--fg-3)}
+.n:hover .x,.n:focus-within .x{opacity:1}.n .x:hover{background:var(--selected);color:var(--fg)}
+.n .x .ic{width:14px;height:14px}
+.c-empty{padding:32px 16px;text-align:center;color:var(--fg-2)}
+.c-empty .ic{width:24px;height:24px;color:var(--fg-3);margin-bottom:6px}
+.c-empty b{display:block;color:var(--fg);font-weight:500}
+
+/* ---------- Format mobile ---------- */
+.app.mobile{width:390px;max-width:100%;margin:0 auto;grid-template-columns:minmax(0,1fr);grid-template-rows:var(--bar-h) 1fr 56px;height:640px}
+.app.mobile .bar-side,.app.mobile .side{display:none}
+.app.mobile .bar,.app.mobile .main{grid-column:1}
+.app.mobile .tabbar{display:flex}
+.tabbar{display:none;grid-column:1;grid-row:3;border-top:1px solid var(--line);background:var(--surface-side);align-items:center;justify-content:space-around;font-size:var(--fs-xs);color:var(--fg-2)}
+.tabbar span{display:flex;flex-direction:column;align-items:center;gap:2px}
+.app.mobile .region{left:8px;right:8px;width:auto;max-width:none;bottom:64px}
+.app.mobile .center{inset:0;width:auto;max-width:none;max-height:none;border-radius:0;border:0;top:0}
+.app.mobile .fullbanner{left:0}
+.c-back{display:none}.app.mobile .c-back{display:inline-grid}
+
+/* ---------- Aperçu A / B / C ---------- */
+.cmp{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+@media (max-width:860px){.cmp{grid-template-columns:1fr}}
+.opt{background:var(--pg-card);border:1px solid var(--pg-line);border-radius:10px;padding:12px;font-size:13px}
+.opt h4{margin:0 0 2px;font-size:14px}.opt p{margin:0 0 10px;color:var(--pg-muted)}
+.opt .stage{padding:14px;border-radius:8px;background:var(--surface);display:flex;flex-direction:column;gap:8px;font-family:var(--font-sans);border:1px solid var(--pg-line)}
+.opt .toast{animation:none}
+@media (max-width:640px){.app:not(.mobile){grid-template-columns:minmax(0,1fr)}.app:not(.mobile) .bar-side,.app:not(.mobile) .side{display:none}.app:not(.mobile) .bar,.app:not(.mobile) .main{grid-column:1}}
+</style>
+</head>
+<body>
+<div class="pg">
+  <h1>Notifications — v1 <span class="badge" id="status">VALIDÉ le 2026-11-23</span></h1>
+  <p class="sub">Mode <code>propose</code>, depuis Alfred (proposition P6). Deux briques : les <b>toasts</b> éphémères et le <b>centre de notifications</b> de la barre du haut. Specs à créer : <code>src/components/Toast/Toast.spec.md</code> et <code>src/patterns/NotificationCenter/NotificationCenter.spec.md</code>. Version mineure : tout est nouveau et facultatif.</p>
+
+  <div class="boxes">
+    <div class="box">
+      <h2>Test du générique</h2>
+      <p style="margin:0">Réussi. Toute app de travail confirme une action (« Document archivé »), propose de l'annuler (D-007) et garde la trace d'événements passés (une tâche finie, un import en échec). Rien n'est propre à Alfred : les libellés, les sources et les actions viennent de l'app.</p>
+    </div>
+    <div class="box">
+      <h2>Avant (Alfred aujourd'hui)</h2>
+      <ul>
+        <li>Toasts par la librairie <b>sonner</b>, restylée par 70 lignes de CSS ; en bas à droite ; 4 visibles.</li>
+        <li>Tons info, succès, alerte, erreur ; 5 s, 8 s pour alerte et erreur ; deux actions au plus.</li>
+        <li>Cloche dans la barre du haut : nombre de non-lus (« 9+ »), panneau ancré, « Tout effacer ». Ouvrir marque tout comme lu.</li>
+        <li><code>FeedbackBanner</code> : message persistant, en cadre (<code>contained</code>) ou en bandeau pleine largeur (<code>bar</code>).</li>
+      </ul>
+    </div>
+    <div class="box">
+      <h2>Déjà décidé</h2>
+      <ul>
+        <li>Confirmation seulement pour l'irréversible ; le reste agit tout de suite et <b>s'annule depuis une notification</b> (D-007).</li>
+        <li>Ce qui flotte porte une ombre, sur <code>--surface-raised</code> (principes, D-012).</li>
+        <li>Monochrome : la couleur ne porte que du sens ; le non-lu est un point <code>--accent</code> (D-001, D-044).</li>
+        <li>Rayons : 8 px pour un contrôle, 12 px pour un conteneur (D-040).</li>
+        <li>La barre du haut ne reçoit que des boutons-icônes (AppShell, slot <code>actions</code>).</li>
+        <li>Échap ferme ce qui flotte. Libellés internes par <code>messages</code> (D-089).</li>
+        <li><b>Brief</b> : un état de page se signale dans la barre du haut, jamais par un bandeau pleine largeur.</li>
+      </ul>
+    </div>
+    <div class="box">
+      <h2>API proposée (toutes les options sont facultatives)</h2>
+<pre>// Une seule file par app, utilisable hors de React.
+const notifications = createNotifications();
+&lt;SocleProvider notifications={notifications}&gt;…
+
+notifications.notify({
+  tone: "success",            // success | info | warning | danger
+  title: "Document archivé",
+  description: "Budget 2027",
+  action: { label: "Annuler", onAction: restore },
+  duration: 8000,              // ms ; null : jusqu'à fermeture
+  source: "Import",            // affichée dans le centre
+  history: true,               // false : toast seul, hors du centre
+  toast: true,                 // false : centre seul, sans toast
+});
+const notify = useNotify();    // même fonction, dans React
+
+// Barre du haut :
+&lt;AppShell actions={&lt;NotificationCenter /&gt;} …/&gt;</pre>
+    </div>
+    <div class="box wide">
+      <h2>À décider — tout validé le 2026-11-23, par délégation de l'utilisateur (recommandations retenues)</h2>
+      <ol>
+        <li><b>Moteur</b> : A garder <i>sonner</i> (nouvelle dépendance, restylée) ; B <b>React Aria Toast</b>, déjà dans nos dépendances (file, minuterie, pause, F6 vers la région, focus rendu à la fermeture), enveloppé par Socle ; C tout écrire nous-mêmes. <span class="ok">validé (D-150)</span></li>
+        <li><b>Apparence du toast</b> : A carte neutre <code>--surface-raised</code>, seule l'icône porte le ton ; B fond teinté par le ton ; C sombre constant, comme l'info-bulle. <span class="ok">validé (D-151)</span></li>
+        <li><b>Tons</b> : 3 (succès, info, erreur) ou 4 avec « alerte » (<code>--warning</code> existe, Alfred s'en sert). <span class="ok">validé (D-152)</span></li>
+        <li><b>Durée</b> : 5 s par défaut ; 8 s avec une action ; une erreur reste jusqu'à sa fermeture ; pause au survol, au focus et quand la fenêtre perd le focus ; <code>duration</code> réglable par appel, 5 s au minimum. <span class="ok">validé (D-153)</span></li>
+        <li><b>Pile</b> : 3 toasts visibles au plus, le plus récent en bas ; au-delà, le plus ancien se ferme (il reste dans le centre). <span class="ok">validé (D-154)</span></li>
+        <li><b>Action</b> : une seule action texte, plus la croix de fermeture ; l'action ferme le toast. <span class="ok">validé (D-155)</span></li>
+        <li><b>Lien toast ↔ centre</b> : par défaut, chaque notification va dans les deux ; <code>history: false</code> pour une confirmation triviale (« Lien copié ») ; <code>toast: false</code> pour un événement de fond. <span class="ok">validé (D-156)</span></li>
+        <li><b>Action dans le centre</b> : l'action du toast (« Annuler ») expire avec lui et n'est pas reprise dans le centre ; une ligne du centre peut s'ouvrir (option <code>onOpen</code>). <span class="ok">validé (D-156)</span></li>
+        <li><b>Compteur</b> : A pastille <code>--accent</code> avec le nombre de non-lus, « 9+ » au-delà ; B simple point. <span class="ok">validé (D-157)</span></li>
+        <li><b>Ouverture du centre</b> : panneau ancré sous la cloche (380 px), plein écran sur mobile ; l'ouvrir marque tout comme lu, mais les points restent jusqu'à la fermeture. <span class="ok">validé (D-157)</span></li>
+        <li><b>Contenu du centre</b> : groupes « Aujourd'hui », « Hier », puis la date ; ligne = icône du ton, titre, texte, heure · source, point non-lu ; × au survol pour retirer ; en-tête « Tout effacer » ; état vide. <span class="ok">validé (D-158)</span></li>
+        <li><b>Persistance</b> : en mémoire, 100 notifications au plus ; la persistance entre deux ouvertures reste à l'app (<code>initial</code> et <code>onChange</code> de la file). <span class="ok">validé (D-158)</span></li>
+        <li><b>Avenir de FeedbackBanner</b> : plus de bandeau pleine largeur. Un état durable de page (hors ligne, lecture seule) va dans la barre du haut, en indicateur compact ; un message local reste un encart dans le contenu (comme D-085). Ici, on écrit la règle dans <code>layout-rules.md</code> ; l'indicateur et l'encart feront chacun une proposition à part. <span class="ok">validé (D-159)</span></li>
+      </ol>
+    </div>
+  </div>
+
+  <h3 class="sec">Aperçu des options d'apparence (question 2)</h3>
+  <div class="cmp" id="cmp"></div>
+
+  <h3 class="sec">Dans l'app</h3>
+  <div class="toolbar" id="toolbar">
+    <span><span class="tlabel">Apparence</span><span class="seg" data-k="look"><button aria-pressed="true" data-v="a">A</button><button aria-pressed="false" data-v="b">B</button><button aria-pressed="false" data-v="c">C</button></span></span>
+    <span><span class="tlabel">Pile</span><span class="seg" data-k="max"><button aria-pressed="true" data-v="3">3</button><button aria-pressed="false" data-v="5">5</button></span></span>
+    <span><span class="tlabel">Compteur</span><span class="seg" data-k="count"><button aria-pressed="true" data-v="num">Nombre</button><button aria-pressed="false" data-v="dot">Point</button></span></span>
+    <span><span class="tlabel">État de page</span><span class="seg" data-k="pstat"><button aria-pressed="true" data-v="none">Aucun</button><button aria-pressed="false" data-v="on">Barre du haut</button><button aria-pressed="false" data-v="bar">Bandeau (exclu)</button></span></span>
+    <span><span class="tlabel">Format</span><span class="seg" data-k="fmt"><button aria-pressed="true" data-v="desk">Bureau</button><button aria-pressed="false" data-v="mobile">Mobile</button></span></span>
+    <span><span class="tlabel">Mode</span><span class="seg" data-k="mode"><button aria-pressed="true" data-v="light">Clair</button><button aria-pressed="false" data-v="dark">Sombre</button></span></span>
+    <span><span class="tlabel">Densité</span><span class="seg" data-k="density"><button aria-pressed="true" data-v="web">Web</button><button aria-pressed="false" data-v="desktop">Desktop</button></span></span>
+  </div>
+  <div class="fire">
+    <button data-fire="success">Succès + « Annuler »</button>
+    <button data-fire="info">Information</button>
+    <button data-fire="warning">Alerte</button>
+    <button data-fire="danger">Erreur + « Réessayer »</button>
+    <button data-fire="long">Texte long</button>
+    <button data-fire="bg">Événement de fond (centre seul)</button>
+    <button data-fire="burst">Rafale de 6</button>
+  </div>
+
+  <div class="app tk" id="app">
+    <div class="bar-side">
+      <button class="ibtn" aria-label="Replier la sidebar"><svg class="ic" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 3v18"/></svg></button>
+      <span style="flex:1"></span>
+      <button class="ibtn" aria-label="Précédent"><svg class="ic" viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"/></svg></button>
+      <button class="ibtn" aria-label="Suivant"><svg class="ic" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg></button>
+    </div>
+    <div class="bar">
+      <button class="ibtn c-back" aria-label="Menu"><svg class="ic" viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button>
+      <span class="ptitle">Documents</span>
+      <span class="pstatus" role="status"><svg class="ic" viewBox="0 0 24 24"><path d="M12 9v4M12 17h.01"/><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/></svg>Hors ligne <a href="#" onclick="return false">Réessayer</a></span>
+      <span class="sp"></span>
+      <button class="ibtn" aria-label="Nouveau document"><svg class="ic" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></button>
+      <button class="ibtn" id="bell" aria-haspopup="dialog" aria-expanded="false" aria-label="Notifications"><svg class="ic" viewBox="0 0 24 24"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg><span class="count" id="count" hidden></span></button>
+      <button class="ibtn" aria-label="Panneau de détail"><svg class="ic" viewBox="0 0 24 24"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg></button>
+    </div>
+    <div class="fullbanner"><svg class="ic" viewBox="0 0 24 24" style="color:var(--warning)"><path d="M12 9v4M12 17h.01"/><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/></svg>Hors ligne : les modifications ne sont pas enregistrées. <s>Bandeau pleine largeur : exclu par le brief.</s></div>
+    <nav class="side" aria-label="Navigation">
+      <button class="it"><svg class="ic" viewBox="0 0 24 24"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>Accueil</button>
+      <button class="it on"><svg class="ic" viewBox="0 0 24 24"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/></svg>Documents</button>
+      <button class="it"><svg class="ic" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>Tâches</button>
+      <button class="it"><svg class="ic" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>Contacts</button>
+    </nav>
+    <main class="main">
+      <p class="mtitle">Survolez une ligne : « Archiver » montre le toast avec « Annuler ».</p>
+      <div class="rows" id="rows"></div>
+      <div class="region" id="region" role="region" aria-label="Notifications" tabindex="-1"></div>
+    </main>
+    <div class="tabbar"><span>⌂<b style="font-weight:400">Accueil</b></span><span>▤<b style="font-weight:400">Documents</b></span><span>◷<b style="font-weight:400">Tâches</b></span><span>⋯<b style="font-weight:400">Plus</b></span></div>
+    <section class="center" id="center" role="dialog" aria-label="Notifications">
+      <div class="c-head">
+        <button class="ibtn c-back" id="cBack" aria-label="Fermer"><svg class="ic" viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"/></svg></button>
+        <h2>Notifications</h2>
+        <button class="lnk" id="clear">Tout effacer</button>
+      </div>
+      <div class="c-list" id="clist"></div>
+    </section>
+  </div>
+  <p class="hint">Jouable : survol d'un toast = pause de la minuterie ; Échap ferme le centre ; F6 (dans le cadre) met le focus sur la région des toasts. Ce qui n'est pas joué ici : la pause quand la fenêtre perd le focus, l'annonce au lecteur d'écran (<code>role="status"</code> pour succès et info, <code>role="alert"</code> pour erreur).</p>
+</div>
+
+<script>
+(function(){
+  var S = {look:'a', max:3, count:'num', pstat:'none', fmt:'desk', mode:'light', density:'web'};
+  var app = document.getElementById('app'), region = document.getElementById('region');
+  var bell = document.getElementById('bell'), countEl = document.getElementById('count');
+  var center = document.getElementById('center'), clist = document.getElementById('clist');
+  var ICON = {
+    success:'<svg class="ic ti" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg>',
+    info:'<svg class="ic ti" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>',
+    warning:'<svg class="ic ti" viewBox="0 0 24 24"><path d="M12 9v4M12 17h.01"/><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/></svg>',
+    danger:'<svg class="ic ti" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>'
+  };
+  var X = '<svg class="ic" viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12"/></svg>';
+  function esc(s){ return String(s).replace(/[&<>"]/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; }); }
+
+  /* ---------- Liste factice ---------- */
+  var DOCS = ['Rapport trimestriel des ventes','Budget 2027','Compte rendu de réunion','Contrat cadre fournisseur','Plan de formation','Charte graphique','Procédure d\'accueil'];
+  var dates = ['21 nov.','20 nov.','18 nov.','12 nov.','3 nov.','28 oct.','15 oct.'];
+  function renderRows(){
+    document.getElementById('rows').innerHTML = DOCS.map(function(d,i){
+      return '<div class="row"><span class="t">'+esc(d)+'</span><span class="d">'+dates[i]+'</span><span class="acts"><button class="ibtn" data-arch="'+i+'" aria-label="Archiver '+esc(d)+'"><svg class="ic" viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="5" rx="1"/><path d="M4 8v11a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8M10 12h4"/></svg></button></span></div>';
+    }).join('');
+  }
+  renderRows();
+
+  /* ---------- File de notifications ---------- */
+  var items = [], nextId = 1, open = false;
+  var now = Date.now();
+  // Historique de départ : hier et avant-hier
+  [[ 'info','Synchronisation terminée','412 éléments à jour.','Synchronisation', 26],
+   [ 'danger','Import en échec','Le fichier « clients.csv » est illisible.','Import', 30],
+   [ 'success','Export prêt','Le fichier est dans Téléchargements.','Export', 52]].forEach(function(s){
+    items.push({id:nextId++, tone:s[0], title:s[1], description:s[2], source:s[3], at: now - s[4]*3600e3, read:true});
+  });
+
+  function notify(o){
+    var it = {id:nextId++, tone:o.tone||'info', title:o.title, description:o.description, source:o.source, at:Date.now(), read:false};
+    if (o.history !== false){ items.unshift(it); items = items.slice(0,100); }
+    if (o.toast !== false) showToast(it, o);
+    renderCount(); if (open) renderCenter();
+    return it.id;
+  }
+
+  /* ---------- Toasts ---------- */
+  function showToast(it, o){
+    var dur = o.duration !== undefined ? o.duration : (it.tone === 'danger' ? null : (o.action ? 8000 : 5000));
+    var el = document.createElement('div');
+    el.className = 'toast'; el.setAttribute('data-tone', it.tone);
+    el.setAttribute('role', it.tone === 'danger' ? 'alert' : 'status');
+    el.innerHTML = ICON[it.tone] + '<div class="tx"><div class="tt">'+esc(it.title)+'</div>' + (it.description ? '<div class="td">'+esc(it.description)+'</div>' : '') + '</div>'
+      + '<div class="tr">' + (o.action ? '<button class="act">'+esc(o.action.label)+'</button>' : '') + '<button class="x" aria-label="Fermer la notification">'+X+'</button></div>';
+    region.appendChild(el);
+    var left = dur, started = Date.now(), t = null, paused = false;
+    function close(){ clearTimeout(t); if (!el.isConnected) return; el.classList.add('out'); setTimeout(function(){ el.remove(); }, 130); }
+    function run(){ if (left === null) return; started = Date.now(); t = setTimeout(close, left); }
+    function pause(){ if (paused || left === null) return; paused = true; clearTimeout(t); left -= Date.now() - started; }
+    function resume(){ if (!paused) return; paused = false; run(); }
+    el.addEventListener('mouseenter', pause); el.addEventListener('mouseleave', resume);
+    el.addEventListener('focusin', pause); el.addEventListener('focusout', function(e){ if (!el.contains(e.relatedTarget)) resume(); });
+    el.querySelector('.x').onclick = close;
+    if (o.action) el.querySelector('.act').onclick = function(){ o.action.run(); close(); };
+    el._close = close;
+    run();
+    // Pile limitée : le plus ancien se ferme
+    var live = Array.prototype.filter.call(region.children, function(c){ return !c.classList.contains('out'); });
+    while (live.length > S.max){ live.shift()._close(); }
+  }
+
+  /* ---------- Compteur ---------- */
+  function renderCount(){
+    var n = items.filter(function(i){ return !i.read; }).length;
+    countEl.hidden = n === 0;
+    countEl.className = 'count' + (S.count === 'dot' ? ' dot' : '');
+    countEl.textContent = n > 9 ? '9+' : String(n);
+    bell.setAttribute('aria-label', n ? 'Notifications, ' + n + ' non lue' + (n > 1 ? 's' : '') : 'Notifications');
+  }
+
+  /* ---------- Centre ---------- */
+  function dayLabel(at){
+    var d = new Date(at), t = new Date(); t.setHours(0,0,0,0);
+    var diff = Math.round((t - new Date(d.getFullYear(), d.getMonth(), d.getDate())) / 864e5);
+    if (diff <= 0) return 'Aujourd\'hui'; if (diff === 1) return 'Hier';
+    return d.toLocaleDateString('fr-FR', {day:'numeric', month:'long'});
+  }
+  function hhmm(at){ return new Date(at).toLocaleTimeString('fr-FR', {hour:'2-digit', minute:'2-digit'}); }
+  function renderCenter(){
+    document.getElementById('clear').hidden = items.length === 0;
+    if (!items.length){
+      clist.innerHTML = '<div class="c-empty">'+ICON.info.replace('ic ti','ic')+'<b>Aucune notification</b>Les événements de l\'app apparaîtront ici.</div>';
+      return;
+    }
+    var html = '', g = null;
+    items.forEach(function(it){
+      var l = dayLabel(it.at);
+      if (l !== g){ html += '<div class="c-group" role="presentation">'+l+'</div>'; g = l; }
+      html += '<div class="n" data-tone="'+it.tone+'" tabindex="0">' + (it.wasUnread ? '<span class="unread" aria-label="Non lue"></span>' : '') + ICON[it.tone]
+        + '<div><div class="tt">'+esc(it.title)+'</div>' + (it.description ? '<div class="td">'+esc(it.description)+'</div>' : '')
+        + '<div class="meta">'+hhmm(it.at) + (it.source ? ' · '+esc(it.source) : '') + '</div></div>'
+        + '<button class="x" data-rm="'+it.id+'" aria-label="Retirer la notification">'+X+'</button></div>';
+    });
+    clist.innerHTML = html;
+  }
+  function setOpen(v){
+    open = v; center.classList.toggle('open', v); bell.setAttribute('aria-expanded', String(v));
+    if (v){
+      items.forEach(function(i){ i.wasUnread = !i.read; i.read = true; });
+      renderCenter(); renderCount();
+      var f = center.querySelector('.n, .lnk'); if (f) f.focus();
+    } else {
+      items.forEach(function(i){ i.wasUnread = false; });
+      bell.focus();
+    }
+  }
+  bell.onclick = function(e){ e.stopPropagation(); setOpen(!open); };
+  document.getElementById('cBack').onclick = function(){ setOpen(false); };
+  document.getElementById('clear').onclick = function(){ items = []; renderCenter(); renderCount(); };
+  clist.addEventListener('click', function(e){
+    var b = e.target.closest('[data-rm]'); if (!b) return;
+    var id = +b.getAttribute('data-rm'); items = items.filter(function(i){ return i.id !== id; }); renderCenter(); renderCount();
+  });
+  document.addEventListener('click', function(e){ if (open && !center.contains(e.target) && e.target !== bell) setOpen(false); });
+  app.addEventListener('keydown', function(e){
+    if (e.key === 'Escape' && open){ e.preventDefault(); setOpen(false); }
+    if (e.key === 'F6'){ e.preventDefault(); var b = region.querySelector('.toast button'); (b || region).focus(); }
+  });
+
+  /* ---------- Déclencheurs ---------- */
+  document.getElementById('rows').addEventListener('click', function(e){
+    var b = e.target.closest('[data-arch]'); if (!b) return;
+    var i = +b.getAttribute('data-arch'), name = DOCS[i];
+    DOCS.splice(i,1); var d = dates.splice(i,1)[0]; renderRows();
+    notify({tone:'success', title:'Document archivé', description:name, action:{label:'Annuler', run:function(){ DOCS.splice(i,0,name); dates.splice(i,0,d); renderRows(); notify({tone:'info', title:'Archivage annulé', history:false}); }}});
+  });
+  var F = {
+    success:function(){ notify({tone:'success', title:'Document archivé', description:'Budget 2027', action:{label:'Annuler', run:function(){}}}); },
+    info:function(){ notify({tone:'info', title:'Lien copié', history:false}); },
+    warning:function(){ notify({tone:'warning', title:'Espace presque plein', description:'92 % de l\'espace est utilisé.', source:'Stockage'}); },
+    danger:function(){ notify({tone:'danger', title:'Envoi impossible', description:'Le service ne répond pas.', source:'Envoi', action:{label:'Réessayer', run:function(){}}}); },
+    long:function(){ notify({tone:'info', title:'Import terminé avec des remarques à vérifier avant la prochaine synchronisation', description:'Ligne 12 : adresse incomplète. Ligne 48 : doublon probable avec « Contrat cadre fournisseur ». Ligne 97 : date au mauvais format.', source:'Import'}); },
+    bg:function(){ notify({tone:'success', title:'Sauvegarde nocturne terminée', source:'Sauvegarde', toast:false}); },
+    burst:function(){ for (var k=1;k<=6;k++) notify({tone:'success', title:'Élément '+k+' traité'}); }
+  };
+  document.querySelector('.fire').addEventListener('click', function(e){ var b = e.target.closest('[data-fire]'); if (b) F[b.getAttribute('data-fire')](); });
+
+  /* ---------- Bascules ---------- */
+  function apply(){
+    app.classList.remove('look-a','look-b','look-c'); app.classList.add('look-'+S.look);
+    app.classList.toggle('dark', S.mode === 'dark'); app.classList.toggle('desktop', S.density === 'desktop');
+    app.classList.toggle('mobile', S.fmt === 'mobile');
+    app.classList.toggle('status-on', S.pstat === 'on'); app.classList.toggle('status-bar', S.pstat === 'bar');
+    document.querySelectorAll('.opt .stage').forEach(function(s){ s.classList.toggle('dark', S.mode === 'dark'); s.parentNode.classList.toggle('dark', S.mode === 'dark'); });
+    renderCount();
+  }
+  document.getElementById('toolbar').addEventListener('click', function(e){
+    var b = e.target.closest('button'); if (!b) return; var seg = b.parentNode, k = seg.getAttribute('data-k');
+    seg.querySelectorAll('button').forEach(function(x){ x.setAttribute('aria-pressed', String(x === b)); });
+    S[k] = k === 'max' ? +b.getAttribute('data-v') : b.getAttribute('data-v'); apply();
+  });
+
+  /* ---------- Aperçu A/B/C ---------- */
+  var LOOKS = [['a','A — Carte neutre','Surface des menus ; seule l\'icône porte le ton. Monochrome, comme le reste.',true],['b','B — Fond teinté','Le fond prend la teinte du ton. Plus visible, mais colore l\'écran.'],['c','C — Sombre constant','Comme l\'info-bulle (D-030). Tranche fort, mais rompt avec les surfaces.']];
+  document.getElementById('cmp').innerHTML = LOOKS.map(function(l){
+    var t = function(tone, title, desc, act){ return '<div class="toast" data-tone="'+tone+'">'+ICON[tone]+'<div class="tx"><div class="tt">'+title+'</div>'+(desc?'<div class="td">'+desc+'</div>':'')+'</div><div class="tr">'+(act?'<button class="act">'+act+'</button>':'')+'<button class="x" aria-label="Fermer">'+X+'</button></div></div>'; };
+    return '<div class="opt"><h4>'+l[1]+(l[3]?' <span class="reco">reco</span>':'')+'</h4><p>'+l[2]+'</p><div class="tk look-'+l[0]+'"><div class="stage tk">'
+      + t('success','Document archivé','Budget 2027','Annuler') + t('danger','Envoi impossible','Le service ne répond pas.','Réessayer') + t('info','Lien copié') + '</div></div></div>';
+  }).join('');
+  apply();
+})();
+</script>
+</body>
+</html>
