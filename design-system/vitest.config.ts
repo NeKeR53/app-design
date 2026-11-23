@@ -23,6 +23,7 @@ export default defineConfig({
       "react-aria-components/Tooltip",
       "react-aria-components/Tabs",
       "react-aria-components/Tree",
+      "react-aria-components/useDragAndDrop",
       "react-aria-components/Table",
       "react-aria-components/GridList",
       "react-aria-components/SearchField",

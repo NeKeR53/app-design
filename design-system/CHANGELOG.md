@@ -4,6 +4,11 @@ Versions selon semver (règle 6 du skill design) : une nouvelle option facultati
 
 ## [Non publié]
 
+### Ajouté
+- `TreeView` : arbre de nœuds dépliables dans le contenu d'une page (fichiers, dossiers, hiérarchies), sur autant de niveaux que nécessaire (D-260 à D-268). Un nœud sur une ligne : chevron, icône (`openIcon` une fois déplié), libellé, méta (D-261) ; un trait vertical `--tree-line` par niveau (D-262). Sélection `none`, `single` (défaut) ou `multiple` par Mod et Maj ; double-clic ou Entrée : `onAction`, sinon plie ou déplie (D-263). Clavier du motif `tree` et recherche par frappe (D-264). Actions de nœud par le modèle `Action` et `ActionBar` zone `row`, action `danger` confirmée, clic droit et Maj+F10 (D-265). Enfants chargés à la demande par `loadChildren(node, signal)`, avec « Chargement… » et « Impossible de charger · Réessayer » (D-266). Glisser-déposer facultatif par `onMove(ids, { id, position })` : avant, après, dans (D-267). Arbre vide : `EmptyState` compact (D-268). Types `TreeViewProps`, `TreeNode`, `TreeMoveTarget`.
+- Libellés internes `childrenLoadFailed`, `noItems`, `moveItem`, `expand` et `collapse` dans le dictionnaire `messages` (D-089).
+- Règle de choix entre `TreeView` et `Sidebar.TreeItem` (D-260), reportée dans la spec `Sidebar`.
+
 ## [0.2.0] — 2026-11-23
 
 Lot 1 de la migration d'Alfred : bouton à texte, actions, modale, champs, ComboBox, notifications et petits éléments d'affichage (décisions D-100 à D-169). Version mineure : tout est nouveau ou facultatif, rien ne casse.

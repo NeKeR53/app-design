@@ -1273,3 +1273,75 @@
 - Raison : comportements montrés dans la page de validation v1 et repris de la barre de recherche (D-071) et du Menu, pour un seul clavier dans le design system.
 - Options écartées : liste ouverte au focus (Alfred) ; champ sans chevron (Combobox d'Alfred).
 - Validation : docs/validation/components/ComboBox-v1.html
+
+## D-260 — TreeView ou Sidebar.TreeItem : choisir par la zone et la profondeur
+- Date : 2026-11-23
+- Portée : TreeView, Sidebar
+- Décision : `TreeView` sert le contenu de travail (explorer, choisir et agir sur une hiérarchie de données), dans une zone de contenu, sur autant de niveaux que nécessaire, une ligne par nœud. `Sidebar.TreeItem` reste la navigation, dans la Sidebar seulement, sur deux lignes et un niveau d'enfants (D-056). La navigation de l'app va dans la Sidebar, même hiérarchique ; un arbre de données ne va jamais dans la Sidebar. Les deux ne partagent pas de rendu, seulement les tokens et React Aria `Tree`.
+- Raison : validation par délégation de l'utilisateur, 2026-11-23 ; deux rôles nets évitent deux composants pour le même besoin.
+- Options écartées : étendre `Sidebar.TreeItem` à plusieurs niveaux ; un seul composant d'arbre avec une variante « navigation ».
+- Validation : docs/validation/components/TreeView-v1.html
+
+## D-261 — TreeView : un nœud sur une ligne
+- Date : 2026-11-23
+- Portée : TreeView
+- Décision : un nœud tient sur une ligne de `--row-h`, rayon de 8 px : retrait de 16 px par niveau, chevron de 16 px (place gardée sans enfants), icône facultative de 16 px (`openIcon` une fois déplié), libellé coupé, méta courte à droite en `--fs-sm`, `--fg-3`.
+- Raison : validation par délégation de l'utilisateur, 2026-11-23 ; densité d'un explorateur, colonnes d'icônes alignées.
+- Options écartées : deux lignes par nœud ; retrait qui suit la densité.
+- Validation : docs/validation/components/TreeView-v1.html
+
+## D-262 — TreeView : un trait vertical par niveau, sans coude
+- Date : 2026-11-23
+- Portée : TreeView
+- Décision : sous un nœud déplié, chaque niveau parent est marqué par un trait vertical de 1 px en `--tree-line`, aligné sur le chevron du parent, sans coude ni trait horizontal.
+- Raison : validation par délégation de l'utilisateur, 2026-11-23 ; on repère la profondeur sans bruit, même à cinq niveaux ; le coude de D-042 sert un seul niveau.
+- Options écartées : coude de D-042 (B) ; aucun trait (C).
+- Validation : docs/validation/components/TreeView-v1.html
+
+## D-263 — TreeView : sélection et ouverture
+- Date : 2026-11-23
+- Portée : TreeView
+- Décision : un clic sélectionne le nœud (`selectionMode` `single` par défaut, `multiple` ou `none`). En `multiple`, Mod+clic ajoute ou retire, Maj+clic prend la plage ; pas de case à cocher. Le chevron plie ou déplie sans sélectionner. Double-clic ou Entrée appellent `onAction` ; sans `onAction`, ils plient ou déplient le nœud.
+- Raison : validation par délégation de l'utilisateur, 2026-11-23 ; c'est le geste d'un explorateur de fichiers ; une case par nœud appelle la sélection en cascade, hors de ce besoin.
+- Options écartées : case au survol comme la liste (D-065) ; sélection en cascade.
+- Validation : docs/validation/components/TreeView-v1.html
+
+## D-264 — TreeView : clavier du motif tree et recherche par frappe
+- Date : 2026-11-23
+- Portée : TreeView
+- Décision : clavier du motif `tree` de l'ARIA (React Aria `Tree`) : flèches haut et bas, droite (déplie, puis premier enfant), gauche (replie, puis parent), Origine, Fin, Page haut et bas, Entrée, Espace, Maj+flèches en `multiple`. Des lettres tapées vont au nœud visible dont le libellé commence par elles. Maj+F10 ou la touche Menu ouvrent le menu « … ».
+- Raison : validation par délégation de l'utilisateur, 2026-11-23 ; même clavier que la Sidebar et que tout arbre du système.
+- Options écartées : touche `*` (déplier les frères), absente de React Aria.
+- Validation : docs/validation/components/TreeView-v1.html
+
+## D-265 — TreeView : actions de nœud par le modèle Action
+- Date : 2026-11-23
+- Portée : TreeView
+- Décision : `actions(node)` rend des `Action` ; la ligne les dessine avec `ActionBar` zone `row` (D-114) : une icône puis « … », l'action `danger` en dernier dans « … », confirmée (D-115). Les actions apparaissent au survol, au focus et sur la ligne sélectionnée, à la place de la méta ; un clic droit ou Maj+F10 ouvrent « … » (D-066).
+- Raison : validation par délégation de l'utilisateur, 2026-11-23 ; une seule règle d'actions de ligne dans tout le système.
+- Options écartées : boutons-icônes libres en bout de ligne (Alfred).
+- Validation : docs/validation/components/TreeView-v1.html
+
+## D-266 — TreeView : enfants chargés à la demande
+- Date : 2026-11-23
+- Portée : TreeView
+- Décision : un nœud `hasChildren` sans `children` demande ses enfants à `loadChildren(node, signal)` à sa première ouverture. Pendant l'attente, une ligne « Chargement… » avec la roue s'affiche sous lui, et il porte `aria-busy`. En cas d'échec, la ligne devient « Impossible de charger » avec le lien « Réessayer ». Les enfants chargés sont gardés ; replier puis déplier ne relance pas la demande. Replier pendant l'attente abandonne la demande (`signal`).
+- Raison : validation par délégation de l'utilisateur, 2026-11-23 ; un grand arbre reste léger, et l'erreur reste au nœud concerné.
+- Options écartées : squelettes à la place des enfants ; erreur en notification.
+- Validation : docs/validation/components/TreeView-v1.html
+
+## D-267 — TreeView : glisser-déposer facultatif
+- Date : 2026-11-23
+- Portée : TreeView
+- Décision : avec `onMove(ids, target)`, les nœuds se déplacent au glisser-déposer. Cible : avant ou après un nœud (trait d'insertion de 2 px en `--accent`, au retrait de la cible), ou dans un nœud qui peut avoir des enfants (fond `--selected` encadré d'`--accent`). Jamais dans le nœud glissé ni ses descendants. La ligne glissée passe à 50 % d'opacité. Le composant ne change pas `nodes` : l'app applique le déplacement. Au clavier, React Aria fournit le bouton « Déplacer », visible au focus.
+- Raison : validation par délégation de l'utilisateur, 2026-11-23 ; c'est le besoin le plus courant d'un arbre de fichiers, sans imposer de règle métier.
+- Options écartées : réordonner seulement entre frères ; poignée toujours visible.
+- Validation : docs/validation/components/TreeView-v1.html
+
+## D-268 — TreeView : arbre vide
+- Date : 2026-11-23
+- Portée : TreeView
+- Décision : sans nœud, l'arbre affiche `EmptyState` compact, avec le titre et la phrase de `emptyState` (défaut : « Aucun élément »). Un dossier vide se déplie sans ligne sous lui.
+- Raison : validation par délégation de l'utilisateur, 2026-11-23 ; même état vide que le reste du système (D-166).
+- Options écartées : ligne « Dossier vide » sous chaque dossier vide.
+- Validation : docs/validation/components/TreeView-v1.html

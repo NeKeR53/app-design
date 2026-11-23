@@ -7,7 +7,8 @@ Navigation principale d'une app, dans la colonne de gauche d'AppShell. Elle choi
 Ne pas l'utiliser pour :
 - passer d'une vue à l'autre d'une page : prendre `Tabs` (dans AppShell) ;
 - des réglages : prendre `SettingsPage` ;
-- du contenu de travail (formulaire, filtres) : le mettre dans le gabarit.
+- du contenu de travail (formulaire, filtres) : le mettre dans le gabarit ;
+- un arbre de données (fichiers, dossiers, hiérarchies sur plusieurs niveaux) : prendre `TreeView`, dans la zone de contenu (D-260).
 
 ## Anatomie
 1. **Navigation** (obligatoire) : éléments de navigation `Sidebar.Item`.
@@ -118,7 +119,7 @@ Uniquement dans la zone `sidebar` d'AppShell. Une seule sidebar par fenêtre.
 Contient `IconButton`, `Tooltip` et `Menu`. Utilisée par `AppShell`.
 
 ## Décisions
-D-002, D-003, D-006, D-007, D-016, D-017, D-019, D-021, D-026, D-039, D-040, D-042, D-043, D-044, D-045, D-046, D-052, D-053, D-054, D-055, D-056
+D-002, D-003, D-006, D-007, D-016, D-017, D-019, D-021, D-026, D-039, D-040, D-042, D-043, D-044, D-045, D-046, D-052, D-053, D-054, D-055, D-056, D-260
 
 ## Questions ouvertes
 Aucune.

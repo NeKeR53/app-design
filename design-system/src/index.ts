@@ -77,3 +77,5 @@ export { Fieldset } from "./components/Fieldset/Fieldset";
 export type { FieldsetProps } from "./components/Fieldset/Fieldset";
 export { ComboBox } from "./components/ComboBox/ComboBox";
 export type { ComboBoxProps, ComboBoxSingleProps, ComboBoxMultipleProps, ComboBoxItem } from "./components/ComboBox/ComboBox";
+export { TreeView } from "./components/TreeView/TreeView";
+export type { TreeViewProps, TreeNode, TreeMoveTarget } from "./components/TreeView/TreeView";
