@@ -35,6 +35,14 @@ Versions selon semver (règle 6 du skill design) : une nouvelle option facultati
 - Libellés du dictionnaire `messages` : `unsavedChanges`, `saving`, `saved`, `saveFailed`, `fixErrors`, `discardTitle`, `discardMessage`, `discard`, `invalidNumber`, `numberTooSmall`, `numberTooLarge`.
 - Règles de placement : FormPage et saisie courte en modale (docs/layout-rules.md).
 
+- Gabarit `SettingsPage` (D-015, D-200 à D-209) : API déclarative `groups → categories → sections → settings`. Réglages typés `switch`, `select`, `text`, `action`, `item`, `info`, et contenu libre de section (`content`, par exemple une `Table`). Navigation avec recherche, groupes, icônes et lien externe en pied ; dernière rubrique mémorisée. Application immédiate ; un échec rétablit la valeur et ouvre un toast `danger`. Listes dans une section : code, étiquettes `StatusBadge`, actions de ligne par `ActionBar`. États de chargement et d'erreur d'une rubrique. Tient dans un `Dialog` `xl` comme en pleine page ; sous 640 px de large : liste, puis rubrique avec « Retour ». Types exportés : `SettingsPageProps`, `SettingsGroup`, `SettingsCategory`, `SettingsSection`, `Setting` et un type par réglage.
+- Tokens `--settings-nav-w`, `--settings-pad`, `--setting-py` (web et desktop).
+- Libellés internes : `settingsSections`, `settingsSearchScope`, `noSettingsFound`, `backToSections`, `settingNotSaved`, `settingsLoadError`, `settingsLoadErrorText`, `loadingSettings`.
+
+### Modifié
+- `Dialog` : un changement fait dans un gabarit à application immédiate (`SettingsPage`) ne compte plus comme une saisie commencée ; le clic hors ferme la modale (D-208). Aucun effet ailleurs.
+- `ActionBar` : la fonction interne `confirmRequest` est exportée dans le module (pas dans `index.ts`), pour être réutilisée par `SettingsPage`.
+
 ## [0.2.0] — 2026-11-23
 
 Lot 1 de la migration d'Alfred : bouton à texte, actions, modale, champs, ComboBox, notifications et petits éléments d'affichage (décisions D-100 à D-169). Version mineure : tout est nouveau ou facultatif, rien ne casse.

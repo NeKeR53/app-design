@@ -1517,3 +1517,83 @@
 - Raison : une saisie courte tient dans une petite fenêtre ; l'erreur reste dans la modale.
 - Options écartées : toujours `md` ; taille au choix de l'app.
 - Validation : docs/validation/components/FormPage-v1.html — par délégation de l'utilisateur, 2026-11-23.
+
+## D-200 — SettingsPage : API déclarative, réglages typés
+- Date : 2026-11-23
+- Portée : SettingsPage
+- Décision : l'app décrit ses réglages par des données : des groupes de rubriques (`groups`), chaque rubrique avec ses sections, chaque section avec ses réglages typés. Sept types : `switch` (interrupteur), `select` (liste, toujours un `Select`, même pour deux ou trois choix), `text` (champ d'une ligne), `action` (bouton), `item` (élément d'une liste), `info` (valeur en lecture seule) ; une section peut aussi recevoir un contenu libre (`content`, par exemple une `Table`). Le gabarit choisit le contrôle, sa place et son comportement.
+- Raison : toutes les apps ont des réglages ; décrits par des données, ils gardent partout le même rendu, sans ligne recomposée à la main.
+- Options écartées : composants à assembler (`SettingsPage.Nav`, `SettingRow`) ; contrôle segmenté pour un choix court (nouveau composant, à proposer à part).
+- Validation : docs/validation/components/SettingsPage-v1.html — par délégation de l'utilisateur, 2026-11-23.
+
+## D-201 — SettingsPage : navigation
+- Date : 2026-11-23
+- Portée : SettingsPage
+- Décision : à gauche, sur `--surface-side`, 220 px en web et 200 px en desktop : la recherche en tête, puis les groupes séparés par un trait, chacun avec un titre facultatif (`--fs-sm`, `--fg-3`) ; chaque rubrique est une ligne de `--row-h` avec une icône (obligatoire) et un libellé, au style d'un élément de Sidebar (survol `--hover`, rubrique courante `--selected`, `aria-current="page"`). Un lien externe facultatif se cale en pied, avec la flèche externe. Sans `selectedId` fourni par l'app, la dernière rubrique ouverte est mémorisée (D-007).
+- Raison : la même navigation que la Sidebar, pour un espace à part (D-015).
+- Options écartées : onglets en haut ; arbre à plusieurs niveaux.
+- Validation : docs/validation/components/SettingsPage-v1.html — par délégation de l'utilisateur, 2026-11-23.
+
+## D-202 — SettingsPage : recherche
+- Date : 2026-11-23
+- Portée : SettingsPage
+- Décision : la recherche est le `SearchField` de Socle, à son rythme (2 caractères, 300 ms, D-080 ; Mod+F y place le focus, D-083), sur toute la largeur de la navigation (et non 320 px, D-078). Elle filtre les rubriques sans casse ni accents (D-074). Une rubrique reste si son libellé, ses mots-clés (`keywords`), le titre d'une de ses sections ou le libellé d'un de ses réglages contient le texte. Un groupe sans rubrique restante disparaît avec son trait. Entrée ouvre la première rubrique trouvée. Sans résultat : « Aucune rubrique trouvée. » en `--fg-3`.
+- Raison : on cherche un réglage par son nom, pas seulement par sa rubrique.
+- Options écartées : filtre des lignes dans le contenu ; recherche sur le libellé de rubrique seul (Alfred) ; champ de recherche propre au gabarit, filtré à chaque lettre.
+- Validation : docs/validation/components/SettingsPage-v1.html — par délégation de l'utilisateur, 2026-11-23.
+
+## D-203 — SettingsPage : ligne de réglage
+- Date : 2026-11-23
+- Portée : SettingsPage
+- Décision : une ligne prend toute la largeur. À gauche : le libellé (`--fs-md`, `--fg`), puis la description (`--fs-sm`, `--fg-2`, 72 caractères par ligne au plus) ; à droite : le contrôle, centré en hauteur. Marge verticale de 12 px en web, 10 px en desktop ; un trait `--line` sous chaque ligne. Le libellé passe à la ligne ; il n'est jamais coupé. Le contrôle porte le libellé de la ligne comme nom accessible (D-136). `select` et `text` prennent la largeur `md` (240 px) par défaut, réglable par `width` (D-133).
+- Raison : le rendu de l'inspiration et des Réglages d'Alfred ; une ligne lisible d'un coup d'œil.
+- Options écartées : libellé au-dessus du contrôle (formulaire, D-022).
+- Validation : docs/validation/components/SettingsPage-v1.html — par délégation de l'utilisateur, 2026-11-23.
+
+## D-204 — SettingsPage : application immédiate et échec
+- Date : 2026-11-23
+- Portée : SettingsPage
+- Décision : `switch` et `select` s'appliquent dès qu'ils changent : la nouvelle valeur s'affiche tout de suite et `onChange` est appelé. `text` s'applique à Entrée ou en quittant le champ, si la valeur a changé et passe la vérification (`isRequired`, `validate`, format `email` ou `url`) ; sinon l'erreur s'affiche sous le champ (D-132) ; Échap rétablit la valeur enregistrée. Si `onChange` rejette sa promesse, la valeur précédente revient et un toast `danger` dit « Le réglage n'a pas été enregistré. », avec le message de l'erreur en description. Pas de toast de réussite. Pas de bouton « Enregistrer ».
+- Raison : D-007 ; une saisie validée à Entrée ou à la sortie du champ évite deux clics et une ligne qui bouge.
+- Options écartées : boutons « Annuler » et « Enregistrer » qui apparaissent à la modification (Alfred) ; toast « Réglage enregistré ».
+- Validation : docs/validation/components/SettingsPage-v1.html — par délégation de l'utilisateur, 2026-11-23.
+
+## D-205 — SettingsPage : réglage « action »
+- Date : 2026-11-23
+- Portée : SettingsPage
+- Décision : un réglage `action` reçoit une `Action` (D-110) et l'affiche en `Button` secondaire, à droite de la ligne. Une action `danger` ou avec `confirm` est confirmée par `useConfirm`, et le bouton rouge n'apparaît que dans la confirmation (D-104, D-115). Pendant sa promesse, le bouton est en chargement (D-116) ; un échec ouvre un toast `danger`.
+- Raison : une seule façon d'exécuter une action dans Socle ; le rouge reste réservé au geste qui détruit.
+- Options écartées : bouton `primary` ou `danger` directement dans la ligne.
+- Validation : docs/validation/components/SettingsPage-v1.html — par délégation de l'utilisateur, 2026-11-23.
+
+## D-206 — SettingsPage : listes dans une section
+- Date : 2026-11-23
+- Portée : SettingsPage
+- Décision : un réglage `item` est un élément d'une liste gérée dans les réglages (un environnement, une clé). Il a un libellé, un `Code` court facultatif à côté, une description facultative et des étiquettes d'état facultatives (`StatusBadge`) sous la description. Ses actions passent par `ActionBar` en zone `row` (D-114) : une icône, puis « … » ; une action `danger` va dans « … », en dernier, confirmée (D-115). Les actions de la section (« Nouvel environnement ») passent par `ActionBar` en zone `section` (D-113), à droite du titre. Une section sans ligne affiche `emptyMessage` en `--fg-3`, à la place des lignes.
+- Raison : Alfred et d'autres apps gèrent des listes courtes dans leurs réglages ; le modèle Action garde la règle des lignes.
+- Options écartées : corbeille rouge visible sur la ligne (Alfred) ; `EmptyState` centré dans une section.
+- Validation : docs/validation/components/SettingsPage-v1.html — par délégation de l'utilisateur, 2026-11-23.
+
+## D-207 — SettingsPage : contenu d'une rubrique
+- Date : 2026-11-23
+- Portée : SettingsPage
+- Décision : le contenu défile seul, avec une marge de 28 px sur les côtés en web, 24 px en desktop. En tête : le libellé de la rubrique (`h2`, `--fs-lg`, `--fw-semibold`). Puis les sections, à 28 px l'une de l'autre : titre facultatif (`h3`, `--fs-md`, `--fw-semibold`), description facultative (`--fs-sm`, `--fg-2`), actions à droite, un trait dessous, puis les lignes. Le contenu libre d'une section (`content`) prend toute la largeur, sous le titre. Changer de rubrique remonte le contenu en haut.
+- Raison : une hiérarchie simple : rubrique, section, ligne.
+- Options écartées : titre de rubrique absent (le titre de section seul) ; sections en cartes.
+- Validation : docs/validation/components/SettingsPage-v1.html — par délégation de l'utilisateur, 2026-11-23.
+
+## D-208 — SettingsPage : conteneur et petite largeur
+- Date : 2026-11-23
+- Portée : SettingsPage, Dialog
+- Décision : le gabarit remplit son parent : le corps d'un `Dialog` `xl` (sans marge, D-120) ou la zone `main` d'AppShell. Il n'a pas de titre propre : celui du `Dialog` ou de la barre du haut suffit. Sous 640 px de large (requête de conteneur sur le gabarit, pas sur l'écran), il montre la navigation en liste, avec un chevron à droite de chaque rubrique ; choisir une rubrique montre son contenu, avec une flèche « Retour aux rubriques » devant son titre (D-015). Dans un `Dialog`, un réglage changé ne compte pas comme une saisie commencée : le clic hors ferme toujours la modale (D-122), car tout est déjà appliqué.
+- Raison : D-015 ; la largeur du conteneur décide, car la même modale est plein écran sur mobile (D-121).
+- Options écartées : requête média sur l'écran ; navigation repliée en menu.
+- Validation : docs/validation/components/SettingsPage-v1.html — par délégation de l'utilisateur, 2026-11-23.
+
+## D-209 — SettingsPage : chargement et erreur d'une rubrique
+- Date : 2026-11-23
+- Portée : SettingsPage
+- Décision : une rubrique peut être en chargement (`isLoading`) : des squelettes de lignes prennent la place des sections, après 200 ms (D-165). Elle peut avoir échoué (`hasError`, `onRetry`) : un message centré prend la place des sections, comme pour les résultats (D-085) : « Impossible de charger ces réglages », une phrase, puis « Réessayer ». La navigation reste utilisable.
+- Raison : les réglages viennent souvent d'un serveur ; on reprend les états des résultats déjà décidés.
+- Options écartées : chargement de toutes les rubriques d'un coup ; bandeau d'erreur.
+- Validation : docs/validation/components/SettingsPage-v1.html — par délégation de l'utilisateur, 2026-11-23.

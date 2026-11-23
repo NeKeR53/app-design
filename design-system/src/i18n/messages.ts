@@ -147,6 +147,16 @@ export interface SocleMessages {
   invalidNumber: string;
   numberTooSmall: (min: number) => string;
   numberTooLarge: (max: number) => string;
+  /* SettingsPage */
+  settingsSections: string;
+  /** Ce que cherche la recherche des réglages : « Rechercher dans {…} ». */
+  settingsSearchScope: string;
+  noSettingsFound: string;
+  backToSections: string;
+  settingNotSaved: string;
+  settingsLoadError: string;
+  settingsLoadErrorText: string;
+  loadingSettings: string;
 }
 
 const s = (n: number) => (n > 1 ? "s" : "");
@@ -282,4 +292,12 @@ export const frenchMessages: SocleMessages = {
   invalidNumber: "Saisissez un nombre.",
   numberTooSmall: (min) => `Saisissez un nombre supérieur ou égal à ${min}.`,
   numberTooLarge: (max) => `Saisissez un nombre inférieur ou égal à ${max}.`,
+  settingsSections: "Rubriques des réglages",
+  settingsSearchScope: "les réglages",
+  noSettingsFound: "Aucune rubrique trouvée.",
+  backToSections: "Retour aux rubriques",
+  settingNotSaved: "Le réglage n'a pas été enregistré.",
+  settingsLoadError: "Impossible de charger ces réglages",
+  settingsLoadErrorText: "Le service ne répond pas. Réessayez dans un instant.",
+  loadingSettings: "Chargement des réglages",
 };

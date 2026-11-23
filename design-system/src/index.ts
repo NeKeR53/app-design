@@ -105,3 +105,17 @@ export type {
   FormSubmit,
   FormSubmitResult,
 } from "./lib/form";
+export { SettingsPage } from "./templates/SettingsPage/SettingsPage";
+  SettingsPageProps,
+  SettingsGroup,
+  SettingsCategory,
+  SettingsSection,
+  Setting,
+  SwitchSetting,
+  SelectSetting,
+  TextSetting,
+  ActionSetting,
+  ItemSetting,
+  InfoSetting,
+  SettingTag,
+} from "./templates/SettingsPage/SettingsPage";
