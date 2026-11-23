@@ -1,0 +1,273 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ListPage et valeurs typées — validation v1</title>
+<style>
+/* ---------- Page de validation ---------- */
+:root{--pg-bg:#f6f6f6;--pg-fg:#1a1a1a;--pg-muted:#5c5c5c;--pg-line:#e2e2e2;--pg-card:#fff;--pg-badge:#fff4d6;--pg-badge-fg:#7a5a00;--pg-reco:#e7f0ff;--pg-reco-fg:#1d4ed8}
+:root[data-theme="dark"]{--pg-bg:#121212;--pg-fg:#ececec;--pg-muted:#9a9a9a;--pg-line:#2c2c2c;--pg-card:#1b1b1b;--pg-badge:#3a2f10;--pg-badge-fg:#f3d27a;--pg-reco:#16233d;--pg-reco-fg:#9cc0ff}
+*{box-sizing:border-box}html,body{margin:0}
+body{background:var(--pg-bg);color:var(--pg-fg);font:15px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif}
+.pg{max-width:1180px;margin:0 auto;padding:24px 16px 64px}
+h1{font-size:22px;font-weight:600;margin:0 0 4px;display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+h2.sec{font-size:16px;margin:28px 0 8px}
+.intro{color:var(--pg-muted);margin:0 0 20px}
+.badge{font-size:12px;font-weight:600;letter-spacing:.04em;padding:3px 8px;border-radius:6px;background:var(--pg-badge);color:var(--pg-badge-fg)}
+.boxes{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px}
+@media (max-width:760px){.boxes{grid-template-columns:1fr}}
+.box{background:var(--pg-card);border:1px solid var(--pg-line);border-radius:10px;padding:14px 16px;font-size:14px}
+.box h2{font-size:14px;margin:0 0 8px;font-weight:600}.box ul,.box ol{margin:0;padding-left:20px}.box li{margin:5px 0}
+.reco{font-size:11.5px;font-weight:600;padding:1px 6px;border-radius:5px;background:var(--pg-reco);color:var(--pg-reco-fg);margin-left:4px}
+.toolbar{position:sticky;top:0;z-index:100;background:var(--pg-bg);padding:10px 0;border-bottom:1px solid var(--pg-line);margin-bottom:16px;display:flex;flex-wrap:wrap;gap:10px 16px;align-items:center}
+.seg{display:inline-flex;border:1px solid var(--pg-line);border-radius:8px;overflow:hidden;background:var(--pg-card)}
+.seg button{border:0;background:transparent;color:var(--pg-fg);padding:5px 10px;font:inherit;font-size:13px;cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--pg-fg);color:var(--pg-bg)}
+.tlabel{font-size:12px;color:var(--pg-muted);margin-right:6px}
+.hint{margin:8px 0 0;color:var(--pg-muted);font-size:13px}
+.cmp{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+@media (max-width:760px){.cmp{grid-template-columns:1fr}}
+.opt{background:var(--pg-card);border:1px solid var(--pg-line);border-radius:10px;padding:12px 14px;font-size:13px}
+.opt h3{margin:0 0 2px;font-size:13px}.opt p{margin:0 0 10px;color:var(--pg-muted)}
+
+/* ---------- Tokens T2 (copie de src/tokens) ---------- */
+.tk{--surface:#fff;--surface-side:#f3f3f3;--field:#f2f2f2;--hover:#e9e9e9;--selected:#dedede;--line:#e4e4e4;--line-strong:#cfcfcf;--fg:#1a1a1a;--fg-2:#5c5c5c;--fg-3:#6b6b6b;
+  --accent:#1d4ed8;--accent-text:#1d4ed8;--success:#15803d;--warning:#b45309;--danger:#c62828;--info:#1d4ed8;
+  --font-sans:-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;--font-mono:ui-monospace,"SF Mono","Cascadia Code",Consolas,monospace;
+  --radius-sm:4px;--radius-md:8px;--radius-lg:12px;--icon:16px;--icon-stroke:1.6;--fs-xs:11.5px;--fs-sm:12.5px;--fs-md:14px;--fs-lg:16px;--lh:1.45;--row-h:34px;--row2-h:52px;--bar-h:44px;--side-w:220px;--detail-w:280px;
+  background:var(--surface);color:var(--fg);font-family:var(--font-sans);font-size:var(--fs-md);line-height:var(--lh)}
+.tk.dark{--surface:#181818;--surface-side:#222;--field:#2a2a2a;--hover:#303030;--selected:#3d3d3d;--line:#333;--line-strong:#4a4a4a;--fg:#ececec;--fg-2:#ababab;--fg-3:#8f8f8f;
+  --accent:#5b8def;--accent-text:#7da4f2;--success:#5cc98a;--warning:#e0a24a;--danger:#f07167;--info:#5b8def}
+.tk.desktop{--fs-xs:10.5px;--fs-sm:11.5px;--fs-md:13px;--fs-lg:15px;--lh:1.4;--row-h:28px;--row2-h:44px;--bar-h:38px;--side-w:200px;--detail-w:260px}
+
+/* ---------- Mini AppShell ---------- */
+.app{position:relative;height:620px;border:1px solid var(--pg-line);border-radius:12px;overflow:hidden;display:grid;grid-template-columns:var(--side-w) minmax(0,1fr) var(--detail-w);grid-template-rows:var(--bar-h) 1fr}
+@media (max-width:900px){.app{grid-template-columns:minmax(0,1fr);grid-template-rows:var(--bar-h) auto 1fr auto;height:auto}.side,.bar-side{display:none}}
+.app *{box-sizing:border-box}.app button{font:inherit;color:inherit}
+.ic{width:var(--icon);height:var(--icon);flex:none;stroke:currentColor;fill:none;stroke-width:var(--icon-stroke);stroke-linecap:round;stroke-linejoin:round}
+.bar-side{background:var(--surface-side);border-right:1px solid var(--line)}
+.bar{display:flex;align-items:center;gap:10px;padding:0 16px;border-bottom:1px solid var(--line);font-weight:600;grid-column:2 / span 2}
+@media (max-width:900px){.bar{grid-column:1}}
+.side{background:var(--surface-side);border-right:1px solid var(--line);padding:6px;display:flex;flex-direction:column}
+.nav{display:flex;align-items:center;gap:8px;height:var(--row-h);padding:0 8px;border-radius:var(--radius-md);color:var(--fg-2)}
+.nav.on{background:var(--selected);color:var(--fg)}
+.acc{margin-top:auto;display:flex;align-items:center;gap:8px;height:var(--row-h);padding:0 6px}
+.main{display:flex;flex-direction:column;min-width:0;min-height:0;overflow:auto}
+.detail{border-left:1px solid var(--line);padding:12px 16px;overflow:auto;font-size:var(--fs-md)}
+@media (max-width:900px){.detail{border-left:0;border-top:1px solid var(--line)}}
+.detail h4{margin:0 0 8px;font-size:var(--fs-sm);font-weight:500;color:var(--fg-3)}
+.prop{display:flex;gap:12px;padding:4px 0}.prop dt{width:84px;flex:none;color:var(--fg-3)}.prop dd{margin:0;min-width:0}
+.tools{display:flex;align-items:center;gap:8px;padding:12px 16px}
+.btn{height:var(--row-h);padding:0 12px;border:0;border-radius:var(--radius-md);background:var(--field);font-size:var(--fs-sm);cursor:pointer}
+.btn:hover{background:var(--hover)}
+.btn.primary{background:var(--accent);color:#fff}
+.tk.dark .btn.primary{color:#0b1630}
+.li{display:flex;align-items:center;gap:12px;min-height:var(--row2-h);padding:6px 16px;border-bottom:1px solid var(--line)}
+.li .txt{display:flex;flex-direction:column;min-width:0;flex:1}
+.li .l1{display:flex;gap:8px}.li .l1 span:first-child{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.li .meta{color:var(--fg-3);font-size:var(--fs-sm)}
+.li .l2{display:flex;gap:8px;align-items:center;font-size:var(--fs-sm);color:var(--fg-2)}
+.li .l2 .sub{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+table{border-collapse:separate;border-spacing:0;width:100%;table-layout:fixed}
+th,td{height:var(--row-h);padding:0 10px;text-align:left;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+th{font-size:var(--fs-sm);font-weight:500;color:var(--fg-2);border-bottom:1px solid var(--line)}
+td{border-bottom:1px solid var(--line)}
+.block{padding:12px 16px}
+
+/* ---------- StatusDot ---------- */
+.dot{display:inline-block;width:7px;height:7px;border-radius:50%;flex:none;background:var(--fg-3);vertical-align:middle;box-sizing:border-box}
+.dot.info{background:var(--info)}.dot.success{background:var(--success)}.dot.warning{background:var(--warning)}.dot.danger{background:var(--danger)}
+.dot.pending{background:transparent;border:1.5px solid var(--fg-3)}
+.dotwrap{position:relative;display:inline-grid;place-items:center;width:24px;height:24px;cursor:default}
+.num{text-align:right;font-variant-numeric:tabular-nums}
+.sb{display:inline-flex;align-items:center;gap:6px;white-space:nowrap;font-size:var(--fs-xs);color:var(--fg-2)}
+.btn{white-space:nowrap}
+.lp-list table{table-layout:auto}.lp-list td:first-child,.lp-list th:first-child{max-width:0;width:40%}
+.empty-v{color:var(--fg-3)}
+.lk{color:var(--accent-text);text-decoration:underline;text-underline-offset:2px}
+.code{font-family:var(--font-mono);font-size:.92em;background:var(--field);padding:0 4px;border-radius:var(--radius-sm)}
+.lp-head{display:flex;align-items:flex-start;gap:12px;padding:16px 24px 8px}
+.tk.desktop .lp-head{padding:12px 16px 6px}
+.lp-head h2{margin:0;font-size:var(--fs-lg);font-weight:600}
+.lp-head p{margin:2px 0 0;font-size:var(--fs-sm);color:var(--fg-2)}
+.lp-head .acts{margin-left:auto;display:flex;gap:2px;align-items:center}
+.ib{display:inline-grid;place-items:center;width:28px;height:28px;border:0;border-radius:var(--radius-md);background:transparent;color:var(--fg-2);cursor:pointer}
+.ib:hover{background:var(--hover);color:var(--fg)}
+.lp-bar{display:flex;flex-wrap:wrap;align-items:center;gap:8px;padding:8px 24px}
+.tk.desktop .lp-bar{padding:6px 16px}
+.sf{display:flex;align-items:center;gap:6px;height:var(--row-h);padding:0 10px;border-radius:var(--radius-md);background:var(--field);color:var(--fg-3);width:240px;max-width:100%}
+.sf input{border:0;background:transparent;outline:0;font:inherit;color:var(--fg);flex:1;min-width:0}
+.sel{height:var(--row-h);padding:0 8px;border:1px solid var(--line-strong);border-radius:var(--radius-md);background:var(--surface);color:var(--fg);font:inherit;font-size:var(--fs-sm)}
+.lp-list{flex:1;min-height:0;overflow:auto;padding:0 14px}
+.tk.desktop .lp-list{padding:0 6px}
+.lp-foot{display:flex;align-items:center;gap:8px;padding:10px 24px;font-size:var(--fs-sm);color:var(--fg-3);font-variant-numeric:tabular-nums;border-top:1px solid var(--line)}
+.lp-foot .pg-nav{margin-left:auto;display:flex;gap:2px}
+.center{text-align:center;padding:56px 16px;color:var(--fg-2);max-width:420px;margin:0 auto}
+.center .t{color:var(--fg);font-weight:500}.center p{margin:4px 0 14px;font-size:var(--fs-sm)}
+.sk{height:10px;border-radius:4px;background:var(--field)}
+.skrow{display:flex;gap:24px;align-items:center;height:var(--row-h);border-bottom:1px solid var(--line);padding:0 10px}
+.reload{height:2px;background:var(--accent);width:30%}
+.banner{display:flex;gap:8px;align-items:center;margin:8px 0;padding:8px 12px;border-radius:var(--radius-md);background:var(--field);font-size:var(--fs-sm);color:var(--fg-2)}
+.banner button{margin-left:auto;border:0;background:none;color:var(--accent-text);cursor:pointer;font:inherit}
+tr.on td{background:var(--selected)}tr:hover td{background:var(--hover)}
+.cb{width:14px;height:14px;vertical-align:middle;accent-color:var(--accent)}
+.vt td,.vt th{white-space:normal;height:auto;padding:6px 10px}
+</style>
+</head>
+<body>
+<div class="pg">
+  <h1>ListPage et valeurs typées <span class="badge" id="status">VALIDÉ le 2026-11-23</span></h1>
+  <p class="intro">Mode <code>propose</code>, besoin venu d'Alfred (proposition P8, qui remplace <code>CollectionPage</code>, <code>PageToolbar</code>, <code>Pagination</code> et <code>FormattedValue</code>). Gabarit déclaratif : l'app passe des données ; le gabarit dessine tout. Tout est nouveau : version mineure. Validation par délégation de l'utilisateur : chaque point retient la recommandation.</p>
+
+  <div class="boxes">
+    <div class="box">
+      <h2>Déjà décidé</h2>
+      <ul>
+        <li>Zones du gabarit : <code>header</code>, <code>actions</code>, <code>toolbar</code>, <code>list</code>, <code>footer</code>, <code>empty</code> (layout-rules).</li>
+        <li>Actions par le modèle <code>Action</code> : zone <code>header</code> en tête, <code>row</code> sur les lignes, <code>empty</code> dans l'état vide (D-110 à D-114).</li>
+        <li>Recherche : 2 caractères, sans casse ni accents, texte trouvé en gras (D-080, D-087).</li>
+        <li>Chargement en squelettes, puis barre fine ; erreur en message centré ou bandeau ; « Aucun résultat pour … » (D-084 à D-086).</li>
+        <li>Vues de la page dans les onglets, pas dans la barre (D-021). Pas de bandeau pleine largeur (D-159).</li>
+        <li>Statut : point et libellé (D-160) ; vide en <code>EmptyState</code> (D-166) ; lien souligné (D-167).</li>
+      </ul>
+    </div>
+    <div class="box">
+      <h2>À décider</h2>
+      <ol>
+        <li><b>API</b> : A déclarative (données, colonnes typées, filtres, <code>Action</code>) ; B zones libres en <code>ReactNode</code>. <span class="reco">validé : A (D-173)</span></li>
+        <li><b>Valeurs typées</b> : seize types au format français ; vide « — » ; illisible en texte brut ; le type fixe alignement, largeur et tri. <span class="reco">validé (D-170 à D-172)</span></li>
+        <li><b>Recherche et filtres</b> : dans la barre ; locaux par défaut, <code>remote</code> pour une API. <span class="reco">validé (D-174)</span></li>
+        <li><b>Pied</b> : A « Afficher plus » par défaut, B pagination en option, C défilement infini. <span class="reco">validé : A, B en option (D-175)</span></li>
+        <li><b>Vide et aucun résultat</b> : vide sans barre ni pied ; « Effacer la recherche » vide aussi les filtres. <span class="reco">validé (D-176)</span></li>
+        <li><b>Mémoire</b> : filtres et tri mémorisés, recherche oubliée. <span class="reco">validé (D-177)</span></li>
+        <li><b>Sélection multiple</b> : la barre d'outils devient la barre de sélection. <span class="reco">validé (D-178)</span></li>
+      </ol>
+    </div>
+  </div>
+
+  <div class="toolbar">
+    <span><span class="tlabel">Thème</span><span class="seg" data-k="mode"><button aria-pressed="true" data-v="light">Clair</button><button aria-pressed="false" data-v="dark">Sombre</button></span></span>
+    <span><span class="tlabel">Densité</span><span class="seg" data-k="density"><button aria-pressed="true" data-v="web">Web</button><button aria-pressed="false" data-v="desktop">Desktop</button></span></span>
+    <span><span class="tlabel">Liste</span><span class="seg" data-k="layout"><button aria-pressed="true" data-v="table">Table</button><button aria-pressed="false" data-v="list">List</button></span></span>
+    <span><span class="tlabel">4 Pied</span><span class="seg" data-k="foot"><button aria-pressed="true" data-v="more">A Afficher plus</button><button aria-pressed="false" data-v="pages">B Pages</button><button aria-pressed="false" data-v="infinite">C Infini</button></span></span>
+    <span><span class="tlabel">État</span><span class="seg" data-k="st"><button aria-pressed="true" data-v="data">Données</button><button aria-pressed="false" data-v="loading">Chargement</button><button aria-pressed="false" data-v="reload">Rechargement</button><button aria-pressed="false" data-v="empty">Vide</button><button aria-pressed="false" data-v="none">Aucun résultat</button><button aria-pressed="false" data-v="error">Erreur</button><button aria-pressed="false" data-v="select">Sélection</button></span></span>
+  </div>
+
+  <div class="app tk" id="app">
+    <div class="bar-side"></div>
+    <div class="bar">Demandes</div>
+    <div class="side">
+      <div class="nav">Accueil</div><div class="nav on">Demandes</div><div class="nav">Contacts</div><div class="nav">Factures</div>
+      <div class="acc"><span class="av sm" style="width:24px;height:24px;font-size:10px">CM</span> Camille Martin</div>
+    </div>
+    <div class="main" id="main"></div>
+    <div class="detail" id="detail"></div>
+  </div>
+  <p class="hint">Jouable : taper dans la recherche (2 lettres), choisir un filtre, cliquer un en-tête pour trier, cliquer une ligne (détail à droite), « Afficher plus » ou les flèches. Option C (défilement infini) : écartée — le pied disparaît et le compteur n'est plus joignable.</p>
+
+  <h2 class="sec">Valeurs typées (FormattedValue)</h2>
+  <div class="tk" id="vt-wrap" style="border:1px solid var(--pg-line);border-radius:10px;overflow:auto">
+    <table class="vt"><thead><tr><th style="width:110px">type</th><th>Valeur reçue</th><th>Affiché</th><th style="width:130px">Colonne</th></tr></thead><tbody id="vt"></tbody></table>
+  </div>
+</div>
+<script>
+(function(){
+  var S = {mode:'light', density:'web', layout:'table', foot:'more', st:'data', q:'', etat:'', sort:{c:'date', d:-1}, shown:4, page:1, sel:'D-1003', checked:{}};
+  var ETATS = {nouvelle:['Nouvelle','info'], en_cours:['En cours','pending'], attente:['En attente','warning'], close:['Close','success'], refusee:['Refusée','danger']};
+  var NOMS = ['Accès au VPN','Écran qui scintille','Commande de badges','Licence du logiciel de dessin','Réservation de salle','Imprimante du 2e étage','Mot de passe expiré','Nouveau poste pour l\'accueil','Remboursement de frais','Mise à jour du site'];
+  var DEM = ['Inès Moreau','Hugo Petit','Sarah Lefèvre','Tom Faure','Léa Garnier'];
+  var ROWS = NOMS.map(function(n,i){ var k = Object.keys(ETATS)[i%5]; return {id:'D-'+(1001+i), titre:n, etat:k, dem:DEM[i%5], montant: i%3===2 ? null : (i*137.5+42), date: new Date(2026,10,22-i*2)}; });
+  var TOTAL = 312;
+  var nf = new Intl.NumberFormat('fr-FR'), mf = new Intl.NumberFormat('fr-FR',{style:'currency',currency:'EUR'}), df = new Intl.DateTimeFormat('fr-FR',{dateStyle:'medium'});
+  var rf = new Intl.RelativeTimeFormat('fr-FR',{numeric:'auto'});
+  function norm(s){ return s.normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase(); }
+  function esc(s){ return String(s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];}); }
+  function hl(t){ var q = S.q.trim(); if (q.length<2) return esc(t); var i = norm(t).indexOf(norm(q)); if (i<0) return esc(t); return esc(t.slice(0,i))+'<b>'+esc(t.slice(i,i+q.length))+'</b>'+esc(t.slice(i+q.length)); }
+  function sb(k){ var e = ETATS[k]; return '<span class="sb"><i class="dot '+e[1]+'"></i><span class="lbl">'+e[0]+'</span></span>'; }
+  function money(v){ return v==null ? '<span class="empty-v" aria-label="vide">—</span>' : mf.format(v); }
+  function filtered(){
+    var q = norm(S.q.trim());
+    var r = ROWS.filter(function(x){ return (!S.etat || x.etat===S.etat) && (q.length<2 || norm(x.titre+' '+x.dem+' '+ETATS[x.etat][0]).indexOf(q)>=0); });
+    if (S.st==='none') r = [];
+    var c = S.sort.c, d = S.sort.d;
+    return r.slice().sort(function(a,b){ var A=a[c], B=b[c]; if (A==null) return 1; if (B==null) return -1; if (A instanceof Date){A=+A;B=+B;} return (A>B?1:A<B?-1:0)*d; });
+  }
+  var I = {plus:'<svg class="ic" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>', more:'<svg class="ic" viewBox="0 0 24 24"><circle cx="5" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/></svg>', search:'<svg class="ic" viewBox="0 0 24 24"><circle cx="11" cy="11" r="6"/><path d="m20 20-4-4"/></svg>', left:'<svg class="ic" viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"/></svg>', right:'<svg class="ic" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg>', inbox:'<svg class="ic" style="width:32px;height:32px" viewBox="0 0 24 24"><path d="M22 12h-6l-2 3h-4l-2-3H2"/><path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/></svg>', alert:'<svg class="ic" style="color:var(--warning)" viewBox="0 0 24 24"><path d="M12 9v4M12 17h.01M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/></svg>'};
+  function head(){ return '<div class="lp-head"><div><h2>Demandes</h2><p>Les demandes faites au service informatique.</p></div><div class="acts"><button class="ib" aria-label="Plus d\'actions">'+I.more+'</button><button class="btn primary" style="margin-left:8px">Nouvelle demande</button></div></div>'; }
+  function bar(){
+    var n = Object.keys(S.checked).filter(function(k){return S.checked[k];}).length;
+    if (S.st==='select') n = Math.max(n,3);
+    if (n) return '<div class="lp-bar" style="background:var(--field)"><b style="font-weight:500">'+n+' sélectionnés</b><button class="btn" style="background:transparent">Tout désélectionner</button><span style="margin-left:auto;display:flex;gap:4px"><button class="ib" aria-label="Plus d\'actions">'+I.more+'</button><button class="btn primary">Clore</button></span></div>';
+    var opts = '<option value="">Tous les états</option>'+Object.keys(ETATS).map(function(k){return '<option value="'+k+'"'+(S.etat===k?' selected':'')+'>'+ETATS[k][0]+'</option>';}).join('');
+    return '<div class="lp-bar"><label class="sf">'+I.search+'<input id="q" aria-label="Rechercher dans les demandes" placeholder="Rechercher" value="'+esc(S.q)+'"></label><select class="sel" id="etat" aria-label="État">'+opts+'</select></div>';
+  }
+  function th(c,l,num,w){ var a = S.sort.c===c ? (S.sort.d>0?' ↑':' ↓') : ''; return '<th data-sort="'+c+'" style="cursor:pointer;'+(w?'width:'+w+'px;':'')+(num?'text-align:right':'')+'">'+l+a+'</th>'; }
+  function render(){
+    var m = document.getElementById('main'), h = head();
+    if (S.st==='loading'){ var sk=''; for (var i=0;i<6;i++) sk+='<div class="skrow"><div class="sk" style="width:'+(38+(i*7)%20)+'%"></div><div class="sk" style="width:12%"></div><div class="sk" style="width:12%"></div></div>'; m.innerHTML = h+'<div class="lp-list" aria-busy="true">'+sk+'</div>'; return detail(); }
+    if (S.st==='empty'){ m.innerHTML = h+'<div class="center"><div style="color:var(--fg-3);margin-bottom:12px">'+I.inbox+'</div><div class="t">Aucune demande</div><p>Les demandes faites au service informatique apparaissent ici.</p><button class="btn primary">Nouvelle demande</button></div>'; return detail(); }
+    if (S.st==='error'){ m.innerHTML = h+'<div class="center" role="alert"><div class="t">Impossible de charger les résultats</div><p>Vérifiez la connexion, puis réessayez.</p><button class="btn">Réessayer</button></div>'; return detail(); }
+    var all = filtered(), size = 4, total = S.q.trim().length>=2 || S.etat ? all.length : TOTAL;
+    var vis, count, nav = '';
+    if (S.foot==='more'){ vis = all.slice(0, S.shown); count = (total > vis.length ? nf.format(vis.length)+' sur '+nf.format(total) : nf.format(total)+' éléments'); if (vis.length < total) nav = '<button class="btn" id="more">Afficher plus</button>'; }
+    else if (S.foot==='pages'){ vis = all.slice((S.page-1)*size, S.page*size); var a=(S.page-1)*size+1; count = nf.format(a)+'–'+nf.format(a+vis.length-1)+' sur '+nf.format(total); nav = '<span class="pg-nav"><button class="ib" id="prev" aria-label="Page précédente"'+(S.page<=1?' disabled':'')+'>'+I.left+'</button><button class="ib" id="next" aria-label="Page suivante">'+I.right+'</button></span>'; }
+    else { vis = all; count = ''; }
+    var body;
+    if (!all.length){ body = '<div class="center"><div class="t">Aucun résultat pour « '+esc(S.q||'Close')+' »</div><p>Vérifiez l\'orthographe ou retirez un critère.</p><button class="btn" id="clear">Effacer la recherche</button></div>'; }
+    else if (S.layout==='table'){
+      var multi = S.st==='select';
+      body = '<table><thead><tr>'+(multi?'<th style="width:36px"><input type="checkbox" class="cb" aria-label="Tout sélectionner"></th>':'')+th('titre','Titre')+th('etat','État',0,120)+th('dem','Demandeur',0,130)+th('montant','Montant',1,110)+th('date','Créée',1,110)+'</tr></thead><tbody>'+
+        vis.map(function(r,i){ return '<tr data-id="'+r.id+'" class="'+(r.id===S.sel?'on':'')+'">'+(multi?'<td><input type="checkbox" class="cb"'+(i<3?' checked':'')+' aria-label="Sélectionner"></td>':'')+'<td>'+hl(r.titre)+'</td><td>'+sb(r.etat)+'</td><td style="color:var(--fg-2)">'+hl(r.dem)+'</td><td class="num" style="color:var(--fg-2)">'+money(r.montant)+'</td><td class="num" style="color:var(--fg-2)">'+df.format(r.date)+'</td></tr>'; }).join('')+'</tbody></table>';
+    } else {
+      body = vis.map(function(r){ return '<div class="li" data-id="'+r.id+'" style="'+(r.id===S.sel?'background:var(--selected)':'')+'"><span class="txt"><span class="l1"><span>'+hl(r.titre)+'</span><span class="meta">'+df.format(r.date)+'</span></span><span class="l2"><span class="sub">'+hl(r.dem)+'</span>'+sb(r.etat)+'</span></span></div>'; }).join('');
+    }
+    var pre = S.st==='reload' ? '<div class="reload"></div>' : '';
+    m.innerHTML = h+bar()+'<div class="lp-list" '+(S.st==='reload'?'aria-busy="true"':'')+'>'+pre+body+'</div>'+(S.foot!=='infinite' && all.length ? '<div class="lp-foot" aria-live="polite"><span>'+count+'</span>'+nav+'</div>' : '');
+    var q = document.getElementById('q'); if (q){ q.oninput = function(){ S.q = q.value; S.shown = 4; S.page = 1; render(); var n = document.getElementById('q'); n.focus(); n.setSelectionRange(n.value.length,n.value.length); }; }
+    var e = document.getElementById('etat'); if (e) e.onchange = function(){ S.etat = e.value; S.shown = 4; S.page = 1; render(); };
+    var mo = document.getElementById('more'); if (mo) mo.onclick = function(){ S.shown += 4; render(); };
+    var p = document.getElementById('prev'); if (p) p.onclick = function(){ S.page = Math.max(1,S.page-1); render(); };
+    var nx = document.getElementById('next'); if (nx) nx.onclick = function(){ if (S.page*4 < all.length) S.page++; render(); };
+    var cl = document.getElementById('clear'); if (cl) cl.onclick = function(){ S.q=''; S.etat=''; if (S.st==='none') { S.st='data'; sync(); } render(); };
+    [].forEach.call(m.querySelectorAll('[data-sort]'), function(t){ t.onclick = function(){ var c = t.getAttribute('data-sort'); S.sort = {c:c, d: S.sort.c===c ? -S.sort.d : 1}; render(); }; });
+    [].forEach.call(m.querySelectorAll('[data-id]'), function(t){ t.onclick = function(){ S.sel = t.getAttribute('data-id'); render(); }; });
+    detail();
+  }
+  function detail(){
+    var r = ROWS.filter(function(x){return x.id===S.sel;})[0], d = document.getElementById('detail');
+    if (!r || S.st==='empty' || S.st==='loading' || S.st==='error'){ d.innerHTML = '<div style="color:var(--fg-3);font-size:var(--fs-sm);padding-top:40px;text-align:center">Aucun élément sélectionné</div>'; return; }
+    d.innerHTML = '<h4>Propriétés</h4><dl style="margin:0"><div class="prop"><dt>Numéro</dt><dd><span class="code">'+r.id+'</span></dd></div><div class="prop"><dt>État</dt><dd>'+sb(r.etat)+'</dd></div><div class="prop"><dt>Demandeur</dt><dd>'+r.dem+'</dd></div><div class="prop"><dt>Montant</dt><dd>'+money(r.montant)+'</dd></div><div class="prop"><dt>Créée</dt><dd>'+rf.format(Math.round((r.date-new Date())/864e5),'day')+'</dd></div></dl>';
+  }
+  var VT = [
+    ['text','« Accès au VPN »','Accès au VPN','place restante, gauche'],
+    ['longtext','texte sur 3 lignes','paragraphe ; coupé en colonne','place restante, gauche'],
+    ['number','1234.5', nf.format(1234.5),'110 px, droite'],
+    ['money','1234.5 (EUR)', mf.format(1234.5),'130 px, droite'],
+    ['percent','0.25', new Intl.NumberFormat('fr-FR',{style:'percent'}).format(.25),'90 px, droite'],
+    ['bytes','1234567','1,2 Mo','90 px, droite'],
+    ['date','"2026-11-20"', df.format(new Date(2026,10,20)),'120 px, droite'],
+    ['datetime','"2026-11-20T14:30"', new Intl.DateTimeFormat('fr-FR',{dateStyle:'medium',timeStyle:'short'}).format(new Date(2026,10,20,14,30)),'160 px, droite'],
+    ['relative','il y a 3 jours', rf.format(-3,'day')+' · '+rf.format(1,'day')+' · à l\'instant','130 px, droite'],
+    ['duration','3900 (s)','1 h 5 min · 45 s · 3 j 4 h','100 px, droite'],
+    ['boolean','true','Oui','80 px, gauche'],
+    ['status','"en_cours"', sb('en_cours'),'140 px, gauche'],
+    ['email','"ines@exemple.fr"','<span class="lk">ines@exemple.fr</span>','place restante, gauche'],
+    ['url','"https://exemple.fr"','<span class="lk">https://exemple.fr ↗</span>','place restante, gauche'],
+    ['code','"D-1003"','<span class="code">D-1003</span>','140 px, gauche'],
+    ['tags','["vpn","accès"]','vpn, accès','place restante, gauche'],
+    ['(vide)','null, "", []','<span class="empty-v">—</span>','—'],
+    ['(illisible)','date "bientôt"','bientôt','—']
+  ];
+  document.getElementById('vt').innerHTML = VT.map(function(v){ return '<tr><td><span class="code">'+v[0]+'</span></td><td style="color:var(--fg-2)">'+v[1]+'</td><td>'+v[2]+'</td><td style="color:var(--fg-2)">'+v[3]+'</td></tr>'; }).join('');
+  function sync(){ [].forEach.call(document.querySelectorAll('.seg'), function(g){ var k = g.getAttribute('data-k'); [].forEach.call(g.querySelectorAll('button'), function(b){ b.setAttribute('aria-pressed', String(b.getAttribute('data-v')===S[k])); }); }); }
+  function apply(){
+    [document.getElementById('app'), document.getElementById('vt-wrap')].forEach(function(el){ el.classList.toggle('dark', S.mode==='dark'); el.classList.toggle('desktop', S.density==='desktop'); });
+    document.documentElement.setAttribute('data-theme', S.mode); sync(); render();
+  }
+  [].forEach.call(document.querySelectorAll('.seg'), function(g){ g.addEventListener('click', function(ev){ var b = ev.target.closest('button'); if (!b) return; S[g.getAttribute('data-k')] = b.getAttribute('data-v'); S.shown = 4; S.page = 1; apply(); }); });
+  apply();
+})();
+</script>
+</body>
+</html>

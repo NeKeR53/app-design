@@ -1297,3 +1297,51 @@
 - Raison : l'app n'a plus à régler de largeur ni d'alignement, et « 9 » ne passe pas après « 10 ».
 - Options écartées : largeur fixée par l'app à chaque colonne.
 - Validation : par délégation de l'utilisateur, 2026-11-23 — docs/validation/components/ListPage-v1.html
+
+## D-173 — ListPage : gabarit déclaratif qui dessine tous les états
+- Date : 2026-11-23
+- Portée : ListPage
+- Décision : l'app passe des données (titre, lignes, colonnes typées, filtres, recherche, `Action`) ; le gabarit dessine l'en-tête, la barre, la liste (`Table` ou `List`), le pied, et les états chargement, vide, aucun résultat et erreur. Les lignes `undefined` signifient « premier chargement ».
+- Raison : une page de liste se décrit en quelques lignes, et toutes les listes de toutes les apps se ressemblent.
+- Options écartées : gabarit à zones libres (`header`, `toolbar`… en `ReactNode`), qui laisse chaque app réinventer les états ; chargement par une fonction `load` dans le gabarit, qui lie le gabarit à une façon de charger.
+- Validation : par délégation de l'utilisateur, 2026-11-23 — docs/validation/components/ListPage-v1.html
+
+## D-174 — ListPage : recherche et filtres dans la barre ; local par défaut, distant en option
+- Date : 2026-11-23
+- Portée : ListPage
+- Décision : la barre porte la recherche (`SearchField`), puis trois filtres au plus en `Select`, première entrée « Tous les … ». Par défaut, le gabarit cherche, filtre, trie et découpe lui-même les lignes reçues. Avec `remote`, il ne touche à rien et signale `{ query, filters, sort, page }` à `onStateChange` ; l'app recharge.
+- Raison : la plupart des listes tiennent en mémoire ; une grosse liste garde la même page en passant par son API.
+- Options écartées : recherche dans la barre du haut (layout-rules : la recherche d'une liste n'y va pas) ; filtres en étiquettes dans la recherche.
+- Validation : par délégation de l'utilisateur, 2026-11-23 — docs/validation/components/ListPage-v1.html
+
+## D-175 — ListPage : pied à compteur, « Afficher plus » par défaut, pagination en option
+- Date : 2026-11-23
+- Portée : ListPage
+- Décision : le pied montre le compteur à gauche. Par défaut (`more`), 50 lignes, « 50 sur 312 » et « Afficher plus » qui ajoute 50 lignes. En `pages`, « 1–50 sur 312 » et les boutons page précédente et suivante. Si tout tient, seulement « 12 éléments ». Une recherche ou un filtre ramène au début.
+- Raison : c'est la règle `footer` de layout-rules ; « Afficher plus » garde la sélection et la position, la pagination sert aux très longues listes.
+- Options écartées : défilement infini (pas de pied joignable, compteur caché) ; numéros de page.
+- Validation : par délégation de l'utilisateur, 2026-11-23 — docs/validation/components/ListPage-v1.html
+
+## D-176 — ListPage : vide sans barre ; aucun résultat avec « Effacer la recherche »
+- Date : 2026-11-23
+- Portée : ListPage
+- Décision : sans aucune ligne ni critère, le gabarit montre l'en-tête puis un `EmptyState` (icône, titre, phrase, action `primary` de la page), sans barre ni pied. Avec des critères et aucun résultat, la barre reste et le message de `Table` ou `List` propose « Effacer la recherche », qui vide aussi les filtres.
+- Raison : une barre de recherche sur une liste vide n'a rien à chercher ; un résultat vide doit se défaire en un clic.
+- Options écartées : compteurs à zéro dans le pied ; bouton « Effacer les filtres » séparé.
+- Validation : par délégation de l'utilisateur, 2026-11-23 — docs/validation/components/ListPage-v1.html
+
+## D-177 — ListPage : filtres et tri mémorisés, recherche oubliée
+- Date : 2026-11-23
+- Portée : ListPage
+- Décision : les filtres et le tri sont mémorisés par page (`storageId`, défaut : le titre), comme les largeurs de `Table` (D-067). La recherche repart vide à chaque ouverture.
+- Raison : un filtre traduit une habitude de travail ; une recherche répond à un besoin du moment, et une recherche oubliée cacherait des lignes sans qu'on le voie.
+- Options écartées : tout mémoriser ; ne rien mémoriser.
+- Validation : par délégation de l'utilisateur, 2026-11-23 — docs/validation/components/ListPage-v1.html
+
+## D-178 — ListPage : barre de sélection à la place de la barre d'outils
+- Date : 2026-11-23
+- Portée : ListPage
+- Décision : en `selectionMode="multiple"`, dès qu'une ligne est cochée, la barre d'outils devient la barre de sélection : « 3 sélectionnés », bouton « Tout désélectionner », puis les actions de `selectionActions(rows)` en `ActionBar` zone `toolbar`, à droite. Décocher tout rend la barre d'outils.
+- Raison : c'est la barre de sélection prévue par `Table` (anatomie, pièce 6), au même endroit que les outils, sans décaler la liste.
+- Options écartées : barre flottante en bas de l'écran ; actions groupées dans l'en-tête.
+- Validation : par délégation de l'utilisateur, 2026-11-23 — docs/validation/components/ListPage-v1.html

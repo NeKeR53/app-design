@@ -4,6 +4,17 @@ Versions selon semver (règle 6 du skill design) : une nouvelle option facultati
 
 ## [Non publié]
 
+### Ajouté (P8 — gabarit ListPage et valeurs typées)
+- `FormattedValue` : une donnée affichée d'après son type (`text`, `longtext`, `number`, `money`, `percent`, `bytes`, `date`, `datetime`, `relative`, `duration`, `boolean`, `status`, `email`, `url`, `code`, `tags`), au format de la langue (D-170). Vide « — », valeur illisible en texte brut (D-171). Le type fixe l'alignement, la largeur de colonne et le tri (D-172). Exports : `useFormatValue`, `valueSortKey`, `valueLayout`, types `ValueType`, `ValueFormat`, `StatusMap`.
+- `ListPage` : gabarit déclaratif (titre, lignes, colonnes typées, recherche, filtres, `Action`) qui dessine l'en-tête, la barre, la liste (`Table` ou `List`), le pied et les états chargement, vide, aucun résultat et erreur (D-173). Recherche et filtres locaux, ou `remote` avec `onStateChange` (D-174). Pied « Afficher plus » par défaut, pagination en option (D-175). Vide sans barre ; « Effacer la recherche » vide aussi les filtres (D-176). Filtres et tri mémorisés (D-177). Barre de sélection en sélection multiple (D-178).
+- Libellés internes : `locale`, `yes`, `no`, `justNow`, `emptyValue`, `itemCount`, `rangeOf`, `shownOf`, `pagination`, `previousPage`, `nextPage`, `selectedCount`, `clearSelection`.
+
+### Corrigé
+- `Table` : les cellules se redessinent quand seuls les critères de recherche changent ; le texte trouvé passe bien en gras (D-087).
+
+### Interne
+- `ActionBar` : la logique de lancement (confirmation, attente, `onDone`, `onError`) passe dans un hook interne `useActionRunner`, réutilisé par les actions de ligne de `ListPage`. Rendu et API inchangés.
+
 ## [0.2.0] — 2026-11-23
 
 Lot 1 de la migration d'Alfred : bouton à texte, actions, modale, champs, ComboBox, notifications et petits éléments d'affichage (décisions D-100 à D-169). Version mineure : tout est nouveau ou facultatif, rien ne casse.

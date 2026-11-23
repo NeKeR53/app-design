@@ -37,7 +37,7 @@ Règles de format :
 - Nombres : séparateur de milliers et virgule de la langue ; `decimals` fixe le nombre de décimales (sinon 0 à 2 pour `number`, 2 pour `money`, 0 à 1 pour `percent` et `bytes`).
 - Dates : un texte `AAAA-MM-JJ` est une date locale, sans fuseau ; un horodatage en nombre est en secondes sous 10¹², en millisecondes au-delà.
 - `relative` : l'unité la plus grande qui donne au moins 1 (années, mois, semaines, jours, heures, minutes) ; moins d'une minute : « à l'instant ».
-- `duration` : les deux plus grandes unités non nulles parmi jours, heures, minutes, secondes ; zéro : « 0 s ».
+- `duration` : la plus grande unité non nulle parmi jours, heures, minutes, secondes, puis l'unité suivante si elle n'est pas nulle (3 605 s → « 1 h ») ; zéro : « 0 s ».
 - `bytes` : unités de 1 000 (o, ko, Mo, Go, To).
 
 ## Variantes

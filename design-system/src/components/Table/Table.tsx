@@ -201,6 +201,8 @@ export function Table<T extends { id: string }>({
             </TableHeader>
             <TableBody
               items={firstLoad ? [] : rows}
+              // Les cellules se redessinent quand la recherche ou le rendu change, même avec les mêmes lignes (D-087).
+              dependencies={[terms.join("\u0000"), renderCell, rowActions]}
               renderEmptyState={() =>
                 firstLoad ? <Skeleton cols={columns.length} /> : empty ? <NoResults terms={terms} onClearSearch={onClearSearch} /> : null
               }

@@ -49,10 +49,11 @@ Une app décrit ses actions par des données (`Action`) et les passe à `ActionB
 ### ListPage
 - `header` : titre et description courte.
 - `actions` : une action principale au plus, les autres en secondaire.
-- `toolbar` : recherche et filtres.
+- `toolbar` : recherche et filtres (D-174). Lignes cochées : barre de sélection à la place (D-178).
 - `list` : lignes. On sélectionne au clic ou aux flèches, on ouvre au double-clic ou avec Entrée. L'ouverture ajoute une vue fermable.
-- `footer` : compteur et « Afficher plus ».
-- `empty` : icône, titre, phrase d'explication et action principale.
+- `footer` : compteur et « Afficher plus » ; pagination en option (D-175).
+- `empty` : icône, titre, phrase d'explication et action principale (D-176).
+- Les cellules suivent le type de leur colonne (D-170 à D-172).
 
 ### DetailPage
 - `header` : lien de retour vers la vue principale, titre, statut, méta, actions.
