@@ -55,7 +55,7 @@ Aucune.
 | Règle | Niveau de réglage | Test (story) |
 |---|---|---|
 | Clic sur la case ou le libellé, ou Espace : coche ou décoche | verrouillé | `ParDefaut` |
-| Case parente : l'app calcule l'état mixte ; un clic sur une case mixte coche tout | verrouillé | `Mixte` |
+| Case parente : placée au-dessus du groupe, hors de lui, avec le groupe décalé de 24 px ; l'app calcule l'état mixte ; un clic sur une case mixte coche tout | verrouillé | `Mixte` |
 | Vérification : celle de `Field` ; erreur au changement ou à l'envoi (D-132) | verrouillé | `Verification` |
 | La valeur est envoyée avec le formulaire ; rien ne s'applique avant (D-137) | verrouillé | `Groupe` |
 
@@ -69,7 +69,7 @@ Case de 16 px dans les deux densités ; ligne de `--target-min` au moins (24 px,
 Tab : une case après l'autre (chaque case est un arrêt). Espace : coche.
 
 ## Accessibilité
-React Aria `Checkbox` et `CheckboxGroup` : `input type="checkbox"` caché, nom = libellé, `aria-checked="mixed"` pour l'état mixte ; groupe `role="group"` nommé par son libellé, aide et erreur reliées.
+React Aria `Checkbox` et `CheckboxGroup` : `input type="checkbox"` caché, nom = libellé, état mixte porté par la propriété `indeterminate` de la case, lue « mixte » par les lecteurs d'écran ; groupe `role="group"` nommé par son libellé, aide et erreur reliées.
 
 ## Taille d'écran
 Sur mobile, un groupe horizontal passe en vertical.

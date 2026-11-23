@@ -68,6 +68,17 @@ export interface SocleMessages {
   suggestionsUnavailable: string;
   noElements: string;
   clearAll: string;
+  /* Champs de formulaire (D-022, D-132) */
+  optional: string;
+  requiredField: string;
+  requiredChoice: string;
+  requiredCheckbox: string;
+  requiredGroup: string;
+  invalidEmail: string;
+  invalidUrl: string;
+  invalidValue: string;
+  choose: string;
+  charCount: (n: number, max: number) => string;
 }
 
 const s = (n: number) => (n > 1 ? "s" : "");
@@ -131,4 +142,14 @@ export const frenchMessages: SocleMessages = {
   suggestionsUnavailable: "Suggestions indisponibles",
   noElements: "Aucun élément trouvé",
   clearAll: "Tout effacer",
+  optional: "(facultatif)",
+  requiredField: "Ce champ est obligatoire.",
+  requiredChoice: "Choisissez une option.",
+  requiredCheckbox: "Cochez cette case pour continuer.",
+  requiredGroup: "Cochez au moins une case.",
+  invalidEmail: "Saisissez une adresse de la forme nom@domaine.fr.",
+  invalidUrl: "Saisissez une adresse web complète, qui commence par https://.",
+  invalidValue: "Vérifiez cette valeur.",
+  choose: "Choisir…",
+  charCount: (n, max) => `${n} / ${max}`,
 };
