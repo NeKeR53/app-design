@@ -101,3 +101,28 @@
     40% { transform: scale(1.02); }
   }
 }
+
+/*
+ * Terminal (D-282) : le fond noir d'xterm sous l'écran déborde d'un demi-pixel à 125 et 150 % ; le fond du terminal suffit.
+ * La feuille d'xterm (@xterm/xterm/css/xterm.css) est importée par l'app (D-280).
+ */
+@layer base {
+  .socle-terminal .xterm {
+    height: 100%;
+  }
+  .socle-terminal .xterm .xterm-viewport {
+    background-color: transparent;
+  }
+  .socle-terminal .xterm-helper-textarea:focus {
+    outline: none;
+  }
+  @media (forced-colors: active) {
+    .socle-terminal {
+      border-color: CanvasText;
+    }
+    .socle-terminal:focus-within {
+      border-color: Highlight;
+      outline: 2px solid Highlight;
+    }
+  }
+}

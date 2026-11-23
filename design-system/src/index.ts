@@ -77,3 +77,8 @@ export { Fieldset } from "./components/Fieldset/Fieldset";
 export type { FieldsetProps } from "./components/Fieldset/Fieldset";
 export { ComboBox } from "./components/ComboBox/ComboBox";
 export type { ComboBoxProps, ComboBoxSingleProps, ComboBoxMultipleProps, ComboBoxItem } from "./components/ComboBox/ComboBox";
+export { Terminal } from "./components/Terminal/Terminal";
+export type { TerminalProps, TerminalHandle, TerminalConnection, TerminalState } from "./components/Terminal/Terminal";
+export type { TerminalEngine, TerminalEngineSource } from "./components/Terminal/terminalEngine";
+export { LogViewer } from "./components/LogViewer/LogViewer";
+export type { LogViewerProps, LogViewerHandle, LogViewerView, LogLevelFilter, LogLine, LogLevel } from "./components/LogViewer/LogViewer";

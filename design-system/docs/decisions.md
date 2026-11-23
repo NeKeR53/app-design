@@ -1273,3 +1273,83 @@
 - Raison : comportements montrés dans la page de validation v1 et repris de la barre de recherche (D-071) et du Menu, pour un seul clavier dans le design system.
 - Options écartées : liste ouverte au focus (Alfred) ; champ sans chevron (Combobox d'Alfred).
 - Validation : docs/validation/components/ComboBox-v1.html
+
+## D-280 — Terminal : xterm.js reste côté app, peer dependency facultative
+- Date : 2026-11-23
+- Portée : Terminal
+- Décision : Socle n'importe jamais xterm.js. `@xterm/xterm` et `@xterm/addon-fit` sont des peer dependencies facultatives (`peerDependenciesMeta.optional`) : elles fixent les versions prises en charge, sans être installées d'office. L'app qui affiche un terminal installe xterm, importe `@xterm/xterm/css/xterm.css` et passe le moteur par l'option `engine` : `() => Promise<{ Terminal, FitAddon }>` (chargé à l'ouverture) ou l'objet lui-même. Socle décrit les types dont il a besoin, sans dépendre de ceux d'xterm.
+- Raison : une app sans terminal ne télécharge ni ne résout xterm (un `import()` dans Socle casserait sa compilation) ; l'app choisit quand charger les 300 ko d'xterm.
+- Options écartées : dépendance directe (poids pour toutes les apps) ; peer dependency importée par Socle (échec de compilation des apps sans xterm) ; point d'entrée `socle-ui/terminal` (contraire au point d'entrée unique).
+- Validation : docs/validation/components/Terminal-LogViewer-v1.html (par délégation de l'utilisateur, 2026-11-23)
+
+## D-281 — Couleurs ANSI : seize tokens, lisibles en clair et en sombre
+- Date : 2026-11-23
+- Portée : tokens, Terminal, LogViewer
+- Décision : les 16 couleurs ANSI sont des tokens `--ansi-0` à `--ansi-15` (noir, rouge, vert, jaune, bleu, magenta, cyan, blanc, puis leurs versions vives), redéfinis en sombre. Chacun atteint au moins 4,5:1 sur `--surface`. « Noir » et « blanc » deviennent des gris lisibles sur le fond du mode ; « blanc vif » vaut `--fg`. Aucune couleur ANSI n'est écrite en dur dans un composant : le Terminal lit les tokens calculés, le LogViewer les applique par `var(--ansi-n)`. Une couleur 256 ou RVB est ramenée à la plus proche des 16 dans le journal ; xterm garde un contraste minimum de 4,5:1 (`minimumContrastRatio`). Curseur : `--accent` ; sélection : `--accent` à 30 %.
+- Raison : une couleur d'un programme pensé pour un fond noir doit rester lisible sur le fond clair ; un token se recale avec le thème.
+- Options écartées : palette xterm d'origine (illisible en clair) ; terminal toujours sombre (ne suit pas le mode, demande refusée par le besoin).
+- Validation : docs/validation/components/Terminal-LogViewer-v1.html (par délégation de l'utilisateur, 2026-11-23)
+
+## D-282 — Terminal : écran, cadre et barre d'état
+- Date : 2026-11-23
+- Portée : Terminal
+- Décision : l'écran est sur `--surface`, dans un cadre de 1 px `--line` au rayon de 8 px ; police `--font-mono` à 13 px, interligne 1,2, 5 000 lignes d'historique. Une barre d'état de 28 px, sur `--surface-side`, donne l'état (`StatusDot` et texte : « Ouverture du terminal… », « Connecté », « Session terminée », « Connexion interrompue » avec la raison), une aide (« F6 pour sortir », « Lecture seule », « Sélection copiée ») et la taille « 120 × 32 ». Tant que le terminal a le focus, le cadre passe à `--accent`. Hauteur par défaut : entre 280 et 560 px ; `fill` occupe la hauteur restante.
+- Raison : le terminal garde le clavier ; l'utilisateur doit voir quand il est dedans et comment en sortir.
+- Options écartées : sans barre d'état (état et sortie invisibles) ; barre d'outils intégrée (les actions sont celles de la page, par la poignée).
+- Validation : docs/validation/components/Terminal-LogViewer-v1.html (par délégation de l'utilisateur, 2026-11-23)
+
+## D-283 — Terminal : clavier, copier et coller
+- Date : 2026-11-23
+- Portée : Terminal
+- Décision : raccourcis de Windows Terminal. Ctrl+C copie quand du texte est choisi, sinon il part au programme (interruption) ; Ctrl+Maj+C copie toujours ; Ctrl+V et Ctrl+Maj+V collent ; F6 et Maj+F6 sortent du terminal vers le contrôle suivant ou précédent (WCAG 2.1.2). Sur macOS, ⌘C et ⌘V restent ceux du système. Le collage suit le collage encadré quand le programme l'a demandé : un texte sur plusieurs lignes ne s'exécute pas d'office. Mode lecteur d'écran d'xterm actif ; le champ caché porte le nom et une description des raccourcis.
+- Raison : mêmes gestes que le terminal du système ; aucun piège au clavier.
+- Options écartées : Tab pour sortir (Tab sert à la complétion du shell) ; Ctrl+C toujours copie (empêche d'interrompre un programme).
+- Validation : docs/validation/components/Terminal-LogViewer-v1.html (par délégation de l'utilisateur, 2026-11-23)
+
+## D-284 — Terminal : branchement générique et poignée
+- Date : 2026-11-23
+- Portée : Terminal
+- Décision : le terminal ne connaît aucun protocole. L'app branche une `connection` `{ send(data), subscribe(write) }`, reçoit la taille par `onResize` (la première tout de suite, puis une seule à la fin d'un redimensionnement, 120 ms) et donne l'état par `state` (`connecting`, `open`, `closed`, `error`) et `reason`. La poignée (`ref`) offre `write`, `clear`, `text(lignes?)`, `selection`, `paste`, `bracketedPaste` et `focus` ; ses méthodes ne font rien tant que le moteur n'est pas chargé, et `write` met en attente ce qui arrive avant. Les actions « Effacer », « Copier la session », « Coller une commande » sont des actions de la page (ActionBar), qui appellent la poignée.
+- Raison : un canal WebSocket, un processus Tauri ou un faux terminal de démonstration se branchent de la même façon.
+- Options écartées : lecture d'un canal propre à une app (solution locale dans Alfred : un adaptateur vers `connection`) ; boutons intégrés au terminal.
+- Validation : docs/validation/components/Terminal-LogViewer-v1.html (par délégation de l'utilisateur, 2026-11-23)
+
+## D-285 — LogViewer : anatomie
+- Date : 2026-11-23
+- Portée : LogViewer
+- Décision : dans un cadre de 1 px `--line` au rayon de 8 px : une barre d'outils (réglages de l'app `tools`, filtre de niveau, `SearchField`, « n sur N », résultat précédent et suivant, puis à droite : Suivre, Retour à la ligne, Horodatage, Liste des erreurs, Copier, actions de l'app en `IconButton`), la zone des lignes, puis une barre d'état de 28 px sur `--surface-side` (« n lignes », erreurs en `--danger`, alertes en `--warning`, « En direct » pour un journal en direct, « Suivi en pause » avec « Revenir à la fin »). Une ligne : numéro en `--fg-3` dans une gouttière, heure en `--fg-3` (HH:MM:SS.mmm), texte en `--font-mono` 12,5 px. Une erreur a une marque de 3 px `--danger` au bord de la gouttière, une alerte `--warning` (jamais la couleur seule : le niveau est aussi lu par les lecteurs d'écran). La liste est virtualisée : seules les lignes visibles sont dans la page, jusqu'à 500 000 lignes gardées.
+- Raison : reprend le journal d'Alfred, éprouvé sur des journaux de build et de conteneur.
+- Options écartées : lignes en `Table` (trop lourd au-delà de quelques milliers) ; barre d'outils sous le journal.
+- Validation : docs/validation/components/Terminal-LogViewer-v1.html (par délégation de l'utilisateur, 2026-11-23)
+
+## D-286 — LogViewer : filtre de niveau par Menu à choix, avec compteurs
+- Date : 2026-11-23
+- Portée : LogViewer
+- Décision : avec `levels`, un bouton « Niveau : Tous » ouvre un Menu à choix : « Toutes les lignes », « Alertes et erreurs », « Erreurs », chacun avec son compteur. Les compteurs d'erreurs et d'alertes restent visibles dans la barre d'état. Le niveau d'une ligne vient de l'app (`level` de la ligne) ou, à défaut, du texte : `ERROR`, `FATAL`, `WARN`, `level=error`, `[warn]`, une exception, un code de sortie non nul. Une ligne `stderr` sans autre indice n'est pas une erreur.
+- Raison : même geste que les filtres par propriété des listes (D-141), sans composant nouveau ; un contrôle segmenté pourra le remplacer quand Socle en aura un.
+- Options écartées : boutons segmentés (composant absent de Socle) ; compteurs de la barre d'état cliquables (peu découvrables).
+- Validation : docs/validation/components/Terminal-LogViewer-v1.html (par délégation de l'utilisateur, 2026-11-23)
+
+## D-287 — LogViewer : liste des erreurs en panneau à droite
+- Date : 2026-11-23
+- Portée : LogViewer
+- Décision : avec `levels`, le bouton « Liste des erreurs » ouvre un panneau de 260 px à droite des lignes, titré « Erreurs · n ». Chaque erreur montre « Ligne n » et son texte sur une ligne (« … »). Un clic remet le filtre sur « Toutes les lignes », suspend le suivi, centre la ligne et la marque (`--selected`). Les 200 premières erreurs sont listées ; au-delà, une phrase le dit. Sans erreur : `EmptyState` compact. Sous 640 px de large, le panneau passe sous les lignes.
+- Raison : on garde la liste ouverte pendant qu'on lit le contexte de chaque erreur.
+- Options écartées : Menu des erreurs (se ferme à chaque clic) ; saut à l'erreur suivante seul (pas de vue d'ensemble).
+- Validation : docs/validation/components/Terminal-LogViewer-v1.html (par délégation de l'utilisateur, 2026-11-23)
+
+## D-288 — LogViewer : Suivre la fin
+- Date : 2026-11-23
+- Portée : LogViewer
+- Décision : un journal en direct (`live`) suit la fin au départ : chaque nouvelle ligne fait défiler. Le suivi se met en pause dès qu'on remonte (molette, flèche haut, Page haut, Début, recherche, clic dans la liste des erreurs) ; la barre d'état dit « Suivi en pause · n nouvelles lignes » et propose « Revenir à la fin ». Le suivi reprend en arrivant en bas, par la touche Fin, par « Revenir à la fin » ou par la bascule « Suivre » (`IconButton` sélectionnable) de la barre d'outils. Un journal terminé n'a pas de bascule Suivre.
+- Raison : on lit un passage sans que le journal parte ; on sait toujours ce qu'on manque.
+- Options écartées : suivi qu'il faut couper à la main (la lecture saute) ; bouton flottant sur les lignes (cache du texte).
+- Validation : docs/validation/components/Terminal-LogViewer-v1.html (par délégation de l'utilisateur, 2026-11-23)
+
+## D-289 — LogViewer : recherche, retour à la ligne, horodatage et copie
+- Date : 2026-11-23
+- Portée : LogViewer
+- Décision : la recherche passe par `SearchField` (à partir de 2 caractères, 300 ms, D-080) et garde les lignes : celles qui contiennent le texte (sans casse) sont teintées `--field`, le texte trouvé est surligné, la ligne courante est en `--selected` et centrée. « n sur N » ou « Aucune ligne » à côté. Entrée et F3 vont au résultat suivant, Maj+Entrée et Maj+F3 au précédent ; une nouvelle recherche mène au plus récent résultat si le journal suivait la fin, sinon au premier sous la lecture. Retour à la ligne : coupé au départ (`wrap`), les longues lignes défilent à l'horizontale. Horodatage : affiché au départ (`timestamps`), bascule présente seulement si des lignes ont une heure ; une heure ISO en tête de ligne passe dans la colonne. Copier : la sélection faite dans le journal, sinon toutes les lignes affichées (filtre compris), sans séquences ANSI ; l'icône devient une coche et l'info-bulle « Copié » 1,6 s, annoncé aux lecteurs d'écran. Les séquences ANSI sont lues sans jamais produire de HTML.
+- Raison : on cherche dans un journal pour voir le contexte, pas pour le réduire ; la copie colle du texte propre.
+- Options écartées : recherche qui filtre les lignes ; copie qui garde les couleurs.
+- Validation : docs/validation/components/Terminal-LogViewer-v1.html (par délégation de l'utilisateur, 2026-11-23)

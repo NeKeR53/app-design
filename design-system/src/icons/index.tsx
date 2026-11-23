@@ -117,3 +117,23 @@ export const CircleAlert = icon(
   </>,
   "CircleAlert",
 );
+
+/* Terminal et LogViewer (D-285) */
+export const ChevronUp = icon(<path d="m18 15-6-6-6 6" />, "ChevronUp");
+export const Copy = icon(
+  <>
+    <rect width="14" height="14" x="8" y="8" rx="2" ry="2" />
+    <path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2" />
+  </>,
+  "Copy",
+);
+export const WrapText = icon(<path d="M3 6h18M3 12h15a3 3 0 1 1 0 6h-4M16 16l-2 2 2 2M3 18h7" />, "WrapText");
+export const Clock = icon(
+  <>
+    <circle cx="12" cy="12" r="10" />
+    <path d="M12 6v6l4 2" />
+  </>,
+  "Clock",
+);
+export const ListX = icon(<path d="M11 12H3M16 6H3M16 18H3M19 10l-4 4M15 10l4 4" />, "ListX");
+export const ArrowDownToLine = icon(<path d="M12 17V3M6 11l6 6 6-6M19 21H5" />, "ArrowDownToLine");
