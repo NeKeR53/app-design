@@ -114,6 +114,33 @@ export interface SocleMessages {
   typeMoreChars: (n: number) => string;
   resultsUnavailable: string;
   noResults: string;
+  /* DiffView (D-290 à D-299) */
+  diffToolbar: string;
+  diffSideBySide: string;
+  diffShowUnchanged: string;
+  diffPrevious: string;
+  diffNext: string;
+  diffKeysHint: string;
+  diffAddedLine: string;
+  diffRemovedLine: string;
+  diffStat: (added: number, removed: number) => string;
+  diffChanges: (n: number) => string;
+  diffNone: string;
+  diffNoneText: string;
+  diffBinary: string;
+  diffBinaryNotice: string;
+  diffEolNotice: (from: string, to: string) => string;
+  diffNoEol: string;
+  diffTruncated: string;
+  diffUnchanged: (n: number) => string;
+  diffShowLines: (n: number) => string;
+  diffUnchangedFrom: (n: number, line: number) => string;
+  diffChangeAt: (index: number, total: number, before?: string, after?: string) => string;
+  diffLines: (from: number, to: number) => string;
+  diffFile: string;
+  diffFileAdded: string;
+  diffFileDeleted: string;
+  diffFileRenamed: string;
 }
 
 const s = (n: number) => (n > 1 ? "s" : "");
@@ -217,4 +244,32 @@ export const frenchMessages: SocleMessages = {
   typeMoreChars: (n) => `Tapez au moins ${n} caractères.`,
   resultsUnavailable: "Résultats indisponibles",
   noResults: "Aucun résultat",
+
+  diffToolbar: "Affichage des différences",
+  diffSideBySide: "Côte à côte",
+  diffShowUnchanged: "Afficher les lignes inchangées",
+  diffPrevious: "Changement précédent",
+  diffNext: "Changement suivant",
+  diffKeysHint: "F7 ou Alt+Flèche bas : changement suivant ; Maj+F7 ou Alt+Flèche haut : changement précédent.",
+  diffAddedLine: "Ajoutée : ",
+  diffRemovedLine: "Retirée : ",
+  diffStat: (a, r) => `${a} ligne${s(a)} ajoutée${s(a)}, ${r} retirée${s(r)}`,
+  diffChanges: (n) => `${n} changement${s(n)}`,
+  diffNone: "Aucune différence",
+  diffNoneText: "Les deux versions sont identiques.",
+  diffBinary: "Fichier binaire",
+  diffBinaryNotice: "Fichier binaire : contenu non comparé",
+  diffEolNotice: (from, to) => `Fins de ligne converties : ${from} → ${to}`,
+  diffNoEol: "sans fin de ligne",
+  diffTruncated: "Diff coupé : la suite n'est pas affichée",
+  diffUnchanged: (n) => `${n} ligne${s(n)} inchangée${s(n)}`,
+  diffShowLines: (n) => `Afficher ${n} ligne${s(n)}`,
+  diffUnchangedFrom: (n, line) => `${n} ligne${s(n)} inchangée${s(n)}, à partir de la ligne ${line}`,
+  diffChangeAt: (i, total, before, after) =>
+    `Changement ${i} sur ${total}` + [before ? ` : avant, ${before}` : "", after ? `${before ? " ;" : " :"} après, ${after}` : ""].join(""),
+  diffLines: (from, to) => (from === to ? `ligne ${from}` : `lignes ${from} à ${to}`),
+  diffFile: "Fichier",
+  diffFileAdded: "Ajouté",
+  diffFileDeleted: "Supprimé",
+  diffFileRenamed: "Renommé",
 };

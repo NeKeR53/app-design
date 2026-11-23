@@ -117,3 +117,17 @@ export const CircleAlert = icon(
   </>,
   "CircleAlert",
 );
+export const ChevronUp = icon(<path d="m18 15-6-6-6 6" />, "ChevronUp");
+/** Deux colonnes : vue côte à côte (DiffView, D-291). */
+export const Columns = icon(
+  <>
+    <rect x="3" y="4" width="18" height="16" rx="2" />
+    <path d="M12 4v16" />
+  </>,
+  "Columns",
+);
+/** Lignes inchangées dépliées (DiffView, D-295). Lucide « unfold-vertical ». */
+export const UnfoldVertical = icon(
+  <path d="M12 22v-6M12 8V2M4 12H2M10 12H8M16 12h-2M22 12h-2M15 19l-3 3-3-3M15 5l-3-3-3 3" />,
+  "UnfoldVertical",
+);

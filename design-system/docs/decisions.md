@@ -1273,3 +1273,83 @@
 - Raison : comportements montrés dans la page de validation v1 et repris de la barre de recherche (D-071) et du Menu, pour un seul clavier dans le design system.
 - Options écartées : liste ouverte au focus (Alfred) ; champ sans chevron (Combobox d'Alfred).
 - Validation : docs/validation/components/ComboBox-v1.html
+
+## D-290 — DiffView : un composant, deux sources, et DiffStat
+- Date : 2026-11-23
+- Portée : DiffView, DiffStat
+- Décision : `DiffView` montre les différences entre deux textes (`before`, `after`, avec `fileName` facultatif), ou lit un diff unifié (`patch`, un ou plusieurs fichiers, format de `git diff` et de `diff -u`). `DiffStat` montre seul les compteurs « +12 −3 », par exemple dans une ligne de liste de fichiers. Le composant compare et affiche ; il ne colore pas la syntaxe et ne modifie rien (pas d'acceptation ni de rejet de changement).
+- Raison : test du générique réussi (code, Markdown, configuration, réglages versionnés) ; Alfred écrit aujourd'hui ses compteurs en hexadécimal dans `agent.css`.
+- Options écartées : deux composants (texte et patch) ; coloration syntaxique ; fusion à trois voies.
+- Validation : docs/validation/components/DiffView-v1.html (par délégation de l'utilisateur, 2026-11-23)
+
+## D-291 — DiffView : côte à côte par défaut, bascule par bouton-icône
+- Date : 2026-11-23
+- Portée : DiffView
+- Décision : la vue côte à côte est celle par défaut ; l'unifiée est au choix (`mode`, `defaultMode`, `onModeChange`). La bascule est un `IconButton` à bascule « Côte à côte » dans l'en-tête (D-034). Sous 641 px (D-013), la vue unifiée s'impose et la bascule disparaît.
+- Raison : option A de la page de validation ; rien de nouveau à créer, et la bascule tient dans une barre étroite.
+- Options écartées : contrôle segmenté (absent de Socle, spec RadioGroup) ; Menu « Affichage » (un clic de plus).
+- Validation : docs/validation/components/DiffView-v1.html (par délégation de l'utilisateur, 2026-11-23)
+
+## D-292 — DiffView : couleurs tirées de --success et --danger
+- Date : 2026-11-23
+- Portée : DiffView, DiffStat
+- Décision : une ligne ajoutée a un fond `--success` à 12 % sur `--surface` ; une ligne retirée, `--danger` à 10 %. Les mots changés et la colonne des numéros de ces lignes ont le même ton à 32 % et 30 %. Signes et compteurs sont écrits en `--success` et `--danger`. Les mélanges sont calculés dans le composant (`color-mix`) : pas de nouveau token global, aucune couleur en dur. Le changement courant a un trait de 3 px `--accent` à gauche. La demi-ligne vide d'un côté est hachurée `--surface-side`.
+- Raison : les tons suivent le mode sombre et un thème d'app sans réglage de plus ; le texte reste `--fg` sur ces fonds (AA).
+- Options écartées : tokens `--diff-*` globaux (aucun autre composant n'en a l'usage) ; texte coloré au lieu de fonds.
+- Validation : docs/validation/components/DiffView-v1.html (par délégation de l'utilisateur, 2026-11-23)
+
+## D-293 — DiffView : le sens ne passe pas par la couleur seule
+- Date : 2026-11-23
+- Portée : DiffView, DiffStat
+- Décision : chaque ligne a son signe visible (« + », « − », espace) et un texte caché au début (« Ajoutée : », « Retirée : »). Les mots changés sont dans `<ins>` et `<del>`. Les compteurs ont un texte caché (« 12 lignes ajoutées, 3 retirées »). En contraste élevé (`forced-colors`), les mots retirés sont barrés, les ajoutés soulignés, et les signes en gras.
+- Raison : principe « jamais une couleur seule » (D-160) et WCAG 1.4.1.
+- Options écartées : couleur seule, comme les compteurs actuels d'Alfred.
+- Validation : docs/validation/components/DiffView-v1.html (par délégation de l'utilisateur, 2026-11-23)
+
+## D-294 — DiffView : mots changés dans une ligne
+- Date : 2026-11-23
+- Portée : DiffView
+- Décision : une ligne retirée et la ligne ajoutée qui la remplace (appariées dans l'ordre) sont comparées par mots, espaces et signes. Les parties changées sont surlignées. Si les deux lignes ont moins de 40 % de texte commun, ou plus de 2 000 caractères, rien n'est surligné : toute la ligne a changé.
+- Raison : surligner presque toute une ligne n'aide pas à la lecture ; la règle vient d'Alfred, éprouvée.
+- Options écartées : comparaison caractère par caractère (trop de fragments).
+- Validation : docs/validation/components/DiffView-v1.html (par délégation de l'utilisateur, 2026-11-23)
+
+## D-295 — DiffView : lignes inchangées repliées
+- Date : 2026-11-23
+- Portée : DiffView
+- Décision : seules `context` lignes inchangées (3 par défaut) restent visibles autour d'un changement. Au-delà, une suite d'au moins 4 lignes devient une rangée « N lignes inchangées » avec un `Button` `subtle` `sm` « Afficher N lignes ». Un `IconButton` à bascule de l'en-tête, « Afficher les lignes inchangées », ouvre ou referme tous les replis. Dans un patch, les lignes absentes du diff sont dites (« N lignes inchangées, à partir de la ligne X ») sans bouton. Un nouveau contenu repart replié.
+- Raison : le changement reste au centre ; une suite de moins de 4 lignes coûte plus à replier qu'à montrer.
+- Options écartées : tout montrer par défaut ; replis sans bouton global.
+- Validation : docs/validation/components/DiffView-v1.html (par délégation de l'utilisateur, 2026-11-23)
+
+## D-296 — DiffView : en-tête et fichiers
+- Date : 2026-11-23
+- Portée : DiffView
+- Décision : l'en-tête (fond `--surface-side`, hauteur `--bar-h`) montre le nom du fichier en chasse fixe (`fileName`, si fourni), le résumé (« 3 changements », « Aucune différence », « Fichier binaire ») et `DiffStat`, puis à droite les boutons-icônes : vue, lignes inchangées, changement précédent, changement suivant. Dans un patch à plusieurs fichiers, chaque fichier a sa rangée de titre (nom, statut « Ajouté », « Supprimé » ou « Renommé », `DiffStat`), et l'en-tête montre le total. Deux textes identiques montrent un `EmptyState` compact « Aucune différence ».
+- Raison : le nom et l'ampleur du changement se lisent avant le contenu ; le reste réutilise des composants existants.
+- Options écartées : compteurs en bas ; bouton à texte pour la vue.
+- Validation : docs/validation/components/DiffView-v1.html (par délégation de l'utilisateur, 2026-11-23)
+
+## D-297 — DiffView : navigation de changement en changement
+- Date : 2026-11-23
+- Portée : DiffView
+- Décision : la zone du diff est joignable au clavier (une tabulation) et défile aux flèches. F7 ou Alt+↓ va au changement suivant, Maj+F7 ou Alt+↑ au précédent, en boucle ; les boutons de l'en-tête font de même. Le changement courant est marqué (D-292), placé au tiers haut de la zone et annoncé : « Changement 2 sur 3 : avant, ligne 7 ; après, lignes 7 à 8 ». Le focus de la zone se voit sur le cadre du diff (anneau `--accent`).
+- Raison : un long diff se parcourt sans souris ; F7 suit l'usage des éditeurs de code.
+- Options écartées : touches N et P (prises par la frappe d'un lecteur d'écran).
+- Validation : docs/validation/components/DiffView-v1.html (par délégation de l'utilisateur, 2026-11-23)
+
+## D-298 — DiffView : rangées de hauteur fixe, seules les visibles dessinées
+- Date : 2026-11-23
+- Portée : DiffView
+- Décision : une rangée de code fait 20 px, en `--font-mono` à `--fs-sm`, dans les deux densités ; repli et titre de fichier, 32 px. Seules les rangées visibles sont dessinées. La hauteur du diff suit son contenu jusqu'à 720 px puis défile ; avec `fill`, il prend la hauteur de son conteneur. Les lignes longues ne passent pas à la ligne : le diff défile à l'horizontale, d'un seul bloc.
+- Raison : un fichier de dizaines de milliers de lignes reste fluide ; le code se lit mieux sans retour à la ligne.
+- Options écartées : retour à la ligne (hauteurs variables, alignement côte à côte perdu).
+- Validation : docs/validation/components/DiffView-v1.html (par délégation de l'utilisateur, 2026-11-23)
+
+## D-299 — DiffView : avis sur le contenu
+- Date : 2026-11-23
+- Portée : DiffView
+- Décision : une rangée d'avis, en `--fg-2`, dit ce qui ne se compare pas ligne à ligne : « Fichier binaire : contenu non comparé » (octet nul dans les 8 000 premiers caractères, ou patch binaire), « Fins de ligne converties : CRLF → LF » (une fois pour le fichier), « Diff coupé : la suite n'est pas affichée » (`truncated`). Une ligne dont seule la fin de ligne change, ou sans fin de ligne finale, porte une petite étiquette « LF », « CRLF » ou « sans fin de ligne ».
+- Raison : un diff vide ou étrange s'explique au lieu de tromper.
+- Options écartées : avis en `Toast` (perdu au défilement).
+- Validation : docs/validation/components/DiffView-v1.html (par délégation de l'utilisateur, 2026-11-23)

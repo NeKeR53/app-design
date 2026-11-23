@@ -4,6 +4,11 @@ Versions selon semver (règle 6 du skill design) : une nouvelle option facultati
 
 ## [Non publié]
 
+### Ajouté
+- `DiffView` : différences entre deux textes (`before`, `after`, `fileName`) ou lecture d'un diff unifié (`patch`, plusieurs fichiers) (D-290). Vue côte à côte par défaut, unifiée au choix par un `IconButton` à bascule ; unifiée imposée sous 641 px (D-291). Fonds tirés de `--success` et `--danger`, jamais en dur (D-292). Signes + et −, texte caché, `<ins>` et `<del>` (D-293). Mots changés surlignés (D-294). Lignes inchangées repliées, `context` réglable (D-295). En-tête avec nom, résumé et compteurs ; titre par fichier dans un patch (D-296). Navigation F7, Maj+F7, Alt+↓, Alt+↑, annoncée (D-297). Seules les rangées visibles sont dessinées ; option `fill` (D-298). Avis binaire, fins de ligne, diff coupé (D-299).
+- `DiffStat` : compteurs « +12 −3 » seuls, avec texte caché (D-290).
+- Libellés internes `diff…` dans le dictionnaire `messages` (D-089).
+
 ## [0.2.0] — 2026-11-23
 
 Lot 1 de la migration d'Alfred : bouton à texte, actions, modale, champs, ComboBox, notifications et petits éléments d'affichage (décisions D-100 à D-169). Version mineure : tout est nouveau ou facultatif, rien ne casse.

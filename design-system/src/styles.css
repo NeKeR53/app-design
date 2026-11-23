@@ -101,3 +101,205 @@
     40% { transform: scale(1.02); }
   }
 }
+
+/*
+ * DiffView (D-292, D-293, D-298). Les fonds sont tirés de --success et --danger, jamais en dur.
+ * Rangées de hauteur fixe : DiffView.tsx reprend ces hauteurs (ROW_HEIGHT).
+ */
+@layer base {
+  .socle-diff {
+    --diff-add: color-mix(in srgb, var(--success) 12%, var(--surface));
+    --diff-add-strong: color-mix(in srgb, var(--success) 32%, var(--surface));
+    --diff-del: color-mix(in srgb, var(--danger) 10%, var(--surface));
+    --diff-del-strong: color-mix(in srgb, var(--danger) 30%, var(--surface));
+    --diff-gutter: calc(var(--diff-digits, 2ch) + 12px);
+    box-sizing: border-box;
+    max-height: 720px;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    border: var(--line-w) solid var(--line);
+    border-radius: var(--radius-md);
+    background: var(--surface);
+    color: var(--fg);
+    font-family: var(--font-sans);
+  }
+  .socle-diff--fill {
+    max-height: none;
+    flex: 1 1 auto;
+    min-height: 0;
+    height: 100%;
+  }
+  .socle-diff:has(.socle-diff__scroller:focus-visible) {
+    outline: var(--focus-w) solid var(--accent);
+    outline-offset: var(--focus-offset);
+  }
+  .socle-diff__scroller {
+    flex: 1;
+    min-height: 0;
+    overflow: auto;
+    overscroll-behavior: contain;
+    outline: none;
+    font-family: var(--font-mono);
+    font-size: var(--fs-sm);
+    line-height: 20px;
+    font-variant-ligatures: none;
+  }
+  .socle-diff__content {
+    position: relative;
+    min-width: 100%;
+    width: max-content;
+  }
+  .socle-diff__window {
+    position: absolute;
+    inset: 0 0 auto;
+  }
+  .socle-diff__row {
+    position: relative;
+    box-sizing: border-box;
+    height: 20px;
+    display: grid;
+    white-space: pre;
+    tab-size: 4;
+  }
+  .socle-diff--unified .socle-diff__line {
+    grid-template-columns: var(--diff-gutter) var(--diff-gutter) 20px minmax(calc(var(--diff-left) + 16px), 1fr);
+  }
+  .socle-diff__pair {
+    grid-template-columns:
+      var(--diff-gutter) minmax(calc(var(--diff-left) + 36px), 1fr)
+      var(--diff-gutter) minmax(calc(var(--diff-right) + 36px), 1fr);
+  }
+  .socle-diff__number {
+    padding: 0 6px;
+    text-align: right;
+    color: var(--fg-3);
+    background: var(--surface-side);
+    font-variant-numeric: tabular-nums;
+    user-select: none;
+  }
+  .socle-diff__pair > .socle-diff__number:nth-child(3) {
+    border-left: var(--line-w) solid var(--line);
+  }
+  .socle-diff__half {
+    min-width: 0;
+    display: flex;
+  }
+  .socle-diff__sign {
+    flex: none;
+    width: 20px;
+    text-align: center;
+    color: var(--fg-3);
+    user-select: none;
+  }
+  .socle-diff__text {
+    padding-right: 16px;
+  }
+  .socle-diff__line.is-added,
+  .socle-diff__half.is-added {
+    background: var(--diff-add);
+  }
+  .socle-diff__line.is-removed,
+  .socle-diff__half.is-removed {
+    background: var(--diff-del);
+  }
+  .socle-diff__line.is-added > .socle-diff__number,
+  .socle-diff__number.is-added {
+    background: var(--diff-add-strong);
+    color: var(--fg);
+  }
+  .socle-diff__line.is-removed > .socle-diff__number,
+  .socle-diff__number.is-removed {
+    background: var(--diff-del-strong);
+    color: var(--fg);
+  }
+  .socle-diff__line.is-added .socle-diff__sign,
+  .socle-diff__half.is-added .socle-diff__sign {
+    color: var(--success);
+  }
+  .socle-diff__line.is-removed .socle-diff__sign,
+  .socle-diff__half.is-removed .socle-diff__sign {
+    color: var(--danger);
+  }
+  .socle-diff__half.is-empty {
+    background: repeating-linear-gradient(-45deg, var(--surface-side) 0 4px, var(--surface) 4px 8px);
+  }
+  .socle-diff__text ins,
+  .socle-diff__text del {
+    border-radius: 2px;
+    color: inherit;
+    text-decoration: none;
+  }
+  .socle-diff__text ins {
+    background: var(--diff-add-strong);
+  }
+  .socle-diff__text del {
+    background: var(--diff-del-strong);
+  }
+  .socle-diff__eol {
+    margin-left: 8px;
+    padding: 0 4px;
+    border: var(--line-w) solid var(--line-strong);
+    border-radius: var(--radius-sm);
+    color: var(--fg-3);
+    font-size: var(--fs-xs);
+  }
+  .socle-diff__row.is-current::before {
+    content: "";
+    position: absolute;
+    inset: 0 auto 0 0;
+    z-index: 1;
+    width: 3px;
+    background: var(--accent);
+  }
+  .socle-diff__band {
+    position: sticky;
+    left: 0;
+    box-sizing: border-box;
+    width: min(100%, var(--diff-viewport, 100%));
+    height: 32px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 0 12px;
+    font-family: var(--font-sans);
+    font-size: var(--fs-sm);
+    white-space: nowrap;
+    color: var(--fg-2);
+  }
+  .socle-diff__gap {
+    border-block: var(--line-w) solid var(--line);
+    background: var(--surface-side);
+  }
+  .socle-diff__file {
+    margin: 0;
+    border-bottom: var(--line-w) solid var(--line);
+    background: var(--surface-side);
+    color: var(--fg);
+    font-weight: var(--fw-semibold);
+  }
+  .socle-diff__file-name {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-family: var(--font-mono);
+  }
+  @media (forced-colors: active) {
+    .socle-diff__text del {
+      text-decoration: line-through;
+    }
+    .socle-diff__text ins {
+      text-decoration: underline;
+    }
+    .socle-diff__line:is(.is-added, .is-removed) .socle-diff__sign,
+    .socle-diff__half:is(.is-added, .is-removed) .socle-diff__sign {
+      color: CanvasText;
+      font-weight: 700;
+    }
+    .socle-diff__row.is-current::before {
+      forced-color-adjust: none;
+      background: Highlight;
+    }
+  }
+}
