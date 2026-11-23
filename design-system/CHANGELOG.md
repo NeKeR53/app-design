@@ -4,6 +4,15 @@ Versions selon semver (règle 6 du skill design) : une nouvelle option facultati
 
 ## [Non publié]
 
+> **Changement qui casse l'existant** : `AppShell` perd les options `pageSummary` et `pageStatus`, et le type `PageStatus` n'est plus exporté (D-253).
+
+### Retiré
+- `AppShell` : options `pageSummary` (résumé après le titre) et `pageStatus` (indicateur d'état), type `PageStatus` (D-250 à D-252, retirées par D-253). Migration : retirer ces deux options des appels à `AppShell`. Un état durable (lecture seule, hors ligne, données d'exemple) se dit dans le contenu de la page, par un encart local (D-085) ; un chiffre clé va dans l'en-tête du gabarit ou dans le contenu.
+
+### Corrigé
+- Tests : le menu de `Sidebar.Workspace` se ferme par un clic à côté ; la poignée du panneau de détail s'élargit à la souris.
+- Pages de validation `Sidebar-footer-v1.html` et `AppShell-actions-v1.html` : un menu ouvert se ferme par un clic à côté et par Échap. `DetailPanel-width-v1.html` : la poignée se glisse (240 à 480 px), les flèches la règlent, le double-clic revient au défaut.
+
 ## [0.3.0] — 2026-11-23
 
 Lots 2 à 5 de la migration d'Alfred : gabarits de page (ListPage, DetailPanel déclaratif, FormPage, SettingsPage, DetailPage et Page), coquille (actions de page, pied de Sidebar, largeurs du détail, résumé et état), composants spécialisés (TreeView, tableau dense, Terminal, LogViewer, DiffView, Markdown, DocumentViewer, HtmlContent, Disclosure, InlineEdit, StepList, Popover) et garde-fous Biome (décisions D-170 à D-335). Version mineure : tout est nouveau ou facultatif ; les petits changements de l'existant sont listés sous « Modifié ».

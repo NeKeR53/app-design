@@ -8,8 +8,6 @@ import { IconButton } from "../../components/IconButton/IconButton";
 import { Button } from "../../components/Button/Button";
 import { ActionBar, type Action } from "../ActionBar/ActionBar";
 import { ArrowDown, Bell, Plus, Settings } from "../../icons";
-import { Menu } from "../../components/Menu/Menu";
-import type { PageStatus } from "./AppShell";
 import { DemoDetail } from "../DetailPanel/DetailPanel.stories";
 import { Doc } from "../../../.storybook/story-icons";
 import { SocleProvider } from "../../provider/SocleProvider";
@@ -129,6 +127,13 @@ export const DetailRedimensionnable: Story = {
     await waitFor(() => expect(Math.round(panel.getBoundingClientRect().width)).toBe(480));
     await userEvent.dblClick(handle);
     await waitFor(() => expect(Math.round(panel.getBoundingClientRect().width)).toBe(Math.round(w0)));
+    // À la souris : glisser la poignée vers la gauche élargit le panneau.
+    const box = handle.getBoundingClientRect();
+    const at = (x: number) => ({ clientX: x, clientY: box.top + 100, bubbles: true, pointerId: 1 });
+    handle.dispatchEvent(new PointerEvent("pointerdown", at(box.left + 3)));
+    window.dispatchEvent(new PointerEvent("pointermove", at(box.left - 97)));
+    window.dispatchEvent(new PointerEvent("pointerup", at(box.left - 97)));
+    await waitFor(() => expect(Math.round(panel.getBoundingClientRect().width)).toBe(Math.round(Math.min(480, w0 + 100))));
   },
 };
 
@@ -308,77 +313,3 @@ export const DetailLarge: Story = {
   },
 };
 
-/* ---------- P16 : résumé après le titre et état de la page (D-250 à D-252) ---------- */
-function SummaryDemo({ status }: { status?: PageStatus }) {
-  const [current, setCurrent] = useState<PageStatus | undefined>(status);
-  return (
-    <div className="fixed inset-0">
-      <AppShell
-        pageTitle="Accès"
-        pageSummary="3 personnes · 2 en écart · 6 environnements"
-        {...(current ? { pageStatus: current } : {})}
-        views={[
-          { id: "people", label: "Personnes" },
-          { id: "envs", label: "Environnements" },
-        ]}
-        activeView="people"
-        onViewChange={() => {}}
-        sidebar={
-          <Sidebar selectedId="access" onSelectionChange={() => {}} account={<Sidebar.Account name="Camille Martin" onSettings={() => {}} />}>
-            <Sidebar.Item id="access" icon={<Doc />} label="Accès" />
-          </Sidebar>
-        }
-      >
-        <div className="flex gap-2 p-6">
-          <Button onPress={() => setCurrent({ label: "Hors ligne", tone: "danger", description: "Les modifications partiront au retour de la connexion" })}>Passer hors ligne</Button>
-          <Button onPress={() => setCurrent(undefined)}>Retirer l'état</Button>
-        </div>
-      </AppShell>
-    </div>
-  );
-}
-
-/** Résumé après le titre, coupé avec info-bulle ; ordre : titre, état, résumé, vues (D-250). */
-export const ResumeDePage: Story = {
-  render: () => <SummaryDemo status={{ label: "Lecture seule", description: "Vous pouvez consulter cette page, pas la modifier" }} />,
-  play: async ({ canvasElement }) => {
-    const c = within(canvasElement);
-    const bar = within(c.getByRole("banner"));
-    const title = bar.getByRole("heading", { name: "Accès" });
-    const status = bar.getByRole("img", { name: /Lecture seule/ });
-    const summary = bar.getByText("3 personnes · 2 en écart · 6 environnements");
-    const tabs = bar.getByRole("tablist");
-    const x = (el: Element) => el.getBoundingClientRect().left;
-    await expect(x(status)).toBeGreaterThan(x(title));
-    await expect(x(summary)).toBeGreaterThan(x(status));
-    await expect(x(tabs)).toBeGreaterThan(x(summary));
-    // Sans menu : focusable, l'info-bulle donne l'explication.
-    await expect(status).toHaveAttribute("tabindex", "0");
-    await userEvent.hover(status);
-    await waitFor(() => expect(body().getByRole("tooltip")).toHaveTextContent("Vous pouvez consulter cette page, pas la modifier"), { timeout: 1500 });
-  },
-};
-
-/** État avec menu : bouton qui ouvre le menu ; changement annoncé (D-251, D-252). */
-export const EtatDePage: Story = {
-  render: () => (
-    <SummaryDemo
-      status={{ label: "Exemple", tone: "warning", description: "Cette page affiche des données d'exemple", menu: <Menu.Item label="Quitter les données d'exemple" /> }}
-    />
-  ),
-  play: async ({ canvasElement }) => {
-    const c = within(canvasElement);
-    const bar = within(c.getByRole("banner"));
-    const trigger = bar.getByRole("button", { name: "Exemple : Cette page affiche des données d'exemple" });
-    await userEvent.click(trigger);
-    await waitFor(() => expect(body().getByRole("menuitem", { name: "Quitter les données d'exemple" })).toBeVisible());
-    await userEvent.keyboard("{Escape}");
-    await waitFor(() => expect(trigger).toHaveFocus());
-    await expect(bar.getByRole("status")).toHaveTextContent("Exemple : Cette page affiche des données d'exemple");
-    await userEvent.click(c.getByRole("button", { name: "Passer hors ligne" }));
-    await waitFor(() => expect(bar.getByRole("status")).toHaveTextContent(/^Hors ligne/));
-    await userEvent.click(c.getByRole("button", { name: "Retirer l'état" }));
-    await waitFor(() => expect(bar.getByRole("status")).toHaveTextContent(""));
-    await expect(bar.queryByRole("img", { name: /Hors ligne/ })).toBeNull();
-  },
-};
