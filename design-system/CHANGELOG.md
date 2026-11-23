@@ -4,16 +4,18 @@ Versions selon semver (règle 6 du skill design) : une nouvelle option facultati
 
 ## [Non publié]
 
+## [0.2.0] — 2026-11-23
+
+Lot 1 de la migration d'Alfred : bouton à texte, actions, modale, champs, ComboBox, notifications et petits éléments d'affichage (décisions D-100 à D-169). Version mineure : tout est nouveau ou facultatif, rien ne casse.
+
 ### Ajouté
 - `Button` : bouton à texte avec icône facultative au début (D-100, D-106). Variantes `primary` monochrome (D-102), `secondary` par défaut sur fond `--field` (D-103), `subtle`, `danger` en rouge plein (D-104). Tailles `md` et `sm` (D-101). Chargement `isPending` : roue, libellé gardé (D-105). Options `type`, `form`, `aria-label`, `autoFocus`.
 - `IconButton` : option facultative `isPending` (chargement, par exemple « Actualiser ») (D-107).
 - Tokens `--btn-h-sm` (26 px web, 24 px desktop) et `--danger-fg` (D-101, D-104).
-- Libellé interne `loading` (« Chargement ») dans le dictionnaire `messages`.
+- Libellé interne `loading` (« Chargement… », partagé par Button, IconButton et Skeleton) dans le dictionnaire `messages`.
 - Modèle `Action` et `ActionBar` : une app décrit ses actions par des données ; la zone (`topbar`, `header`, `toolbar`, `section`, `row`, `empty`) décide de leur forme : bouton à texte, bouton-icône ou entrée du menu « … » (D-110 à D-114, D-117). Action `danger` dans « … », en dernier, toujours confirmée (D-115). Attente pendant la promesse de `onPress`, erreur rendue à `onError`, réussite à `onDone` (D-116, D-118). La règle seule est exportée : `arrangeActions`.
 - Libellés internes `moreActions` (« Plus d'actions ») et `confirmQuestion` (« {label} ? »).
 - Règles de mise en page : section « Actions » dans `docs/layout-rules.md` (D-111).
-
-### Ajouté — petits éléments d'affichage (D-160 à D-169)
 - `StatusBadge` (point et libellé, sans fond) et `StatusDot` (point seul, nom obligatoire, info-bulle) ; six tons, dont `pending` à point creux (D-160 à D-162). Type `StatusTone`.
 - `Avatar` : image ou initiales sur fond neutre, 24, 32 ou 40 px ; les initiales remplacent une image en erreur (D-163).
 - `ProgressBar` : rail de 4 px, libellé au-dessus, valeur à droite, tons `warning` et `danger`, mode indéterminé (D-164).
@@ -21,33 +23,6 @@ Versions selon semver (règle 6 du skill design) : une nouvelle option facultati
 - `EmptyState` : icône de 32 px, titre, phrase, action principale ; taille `compact` (D-166).
 - `Link` : toujours souligné ; lien externe avec flèche et texte caché ; bouton d'apparence lien sans `href` (D-167).
 - `Code` (en ligne ou en bloc) et `Divider` (horizontal ou vertical) (D-168).
-- Libellés `loading`, `codeSample` et `progressOf` dans le dictionnaire `messages` (D-089).
-
-### Modifié
-- `List` affiche son statut avec `StatusBadge` ; `ListItemData.status.tone` accepte aussi `pending` (D-169).
-- `List` et `Table` dessinent leurs squelettes avec `Skeleton` et leurs messages centrés avec `EmptyState`, sans changement de rendu ; le groupe de squelettes est désormais annoncé « Chargement… » (D-169).
-- `Sidebar.Account` dessine l'avatar par défaut avec `Avatar`, masqué aux lecteurs d'écran (le nom est écrit à côté). Les initiales prennent le premier et le dernier mot du nom, au lieu des deux premiers (D-163, D-169).
-
-- Notifications (D-150 à D-158) : file `createNotifications({ initial?, onChange? })`, passée à `SocleProvider` par l'option facultative `notifications` ; `notify()` sur la file ou par `useNotify()` ; `useNotifications()`. Toasts sur le Toast de React Aria, sans sonner (D-150) : carte neutre (D-151), quatre tons (D-152), 5 s, 8 s avec action, erreur jusqu'à fermeture, pause au survol, au focus et fenêtre inactive (D-153), trois visibles en bas à droite (D-154), une action au plus (D-155). Pattern `NotificationCenter` pour la barre du haut d'`AppShell` : cloche, pastille de non-lus « 9+ », panneau groupé par jour, « Tout effacer », 100 notifications en mémoire (D-156 à D-158).
-- Libellés internes des notifications dans le dictionnaire `messages` (`notifications`, `closeNotification`, `toneSuccess`…).
-- Règle de placement « Messages » (D-159) : pas de bandeau pleine largeur ; un état durable de la page va dans la barre du haut (docs/layout-rules.md).
-
-- `Dialog` : modale avec titre, description, corps et pied d'actions. Tailles `sm`, `md` (défaut), `lg`, `xl` (corps sans marge, pour SettingsPage) (D-120) ; centrée ou plein écran sur mobile (D-121). Échap, × et clic hors ferment, sauf clic hors après une saisie (rebond) et action en cours `isBusy` (D-122). Traits seulement quand le corps défile (D-123). Focus sur le premier champ, rendu au déclencheur (D-125).
-- `useConfirm` : `await confirm({ title, message, confirmLabel, tone, onConfirm })` rend `true` ou `false`. Sans × ni icône (D-126), affichée par `SocleProvider` (D-127), action longue avec chargement et erreur sur place (D-128). Même ordre des boutons partout : « Annuler », puis l'action (D-124).
-- Token `--dlg-pad` (20 px web, 16 px desktop). Libellés internes `close`, `cancel` et `actionFailed`.
-
-- Champs de formulaire (D-130 à D-138) : `TextField`, `TextArea`, `Select`, `Checkbox`, `CheckboxGroup`, `RadioGroup`, `Switch`, `Fieldset`. Libellé au-dessus, aide ou erreur en dessous (D-022) ; cadre `--surface` et bord `--line-strong` (D-130) ; lecture seule en cadre gris avec cadenas (D-131) ; vérification par le composant (`isRequired`, `validate`), affichée en quittant un champ modifié ou à l'envoi, et erreur imposée par l'app (`error`) (D-132) ; cinq largeurs `width` et `TextArea` qui grandit de 3 à 10 lignes (D-133) ; `Select` en liste flottante au style du Menu (D-134).
-- Anatomie commune interne `Field` (non exportée), reprise par `ComboBox`.
-- Libellés du dictionnaire : `optional`, `requiredField`, `requiredChoice`, `requiredCheckbox`, `requiredGroup`, `invalidEmail`, `invalidUrl`, `invalidValue`, `choose`, `charCount` (D-089).
-- Règles de placement : interrupteur ou case (D-137), champs (docs/layout-rules.md).
-
-### Modifié
-- `PropertyRow` (`action type "switch"`) utilise le composant `Switch` (D-136). Même rendu, même API.
-
-### Corrigé
-- Interrupteur du panneau de détail : la pastille blanche n'apparaissait pas (`bg-white` n'existe pas dans le thème Socle).
-
-### Ajouté — ComboBox (D-140 à D-147)
 - `ComboBox` : champ de formulaire qui propose une liste de choix pendant la saisie. Un seul composant : choix simple ou multiple (`selectionMode`), source locale (`items`) ou asynchrone (`loadItems(texte, signal)`) (D-140).
 - Choix multiple en étiquettes, toutes visibles, avec retour à la ligne (D-143) ; élément choisi coché, liste ouverte (D-144).
 - Valeur libre facultative : `allowsCustomValue` et `onCreate` (D-142).
@@ -55,6 +30,26 @@ Versions selon semver (règle 6 du skill design) : une nouvelle option facultati
 - Options communes des champs, avec les pièces internes de `Field` : `hideLabel`, `description`, `isRequired`, `validate`, `error`, `isDisabled`, `isReadOnly`, `width`, `name` (D-130 à D-133).
 - Libellés ajoutés au dictionnaire `messages` : `showChoices`, `chosenItems`, `removeItem`, `addValue`, `typeMoreChars`, `resultsUnavailable`, `noResults`.
 - Règle de choix entre `ComboBox`, `SearchField`, `Select` et filtres de la `toolbar` (D-141), reportée dans la spec `SearchField`.
+- Libellés `codeSample` et `progressOf` dans le dictionnaire `messages` (D-089).
+- Notifications (D-150 à D-158) : file `createNotifications({ initial?, onChange? })`, passée à `SocleProvider` par l'option facultative `notifications` ; `notify()` sur la file ou par `useNotify()` ; `useNotifications()`. Toasts sur le Toast de React Aria, sans sonner (D-150) : carte neutre (D-151), quatre tons (D-152), 5 s, 8 s avec action, erreur jusqu'à fermeture, pause au survol, au focus et fenêtre inactive (D-153), trois visibles en bas à droite (D-154), une action au plus (D-155). Pattern `NotificationCenter` pour la barre du haut d'`AppShell` : cloche, pastille de non-lus « 9+ », panneau groupé par jour, « Tout effacer », 100 notifications en mémoire (D-156 à D-158).
+- Libellés internes des notifications dans le dictionnaire `messages` (`notifications`, `closeNotification`, `toneSuccess`…).
+- Règle de placement « Messages » (D-159) : pas de bandeau pleine largeur ; un état durable de la page va dans la barre du haut (docs/layout-rules.md).
+- `Dialog` : modale avec titre, description, corps et pied d'actions. Tailles `sm`, `md` (défaut), `lg`, `xl` (corps sans marge, pour SettingsPage) (D-120) ; centrée ou plein écran sur mobile (D-121). Échap, × et clic hors ferment, sauf clic hors après une saisie (rebond) et action en cours `isBusy` (D-122). Traits seulement quand le corps défile (D-123). Focus sur le premier champ, rendu au déclencheur (D-125).
+- `useConfirm` : `await confirm({ title, message, confirmLabel, tone, onConfirm })` rend `true` ou `false`. Sans × ni icône (D-126), affichée par `SocleProvider` (D-127), action longue avec chargement et erreur sur place (D-128). Même ordre des boutons partout : « Annuler », puis l'action (D-124).
+- Token `--dlg-pad` (20 px web, 16 px desktop). Libellés internes `close`, `cancel` et `actionFailed`.
+- Champs de formulaire (D-130 à D-138) : `TextField`, `TextArea`, `Select`, `Checkbox`, `CheckboxGroup`, `RadioGroup`, `Switch`, `Fieldset`. Libellé au-dessus, aide ou erreur en dessous (D-022) ; cadre `--surface` et bord `--line-strong` (D-130) ; lecture seule en cadre gris avec cadenas (D-131) ; vérification par le composant (`isRequired`, `validate`), affichée en quittant un champ modifié ou à l'envoi, et erreur imposée par l'app (`error`) (D-132) ; cinq largeurs `width` et `TextArea` qui grandit de 3 à 10 lignes (D-133) ; `Select` en liste flottante au style du Menu (D-134).
+- Anatomie commune interne `Field` (non exportée), reprise par `ComboBox`.
+- Libellés du dictionnaire : `optional`, `requiredField`, `requiredChoice`, `requiredCheckbox`, `requiredGroup`, `invalidEmail`, `invalidUrl`, `invalidValue`, `choose`, `charCount` (D-089).
+- Règles de placement : interrupteur ou case (D-137), champs (docs/layout-rules.md).
+
+### Modifié
+- `List` affiche son statut avec `StatusBadge` ; `ListItemData.status.tone` accepte aussi `pending` (D-169).
+- `List` et `Table` dessinent leurs squelettes avec `Skeleton` et leurs messages centrés avec `EmptyState`, sans changement de rendu ; le groupe de squelettes est désormais annoncé « Chargement… » (D-169).
+- `Sidebar.Account` dessine l'avatar par défaut avec `Avatar`, masqué aux lecteurs d'écran (le nom est écrit à côté). Les initiales prennent le premier et le dernier mot du nom, au lieu des deux premiers (D-163, D-169).
+- `PropertyRow` (`action type "switch"`) utilise le composant `Switch` (D-136). Même rendu, même API.
+
+### Corrigé
+- Interrupteur du panneau de détail : la pastille blanche n'apparaissait pas (`bg-white` n'existe pas dans le thème Socle).
 
 ## [0.1.0] — 2026-11-22
 

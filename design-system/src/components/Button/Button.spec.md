@@ -85,7 +85,7 @@ Focusable avec Tab. Entrée ou Espace déclenche l'action. Pendant le chargement
 
 ## Accessibilité
 - Rôle `button`, nom accessible = libellé visible, ou `aria-label` s'il est fourni.
-- Chargement : `aria-disabled="true"` et un indicateur `progressbar` nommé « Chargement » (dictionnaire `messages`, D-089). L'entrée et la sortie de l'attente sont annoncées au lecteur d'écran quand le bouton a le focus (React Aria).
+- Chargement : `aria-disabled="true"` et un indicateur `progressbar` nommé « Chargement… » (dictionnaire `messages`, D-089). L'entrée et la sortie de l'attente sont annoncées au lecteur d'écran quand le bouton a le focus (React Aria).
 - Contraste du libellé d'au moins 4,5:1 dans toutes les variantes et les deux modes : `--danger-fg` est blanc en clair et sombre en mode sombre (D-104).
 - Cible d'au moins `--target-min` : 24 px, 44 px sur mobile.
 

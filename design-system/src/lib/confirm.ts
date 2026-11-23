@@ -1,10 +1,12 @@
 /**
  * Demande de confirmation d'une action (D-115).
  *
- * Point de raccord avec la confirmation de Socle (P3, `useConfirm`). Tant qu'elle n'est pas
- * disponible, la boîte de confirmation du navigateur sert de repli : une action destructrice
- * n'est jamais lancée sans accord.
+ * Raccord entre ActionBar et la confirmation de Socle (`useConfirm`, D-127) : la modale
+ * de confirmation affichée par `SocleProvider`. Une action destructrice n'est jamais lancée sans accord.
  */
+import { useCallback } from "react";
+import { useConfirm } from "../components/Dialog/useConfirm";
+
 export interface ConfirmRequest {
   /** Question, qui nomme l'objet. */
   title: string;
@@ -18,10 +20,17 @@ export interface ConfirmRequest {
 
 export type ConfirmFn = (request: ConfirmRequest) => Promise<boolean>;
 
-const browserConfirm: ConfirmFn = (request) =>
-  Promise.resolve(typeof window !== "undefined" && window.confirm(request.message ? `${request.title}\n\n${request.message}` : request.title));
-
-/** Fonction de confirmation à utiliser. Une fois P3 fusionné, rendre ici `useConfirm()`. */
+/** Fonction de confirmation à utiliser : la modale de Socle. */
 export function useConfirmFn(): ConfirmFn {
-  return browserConfirm;
+  const confirm = useConfirm();
+  return useCallback(
+    (request: ConfirmRequest) =>
+      confirm({
+        title: request.title,
+        message: request.message,
+        confirmLabel: request.confirmLabel,
+        tone: request.danger ? "danger" : "default",
+      }),
+    [confirm],
+  );
 }

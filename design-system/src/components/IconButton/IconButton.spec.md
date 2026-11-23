@@ -70,7 +70,7 @@ Focusable avec Tab. Entrée ou Espace déclenche l'action. Le focus affiche l'in
 ## Accessibilité
 - Rôle `button`, nom accessible = `label`.
 - Bascule : `aria-pressed`.
-- Chargement : `aria-disabled="true"` et un `progressbar` nommé « Chargement » (dictionnaire `messages`).
+- Chargement : `aria-disabled="true"` et un `progressbar` nommé « Chargement… » (dictionnaire `messages`).
 - Cible d'au moins 24 × 24 px (WCAG 2.2, critère 2.5.8).
 - Contraste de l'icône d'au moins 3:1 sur le fond, dans tous les états actifs.
 

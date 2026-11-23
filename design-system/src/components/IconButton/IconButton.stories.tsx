@@ -84,7 +84,7 @@ export const Chargement: Story = {
     await userEvent.click(button);
     await waitFor(() => expect(button).toHaveAttribute("data-pending", "true"));
     await expect(button).toHaveFocus();
-    await expect(within(button).getByRole("progressbar", { name: "Chargement" })).toBeInTheDocument();
+    await expect(within(button).getByRole("progressbar", { name: "Chargement…" })).toBeInTheDocument();
     await userEvent.click(button);
     await expect(args.onPress).toHaveBeenCalledTimes(1);
     // Un clic ferme l'info-bulle ; elle revient au survol suivant.

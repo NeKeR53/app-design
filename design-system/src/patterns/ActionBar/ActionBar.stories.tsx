@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { expect, fn, spyOn, userEvent, waitFor, within } from "storybook/test";
+import { expect, fn, userEvent, waitFor, within } from "storybook/test";
 import { ActionBar, arrangeActions, type Action, type ActionZone } from "./ActionBar";
 import { ArrowDown, Check, ListDetail, Plus, Search, Settings, X } from "../../icons";
 
@@ -166,20 +166,21 @@ export const Confirmation: Story = {
   },
   play: async ({ canvasElement, args }) => {
     const del = args.actions[1]!;
-    const confirm = spyOn(window, "confirm").mockReturnValue(false);
-    try {
-      const more = within(canvasElement).getByRole("button", { name: "Plus d'actions" });
-      await userEvent.click(more);
-      await userEvent.click(await waitFor(() => body().getByRole("menuitem", { name: "Supprimer" })));
-      await waitFor(() => expect(confirm).toHaveBeenCalledWith("Supprimer le document « Rapport trimestriel » ?"));
-      await expect(del.onPress).not.toHaveBeenCalled();
-      confirm.mockReturnValue(true);
-      await userEvent.click(more);
-      await userEvent.click(await waitFor(() => body().getByRole("menuitem", { name: "Supprimer" })));
-      await waitFor(() => expect(del.onPress).toHaveBeenCalledTimes(1));
-    } finally {
-      confirm.mockRestore();
-    }
+    const more = within(canvasElement).getByRole("button", { name: "Plus d'actions" });
+    // Annuler : la modale de confirmation de Socle (D-127) se ferme, l'action ne part pas.
+    await userEvent.click(more);
+    await userEvent.click(await waitFor(() => body().getByRole("menuitem", { name: "Supprimer" })));
+    const dialog = await waitFor(() => body().getByRole("alertdialog"));
+    await expect(within(dialog).getByText("Supprimer le document « Rapport trimestriel » ?")).toBeInTheDocument();
+    await userEvent.click(within(dialog).getByRole("button", { name: "Annuler" }));
+    await waitFor(() => expect(body().queryByRole("alertdialog")).not.toBeInTheDocument());
+    await expect(del.onPress).not.toHaveBeenCalled();
+    // Confirmer : l'action part une fois.
+    await userEvent.click(more);
+    await userEvent.click(await waitFor(() => body().getByRole("menuitem", { name: "Supprimer" })));
+    const again = await waitFor(() => body().getByRole("alertdialog"));
+    await userEvent.click(within(again).getByRole("button", { name: "Supprimer" }));
+    await waitFor(() => expect(del.onPress).toHaveBeenCalledTimes(1));
   },
 };
 
