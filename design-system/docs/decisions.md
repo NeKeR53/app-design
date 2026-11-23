@@ -922,7 +922,7 @@
 ## D-112 — Modèle Action : action principale en icône dans la barre du haut
 - Date : 2026-11-23
 - Portée : ActionBar (zone `topbar`)
-- Décision : dans la zone `topbar`, l'action principale reste un bouton-icône, placé en premier. Sans icône, elle va en tête du menu « … ». La spec AppShell (boutons-icônes uniquement) ne change pas.
+- Décision : dans la zone `topbar`, l'action principale reste un bouton-icône, placé en premier. Sans icône, elle va en tête du menu « … » (partie remplacée par D-220 : sans icône, elle est à texte). La spec AppShell (boutons-icônes uniquement) ne change pas.
 - Raison : respecter AppShell aujourd'hui ; P13 pourra ajouter le texte en option, sans casser cette règle.
 - Options écartées : bouton à texte dans la barre du haut dès maintenant.
 - Validation : docs/validation/components/ActionBar-v1.html
@@ -1050,7 +1050,7 @@
 ## D-159 — Pas de bandeau pleine largeur ; avenir de FeedbackBanner
 - Date : 2026-11-23
 - Portée : global (layout-rules)
-- Décision : aucune app n'affiche de bandeau pleine largeur sous la barre du haut. Un état durable de la page ou de l'app (hors ligne, lecture seule) se signale dans la barre du haut, par un indicateur compact. Un message local reste un encart dans le contenu (comme D-085). Le résultat d'une action va dans un toast. L'indicateur de barre du haut et l'encart feront chacun une proposition à part ; l'apparence `bar` de `FeedbackBanner` (Alfred) n'a pas d'équivalent.
+- Décision : aucune app n'affiche de bandeau pleine largeur sous la barre du haut. Un état durable de la page ou de l'app (hors ligne, lecture seule) se signale dans la barre du haut, par un indicateur compact. Un message local reste un encart dans le contenu (comme D-085). Le résultat d'une action va dans un toast. L'indicateur de barre du haut et l'encart feront chacun une proposition à part ; l'apparence `bar` de `FeedbackBanner` (Alfred) n'a pas d'équivalent. L'indicateur de barre du haut est défini par D-251.
 - Raison : choix de l'utilisateur ; un bandeau décale tout le contenu et se confond avec la barre.
 - Options écartées : bandeau pleine largeur.
 - Validation : par délégation de l'utilisateur, 2026-11-23 — docs/validation/components/Notifications-v1.html
@@ -2205,3 +2205,99 @@
 - Raison : la coloration rend le texte lisible sans aperçu ; le suivi des modifications et l'enregistrement appartiennent à la page (FormPage).
 - Options écartées : aperçu côte à côte par défaut (Alfred) ; onglets avec `Tabs` (réservé aux vues d'une page).
 - Validation : docs/validation/components/Markdown-v1.html — par délégation de l'utilisateur, 2026-11-23.
+
+## D-220 — Barre du haut : action principale à texte quand elle n'a pas d'icône
+- Date : 2026-11-23
+- Portée : ActionBar (zone `topbar`), AppShell
+- Décision : dans la zone `topbar`, une action `primary` sans icône est un `Button` `primary` de taille `md`, tout à droite du groupe, après « … », à 6 px du dernier bouton-icône. Une action `primary` avec icône reste un bouton-icône, en premier (D-112, inchangé). Un écran n'a qu'un bouton plein : si la barre du haut a une action principale à texte, l'en-tête du gabarit n'en a pas.
+- Raison : l'action attendue de la page reste visible et lisible ; l'app choisit la forme par la présence de l'icône, sans nouvelle option, comme D-112 le prévoyait.
+- Options écartées : toujours du texte (changerait D-112 pour toutes les apps) ; icône seulement (actuel : l'action attendue reste peu visible) ; nouvelle option `text` sur l'action (la page ne choisit pas la forme, D-111).
+- Validation : par délégation de l'utilisateur, 2026-11-23 — docs/validation/components/AppShell-actions-v1.html
+
+## D-221 — Barre du haut : repli selon la place
+- Date : 2026-11-23
+- Portée : ActionBar (zone `topbar`), AppShell
+- Décision : dans la barre du haut d'AppShell, `ActionBar` mesure la place libre en continu. Quand elle manque, les boutons-icônes passent dans « … » un à un, depuis le dernier ; ils y entrent avant les entrées déjà présentes, dans leur ordre. Puis le bouton à texte passe en tête de « … ». Les actions se replient avant les onglets de vues, qui ne rétrécissent qu'une fois tout replié (D-027). Les autres enfants du slot (la cloche, D-157) et le bouton du panneau de détail ne se replient jamais. Sous 640 px, D-117 s'applique toujours. Aucune animation (D-026). `arrangeActions` reçoit l'option `fit: { icons, primary }` pour la règle seule.
+- Raison : un seuil fixe de largeur de fenêtre (Alfred : 1100 px) replie trop tôt ou trop tard selon le titre et les vues ; la mesure garde tout ce qui tient.
+- Options écartées : seuil de largeur de fenêtre ; tout replier d'un coup ; replier les onglets de vues d'abord.
+- Validation : par délégation de l'utilisateur, 2026-11-23 — docs/validation/components/AppShell-actions-v1.html
+
+## D-222 — Barre du haut : contenu du slot `actions`
+- Date : 2026-11-23
+- Portée : AppShell
+- Décision : le slot `actions` d'AppShell reçoit une `ActionBar` `zone="topbar"` pour les actions de la page, et des boutons-icônes propres à l'app (cloche du centre de notifications, D-157), placés avant elle. Le slot prend la place libre de la barre ; sa largeur ne dépend pas de son contenu. Une bascule de vue (boutons accolés, `group` et `selected` dans Alfred) n'y va pas : les vues passent par l'option `views` (Tabs, D-021).
+- Raison : une seule forme d'action dans la barre ; les vues ont déjà leur place.
+- Options écartées : bascule de vue à deux boutons dans la barre (D-110 l'exclut déjà) ; deuxième slot pour le bouton à texte.
+- Validation : par délégation de l'utilisateur, 2026-11-23 — docs/validation/components/AppShell-actions-v1.html
+
+## D-230 — Sidebar : entrées fixes du bas
+- Date : 2026-11-23
+- Portée : Sidebar, AppShell
+- Décision : l'option `footer` de Sidebar reçoit des `Sidebar.Item` (3 au plus) : des pages que l'app veut toujours à portée, par exemple un assistant, l'aide ou la corbeille. Elles sont collées en bas, au-dessus de l'espace de travail et du compte, hors de la zone qui défile. Même dessin, mêmes états, mêmes options (compteur, indicateur, actions) et même sélection (`selectedId`) que la navigation. Elles forment un second arbre, nommé « Navigation du bas ». Sur mobile, elles vont dans la feuille « Plus », ou dans la barre d'onglets avec `tabbar` (D-003, D-019).
+- Raison : générique (aide de Linear, corbeille de Notion, assistant d'Alfred) ; une page fixe ne doit pas disparaître quand la navigation défile.
+- Options écartées : un composant d'entrée propre au pied ; une section « épinglée » dans la zone qui défile ; plus de 3 entrées (le pied mangerait la navigation).
+- Validation : par délégation de l'utilisateur, 2026-11-23 — docs/validation/components/Sidebar-footer-v1.html
+
+## D-231 — Sidebar : sélecteur d'espace de travail
+- Date : 2026-11-23
+- Portée : Sidebar
+- Décision : `Sidebar.Workspace`, passé par l'option `workspace` de Sidebar, montre l'espace ouvert : un repère carré de 24 px (rayon 4 px, fond `--selected`, initiale en `--fs-xs` semi-gras), le nom (coupé, info-bulle), puis un chevron haut-bas en `--fg-3`. Un clic, Entrée, Espace ou flèche bas ouvre un `Menu` au-dessus : la section « Espaces de travail » en choix unique, l'espace ouvert coché (D-050), puis un trait et les actions de l'app (`actions`, des `Menu.Item`). Choisir l'espace ouvert ne fait rien ; choisir un autre appelle `onChange(id)`. Avec un seul espace et aucune action, c'est une simple étiquette, sans menu. `isDisabled` le désactive (pendant une ouverture, par exemple).
+- Raison : Slack, Notion, Linear et Alfred ont un sélecteur d'espace ; le repère carré le distingue de l'avatar rond d'une personne (D-163).
+- Options écartées : sélecteur en haut de la sidebar (la zone au-dessus porte déjà le repli et l'historique, D-020) ; fusion avec le compte (le menu de D-046 mêlerait deux sujets) ; description de chaque espace dans le menu (le chemin d'un dossier est propre à Alfred).
+- Validation : par délégation de l'utilisateur, 2026-11-23 — docs/validation/components/Sidebar-footer-v1.html
+
+## D-232 — Sidebar : ordre du pied et ce qui reste dans l'app
+- Date : 2026-11-23
+- Portée : Sidebar, layout-rules
+- Décision : le pied de la sidebar contient, dans cet ordre : les entrées fixes (`footer`), l'espace de travail (`workspace`), le compte (`account`). Un seul trait le sépare de la navigation ; 2 px entre ses lignes. Restent des solutions locales de l'app : une zone de conversations sous une entrée fixe (elle se construit avec `Sidebar.Section` et `Sidebar.TreeItem`), les pastilles d'état d'agent à trois tons (prendre `count` ou `indicator="activity"`), le raccourci d'ouverture du sélecteur, renommer et réordonner les entrées.
+- Raison : « où je suis » et « qui je suis » restent ensemble, au même endroit dans toutes les apps ; ce qui ne passe pas le test du générique reste hors du design system.
+- Options écartées : un trait entre chaque groupe du pied ; un raccourci global d'ouverture du sélecteur dans Socle.
+- Validation : par délégation de l'utilisateur, 2026-11-23 — docs/validation/components/Sidebar-footer-v1.html
+
+## D-240 — Panneau de détail : largeur de départ choisie par la page
+- Date : 2026-11-23
+- Portée : AppShell, tokens
+- Décision : l'option `detailWidth` d'AppShell vaut `"default"` (des sections de propriétés : `--detail-w`, 300 px web, 272 px desktop) ou `"form"` (un formulaire : nouveau token `--detail-w-form`, 460 px web, 420 px desktop). Elle fixe la largeur de départ, en colonne sur bureau comme en overlay sur tablette. La poignée garde sa plage de 240 à 480 px (D-025). La largeur réglée est mémorisée à part pour chacune (`shell:detail-width` et `shell:detail-width:form`) ; le double-clic revient au défaut de la page.
+- Raison : un formulaire à l'étroit coupe ses champs ; la page sait ce qu'elle montre, pas l'utilisateur au premier affichage.
+- Options écartées : largeur en pixels libre par page (pas de cohérence entre apps) ; une seule largeur mémorisée pour tout (un réglage pour un formulaire élargirait toutes les sections).
+- Validation : par délégation de l'utilisateur, 2026-11-23 — docs/validation/components/DetailPanel-width-v1.html
+
+## D-241 — Panneau de détail : bouton Agrandir facultatif
+- Date : 2026-11-23
+- Portée : AppShell
+- Décision : avec l'option `detailExpandable`, un bouton bascule « Agrandir le panneau de détail » (`aria-pressed`) se place dans la barre du haut, juste avant le bouton du panneau. Icône : flèches vers l'extérieur, puis vers l'intérieur une fois large. Il n'existe que sur bureau, quand le panneau est ouvert. Large, le panneau mesure 960 px au plus et rétrécit pour laisser au moins 360 px au contenu ; il n'a pas de poignée. Réduire rend la largeur d'avant. L'état large est mémorisé (`shell:detail-wide`). Aucune animation (D-026).
+- Raison : un contenu riche (aperçu, conversation) a parfois besoin de place sans quitter la page ; le bouton se place au-dessus du panneau, sans ajouter d'en-tête sur bureau.
+- Options écartées : en-tête dans le panneau, comme Alfred (une ligne de plus sur bureau, D-018 n'en a pas) ; double-clic sur la poignée (déjà pris par D-025, introuvable).
+- Validation : par délégation de l'utilisateur, 2026-11-23 — docs/validation/components/DetailPanel-width-v1.html
+
+## D-242 — Panneau de détail : deux états, pas de cycle
+- Date : 2026-11-23
+- Portée : AppShell
+- Décision : Agrandir bascule entre deux états, la largeur de la page et la largeur large. Il ne fait pas passer par trois largeurs à la suite. Les trois largeurs d'Alfred (340, 460, large) deviennent `default`, `form` et l'état large.
+- Raison : un bouton à deux états se comprend d'un coup d'œil ; un cycle oblige à compter les clics.
+- Options écartées : cycle sections, formulaire, large (Alfred, OneApp).
+- Validation : par délégation de l'utilisateur, 2026-11-23 — docs/validation/components/DetailPanel-width-v1.html
+
+## D-250 — Barre du haut : résumé après le titre
+- Date : 2026-11-23
+- Portée : AppShell
+- Décision : l'option `pageSummary` d'AppShell est un texte court qui suit le nom de la page (et l'état, D-251), après un trait vertical de 16 px en `--line` : « 3 personnes · 2 en écart · 6 environnements ». Texte seul, en `--fs-sm` et `--fg-2`, sur une ligne, 320 px ou 30 % de la barre au plus ; coupé avec une ellipse, texte complet en info-bulle s'il est coupé. Il se coupe avant le titre et avant les vues. Il est masqué sur mobile.
+- Raison : un chiffre clé de la page se lit sans ouvrir de panneau (OneApp, Alfred) ; une seule ligne de texte reste calme.
+- Options écartées : étiquettes ou pastilles dans le résumé (trop de couleur dans la barre, D-160) ; résumé dans l'en-tête du gabarit (la barre du haut est la seule à rester visible quand la page défile).
+- Validation : par délégation de l'utilisateur, 2026-11-23 — docs/validation/components/AppShell-summary-v1.html
+
+## D-251 — Barre du haut : indicateur d'état durable de la page
+- Date : 2026-11-23
+- Portée : AppShell, layout-rules (suite de D-159)
+- Décision : l'option `pageStatus` d'AppShell, `{ label, tone?, description?, menu? }`, montre un état durable de la page ou de l'app (« Lecture seule », « Hors ligne », « Exemple ») juste après le titre. Cadre de 24 px de haut, bord `--line`, rayon 8 px, fond `--surface` ; dedans, le `StatusBadge` du ton (point et libellé, D-160). Largeur de 160 px au plus (120 px sur mobile), libellé coupé au-delà. Avec `menu`, c'est un bouton qui ouvre un `Menu` sous lui (« Quitter les données d'exemple ») ; son nom est « {label} : {description} ». Sans menu et avec `description`, il prend le focus et l'info-bulle donne la phrase. Sans `description` ni `menu`, il n'est pas focusable.
+- Raison : D-159 renvoie l'état durable dans la barre du haut ; placé après le titre, il qualifie la page et reste visible quand les actions se replient (D-221).
+- Options écartées : pastille teintée parmi les actions, à droite (Alfred : plus de couleur, mêlée aux actions) ; bandeau sous la barre (exclu par D-159).
+- Validation : par délégation de l'utilisateur, 2026-11-23 — docs/validation/components/AppShell-summary-v1.html
+
+## D-252 — État de la page : un seul, annoncé
+- Date : 2026-11-23
+- Portée : AppShell
+- Décision : une page montre un seul état à la fois : l'app choisit le plus important. Quand l'état apparaît ou change, une zone `role="status"` cachée l'annonce au lecteur d'écran (« Hors ligne : … »). Ordre dans la barre : titre, état, trait, résumé, trait, vues, puis les actions.
+- Raison : deux pastilles côte à côte se lisent mal ; un état qui change sans annonce passe inaperçu sans la vue.
+- Options écartées : liste d'états ; annonce par un toast (le toast est réservé au résultat d'une action, D-159).
+- Validation : par délégation de l'utilisateur, 2026-11-23 — docs/validation/components/AppShell-summary-v1.html

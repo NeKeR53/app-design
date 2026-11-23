@@ -17,6 +17,7 @@ export interface SocleMessages {
   detail: string;
   closeDetail: string;
   detailWidth: string;
+  expandDetail: string;
   more: string;
   /* Sidebar */
   mainNavigation: string;
@@ -30,6 +31,10 @@ export interface SocleMessages {
   showLess: string;
   actionsOn: (title: string) => string;
   account: string;
+  footerNavigation: string;
+  workspaces: string;
+  workspaceLabel: string;
+  workspaceSwitch: (name: string) => string;
   settings: string;
   opensInBrowser: string;
   readOnly: string;
@@ -316,6 +321,7 @@ export const frenchMessages: SocleMessages = {
   detail: "Détail",
   closeDetail: "Fermer le détail",
   detailWidth: "Largeur du panneau de détail",
+  expandDetail: "Agrandir le panneau de détail",
   more: "Plus",
   mainNavigation: "Navigation principale",
   expandItem: (l) => `Déplier ${l}`,
@@ -328,6 +334,10 @@ export const frenchMessages: SocleMessages = {
   showLess: "Afficher moins",
   actionsOn: (t) => `Actions sur ${t}`,
   account: "Compte",
+  footerNavigation: "Navigation du bas",
+  workspaces: "Espaces de travail",
+  workspaceLabel: "Espace de travail :",
+  workspaceSwitch: (name) => `Espace de travail : ${name}. Changer d'espace`,
   settings: "Réglages",
   opensInBrowser: "S'ouvre dans le navigateur",
   readOnly: "Lecture seule",
