@@ -25,7 +25,7 @@ Aucune.
 | `description` | `string` | aucune | Ligne sous le libellé visible. |
 | `isSelected` / `defaultSelected` / `onChange` | `boolean` | `false` | État. |
 | `isDisabled` | `boolean` | `false` | Désactivé. |
-| `isReadOnly` | `boolean` | `false` | Lecture seule. |
+| `isReadOnly` | `boolean` | `false` | Lecture seule (D-342). |
 
 ## Exclus
 - Pas de texte « Oui/Non » ni d'icône dans l'interrupteur.
@@ -40,7 +40,7 @@ Aucune.
 | Allumé | Fond `--accent` ; pastille à droite. |
 | Focus | Anneau `--accent` de 2 px autour de l'interrupteur. |
 | Désactivé | Opacité 40 %. |
-| Lecture seule | Rendu normal ; un clic ne change rien. |
+| Lecture seule | Comme D-131 : piste en `--surface-side` bordée de `--line`, en `--fg-2` si activé (au lieu de l'accent) ; cadenas de 14 px en `--fg-3` après le libellé (ou à côté de l'interrupteur si le libellé est masqué) ; focusable ; un clic ne change rien (D-342). |
 
 ## Comportement
 | Règle | Niveau de réglage | Test (story) |
@@ -48,6 +48,7 @@ Aucune.
 | Clic sur l'interrupteur ou son libellé visible, ou Espace : bascule ; la pastille glisse en `--dur-fast`, sans animation si l'utilisateur les réduit (D-014) | verrouillé | `Bascule` |
 | L'effet s'applique tout de suite ; l'app appelle son action dans `onChange` (D-007, D-137) | verrouillé | `Bascule` |
 | Dans `PropertyRow`, même composant, libellé masqué, nom repris de la ligne (D-136) | verrouillé | `Drawer/ActionImmediate` |
+| Lecture seule : piste grise, cadenas, focusable, un clic ne change rien (D-342) | verrouillé | `LectureSeule` |
 
 ## Contenu
 Libellé long : retour à la ligne, l'interrupteur reste en face de la première ligne.
@@ -74,7 +75,7 @@ Ligne de réglage de `SettingsPage` (calé à droite, libellé masqué) ; `Prope
 Aucun composant contenu.
 
 ## Décisions
-D-007, D-014, D-059, D-135, D-136, D-137
+D-007, D-014, D-059, D-135, D-136, D-137 ; D-342
 
 ## Questions ouvertes
 Aucune.

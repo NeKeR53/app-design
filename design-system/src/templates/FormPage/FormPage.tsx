@@ -1,11 +1,11 @@
 /*
  * FormPage : gabarit d'un long formulaire, rangé en sections, avec un pied collé en bas.
- * Spec : FormPage.spec.md. Décisions : D-022, D-190 à D-196.
+ * Spec : FormPage.spec.md. Décisions : D-022, D-190 à D-196 ; D-341 (récapitulatif des erreurs).
  * L'app décrit les champs (FormField) ; le gabarit les dessine avec les champs Socle.
  */
 import { useEffect, useId, type FormEvent } from "react";
 import { cx } from "../../lib/cx";
-import { FormFields, useFormModel, type FormField, type FormSubmit } from "../../lib/form";
+import { ErrorSummary, FormFields, useFormModel, type FormField, type FormSubmit } from "../../lib/form";
 import { useMessages } from "../../provider/SocleProvider";
 import { Button } from "../../components/Button/Button";
 import { useConfirm } from "../../components/Modal/useConfirm";
@@ -100,12 +100,15 @@ export function FormPage(props: FormPageProps) {
   return <FormPageBody {...props} />;
 }
 
+/** À partir de 2 erreurs, un récapitulatif en haut du formulaire (D-341). */
+const SUMMARY = { summary: true } as const;
+
 function FormPageBody({ title, description, sections, initialValues, submitLabel, onSubmit, cancelLabel, onCancel, onDirtyChange }: FormPageProps) {
   const m = useMessages();
   const id = useId();
   const confirm = useConfirm();
   const all = sections.flatMap((s) => s.fields);
-  const model = useFormModel(all, initialValues, onSubmit);
+  const model = useFormModel(all, initialValues, onSubmit, SUMMARY);
   const { dirty, status, saving } = model;
 
   const notify = onDirtyChange;
@@ -139,6 +142,7 @@ function FormPageBody({ title, description, sections, initialValues, submitLabel
     >
       <div className={content}>
         <Header id={`${id}-title`} title={title} description={description} />
+        <ErrorSummary model={model} />
         {sections.map((s, i) => (
           <section key={`${s.title}-${i}`} aria-labelledby={`${id}-s${i}`} className={sectionClass}>
             <SectionHead id={`${id}-s${i}`} title={s.title} description={s.description} />

@@ -139,8 +139,10 @@ export const Verification: Story = {
   play: async ({ canvasElement, args }) => {
     const c = within(canvasElement);
     await userEvent.click(c.getByRole("button", { name: "Créer" }));
-    await waitFor(() => expect(c.getByText("Ce champ est obligatoire.")).toBeVisible());
+    await waitFor(() => expect(c.getByText("Renseignez « Nom ».")).toBeVisible());
+    // Une seule erreur : pas de récapitulatif, le focus va au champ (D-341).
     await expect(c.getByRole("textbox", { name: "Nom" })).toHaveFocus();
+    await expect(c.queryByText(/erreurs? à corriger/)).toBeNull();
     await expect(args.onSubmit).not.toHaveBeenCalled();
     // Nombre illisible, puis hors bornes.
     await userEvent.type(c.getByRole("textbox", { name: "Nom" }), "Atelier");
@@ -296,5 +298,80 @@ export const Colonnes: Story = {
     const field = (id: string) => within(c.getByTestId(id)).getByRole("textbox", { name: "Nom" });
     await expect(head("large").getBoundingClientRect().left).toBeLessThan(field("large").getBoundingClientRect().left - 200);
     await expect(head("etroit").getBoundingClientRect().bottom).toBeLessThan(field("etroit").getBoundingClientRect().top);
+  },
+};
+
+const required: FormSection[] = [
+  {
+    title: "Général",
+    fields: [
+      { type: "text", name: "name", label: "Nom", isRequired: true },
+      { type: "email", name: "email", label: "Adresse e-mail", isRequired: true },
+      { type: "select", name: "state", label: "État", isRequired: true, width: "md", options: STATES },
+    ],
+  },
+  {
+    title: "Détails",
+    fields: [
+      { type: "text", name: "start", label: "Date de début", isRequired: true, requiredMessage: "Saisissez la date de début." },
+      { type: "combobox", name: "owner", label: "Responsable", items: PEOPLE, isRequired: true, requiredMessage: "Choisissez la personne responsable." },
+    ],
+  },
+];
+
+/**
+ * Récapitulatif des erreurs (D-341) : à partir de 2 erreurs, encart en haut, focus sur l'encart,
+ * un lien par champ dans l'ordre du formulaire ; mis à jour au prochain envoi ; une seule erreur : focus sur le champ.
+ */
+export const Recapitulatif: Story = {
+  args: { sections: required },
+  play: async ({ canvasElement, args }) => {
+    const c = within(canvasElement);
+    await userEvent.click(c.getByRole("button", { name: "Créer" }));
+    const summary = await c.findByRole("alert", { name: "5 erreurs à corriger" });
+    await waitFor(() => expect(summary).toHaveFocus());
+    await expect(summary).toHaveClass("border-danger");
+    const links = within(summary).getAllByRole("link");
+    await expect(links.map((l) => l.textContent)).toEqual(["Nom", "Adresse e-mail", "État", "Date de début", "Responsable"]);
+    // Messages construits à partir du libellé, ou `requiredMessage` (D-344).
+    await expect(c.getByText("Renseignez « Nom ».")).toBeVisible();
+    await expect(c.getByText("Choisissez une valeur pour « État ».")).toBeVisible();
+    await expect(c.getByText("Saisissez la date de début.")).toBeVisible();
+    await expect(c.getByText("Choisissez la personne responsable.")).toBeVisible();
+    // Un lien met le focus dans son champ.
+    await userEvent.click(within(summary).getByRole("link", { name: "État" }));
+    await expect(c.getByRole("button", { name: /État/ })).toHaveFocus();
+    await userEvent.click(within(summary).getByRole("link", { name: "Adresse e-mail" }));
+    await expect(c.getByRole("textbox", { name: "Adresse e-mail" })).toHaveFocus();
+    // Corrections : rien ne bouge avant l'envoi ; au prochain envoi, l'encart suit.
+    await userEvent.type(c.getByRole("textbox", { name: "Adresse e-mail" }), "camille@exemple.fr");
+    await userEvent.type(c.getByRole("textbox", { name: "Nom" }), "Atelier");
+    await expect(c.getByRole("alert", { name: "5 erreurs à corriger" })).toBeVisible();
+    await userEvent.click(c.getByRole("button", { name: "Créer" }));
+    await waitFor(() => expect(c.getByRole("alert", { name: "3 erreurs à corriger" })).toHaveFocus());
+    // Une seule erreur : plus d'encart, focus sur le champ.
+    await userEvent.click(c.getByRole("button", { name: /État/ }));
+    await userEvent.click(await body().findByRole("option", { name: "En cours" }));
+    await userEvent.type(c.getByRole("textbox", { name: "Date de début" }), "lundi");
+    await userEvent.click(c.getByRole("button", { name: "Créer" }));
+    await waitFor(() => expect(c.getByRole("combobox", { name: /Responsable/ })).toHaveFocus());
+    await expect(c.queryByText(/erreurs à corriger/)).toBeNull();
+    await expect(args.onSubmit).not.toHaveBeenCalled();
+  },
+};
+
+/** Erreurs du serveur sur 2 champs ou plus : même récapitulatif (D-341). */
+export const RecapitulatifServeur: Story = {
+  args: {
+    sections: [{ title: "Général", fields: [{ type: "text", name: "name", label: "Nom" }, { type: "text", name: "code", label: "Code" }] }],
+    onSubmit: fn(async () => ({ errors: { code: "Ce code est déjà pris.", name: "Ce nom est déjà pris." } })),
+  },
+  play: async ({ canvasElement }) => {
+    const c = within(canvasElement);
+    await userEvent.click(c.getByRole("button", { name: "Créer" }));
+    const summary = await c.findByRole("alert", { name: "2 erreurs à corriger" });
+    await waitFor(() => expect(summary).toHaveFocus());
+    await expect(within(summary).getAllByRole("link").map((l) => l.textContent)).toEqual(["Nom", "Code"]);
+    await expect(c.getByText("Ce code est déjà pris.")).toBeVisible();
   },
 };

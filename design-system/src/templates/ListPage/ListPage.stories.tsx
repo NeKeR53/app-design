@@ -217,7 +217,7 @@ export const AfficherPlus: Story = {
   },
 };
 
-/** Pied « pages » : « 1–50 sur 120 », page précédente et suivante ; un filtre ramène à la page 1 (D-175). */
+/** Pied « pages » : « 1–50 sur 120 » et le composant `Pagination` (numéros, précédente, suivante) ; un filtre ramène à la page 1 (D-175, D-359). */
 export const Pagination: Story = {
   render: () => <Frame {...base({ rows: CENT_VINGT, pagination: { mode: "pages" } })} />,
   play: async ({ canvasElement }) => {
@@ -225,8 +225,14 @@ export const Pagination: Story = {
     const nav = c.getByRole("navigation", { name: "Pagination" });
     await expect(c.getByText("1–50 sur 120")).toBeVisible();
     await expect(within(nav).getByRole("button", { name: "Page précédente" })).toBeDisabled();
+    await expect(within(nav).getByRole("button", { name: "Page 1" })).toHaveAttribute("aria-current", "page");
+    await expect(within(nav).getAllByRole("button", { name: /^Page \d$/ })).toHaveLength(3);
     await userEvent.click(within(nav).getByRole("button", { name: "Page suivante" }));
     await expect(c.getByText("51–100 sur 120")).toBeVisible();
+    // Un numéro mène à sa page.
+    await userEvent.click(within(nav).getByRole("button", { name: "Page 1" }));
+    await expect(c.getByText("1–50 sur 120")).toBeVisible();
+    await userEvent.click(within(nav).getByRole("button", { name: "Page 2" }));
     await userEvent.click(within(nav).getByRole("button", { name: "Page suivante" }));
     await expect(c.getByText("101–120 sur 120")).toBeVisible();
     await expect(within(nav).getByRole("button", { name: "Page suivante" })).toBeDisabled();
@@ -439,7 +445,7 @@ export const SelectionMasquee: Story = {
   },
 };
 
-/** Pied « pages » : une nouvelle page s'affiche depuis le haut ; le focus reste dans la pagination (D-175). */
+/** Pied « pages » : une nouvelle page s'affiche depuis le haut ; `Pagination` garde le focus (D-175, D-359). */
 export const PaginationDefilement: Story = {
   render: () => <Frame {...base({ rows: make(60), pagination: { mode: "pages" } })} />,
   play: async ({ canvasElement }) => {
@@ -451,7 +457,180 @@ export const PaginationDefilement: Story = {
     await userEvent.click(within(nav).getByRole("button", { name: "Page suivante" }));
     await expect(c.getByText("51–60 sur 60")).toBeVisible();
     await waitFor(() => expect(scroller.scrollTop).toBe(0));
-    // Dernière page : « Page suivante » devient inactif, le focus passe à « Page précédente ».
-    await waitFor(() => expect(within(nav).getByRole("button", { name: "Page précédente" })).toHaveFocus());
+    // Dernière page : « Page suivante » devient inactif, le focus passe à la page courante.
+    await waitFor(() => expect(within(nav).getByRole("button", { name: "Page 2" })).toHaveFocus());
+  },
+};
+
+/** « Tout cocher » sur la page, puis « Sélectionner les 120 éléments » : les actions groupées reçoivent `"all"` ; une recherche efface « tout » (D-345). */
+export const ToutSelectionner: Story = {
+  render: () => {
+    const [got, setGot] = useState("");
+    return (
+      <>
+        <output data-testid="got">{got}</output>
+        <Frame
+          {...base({
+            rows: CENT_VINGT,
+            selectionMode: "multiple",
+            allowSelectAll: true,
+            selectionActions: (rows, selection) => [{ id: "close", label: "Clore", primary: true, onPress: () => setGot(`${selection}:${rows.length}`) }],
+          })}
+        />
+      </>
+    );
+  },
+  play: async ({ canvasElement }) => {
+    const c = within(canvasElement);
+    await userEvent.click(c.getByRole("checkbox", { name: "Tout sélectionner" }));
+    await waitFor(() => expect(c.getByRole("toolbar", { name: "50 sélectionnés" })).toBeVisible());
+    await userEvent.click(c.getByRole("button", { name: "Sélectionner les 120 éléments" }));
+    await waitFor(() => expect(c.getByRole("toolbar", { name: "120 éléments sélectionnés" })).toBeVisible());
+    await expect(c.getByRole("button", { name: "Effacer la sélection" })).toBeVisible();
+    // « Afficher plus » : les nouvelles lignes sont cochées aussi.
+    await userEvent.click(c.getByRole("button", { name: "Afficher plus" }));
+    await waitFor(() => expect(c.getByRole("row", { name: /n° 60/ })).toHaveAttribute("aria-selected", "true"));
+    await userEvent.click(c.getByRole("button", { name: "Clore" }));
+    await waitFor(() => expect(c.getByTestId("got").textContent).toBe("all:120"));
+    // Décocher une ligne quitte « tout ».
+    await userEvent.click(c.getByRole("checkbox", { name: "Tout sélectionner" }));
+    await userEvent.click(c.getByRole("button", { name: "Sélectionner les 120 éléments" }));
+    const row = c.getByRole("row", { name: /n° 2\b/ });
+    await userEvent.click(within(row).getByRole("checkbox"));
+    await waitFor(() => expect(c.getByRole("toolbar", { name: "99 sélectionnés" })).toBeVisible());
+    await userEvent.click(c.getByRole("button", { name: "Tout désélectionner" }));
+  },
+};
+
+/** `remote` : « tout » part à `onStateChange` (`selection: "all"`) ; un filtre l'efface (D-345). */
+export const ToutSelectionnerDistant: Story = {
+  render: () => {
+    const onStateChange = fn();
+    (window as unknown as { __allState: typeof onStateChange }).__allState = onStateChange;
+    return <Frame {...base({ rows: CENT_VINGT.slice(0, 50), remote: true, total: 312, selectionMode: "multiple", allowSelectAll: true, onStateChange, selectionActions: () => [] })} />;
+  },
+  play: async ({ canvasElement }) => {
+    const c = within(canvasElement);
+    const spy = (window as unknown as { __allState: ReturnType<typeof fn> }).__allState;
+    await userEvent.click(c.getByRole("checkbox", { name: "Tout sélectionner" }));
+    await userEvent.click(await waitFor(() => c.getByRole("button", { name: "Sélectionner les 312 éléments" })));
+    await waitFor(() => expect(spy).toHaveBeenLastCalledWith(expect.objectContaining({ selection: "all" })));
+    await expect(c.getByRole("toolbar", { name: "312 éléments sélectionnés" })).toBeVisible();
+    await userEvent.click(c.getByRole("button", { name: "Effacer la sélection" }));
+    await waitFor(() => expect(spy).toHaveBeenLastCalledWith({ query: "", filters: {}, sort: null, page: 1 }));
+  },
+};
+
+/** Sans `allowSelectAll`, rien ne change : pas de lien « Sélectionner les N éléments » (D-345). */
+export const ToutSelectionnerParDefaut: Story = {
+  render: () => <Frame {...base({ rows: CENT_VINGT, selectionMode: "multiple", selectionActions: () => [] })} />,
+  play: async ({ canvasElement }) => {
+    const c = within(canvasElement);
+    await userEvent.click(c.getByRole("checkbox", { name: "Tout sélectionner" }));
+    await waitFor(() => expect(c.getByRole("toolbar", { name: "50 sélectionnés" })).toBeVisible());
+    await expect(c.queryByRole("button", { name: /Sélectionner les/ })).toBeNull();
+  },
+};
+
+/** Menu « Colonnes » (`allowColumnChoice`) : une case par colonne, la première et les `required` ne se masquent pas ; choix mémorisé (D-346, D-007). */
+export const Colonnes: Story = {
+  render: () => {
+    const [n, setN] = useState(0);
+    return (
+      <div>
+        <button type="button" onClick={() => setN(n + 1)}>
+          Rouvrir la page
+        </button>
+        <Frame key={n} {...base({ allowColumnChoice: true, columns: columns.map((col) => (col.id === "etat" ? { ...col, required: true } : col)) })} />
+      </div>
+    );
+  },
+  play: async ({ canvasElement }) => {
+    const c = within(canvasElement);
+    const heads = () => c.getAllByRole("columnheader").map((h) => h.textContent);
+    await userEvent.click(c.getByRole("button", { name: "Colonnes" }));
+    const menu = await waitFor(() => body().getByRole("menu", { name: "Colonnes" }));
+    await expect(within(menu).getByRole("menuitemcheckbox", { name: "Titre" })).toHaveAttribute("aria-disabled", "true");
+    await expect(within(menu).getByRole("menuitemcheckbox", { name: "État" })).toHaveAttribute("aria-disabled", "true");
+    await userEvent.click(within(menu).getByRole("menuitemcheckbox", { name: "Montant" }));
+    await waitFor(() => expect(heads()).not.toContain("Montant"));
+    await expect(within(menu).getByRole("menuitemcheckbox", { name: "Montant" })).toHaveAttribute("aria-checked", "false");
+    await userEvent.keyboard("{Escape}");
+    await userEvent.click(c.getByRole("button", { name: "Rouvrir la page" }));
+    await waitFor(() => expect(heads()).toEqual(["Titre", "État", "Demandeur", "Créée"]));
+  },
+};
+
+/** Tri à trois états (`allowsUnsort`) : croissant, décroissant, puis ordre d'origine ; `onStateChange` reçoit `sort: null` (D-347). */
+export const TriTroisEtats: Story = {
+  render: () => <Frame {...base({ allowsUnsort: true })} />,
+  play: async ({ canvasElement }) => {
+    const c = within(canvasElement);
+    const original = titles(canvasElement);
+    const header = () => c.getByRole("columnheader", { name: /Titre/ });
+    await userEvent.click(header());
+    await waitFor(() => expect(header()).toHaveAttribute("aria-sort", "ascending"));
+    await userEvent.click(header());
+    await waitFor(() => expect(header()).toHaveAttribute("aria-sort", "descending"));
+    await userEvent.click(header());
+    await waitFor(() => expect(titles(canvasElement)).toEqual(original));
+    await expect(header()).not.toHaveAttribute("aria-sort", "ascending");
+    await expect(header()).not.toHaveAttribute("aria-sort", "descending");
+    await expect(localStorage.getItem("storybook:listpage:Demandes:sort")).toBe("null");
+  },
+};
+
+/**
+ * Lignes par page (`pageSizes`) : 25, 50 ou 100, mémorisé ; retour à la page 1 au changement (D-348).
+ * La page courante se lit dans `Pagination` (numéro `aria-current`) ; « Page n sur N » n'apparaît que sous 641 px.
+ */
+export const LignesParPage: Story = {
+  render: () => {
+    const [n, setN] = useState(0);
+    return (
+      <div>
+        <button type="button" onClick={() => setN(n + 1)}>
+          Rouvrir la page
+        </button>
+        <Frame key={n} {...base({ rows: CENT_VINGT, pagination: { mode: "pages", pageSizes: true } })} />
+      </div>
+    );
+  },
+  play: async ({ canvasElement }) => {
+    const c = within(canvasElement);
+    await expect(c.getByText("1–50 sur 120")).toBeVisible();
+    const nav = () => c.getByRole("navigation", { name: "Pagination" });
+    const currentPage = () => within(nav()).getByRole("button", { current: "page" });
+    await expect(currentPage()).toHaveAccessibleName("Page 1");
+    await expect(within(nav()).getAllByRole("button", { name: /^Page \d$/ })).toHaveLength(3);
+    // Pas de « Page n sur N » en double à côté du choix des lignes : seule la version mobile de Pagination le porte.
+    await expect(c.getByText("Page 1 sur 3")).not.toBeVisible();
+    await userEvent.click(c.getByRole("button", { name: /Lignes par page/ }));
+    await userEvent.click(await waitFor(() => body().getByRole("option", { name: "25" })));
+    await waitFor(() => expect(c.getByText("1–25 sur 120")).toBeVisible());
+    await userEvent.click(c.getByRole("button", { name: "Page suivante" }));
+    await expect(currentPage()).toHaveAccessibleName("Page 2");
+    await expect(within(nav()).getByRole("button", { name: "Page 5" })).toBeInTheDocument();
+    await expect(c.getAllByRole("rowheader")).toHaveLength(25);
+    await userEvent.click(c.getByRole("button", { name: "Rouvrir la page" }));
+    await waitFor(() => expect(c.getByText("1–25 sur 120")).toBeVisible());
+    await userEvent.click(c.getByRole("button", { name: /Lignes par page/ }));
+    await userEvent.click(await waitFor(() => body().getByRole("option", { name: "100" })));
+    await waitFor(() => expect(currentPage()).toHaveAccessibleName("Page 1"));
+    await expect(within(nav()).getAllByRole("button", { name: /^Page \d$/ })).toHaveLength(2);
+  },
+};
+
+/** Accès refusé (`isForbidden`) : cadenas, « Vous n'avez pas accès à … », « Demander l'accès » ; ni barre, ni liste, ni actions (D-351). */
+export const AccesRefuse: Story = {
+  render: () => <Frame {...base({ isForbidden: true, forbidden: { title: "Vous n'avez pas accès à ces demandes" }, onRequestAccess: fn() })} />,
+  play: async ({ canvasElement }) => {
+    const c = within(canvasElement);
+    await expect(c.getByRole("heading", { level: 2, name: "Vous n'avez pas accès à ces demandes" })).toBeVisible();
+    await expect(c.getByText("Demandez l'accès à un administrateur.")).toBeVisible();
+    await expect(c.getByRole("button", { name: "Demander l'accès" })).toBeVisible();
+    await expect(c.queryByRole("grid")).toBeNull();
+    await expect(c.queryByRole("combobox", { name: /Rechercher/ })).toBeNull();
+    await expect(c.queryByRole("button", { name: "Nouvelle demande" })).toBeNull();
   },
 };

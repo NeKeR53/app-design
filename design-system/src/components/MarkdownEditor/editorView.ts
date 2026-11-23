@@ -41,7 +41,6 @@ export interface EditorSettings {
   placeholder?: string | undefined;
   isReadOnly: boolean;
   isDisabled: boolean;
-  maxLength?: number | undefined;
 }
 
 /** Entoure la sélection de `marker` (gras, italique, code), ou l'en retire si elle l'est déjà (D-307). */
@@ -253,16 +252,11 @@ function imageHandler(callbacks: () => EditorCallbacks): Extension {
 /** Réglages qui changent sans toucher au texte ni à l'historique. */
 const settings = new Compartment();
 function settingsExtension(options: EditorSettings): Extension {
-  const { maxLength } = options;
   return [
     EditorState.readOnly.of(options.isReadOnly || options.isDisabled),
     EditorView.editable.of(!options.isDisabled),
     EditorView.contentAttributes.of({ ...options.attributes, "aria-multiline": "true", role: "textbox" }),
     options.placeholder ? placeholderText(options.placeholder) : [],
-    // La saisie s'arrête à `maxLength` ; un texte déjà plus long peut encore raccourcir.
-    maxLength === undefined
-      ? []
-      : EditorState.transactionFilter.of((tr) => (tr.docChanged && tr.newDoc.length > maxLength && tr.newDoc.length > tr.startState.doc.length ? [] : tr)),
   ];
 }
 

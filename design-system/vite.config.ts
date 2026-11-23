@@ -23,6 +23,8 @@ export default defineConfig({
         "react-dom",
         "react/jsx-runtime",
         /^react-aria-components/,
+        // Dépendance directe de DatePicker ; déjà installée avec react-aria-components.
+        /^@internationalized\/date/,
         // Dépendances facultatives (D-300) : installées par l'app qui s'en sert.
         "react-markdown",
         "remark-gfm",

@@ -28,6 +28,7 @@ import {
   Separator,
   SubmenuTrigger,
 } from "react-aria-components/Menu";
+import { Text } from "react-aria-components/Text";
 import { Popover } from "react-aria-components/Popover";
 import { useMessages, useSocle } from "../../provider/SocleProvider";
 import { cx } from "../../lib/cx";
@@ -329,10 +330,26 @@ export interface DropdownMenuItemProps {
   /** Action destructrice : rouge, à placer en dernier après un séparateur (D-049). */
   danger?: boolean;
   isDisabled?: boolean;
+  /**
+   * Inactif avec une raison : l'élément reste atteignable aux flèches (`aria-disabled`), le choisir ne fait rien
+   * et laisse le menu ouvert ; la raison s'affiche sous le libellé et en est la description. Prime sur `isDisabled`.
+   */
+  disabledReason?: string;
 }
 
-function ItemContent({ icon, label, shortcut, isSelected, selectable, hasSubmenu, danger }: {
+/** Clés des éléments inactifs avec une raison, dans `children` : une section de choix ne les coche pas. */
+function inactiveKeys(children: ReactNode, keys = new Set<Key>()): Set<Key> {
+  Children.forEach(children, (child) => {
+    if (!isValidElement<{ id?: Key; disabledReason?: string; children?: ReactNode }>(child)) return;
+    if (child.props.disabledReason && child.props.id !== undefined) keys.add(child.props.id);
+    else if (child.props.children && typeof child.props.children !== "string") inactiveKeys(child.props.children, keys);
+  });
+  return keys;
+}
+
+function ItemContent({ icon, label, shortcut, isSelected, selectable, hasSubmenu, danger, reason }: {
   icon?: ReactNode;
+  reason?: string | undefined;
   danger?: boolean | undefined;
   label: string;
   shortcut?: string | undefined;
@@ -346,7 +363,18 @@ function ItemContent({ icon, label, shortcut, isSelected, selectable, hasSubmenu
   return (
     <>
       {iconColumn && <span className={cx("inline-grid w-4 shrink-0 place-items-center", danger ? "text-danger" : "text-fg-2")}>{icon}</span>}
-      <span className="min-w-0 flex-1 truncate">{label}</span>
+      {reason ? (
+        <span className="flex min-w-0 flex-1 flex-col py-1">
+          <Text slot="label" className="truncate">
+            {label}
+          </Text>
+          <Text slot="description" className="text-sm text-fg-3">
+            {reason}
+          </Text>
+        </span>
+      ) : (
+        <span className="min-w-0 flex-1 truncate">{label}</span>
+      )}
       {shortcut && <kbd className="ml-4 font-sans text-sm text-fg-3">{formatShortcut(shortcut, isMac, m)}</kbd>}
       {selectable && <span className="inline-grid w-4 shrink-0 place-items-center">{isSelected && <Check />}</span>}
       {hasSubmenu && <ChevronRight className="shrink-0 text-fg-3" />}
@@ -354,19 +382,32 @@ function ItemContent({ icon, label, shortcut, isSelected, selectable, hasSubmenu
   );
 }
 
-function Item({ label, id, onAction, icon, shortcut, danger, isDisabled }: DropdownMenuItemProps) {
+function Item({ label, id, onAction, icon, shortcut, danger, isDisabled, disabledReason }: DropdownMenuItemProps) {
   const { isMac } = useSocle();
+  const off = Boolean(disabledReason);
+  // React Aria ne transmet ni `aria-keyshortcuts` ni `aria-disabled` : on les pose sur l'élément.
+  const attrs = shortcut || off
+    ? {
+        ref: (el: HTMLDivElement | null) => {
+          if (!el) return;
+          if (shortcut) el.setAttribute("aria-keyshortcuts", ariaShortcut(shortcut, isMac));
+          if (off) el.setAttribute("aria-disabled", "true");
+          else el.removeAttribute("aria-disabled");
+        },
+      }
+    : {};
   return (
     <RACMenuItem
       textValue={label}
-      className={cx(itemClass, danger && "text-danger")}
+      className={cx(itemClass, danger && "text-danger", off && "h-auto min-h-(--row-h) opacity-40")}
       {...(id !== undefined ? { id } : {})}
-      {...(onAction ? { onAction } : {})}
-      {...(isDisabled ? { isDisabled } : {})}
-      {...(shortcut ? { ref: (el: HTMLDivElement | null) => el?.setAttribute("aria-keyshortcuts", ariaShortcut(shortcut, isMac)) } : {})}
+      {...(onAction && !off ? { onAction } : {})}
+      {...(isDisabled && !off ? { isDisabled } : {})}
+      {...(off ? { shouldCloseOnSelect: false } : {})}
+      {...attrs}
     >
       {({ isSelected, selectionMode, hasSubmenu }) => (
-        <ItemContent icon={icon} label={label} shortcut={shortcut} isSelected={isSelected} selectable={selectionMode !== "none"} hasSubmenu={hasSubmenu} danger={danger} />
+        <ItemContent icon={icon} label={label} shortcut={shortcut} isSelected={isSelected} selectable={selectionMode !== "none"} hasSubmenu={hasSubmenu} danger={danger} reason={disabledReason} />
       )}
     </RACMenuItem>
   );
@@ -383,12 +424,24 @@ export interface DropdownMenuSectionProps {
 }
 
 function Section({ title, selectionMode, selectedKeys, onSelectionChange, children }: DropdownMenuSectionProps) {
+  // Un élément inactif garde son état coché : on annule son changement.
+  const blocked = inactiveKeys(children);
+  const before = new Set(selectedKeys ?? []);
+  const filter = (keys: Set<Key>) => {
+    if (blocked.size === 0) return keys;
+    const next = new Set(keys);
+    for (const k of blocked) {
+      if (before.has(k)) next.add(k);
+      else next.delete(k);
+    }
+    return next;
+  };
   return (
     <RACMenuSection
       className="[&+&]:mt-1"
       {...(selectionMode ? { selectionMode } : {})}
       {...(selectedKeys ? { selectedKeys } : {})}
-      {...(onSelectionChange ? { onSelectionChange: (k: "all" | Set<Key>) => onSelectionChange(k === "all" ? new Set() : k) } : {})}
+      {...(onSelectionChange ? { onSelectionChange: (k: "all" | Set<Key>) => onSelectionChange(filter(k === "all" ? new Set() : k)) } : {})}
     >
       {title && <Header className="px-2.5 pt-1.5 pb-0.5 text-sm text-fg-3">{title}</Header>}
       {children}

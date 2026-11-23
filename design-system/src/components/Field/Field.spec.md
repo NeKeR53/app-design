@@ -26,10 +26,11 @@ Aucune.
 | `hideLabel` | `boolean` | `false` | Masque le libellé à l'écran (il reste le nom accessible). Pour un champ dans une ligne de réglage ou un tableau, où le contexte nomme déjà le champ. |
 | `description` | `string` | aucune | Aide sous le champ. |
 | `isRequired` | `boolean` | `false` | Champ obligatoire : vérifié vide (D-132). Sans lui, « (facultatif) » suit le libellé. |
+| `requiredMessage` | `string` | aucun | Message du champ obligatoire vide, à la place de celui construit à partir du libellé (D-344). |
 | `validate` | `(value) => string \| null` | aucune | Vérification de la valeur ; renvoie la phrase qui dit quoi corriger (D-132). |
 | `error` | `string` | aucune | Erreur imposée par l'app (réponse du serveur) ; affichée tout de suite (D-132). |
 | `isDisabled` | `boolean` | `false` | Désactivé. |
-| `isReadOnly` | `boolean` | `false` | Lecture seule (D-131). Sans objet pour `Select`. |
+| `isReadOnly` | `boolean` | `false` | Lecture seule (D-131). `Select` en lecture seule : même cadre, la valeur en texte (D-342). |
 | `width` | `"xs" \| "sm" \| "md" \| "lg" \| "full"` | `"full"` | 96, 160, 240, 360 px ou toute la largeur ; jamais plus large que le conteneur (D-133). |
 | `name` | `string` | aucun | Nom dans le formulaire envoyé. |
 
@@ -56,10 +57,12 @@ Aucune.
 | L'erreur s'affiche quand on quitte un champ modifié, ou à l'envoi du formulaire ; jamais pendant la frappe (D-022, D-132) | verrouillé | `TextInput/Verification` |
 | À l'envoi, le focus va au premier champ en erreur (D-132) | verrouillé | `TextInput/Envoi` |
 | Une erreur de l'app (`error`) s'affiche tout de suite et prime sur la vérification locale (D-132) | verrouillé | `TextInput/ErreurApp` |
-| Un champ obligatoire vide reçoit « Ce champ est obligatoire. » (D-132, D-089) | verrouillé | `TextInput/Verification` |
+| Un champ obligatoire vide reçoit une phrase construite à partir du libellé : « Renseignez « <libellé> ». » (texte), « Choisissez une valeur pour « <libellé> ». » (`Select`, `ComboBox`, `RadioButtonGroup`, `CheckboxGroup`), « Cochez « <libellé> ». » (case seule). Le libellé est cité dans sa casse, sans deux-points ni astérisque final. `requiredMessage` la remplace. Sans libellé : « Ce champ est obligatoire. » (D-132, D-089, D-344) | verrouillé (texte réglable par `requiredMessage`) | `TextInput/MessageObligatoire`, `Envoi` |
+| Limite `maxLength` dépassable (`TextInput`, `TextArea`, `InlineEdit`, `MarkdownEditor`) : pas d'attribut `maxlength` ; la frappe et le collage passent la limite ; au-delà, le compteur dit « n caractère(s) en trop » en `--danger` ; une seule zone `aria-live="polite"` le lit 1 s après la dernière frappe ; la valeur est refusée avec « Saisissez n caractères au plus. » (D-343) | verrouillé | `TextInput/LimiteDepassable`, `TextArea/LimiteDepassable` |
 
 ## Contenu
 - Libellé : un nom court, sans deux-points.
+- Champ obligatoire vide : la phrase cite le libellé, dans sa casse, sans deux-points ni astérisque final. Champ de saisie : « Renseignez « Date de début ». » ; choix (Select, ComboBox, RadioButtonGroup, groupe de cases) : « Choisissez une valeur pour « Statut ». » ; case seule : « Cochez « J'accepte les conditions ». ». Pour une tournure plus naturelle (« Saisissez la date de début. »), l'app passe `requiredMessage`.
 - Aide : une phrase courte. Erreur : une phrase qui dit quoi corriger (« Saisissez une adresse de la forme nom@domaine.fr. »), pas seulement ce qui ne va pas.
 - Libellé, aide et erreur trop longs passent à la ligne.
 
@@ -86,7 +89,7 @@ Gabarit `FormPage` (sections), formulaire dans une modale (`Modal`), ligne de r�
 Contient le libellé, le cadre, l'aide et l'erreur. Le cadre contient le contrôle propre au composant.
 
 ## Décisions
-D-022, D-040, D-073, D-089, D-130, D-131, D-132, D-133
+D-022, D-040, D-073, D-089, D-130, D-131, D-132, D-133 ; D-342, D-343, D-344
 
 ## Questions ouvertes
 Aucune.

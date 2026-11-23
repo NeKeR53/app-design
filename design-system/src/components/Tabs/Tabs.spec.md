@@ -25,7 +25,7 @@ Variante signature d'un thème d'organisation (`theme.signature.tabs`, D-337) ; 
 ## Options
 | Option | Type | Défaut | Description |
 |---|---|---|---|
-| `items` | `{ id, label, closable? }[]` | — (obligatoire) | Vues de la page. Les vues déclarées par la page sont fixes ; une vue ouverte depuis un élément est fermable (D-021). |
+| `items` | `{ id, label, closable?, isDirty? }[]` | — (obligatoire) | Vues de la page. Les vues déclarées par la page sont fixes ; une vue ouverte depuis un élément est fermable (D-021). `isDirty` : vue modifiée, non enregistrée (D-349). |
 | `selectedId` / `onSelectionChange` | `string` / `(id) => void` | — (obligatoire) | Vue active. |
 | `onClose` | `(id) => void \| boolean` | aucun | Fermeture d'une vue fermable, appelée avant tout changement de vue. Rendre `false` annule (par exemple pour confirmer). La vue de gauche ne s'active que quand l'app retire la vue active de `items`. Obligatoire si une vue a `closable`. |
 
@@ -42,6 +42,7 @@ Variante signature d'un thème d'organisation (`theme.signature.tabs`, D-337) ; 
 | Survol | Fond `--hover`, texte `--fg`. |
 | Actif | Fond `--selected`, texte `--fg` (D-038). Fond fixe au survol (D-039). |
 | Focus clavier | Anneau de focus `--accent`. |
+| Modifiée (`isDirty`) | Point de 6 px en `--fg-2` à la place du × ; au survol et au focus, le × revient. Même point dans la liste des vues (D-349). |
 
 ## Comportement
 | Règle | Niveau de réglage | Test (story) |
@@ -50,6 +51,7 @@ Variante signature d'un thème d'organisation (`theme.signature.tabs`, D-337) ; 
 | Mod+1 à 9 activent la vue de même rang (D-021) | verrouillé | `Raccourcis` |
 | Fermer la vue active active la vue de gauche ; une vue fixe n'a jamais de × (D-021) | verrouillé | `Fermeture` |
 | Clic du milieu sur une vue fermable : la ferme | verrouillé | `Fermeture` |
+| Vue modifiée : point à la place du ×, × au survol et au focus ; nom « <libellé> (modifié) » ; la fermeture passe par `onClose`, qui peut rendre `false` pour confirmer (D-349) | réglable par l'app (`isDirty`) | `VueModifiee` |
 | Trop de vues : la rangée défile, un chevron liste toutes les vues, l'onglet actif reste visible ; sur mobile, le titre de la vue ouvre la liste (D-027) | verrouillé | `Debordement` |
 | Changement de vue immédiat, sans animation (D-026) | verrouillé | `Selection` |
 
@@ -69,6 +71,7 @@ Rayon `--radius-md` de 8 px ; le × a un rayon de 4 px (D-040). Hauteur `--row-h
 ## Accessibilité
 - Rôles `tablist`, `tab` et `tabpanel` (React Aria). La liste porte le nom de la page : « Vues de la page Documents ».
 - Le × est un bouton nommé « Fermer la vue <libellé> », hors de l'ordre de tabulation (le clavier utilise Suppr).
+- Une vue modifiée a pour nom « <libellé> (modifié) » ; le point est décoratif (`aria-hidden`).
 - Le chevron est un `IconButton` nommé « Toutes les vues ».
 
 ## Taille d'écran

@@ -7,6 +7,7 @@ Dire qu'une zone est vide et proposer la suite : zone `empty` de ListPage (aucun
 Ne pas l'utiliser pour :
 - une recherche sans résultat : message de Table et List avec rappel des critères (D-086) ;
 - une erreur de chargement : message de Table et List (D-085) ;
+- (l'accès refusé, lui, est un `EmptyState` variante `forbidden`) ;
 - un panneau de détail sans sélection : message de Drawer.
 
 ## Anatomie
@@ -30,6 +31,7 @@ Ne pas l'utiliser pour :
 | `icon` | `ReactNode` | aucune | Icône de l'app (D-011), affichée en 32 px. |
 | `action` | `ReactNode` | aucune | Action principale : `<Button variant="primary">`. |
 | `size` | `"default" \| "compact"` | `"default"` | Taille. |
+| `variant` | `"empty" \| "forbidden"` | `"empty"` | `forbidden` : accès refusé ; cadenas par défaut, gardé en `compact` (20 px) (D-351). |
 
 ## Exclus
 - Pas d'illustration, pas d'icône dans un cercle (D-166).
@@ -44,6 +46,7 @@ Statique.
 |---|---|---|
 | Icône de 32 px, titre, phrase, action ; l'action est joignable au clavier (D-166) | verrouillé | `ParDefaut` |
 | `compact` : pas d'icône | verrouillé | `Compact` |
+| `forbidden` : cadenas de 32 px (20 px en `compact`) si l'app ne donne pas d'icône (D-351) | réglable par l'app (`variant`) | `AccesRefuse` |
 
 ## Contenu
 Titre court au négatif (« Aucun projet »). Phrase qui dit quoi faire. Textes longs : retour à la ligne, centrés.

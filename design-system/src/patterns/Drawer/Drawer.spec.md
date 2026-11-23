@@ -51,6 +51,9 @@ Aucune.
 | `hasError` | `boolean` | `false` | Échec du chargement : message, ou bandeau au-dessus des anciennes données (D-184). |
 | `onRetry` | `() => void` | aucun | Bouton « Réessayer » de l'erreur. |
 | `isNotFound` | `boolean` | `false` | L'élément n'existe plus : « Élément introuvable » (D-184). |
+| `isForbidden` | `boolean` | `false` | Accès refusé : `EmptyState` `compact` `forbidden` (cadenas), « Vous n'avez pas accès à cet élément », « Demandez l'accès à un administrateur. » ; aucune donnée montrée (D-351). |
+| `forbidden` | `{ title?, description? }` | textes de `messages` | Textes de l'accès refusé. |
+| `onRequestAccess` | `() => void` | aucun | Bouton « Demander l'accès » de l'accès refusé. |
 | `emptyMessage` | `string` | « Sélectionnez un élément pour voir son détail. » | Phrase quand rien n'est sélectionné. |
 | `onActionDone` | `(action) => void` | aucun | Après la réussite d'une action de l'en-tête ou d'une section (par exemple recharger). |
 | `onActionError` | `(action, error) => void` | aucun | Une action a échoué ; l'app affiche la notification (D-116). |
@@ -119,6 +122,7 @@ Aucune.
 | Actions d'en-tête et de section : règle de la zone `section` ; `onActionDone` après réussite (D-181, D-183) | verrouillé | `DeclaratifActions` |
 | Section `defaultCollapsed` repliée, ouverte au clic, choix mémorisé ; résumé visible repliée (D-183) | verrouillé | `DeclaratifReplie` |
 | États : erreur, chargement, introuvable, vide ; barre et bandeau avec données (D-184) | verrouillé | `DeclaratifEtats` |
+| Accès refusé : cadenas, « Vous n'avez pas accès à cet élément », phrase, « Demander l'accès » facultatif ; passe avant les autres états et ne montre aucune donnée (D-351) | réglable par l'app (`isForbidden`) | `AccesRefuse` |
 
 ## Contenu
 - Libellé : un nom court, sans deux-points (« Échéance »).

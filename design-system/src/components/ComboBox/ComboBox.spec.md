@@ -28,7 +28,7 @@ Celle de `Field` (Field.spec.md) : libellé au-dessus, cadre, aide ou erreur en 
 Aucune variante visuelle : même apparence que `TextInput` (D-130). Deux réglages de fonctionnement, indépendants : choix simple ou multiple (`selectionMode`), source locale ou asynchrone (`items` ou `loadItems`) (D-140).
 
 ## Options
-Les options communes de `Field` (`label`, `hideLabel`, `description`, `isRequired`, `validate`, `error`, `isDisabled`, `isReadOnly`, `width`, `name`), plus :
+Les options communes de `Field` (`label`, `hideLabel`, `description`, `isRequired`, `requiredMessage`, `validate`, `error`, `isDisabled`, `isReadOnly`, `width`, `name`), plus :
 
 | Option | Type | Défaut | Description |
 |---|---|---|---|
@@ -42,7 +42,7 @@ Les options communes de `Field` (`label`, `hideLabel`, `description`, `isRequire
 | `onCreate` | `(text) => ComboBoxItem \| Promise<ComboBoxItem>` | aucune | Avec `allowsCustomValue` : l'app crée l'élément (en local ou par son API) et le renvoie ; il est choisi (D-142). Sans elle, l'élément a pour libellé le texte saisi. |
 | `placeholder` | `string` | aucun | Texte d'aide dans le champ vide. |
 
-`validate` reçoit la valeur (id, ou liste d'ids). Un ComboBox obligatoire est vide sans aucun choix ; en choix multiple, aussi avec une liste vide (D-132).
+`validate` reçoit la valeur (id, ou liste d'ids). Un ComboBox obligatoire est vide sans aucun choix ; en choix multiple, aussi avec une liste vide (D-132). Message : « Choisissez une valeur pour « <libellé> ». », ou `requiredMessage` (D-344).
 
 `ComboBoxItem` : `{ id: string; label: string; description?: string; icon?: ReactNode; isDisabled?: boolean; section?: string }`. Les éléments qui partagent `section` sont groupés sous ce titre, dans l'ordre d'apparition.
 

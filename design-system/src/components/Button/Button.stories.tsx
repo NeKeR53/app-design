@@ -86,7 +86,12 @@ export const Chargement: Story = {
     await expect(button).toHaveFocus();
     await expect(button).toHaveAttribute("aria-disabled", "true");
     await expect(button).toHaveTextContent("Ajouter");
-    await expect(within(button).getByRole("progressbar", { name: "Chargement…" })).toBeInTheDocument();
+    const bar = within(button).getByRole("progressbar", { name: "Chargement…" });
+    // Case de 16 px, cercle `Spinner` de 14 px dans la couleur du bouton (D-105, D-360).
+    await expect(bar.getBoundingClientRect().width).toBe(16);
+    const ring = bar.querySelector<HTMLElement>("[data-spinner]")!;
+    await expect(ring.getBoundingClientRect().width).toBe(14);
+    await expect(getComputedStyle(ring).color).toBe(getComputedStyle(button).color);
     // Avec une icône, la largeur ne change pas.
     await expect(button.getBoundingClientRect().width).toBe(width);
     await userEvent.click(button);
@@ -163,4 +168,34 @@ export const EnSituation: Story = {
       </div>
     </div>
   ),
+};
+
+/** Inactif avec une raison : focusable, un clic ne fait rien, la raison est la description et s'affiche au focus. */
+export const InactifAvecRaison: Story = {
+  args: { children: "Publier", variant: "primary", disabledReason: "Complétez le titre pour publier.", type: "submit" },
+  render: (args) => (
+    <form onSubmit={(e) => { e.preventDefault(); args.onPress?.(); }} className="flex items-center gap-2">
+      <input aria-label="Titre" className="h-(--row-h) rounded-md border border-line-strong bg-surface px-2.5" />
+      <Button {...args} />
+    </form>
+  ),
+  play: async ({ canvasElement, args }) => {
+    const c = within(canvasElement);
+    const button = c.getByRole("button", { name: "Publier" });
+    await expect(button).toHaveAttribute("aria-disabled", "true");
+    await expect(button).not.toHaveAttribute("disabled");
+    await expect(button).toHaveAccessibleDescription("Complétez le titre pour publier.");
+    await expect(getComputedStyle(button).opacity).toBe("0.4");
+    // Tab atteint le bouton ; l'info-bulle donne la raison.
+    await userEvent.click(c.getByRole("textbox", { name: "Titre" }));
+    await userEvent.tab();
+    await expect(button).toHaveFocus();
+    const tip = await waitFor(() => within(document.body).getByRole("tooltip"));
+    await expect(tip).toHaveTextContent("Complétez le titre pour publier.");
+    // Ni Entrée, ni Espace, ni clic n'envoient le formulaire.
+    await userEvent.keyboard("{Enter}");
+    await userEvent.keyboard(" ");
+    await userEvent.click(button);
+    await expect(args.onPress).not.toHaveBeenCalled();
+  },
 };

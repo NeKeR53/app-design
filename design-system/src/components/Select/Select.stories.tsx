@@ -79,7 +79,7 @@ export const Verification: Story = {
   play: async ({ canvasElement }) => {
     const c = within(canvasElement);
     await userEvent.click(c.getByRole("button", { name: "Valider" }));
-    await waitFor(() => expect(c.getByText("Choisissez une option.")).toBeVisible());
+    await waitFor(() => expect(c.getByText("Choisissez une valeur pour « Pays ».")).toBeVisible());
   },
 };
 
@@ -108,5 +108,31 @@ export const TexteLong: Story = {
     await waitFor(() => expect(body().queryByRole("listbox")).toBeNull());
     // Le focus revient au cadre : la valeur coupée a aussi son info-bulle.
     await waitFor(() => expect(body().getByRole("tooltip")).toHaveTextContent(LONG));
+  },
+};
+
+/** Lecture seule (D-131, D-342) : cadre gris et cadenas ; la valeur se sélectionne ; la liste ne s'ouvre pas. */
+export const LectureSeule: Story = {
+  render: () => (
+    <form>
+      <Select label="Pays" options={COUNTRIES} defaultValue="france" isReadOnly isRequired width="md" name="pays" description="Fixé à la création." />
+    </form>
+  ),
+  play: async ({ canvasElement }) => {
+    const c = within(canvasElement);
+    const field = c.getByRole("textbox", { name: "Pays" });
+    await expect(field).toHaveValue("France");
+    await expect(field).toHaveAttribute("readonly");
+    await expect(canvasElement.querySelector('[title="Lecture seule"]')).not.toBeNull();
+    await userEvent.click(field);
+    await userEvent.keyboard("{ArrowDown}");
+    await expect(body().queryByRole("listbox")).toBeNull();
+    await expect(field).toHaveValue("France");
+    // Texte sélectionnable, valeur envoyée avec le formulaire.
+    const input = field as HTMLInputElement;
+    input.select();
+    await expect(input.value.slice(input.selectionStart ?? 0, input.selectionEnd ?? 0)).toBe("France");
+    const form = canvasElement.querySelector("form");
+    await expect(form && new FormData(form).get("pays")).toBe("france");
   },
 };

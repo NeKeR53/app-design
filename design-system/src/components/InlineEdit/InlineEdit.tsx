@@ -1,14 +1,15 @@
 /*
  * Texte modifiable sur place. Spec : InlineEdit.spec.md.
- * Décisions : D-322 (apparence), D-323 (clavier et enregistrement), D-324 (texte seulement).
+ * Décisions : D-322 (apparence), D-323 (clavier et enregistrement), D-324 (texte seulement) ;
+ * D-343 (limite dépassable) et D-344 (message d'obligation).
  * Le champ reprend les pièces internes de Field (D-130) ; il garde la police du texte affiché.
  */
-import { useEffect, useRef, useState, type KeyboardEvent } from "react";
+import { useEffect, useId, useRef, useState, type KeyboardEvent } from "react";
 import { FieldError } from "react-aria-components/FieldError";
 import { Input, TextArea, TextField as RACTextField } from "react-aria-components/TextField";
 import { useMessages } from "../../provider/SocleProvider";
 import { cx } from "../../lib/cx";
-import { FieldLabel, fieldBox } from "../Field/Field";
+import { CharCount, FieldLabel, fieldBox, requiredText } from "../Field/Field";
 
 export interface InlineEditProps {
   /** Valeur affichée et valeur de départ de la saisie. */
@@ -26,6 +27,8 @@ export interface InlineEditProps {
   placeholder?: string;
   /** Valeur vide refusée (D-132). */
   isRequired?: boolean;
+  /** Message de la valeur vide refusée. Défaut : « Renseignez « <libellé> ». » (D-344). */
+  requiredMessage?: string;
   /** Vérification : renvoie la phrase qui dit quoi corriger, ou null (D-132). */
   validate?: (value: string) => string | null | undefined;
   /** Texte simple, sans saisie. */
@@ -33,6 +36,7 @@ export interface InlineEditProps {
   /** Ouverture pilotée par l'app (par exemple « Renommer » dans un menu), avec `onEditingChange`. */
   isEditing?: boolean;
   onEditingChange?: (isEditing: boolean) => void;
+  /** Longueur maximale, dépassable : au-delà, compteur en erreur et enregistrement refusé (D-343). */
   maxLength?: number;
 }
 
@@ -46,6 +50,7 @@ export function InlineEdit({
   mode = "line",
   placeholder,
   isRequired,
+  requiredMessage,
   validate,
   isDisabled = false,
   isEditing,
@@ -87,6 +92,7 @@ export function InlineEdit({
         mode={mode}
         onSave={onSave}
         isRequired={isRequired}
+        requiredMessage={requiredMessage}
         validate={validate}
         maxLength={maxLength}
         onClose={(focus) => {
@@ -138,12 +144,18 @@ function Editor({
   mode,
   onSave,
   isRequired,
+  requiredMessage,
   validate,
   maxLength,
   onClose,
-}: Required<Pick<InlineEditProps, "value" | "label" | "mode" | "onSave">> &
-  { isRequired: boolean | undefined; validate: InlineEditProps["validate"] | undefined; maxLength: number | undefined } & { onClose: (returnFocus: boolean) => void }) {
+}: Required<Pick<InlineEditProps, "value" | "label" | "mode" | "onSave">> & {
+  isRequired: boolean | undefined;
+  requiredMessage: string | undefined;
+  validate: InlineEditProps["validate"] | undefined;
+  maxLength: number | undefined;
+} & { onClose: (returnFocus: boolean) => void }) {
   const m = useMessages();
+  const countId = useId();
   const [draft, setDraft] = useState(value);
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
@@ -161,7 +173,8 @@ function Editor({
   };
 
   const check = (v: string) => {
-    if (isRequired && v.trim() === "") return m.requiredField;
+    if (isRequired && v.trim() === "") return requiredText(m, "text", label, requiredMessage);
+    if (maxLength !== undefined && v.length > maxLength) return m.tooLong(maxLength);
     return validate?.(v) ?? null;
   };
 
@@ -226,7 +239,7 @@ function Editor({
       isReadOnly={pending}
       isInvalid={Boolean(error)}
       autoFocus
-      {...(maxLength !== undefined ? { maxLength } : {})}
+      {...(maxLength !== undefined && draft.length > maxLength ? { "aria-describedby": countId } : {})}
       onBlur={() => void commit(false)}
       className="socle-box group/field flex min-w-0 flex-col gap-1"
     >
@@ -238,7 +251,14 @@ function Editor({
       ) : (
         <Input className={fieldClass} style={font} onKeyDown={onKeyDown} aria-busy={pending || undefined} />
       )}
-      <FieldError className="text-sm text-danger">{error}</FieldError>
+      {maxLength === undefined ? (
+        <FieldError className="text-sm text-danger">{error}</FieldError>
+      ) : (
+        <div className="flex gap-2">
+          <FieldError className="text-sm text-danger">{error}</FieldError>
+          <CharCount id={countId} length={draft.length} max={maxLength} hideUnder />
+        </div>
+      )}
     </RACTextField>
   );
 }

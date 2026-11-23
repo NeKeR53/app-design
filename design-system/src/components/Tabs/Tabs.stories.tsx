@@ -208,3 +208,52 @@ export const FermetureConfirmee: Story = {
     await expect(c.getByRole("tab", { name: /Archives/ })).toHaveAttribute("aria-selected", "true");
   },
 };
+
+/** Vue modifiée (`isDirty`) : un point remplace le × ; au survol, le × revient ; nom « (modifié) » ; `onClose` peut refuser (D-349). */
+export const VueModifiee: Story = {
+  render: () => {
+    const [items, setItems] = useState<TabItem[]>([{ id: "all", label: "Tous" }, { id: "r3", label: "Rapport T3", closable: true, isDirty: true }]);
+    const [sel, setSel] = useState("r3");
+    const [asked, setAsked] = useState(0);
+    return (
+      <div className="flex items-center gap-2">
+        <Tabs
+          pageTitle="Documents"
+          items={items}
+          selectedId={sel}
+          onSelectionChange={setSel}
+          onClose={(id) => {
+            const it = items.find((x) => x.id === id);
+            // Vue modifiée : l'app demande confirmation ; ici, le premier essai est refusé.
+            if (it?.isDirty && asked === 0) {
+              setAsked(1);
+              return false;
+            }
+            setItems((xs) => xs.filter((x) => x.id !== id));
+            return true;
+          }}
+        />
+        <output data-testid="asked">{asked}</output>
+      </div>
+    );
+  },
+  play: async ({ canvasElement }) => {
+    const c = within(canvasElement);
+    const tab = c.getByRole("tab", { name: /Rapport T3/ });
+    await expect(tab).toHaveAccessibleName("Rapport T3 (modifié)");
+    const dot = tab.querySelector<HTMLElement>("[data-dirty]")!;
+    await expect(dot).toBeVisible();
+    await expect(c.queryByRole("button", { name: "Fermer la vue Rapport T3" })).toBeNull();
+    await userEvent.hover(tab);
+    const close = await waitFor(() => c.getByRole("button", { name: "Fermer la vue Rapport T3" }));
+    await expect(dot).not.toBeVisible();
+    await userEvent.click(close);
+    await waitFor(() => expect(c.getByTestId("asked").textContent).toBe("1"));
+    await expect(c.getByRole("tab", { name: /Rapport T3/ })).toBeVisible();
+    // Clavier : Suppr passe aussi par `onClose`.
+    await userEvent.unhover(tab);
+    tab.focus();
+    await userEvent.keyboard("{Delete}");
+    await waitFor(() => expect(c.queryByRole("tab", { name: /Rapport T3/ })).toBeNull());
+  },
+};

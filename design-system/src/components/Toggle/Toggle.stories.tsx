@@ -63,3 +63,19 @@ export const LibelleMasque: Story = {
     await expect(c.queryByText("Lien public")).toBeNull();
   },
 };
+
+/** Lecture seule (D-342) : piste grise, en `--fg-2` si activé, cadenas ; focusable, un clic ne change rien. */
+export const LectureSeule: Story = {
+  args: { isReadOnly: true, defaultSelected: true, children: "Suivi actif" },
+  play: async ({ canvasElement }) => {
+    const c = within(canvasElement);
+    const sw = c.getByRole("switch", { name: /^Suivi actif/ });
+    await expect(sw).toHaveAttribute("aria-readonly", "true");
+    await userEvent.click(c.getByText("Suivi actif"));
+    await expect(sw).toBeChecked();
+    sw.blur();
+    await userEvent.tab();
+    await expect(sw).toHaveFocus();
+    await expect(canvasElement.querySelector('[title="Lecture seule"]')).not.toBeNull();
+  },
+};

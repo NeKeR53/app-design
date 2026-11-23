@@ -263,6 +263,7 @@ export const Verification: Story = {
       }}
     >
       <ComboBox label="Pays" items={COUNTRIES} isRequired />
+      <ComboBox label="Destination" items={COUNTRIES} isRequired requiredMessage="Choisissez le pays de livraison." />
       <ComboBox label="Étiquettes" selectionMode="multiple" items={TAGS} validate={(v) => (v.length > 3 ? "Choisissez 3 étiquettes au plus." : null)} />
       <button type="submit" className="w-fit rounded-md bg-field px-3 py-1 text-sm">
         Envoyer
@@ -274,14 +275,16 @@ export const Verification: Story = {
     const pays = c.getByRole("combobox", { name: /Pays/ });
     await userEvent.click(pays);
     await userEvent.tab();
-    await expect(c.queryByText("Choisissez une option.")).toBeNull();
+    await expect(c.queryByText("Choisissez une valeur pour « Pays ».")).toBeNull();
     await userEvent.click(c.getByRole("button", { name: "Envoyer" }));
-    await waitFor(() => expect(c.getByText("Choisissez une option.")).toBeInTheDocument());
+    // Message construit à partir du libellé, ou `requiredMessage` (D-344).
+    await waitFor(() => expect(c.getByText("Choisissez une valeur pour « Pays ».")).toBeInTheDocument());
+    await expect(c.getByText("Choisissez le pays de livraison.")).toBeInTheDocument();
     await expect(pays).toHaveAttribute("aria-invalid", "true");
     await expect(pays).toHaveFocus();
     await userEvent.type(pays, "ita{Enter}");
     await userEvent.tab();
-    await waitFor(() => expect(c.queryByText("Choisissez une option.")).toBeNull());
+    await waitFor(() => expect(c.queryByText("Choisissez une valeur pour « Pays ».")).toBeNull());
     await expect(c.getByText("(facultatif)")).toBeInTheDocument();
   },
 };

@@ -3,7 +3,7 @@
  * Décisions : D-022, D-130 à D-134. Module interne, non exporté par index.ts :
  * TextInput, TextArea, Select (et ComboBox) l'importent.
  */
-import type { ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { FieldError } from "react-aria-components/FieldError";
 import { Label } from "react-aria-components/Label";
 import { Text } from "react-aria-components/Text";
@@ -66,24 +66,63 @@ export const optionClass = cx(
 /** En-tête d'une section de liste. */
 export const sectionHeaderClass = "px-2.5 pt-1.5 pb-0.5 text-sm text-fg-3";
 
-/** Libellé au-dessus du champ (D-022, D-130) ; « (facultatif) » si le champ n'est pas obligatoire. */
-export function FieldLabel({ children, isRequired, hidden }: { children: ReactNode; isRequired?: boolean | undefined; hidden?: boolean | undefined }) {
+/**
+ * Libellé au-dessus du champ (D-022, D-130) ; « (facultatif) » si le champ n'est pas obligatoire.
+ * `isReadOnly` : cadenas après le libellé, pour un groupe de choix en lecture seule (D-342).
+ */
+export function FieldLabel({
+  children,
+  isRequired,
+  hidden,
+  isReadOnly,
+}: {
+  children: ReactNode;
+  isRequired?: boolean | undefined;
+  hidden?: boolean | undefined;
+  isReadOnly?: boolean | undefined;
+}) {
   const m = useMessages();
   return (
     <Label className={cx("w-fit text-sm font-medium text-fg", hidden && "sr-only")}>
       {children}
       {!isRequired && !hidden && <span className="font-normal text-fg-3"> {m.optional}</span>}
+      {isReadOnly && !hidden && <InlineLock />}
     </Label>
+  );
+}
+
+/**
+ * Cadenas de 14 px après un libellé : choix en lecture seule (D-342). Hors du nom accessible :
+ * le lecteur d'écran dit déjà « lecture seule » (`aria-readonly`).
+ */
+export function InlineLock() {
+  const m = useMessages();
+  return (
+    <span aria-hidden className="ml-1.5 inline-flex align-[-2px] text-fg-3" title={m.readOnly}>
+      <Lock size={14} />
+    </span>
   );
 }
 
 /** Message d'erreur affiché à partir du résultat de la vérification (D-132). */
 export type ErrorKind = "text" | "email" | "url" | "choice" | "checkbox" | "group";
 
-export function errorText(v: ValidationResult, m: SocleMessages, kind: ErrorKind = "text"): string {
+/**
+ * Champ obligatoire vide (D-344) : `requiredMessage`, sinon une phrase construite à partir du
+ * libellé cité (« Renseignez « Date de début ». », « Choisissez une valeur pour « Statut ». »,
+ * « Cochez « J'accepte les conditions ». »), sinon le message générique. Le libellé garde sa casse ;
+ * un deux-points ou un astérisque final est retiré.
+ */
+export function requiredText(m: SocleMessages, kind: ErrorKind, label?: string, requiredMessage?: string): string {
+  if (requiredMessage) return requiredMessage;
+  const l = label?.trim().replace(/[\s:*]+$/u, "");
+  if (l) return kind === "choice" || kind === "group" ? m.requiredPick(l) : kind === "checkbox" ? m.requiredTick(l) : m.requiredText(l);
+  return kind === "choice" ? m.requiredChoice : kind === "checkbox" ? m.requiredCheckbox : kind === "group" ? m.requiredGroup : m.requiredField;
+}
+
+export function errorText(v: ValidationResult, m: SocleMessages, kind: ErrorKind = "text", label?: string, requiredMessage?: string): string {
   const d = v.validationDetails;
-  if (d?.valueMissing)
-    return kind === "choice" ? m.requiredChoice : kind === "checkbox" ? m.requiredCheckbox : kind === "group" ? m.requiredGroup : m.requiredField;
+  if (d?.valueMissing) return requiredText(m, kind, label, requiredMessage);
   if (d?.typeMismatch) return kind === "email" ? m.invalidEmail : kind === "url" ? m.invalidUrl : m.invalidValue;
   if (d?.customError || !d) return v.validationErrors.join(" ") || m.invalidValue;
   return m.invalidValue;
@@ -93,7 +132,22 @@ export function errorText(v: ValidationResult, m: SocleMessages, kind: ErrorKind
  * Sous le champ : l'aide, puis l'erreur qui prend sa place (D-130).
  * `error` : erreur imposée par l'app, prioritaire (D-132).
  */
-export function FieldHelp({ description, error, kind, extra }: { description?: string | undefined; error?: string | undefined; kind?: ErrorKind | undefined; extra?: ReactNode }) {
+export function FieldHelp({
+  description,
+  error,
+  kind,
+  extra,
+  label,
+  requiredMessage,
+}: {
+  description?: string | undefined;
+  error?: string | undefined;
+  kind?: ErrorKind | undefined;
+  extra?: ReactNode;
+  /** Libellé du champ : sert au message d'un champ obligatoire vide (D-344). */
+  label?: string | undefined;
+  requiredMessage?: string | undefined;
+}) {
   const m = useMessages();
   return (
     <>
@@ -107,7 +161,7 @@ export function FieldHelp({ description, error, kind, extra }: { description?: s
           {extra}
         </div>
       )}
-      <FieldError className="text-sm text-danger">{(v) => error ?? errorText(v, m, kind)}</FieldError>
+      <FieldError className="text-sm text-danger">{(v) => error ?? errorText(v, m, kind, label, requiredMessage)}</FieldError>
     </>
   );
 }
@@ -122,6 +176,54 @@ export function ReadOnlyLock() {
   );
 }
 
+/**
+ * Limite de caractères dépassable (D-343) : pas d'attribut `maxlength` ; au-delà de `max`,
+ * la vérification refuse la valeur avec « Saisissez n caractères au plus. ».
+ */
+export function withMaxLength(
+  validate: ((value: string) => string | null | undefined) | undefined,
+  max: number | undefined,
+  m: SocleMessages,
+): ((value: string) => string | null | undefined) | undefined {
+  if (max === undefined) return validate;
+  return (v) => (v.length > max ? m.tooLong(max) : (validate?.(v) ?? null));
+}
+
+/**
+ * Compteur de caractères (D-343) : « 12 / 500 » en `--fg-3` ; au-delà de la limite,
+ * « 4 caractères en trop » en `--danger`. Une seule zone `aria-live="polite"` le lit 1 s après la
+ * dernière frappe. `hideUnder` : compteur visible seulement au-delà de la limite (TextInput, InlineEdit).
+ */
+export function CharCount({ id, length, max, hideUnder = false }: { id: string; length: number; max: number; hideUnder?: boolean }) {
+  const m = useMessages();
+  const over = length - max;
+  const shown = over > 0 ? m.charsOver(over) : m.charCount(length, max);
+  const spoken = over > 0 ? m.charsOver(over) : hideUnder ? "" : m.charsLeft(max - length);
+  const [said, setSaid] = useState("");
+  // Rien n'est lu à l'ouverture : seulement quand le texte à lire change, 1 s après la dernière frappe.
+  const last = useRef(spoken);
+  useEffect(() => {
+    if (spoken === last.current) return;
+    const t = setTimeout(() => {
+      last.current = spoken;
+      setSaid(spoken);
+    }, 1000);
+    return () => clearTimeout(t);
+  }, [spoken]);
+  return (
+    <>
+      {(!hideUnder || over > 0) && (
+        <span id={id} className={cx("ml-auto shrink-0 text-xs", over > 0 ? "text-danger" : "text-fg-3")}>
+          {shown}
+        </span>
+      )}
+      <span aria-live="polite" className="sr-only">
+        {said}
+      </span>
+    </>
+  );
+}
+
 /** Propriétés communes à tous les champs (Field.spec.md). */
 export interface FieldBaseProps {
   /** Libellé visible et nom accessible. */
@@ -132,6 +234,8 @@ export interface FieldBaseProps {
   description?: string;
   /** Champ obligatoire ; sans lui, « (facultatif) » suit le libellé (D-022). */
   isRequired?: boolean;
+  /** Message du champ obligatoire vide, à la place de celui construit à partir du libellé (D-344). */
+  requiredMessage?: string;
   /** Erreur imposée par l'app (réponse du serveur), affichée tout de suite (D-132). */
   error?: string;
   isDisabled?: boolean;

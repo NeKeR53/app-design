@@ -1,17 +1,18 @@
 /*
  * Choix d'une valeur dans une liste fermée et courte. Spec : Select.spec.md.
- * Décisions : D-022, D-050, D-130, D-132 à D-134. Adapté du starter Tailwind de React Aria (Apache 2.0).
+ * Décisions : D-022, D-050, D-130, D-132 à D-134 ; D-342 (lecture seule) et D-344 (message d'obligation). Adapté du starter Tailwind de React Aria (Apache 2.0).
  */
 import { useContext } from "react";
 import type { Key } from "react-aria-components";
 import { Header, ListBox, ListBoxItem, ListBoxSection } from "react-aria-components/ListBox";
 import { Popover } from "react-aria-components/Popover";
 import { Button, Select as RACSelect, SelectStateContext, SelectValue } from "react-aria-components/Select";
+import { Input, TextField as RACTextField } from "react-aria-components/TextField";
 import { useMessages } from "../../provider/SocleProvider";
 import { cx } from "../../lib/cx";
 import { TruncatedText } from "../../lib/truncated";
 import { Check, ChevronDown } from "../../icons";
-import { FieldHelp, FieldLabel, defined, fieldBox, fieldRoot, listPopoverClass, optionClass, sectionHeaderClass, type FieldBaseProps } from "../Field/Field";
+import { FieldHelp, FieldLabel, ReadOnlyLock, defined, fieldBox, fieldRoot, listPopoverClass, optionClass, sectionHeaderClass, type FieldBaseProps } from "../Field/Field";
 
 export interface SelectOption {
   id: string;
@@ -36,6 +37,11 @@ export interface SelectProps extends FieldBaseProps {
   /** Texte quand rien n'est choisi. Défaut : « Choisir… ». */
   placeholder?: string;
   autoFocus?: boolean;
+  /**
+   * Lecture seule (D-131, D-342) : cadre gris et cadenas, comme `TextInput` ; le libellé de la
+   * valeur se sélectionne et se copie ; la liste ne s'ouvre pas.
+   */
+  isReadOnly?: boolean;
 }
 
 const isSection = (o: SelectOption | SelectSection): o is SelectSection => "options" in o;
@@ -69,7 +75,35 @@ function SelectedValue({ hovered, highlighted }: { hovered: boolean; highlighted
   );
 }
 
-export function Select({ label, hideLabel, description, error, isRequired, width, options, value, defaultValue, onChange, validate, placeholder, ...rest }: SelectProps) {
+/** Select en lecture seule : un champ de texte en lecture seule qui montre le libellé de la valeur. */
+function ReadOnlySelect({ label, hideLabel, description, error, isRequired, width, options, value, defaultValue, name, isDisabled, autoFocus, onBlur }: SelectProps) {
+  const id = value === undefined ? defaultValue : value;
+  const all = options.flatMap((o) => (isSection(o) ? o.options : [o]));
+  const text = all.find((o) => o.id === id)?.label ?? "";
+  return (
+    <RACTextField
+      isReadOnly
+      value={text}
+      {...defined({ isRequired, isDisabled, autoFocus, onBlur, isInvalid: error ? true : undefined })}
+      className={fieldRoot(width)}
+    >
+      <FieldLabel isRequired={isRequired} hidden={hideLabel}>{label}</FieldLabel>
+      <div className="relative">
+        <Input placeholder="—" className={cx(fieldBox({ isReadOnly: true }), "h-(--row-h) truncate pr-8 pl-2.5 placeholder:text-fg-3")} />
+        <ReadOnlyLock />
+      </div>
+      <FieldHelp description={description} error={error} />
+      {name !== undefined && <input type="hidden" name={name} value={id ?? ""} />}
+    </RACTextField>
+  );
+}
+
+export function Select({ isReadOnly, ...props }: SelectProps) {
+  if (isReadOnly) return <ReadOnlySelect {...props} />;
+  return <EditableSelect {...props} />;
+}
+
+function EditableSelect({ label, hideLabel, description, error, isRequired, requiredMessage, width, options, value, defaultValue, onChange, validate, placeholder, ...rest }: SelectProps) {
   const m = useMessages();
   return (
     <RACSelect
@@ -94,7 +128,7 @@ export function Select({ label, hideLabel, description, error, isRequired, width
           </>
         )}
       </Button>
-      <FieldHelp description={description} error={error} kind="choice" />
+      <FieldHelp description={description} error={error} kind="choice" label={label} requiredMessage={requiredMessage} />
       <Popover offset={4} containerPadding={8} className={listPopoverClass}>
         <ListBox className="outline-none">
           {options.map((o) =>

@@ -58,6 +58,7 @@ Toutes les tailles restent à 32 px au moins des bords de la fenêtre (D-120).
 | `footer` | `ReactNode` | aucun | Pied : des `Button`, « Annuler » puis l'action (D-124). |
 | `size` | `"sm" \| "md" \| "lg" \| "xl"` | `"md"` | Taille (D-120). |
 | `isBusy` | `boolean` | `false` | Action en cours : rien ne ferme la modale, le × est désactivé, `aria-busy`. L'app met son bouton en chargement (`Button isPending`). |
+| `returnFocusTo` | `HTMLElement \| () => HTMLElement \| null` | aucun | Élément qui reçoit le focus à la fermeture, à la place du déclencheur. Sans lui : le déclencheur, ou le focus de repli s'il a disparu (voir Comportement). |
 
 ### useConfirm
 `const confirm = useConfirm();` puis `const ok = await confirm(options);`. La promesse rend `true` si l'utilisateur confirme, `false` s'il annule.
@@ -70,6 +71,7 @@ Toutes les tailles restent à 32 px au moins des bords de la fenêtre (D-120).
 | `cancelLabel` | `string` | « Annuler » (`messages.cancel`) | Libellé du bouton d'annulation. |
 | `tone` | `"danger" \| "default"` | `"danger"` | `danger` : bouton rouge. `default` : bouton `primary`, pour une action irréversible non destructrice (envoyer). |
 | `onConfirm` | `() => Promise<void> \| void` | aucune | Action lancée au clic ; la confirmation reste ouverte pendant l'action, et montre l'erreur si elle échoue (D-128). |
+| `returnFocusTo` | `HTMLElement \| () => HTMLElement \| null` | aucun | Comme pour `Modal` : élément qui reçoit le focus à la fermeture. |
 
 ## Exclus
 - Pas de modale non bloquante, ni de position libre, ni de glisser.
@@ -101,6 +103,8 @@ Toutes les tailles restent à 32 px au moins des bords de la fenêtre (D-120).
 | Focus à l'ouverture : `autoFocus`, sinon premier champ du corps, sinon la modale (D-125) | verrouillé | `FocusFormulaire`, `FocusModale` |
 | Tab et Maj+Tab restent dans la modale (D-008) | verrouillé | `FocusFormulaire` |
 | À la fermeture, le focus revient au déclencheur (D-125) | verrouillé | `Echap` |
+| Déclencheur disparu (ligne supprimée) : focus sur l'élément suivant de sa collection (`row`, `option`, `treeitem`, `gridcell`, place notée à l'ouverture), sinon le précédent, sinon la collection, sinon `main` ; jamais sur `body` (WAI-ARIA APG, Dialog) | verrouillé | `FocusApresSuppression` |
+| `returnFocusTo` remplace le déclencheur à la fermeture | réglable par l'app (`returnFocusTo`) | `RetourDuFocus` |
 | Traits seulement quand le corps défile (D-123) | verrouillé | `Defilement` |
 | La page sous la modale ne défile pas | verrouillé | — (React Aria) |
 | Confirmation : focus sur « Annuler » ; Échap ou « Annuler » rendent `false` ; le bouton rend `true` (D-125, D-127) | verrouillé | `Confirmation` |
@@ -138,6 +142,7 @@ Les largeurs sont les mêmes dans les deux densités.
 - Confirmation : rôle `alertdialog`, nommée par le titre, décrite par le message.
 - Le reste de l'app est masqué aux lecteurs d'écran pendant l'ouverture (React Aria).
 - Erreur de la confirmation : `role="alert"`, annoncée tout de suite.
+- Focus à la fermeture : le déclencheur ; s'il a disparu, l'élément voisin de sa collection, puis la collection, puis `main` (rendus focusables par `tabindex="-1"` si besoin). Un déclencheur dans un menu ouvert compte pour le bouton du menu. Le focus ne tombe jamais sur `body`.
 - `isBusy` : `aria-busy="true"` sur la fenêtre.
 - Contrastes : ceux des tokens (AA) ; le fond `--scrim` n'est pas une information.
 

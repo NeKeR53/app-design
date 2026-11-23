@@ -14,7 +14,7 @@ import type { ValidationResult } from "react-aria-components/TextField";
 import { useMessages } from "../../provider/SocleProvider";
 import { buttonReset, cx } from "../../lib/cx";
 import { Check, ChevronDown, Plus, X } from "../../icons";
-import { FieldHelp, FieldLabel, ReadOnlyLock, fieldBox, fieldRoot, listPopoverClass, optionClass, sectionHeaderClass, type FieldBaseProps } from "../Field/Field";
+import { FieldHelp, FieldLabel, ReadOnlyLock, fieldBox, fieldRoot, listPopoverClass, optionClass, requiredText, sectionHeaderClass, type FieldBaseProps } from "../Field/Field";
 
 export interface ComboBoxItem {
   id: string;
@@ -122,6 +122,7 @@ export function ComboBox(props: ComboBoxProps) {
     hideLabel = false,
     description,
     isRequired = false,
+    requiredMessage,
     error,
     isDisabled = false,
     isReadOnly = false,
@@ -267,7 +268,7 @@ export function ComboBox(props: ComboBoxProps) {
     const v = props.validate as ((v: string | string[] | null) => string | null | undefined) | undefined;
     return { missing: false, custom: v?.(value) ?? null };
   })();
-  const checkText = check.missing ? m.requiredChoice : check.custom;
+  const checkText = check.missing ? requiredText(m, "choice", label, requiredMessage) : check.custom;
   const [dirty, setDirty] = useState(false);
   const [shown, setShown] = useState<Verdict | null>(null); // vérification affichée, figée jusqu'à la prochaine sortie (D-132)
   const isInvalid = Boolean(error) || Boolean(shown && (shown.missing || shown.custom));
@@ -507,7 +508,7 @@ export function ComboBox(props: ComboBoxProps) {
       </div>
       <TextContext.Provider value={{ slots: { description: { id: helpId }, errorMessage: { id: errId } } }}>
         <FieldErrorContext.Provider value={validation}>
-          <FieldHelp description={description} error={error} kind="choice" />
+          <FieldHelp description={description} error={error} kind="choice" label={label} requiredMessage={requiredMessage} />
         </FieldErrorContext.Provider>
       </TextContext.Provider>
       {name && (multiple ? ids : ids.slice(0, 1)).map((id) => <input key={id} type="hidden" name={name} value={id} />)}

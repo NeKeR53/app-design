@@ -71,3 +71,21 @@ export const AvecLien: Story = {
     await expect(c.getByRole("link", { name: "importez un fichier" })).toHaveAttribute("href", "#import");
   },
 };
+
+/** `variant="forbidden"` : cadenas par défaut, gardé en `compact` (accès refusé, D-351). */
+export const AccesRefuse: Story = {
+  args: { variant: "forbidden", title: "Vous n'avez pas accès à cette liste", description: "Demandez l'accès à un administrateur.", icon: undefined },
+  render: (args) => (
+    <div className="flex flex-col gap-4">
+      <EmptyState {...args} />
+      <EmptyState {...args} size="compact" />
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    const icons = canvasElement.querySelectorAll('[data-variant="forbidden"] svg');
+    await expect(icons).toHaveLength(2);
+    await expect(icons[0]!.getBoundingClientRect().width).toBe(32);
+    await expect(icons[1]!.getBoundingClientRect().width).toBe(20);
+    await expect(within(canvasElement).getAllByRole("heading", { name: "Vous n'avez pas accès à cette liste" })).toHaveLength(2);
+  },
+};

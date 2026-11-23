@@ -30,7 +30,7 @@ Aucune variante visuelle. La disposition dépend de la largeur (D-013) et de la 
 | `pageTitle` | `string` | — (obligatoire) | Nom de la page, dans la barre supérieure. |
 | `pageSummary` | `string` | aucun | Court résumé après le titre, texte seul, coupé avec info-bulle ; masqué sur mobile (D-250). |
 | `pageStatus` | `{ label, tone?, description?, menu? }` | aucun | État durable de la page (« Lecture seule », « Hors ligne ») ; avec `menu`, un bouton qui ouvre ce menu (D-251). |
-| `views` | `{ id, label, closable? }[]` | aucune | Vues de la page en onglets (D-021). |
+| `views` | `{ id, label, closable?, isDirty? }[]` | aucune | Vues de la page en onglets (D-021) ; `isDirty` : vue modifiée (Tabs, D-349). |
 | `activeView` / `onViewChange` / `onViewClose` | — | — | Vue active et ses événements. |
 | `actions` | slot `ReactNode` : `ActionBar` `zone="topbar"` et boutons-icônes `IconButton` | aucune | Actions de la page (D-222). Le slot prend la place libre ; `ActionBar` y replie ses actions selon la place (D-221). |
 | `sidebar` | slot `Sidebar` | — (obligatoire) | Contenu de la sidebar. |
@@ -69,6 +69,8 @@ Aucune variante visuelle. La disposition dépend de la largeur (D-013) et de la 
 | Résumé après le titre et l'état ; coupé avec info-bulle ; masqué sur mobile (D-250) | verrouillé | `ResumeDePage` |
 | État de la page : info-bulle sans menu ; bouton et menu avec `menu` ; un seul ; annoncé quand il change (D-251, D-252) | verrouillé | `ResumeDePage`, `EtatDePage` |
 | Échap ferme ce qui flotte | verrouillé | `Echap` |
+| F6 et Maj+F6 : zone suivante ou précédente (barre supérieure, sidebar, contenu, détail, barre d'onglets mobile), en sautant les zones masquées ; le focus va au dernier élément focalisé de la zone, sinon au premier atteignable, sinon à la zone (D-350) | verrouillé | `ZonesF6` |
+| Web : lien « Aller au contenu », premier élément atteignable, caché jusqu'au focus ; il envoie le focus sur `main`. En bureau (Tauri), pas de lien (D-350, WCAG 2.4.1) | verrouillé | `LienEvitement`, `SansLienEnBureau` |
 | Mobile : barre d'onglets, feuille « Plus » sans doublons (D-003, D-019) | verrouillé | `Mobile` |
 
 ## Contenu
@@ -82,11 +84,12 @@ Aucune variante visuelle. La disposition dépend de la largeur (D-013) et de la 
 `--bar-h`, `--side-w`, `--detail-w`, `--detail-w-form` et `--row-h` suivent la densité (D-004, D-240).
 
 ## Clavier
-Ordre de tabulation : barre supérieure (état de la page s'il est focusable, vues, actions), sidebar, contenu, poignée du détail, panneau de détail. Raccourcis : Mod+B (sidebar), Mod+. (détail), Mod+1 à 9 (vues), Mod+, (réglages), Mod+K (commandes) (D-006).
+Ordre de tabulation : lien « Aller au contenu » (web seulement), barre supérieure (état de la page s'il est focusable, vues, actions), sidebar, contenu, poignée du détail, panneau de détail. Raccourcis : Mod+B (sidebar), Mod+. (détail), Mod+1 à 9 (vues), Mod+, (réglages), Mod+K (commandes) (D-006). F6 / Maj+F6 : zone suivante / précédente, comme les apps de bureau (D-350). F6 ne fait rien quand le focus est dans une fenêtre hors du cadre (dialogue).
 
 ## Accessibilité
 - Repères : `banner` (barre supérieure), `navigation` (sidebar, barre d'onglets), `main`, `complementary` (détail).
 - Les onglets de vues ont le rôle `tablist`.
+- Web : le lien d'évitement « Aller au contenu » répond à WCAG 2.4.1 ; il devient visible en haut à gauche quand il prend le focus.
 - Chaque bouton-icône a un nom accessible.
 - L'état de la page est annoncé par une zone `role="status"` cachée quand il apparaît ou change (D-252) ; avec menu, c'est un bouton nommé « {label} : {description} ».
 - La poignée du détail a le rôle `separator`, avec `aria-valuenow`, `aria-valuemin` et `aria-valuemax`.

@@ -1,12 +1,12 @@
 /*
  * Champ de texte sur plusieurs lignes, qui grandit avec le texte. Spec : TextArea.spec.md.
- * Décisions : D-022, D-130 à D-133. Adapté du starter Tailwind de React Aria (Apache 2.0).
+ * Décisions : D-022, D-130 à D-133 ; D-343 (limite dépassable) et D-344 (message d'obligation). Adapté du starter Tailwind de React Aria (Apache 2.0).
  */
 import { useCallback, useId, useLayoutEffect, useRef, useState } from "react";
 import { TextArea as RACTextArea, TextField as RACTextField } from "react-aria-components/TextField";
 import { useMessages } from "../../provider/SocleProvider";
 import { cx } from "../../lib/cx";
-import { FieldHelp, FieldLabel, ReadOnlyLock, defined, fieldBox, fieldRoot, type FieldBaseProps } from "../Field/Field";
+import { CharCount, FieldHelp, FieldLabel, ReadOnlyLock, defined, fieldBox, fieldRoot, withMaxLength, type FieldBaseProps } from "../Field/Field";
 
 export interface TextAreaProps extends FieldBaseProps {
   value?: string;
@@ -18,7 +18,7 @@ export interface TextAreaProps extends FieldBaseProps {
   /** Lecture seule (D-131). */
   isReadOnly?: boolean;
   placeholder?: string;
-  /** Longueur maximale ; affiche le compteur. */
+  /** Longueur maximale, dépassable ; affiche le compteur ; au-delà, compteur en erreur et valeur refusée (D-343). */
   maxLength?: number;
   /** Hauteur de départ, en lignes (D-133). Défaut : 3. */
   minRows?: number;
@@ -43,9 +43,11 @@ export function TextArea({
   description,
   error,
   isRequired,
+  requiredMessage,
   isReadOnly,
   width,
   placeholder,
+  validate,
   maxLength,
   minRows = 3,
   maxRows = 10,
@@ -66,7 +68,7 @@ export function TextArea({
   return (
     <RACTextField
       {...defined(rest)}
-      {...defined({ isRequired, isReadOnly, value, defaultValue, maxLength, isInvalid: error ? true : undefined, "aria-describedby": maxLength ? countId : undefined })}
+      {...defined({ isRequired, isReadOnly, value, defaultValue, validate: withMaxLength(validate, maxLength, m), isInvalid: error ? true : undefined, "aria-describedby": maxLength ? countId : undefined })}
       onChange={(v) => {
         if (value === undefined) setInner(v);
         onChange?.(v);
@@ -86,13 +88,9 @@ export function TextArea({
       <FieldHelp
         description={description}
         error={error}
-        extra={
-          maxLength ? (
-            <span id={countId} className={cx("ml-auto shrink-0 text-xs", text.length >= maxLength ? "text-danger" : "text-fg-3")}>
-              {m.charCount(text.length, maxLength)}
-            </span>
-          ) : undefined
-        }
+        label={label}
+        requiredMessage={requiredMessage}
+        extra={maxLength ? <CharCount id={countId} length={text.length} max={maxLength} /> : undefined}
       />
     </RACTextField>
   );

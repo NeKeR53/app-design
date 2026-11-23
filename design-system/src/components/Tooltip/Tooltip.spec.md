@@ -23,6 +23,7 @@ Aucune variante. La bulle reste sombre dans les deux modes : `--tip-bg`, `--tip-
 | `content` | `string` | — (obligatoire) | Texte de l'info-bulle. Texte seul, sans mise en forme. |
 | `placement` | `"top" \| "bottom" \| "start" \| "end"` | `"bottom"` | Côté préféré. Il change si la place manque (voir Comportement). |
 | `shortcut` | `string` (ex. `"Mod+K"`) | aucun | Raccourci affiché après le texte, converti selon la plateforme : « ⌘K » sur macOS, « Ctrl+K » ailleurs (D-032). |
+| `description` | `string` | aucune | Deuxième ligne, en `--tip-fg-2` : la raison d'un contrôle inactif (`disabledReason` de `Button`, `IconButton`). |
 | `children` | élément focusable | — (obligatoire) | Élément qui déclenche l'info-bulle. |
 
 ## Exclus
@@ -57,6 +58,7 @@ L'info-bulle ne prend jamais le focus. Elle s'ouvre au focus clavier de l'élém
 
 ## Accessibilité
 - Rôle `tooltip`, relié à l'élément par `aria-describedby` (React Aria). Sur un `IconButton`, le lien n'est posé que si la bulle ajoute quelque chose au nom (un raccourci) : sinon le nom serait lu deux fois.
+- Contrôle inactif avec une raison (`disabledReason`) : l'élément reste focusable (`aria-disabled`), la bulle s'ouvre au survol et au focus ; la raison est liée par `aria-describedby` à un texte caché, présent même bulle fermée (la bulle n'est pas liée, pour ne rien lire deux fois).
 - Si `shortcut` est fourni, l'élément reçoit `aria-keyshortcuts` (par exemple `Meta+K` ou `Control+K`).
 - Pour un bouton-icône, le nom accessible vient de `aria-label`, pas de l'info-bulle : les deux portent le même texte.
 - Contraste du texte et du raccourci : au moins 4,5:1 sur le fond de la bulle, en clair et en sombre.

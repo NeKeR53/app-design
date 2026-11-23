@@ -31,6 +31,30 @@ Mise en conformité avec les specs existantes, après une revue UX comparée à 
 - `TabPanel` et `useTabPanelProps` : la zone de contenu reçoit le rôle `tabpanel`, nommée par l'onglet actif ; option facultative `id` sur `Tabs`. `AppShell` les relie tout seul quand il a des vues (Tabs.spec.md).
 - Libellés internes `rowAction` et `moreActionsFor`.
 
+### Ajouté — nouveaux composants (revue Component Gallery)
+- `DatePicker` et `DateRangePicker` : saisie par segments dans l'ordre de la langue, calendrier d'un mois avec choix du mois et de l'année, jours indisponibles, bornes, raccourcis de période en option ; valeurs ISO `AAAA-MM-JJ` (D-354). Dépendance `@internationalized/date` déclarée.
+- `Alert` : encart dans le contenu, carte neutre avec icône de ton, une action, croix facultative (jamais pour une erreur), annonce `status` / `alert` en option (D-355).
+- `NumberField` : flèches empilées, Maj et Page haut/bas pour dix pas, molette désactivée, format de la langue, devise, % et unité, bornes vérifiées en quittant le champ (D-356).
+- `FileUpload` et `FileList` : dépôt ou choix de fichiers, type et taille vérifiés avant `onAdd`, fichiers refusés listés, état par fichier avec « Réessayer » (D-357).
+- `SegmentedControl` : choix exclusif de 2 à 4 options, rôle `radiogroup` (D-358).
+- `Pagination` : précédent, numéros avec « … », suivant ; « Page n sur N » sous 641 px ; ListPage l'utilise (D-359).
+- `Spinner` : indicateur rotatif de 14 ou 20 px, nommé ou décoratif ; Button, IconButton et SearchInput l'utilisent (D-360).
+- `Card` : conteneur neutre, variante `metric`, carte cliquable avec « … » hors de la cible (D-361).
+- Icônes internes : calendrier et types de fichier, remplaçables par un thème (D-338).
+
+### Ajouté — revue UX, groupe B (options facultatives, défaut inchangé sauf mention)
+- `disabledReason` sur Button, IconButton, `DropdownMenu.Item` et `Action` : contrôle focusable, raison en info-bulle et en description (D-340). Tooltip : option `description`.
+- FormPage : récapitulatif des erreurs à partir de 2 erreurs, avec un lien par champ (D-341).
+- Lecture seule visible sur Checkbox, CheckboxGroup, RadioButtonGroup et Toggle ; Select gagne `isReadOnly` (D-342).
+- `maxLength` ne bloque plus la saisie (TextInput, TextArea, InlineEdit, MarkdownEditor) : compteur « n caractères en trop », valeur refusée au-delà (D-343). **Changement de comportement.**
+- Message d'un champ obligatoire vide construit à partir du libellé (« Renseignez « Date de début ». ») ; option `requiredMessage` (D-344). **Changement de texte.**
+- ListPage : `allowSelectAll` (D-345), `allowColumnChoice` et `TableColumn.required` (D-346), `allowsUnsort` (D-347), `pagination.pageSizes` (D-348), `isForbidden`, `forbidden`, `onRequestAccess` (D-351). `selectionActions` reçoit un second argument `"rows" | "all"`. Table : `allowsUnsort`, `hiddenColumns`.
+- Tabs : `TabItem.isDirty` (D-349).
+- AppShell : F6 et Maj+F6 entre les zones ; lien « Aller au contenu » en web (D-350).
+- EmptyState : `variant="forbidden"` ; Drawer : `isForbidden` (D-351).
+- Modal et `useConfirm` : focus de repli quand le déclencheur a disparu ; option `returnFocusTo` (D-352).
+- ActionBar : « … » en attente pendant une action lancée depuis son menu (D-353).
+
 ### Corrigé
 - Toast : au retour sur la fenêtre, la minuterie ne repart plus si la souris ou le focus sont sur un toast (D-153). Échap ferme aussi le toast depuis son action ou sa croix.
 - FormattedValue : une valeur négative arrondie à zéro s'affiche « 0 », pas « -0 » (`number`, `money`, `percent`).

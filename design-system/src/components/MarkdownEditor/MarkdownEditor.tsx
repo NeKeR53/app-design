@@ -1,5 +1,6 @@
 /*
- * Éditeur de Markdown, au format des champs. Spec : MarkdownEditor.spec.md. Décisions : D-300, D-305 à D-309.
+ * Éditeur de Markdown, au format des champs. Spec : MarkdownEditor.spec.md. Décisions : D-300, D-305 à D-309 ;
+ * D-343 (limite dépassable).
  * Exporté par la sous-entrée `socle-ui/markdown-editor` (D-300). CodeMirror 6 se charge à la première
  * ouverture d'un éditeur (editorView.ts, par `import()`).
  */
@@ -8,7 +9,7 @@ import { LabelContext } from "react-aria-components/Label";
 import { Toolbar } from "react-aria-components/Toolbar";
 import type { EditorView } from "@codemirror/view";
 import { Separator } from "../Separator/Separator";
-import { FieldLabel, ReadOnlyLock, fieldBox, fieldRoot, type FieldBaseProps } from "../Field/Field";
+import { CharCount, FieldLabel, ReadOnlyLock, fieldBox, fieldRoot, type FieldBaseProps } from "../Field/Field";
 import { IconButton } from "../IconButton/IconButton";
 import { Markdown } from "../Markdown/Markdown";
 import { Bold, CodeIcon, Eye, Heading1, Heading2, Heading3, Italic, LinkIcon, ListDetail, ListOrdered, TextQuote } from "../../icons";
@@ -26,7 +27,7 @@ type EditorModule = typeof import("./editorView");
 let editorModule: Promise<EditorModule> | undefined;
 const loadEditor = () => (editorModule ??= import("./editorView"));
 
-export interface MarkdownEditorProps extends Omit<FieldBaseProps, "isRequired"> {
+export interface MarkdownEditorProps extends Omit<FieldBaseProps, "isRequired" | "requiredMessage"> {
   /** Champ obligatoire : sans « (facultatif) » ; la vérification reste à l'app (`error`). */
   isRequired?: boolean;
   value?: string;
@@ -36,7 +37,10 @@ export interface MarkdownEditorProps extends Omit<FieldBaseProps, "isRequired"> 
   /** Lecture seule (D-131, D-305). */
   isReadOnly?: boolean;
   placeholder?: string;
-  /** Longueur maximale ; affiche le compteur ; la saisie s'arrête à la limite. */
+  /**
+   * Longueur maximale, dépassable ; affiche le compteur (D-343). Au-delà : compteur en erreur ;
+   * en quittant le champ ou à l'envoi du formulaire, « Saisissez n caractères au plus. » et envoi refusé.
+   */
   maxLength?: number;
   /** Hauteur de départ, en lignes (D-305). Défaut : 6. */
   minRows?: number;
@@ -115,6 +119,12 @@ export function MarkdownEditor({
   const [hovered, setHovered] = useState(false);
   const [imageError, setImageError] = useState("");
   const [showPreview, setShowPreview] = useState(false);
+  // Limite dépassée : le message s'affiche en quittant le champ ou à l'envoi, jamais pendant la frappe.
+  const [limitShown, setLimitShown] = useState(false);
+  const validity = useRef<HTMLInputElement>(null);
+  const over = maxLength !== undefined && doc.length > maxLength;
+  const limitError = over && limitShown ? m.tooLong(maxLength) : "";
+  const shownError = error || limitError;
   const labelId = useId();
   const descId = useId();
   const errId = useId();
@@ -127,10 +137,12 @@ export function MarkdownEditor({
     onChange: (text) => {
       setDoc(text);
       setImageError("");
+      if (maxLength === undefined || text.length <= maxLength) setLimitShown(false);
       onChange?.(text);
     },
     onFocusChange: (has) => {
       setFocused(has);
+      if (!has && maxLength !== undefined && view.current && view.current.state.doc.length > maxLength) setLimitShown(true);
       if (!has) onBlur?.();
     },
     onPasteImage,
@@ -138,12 +150,12 @@ export function MarkdownEditor({
     texts,
   };
 
-  const help = error ? errId : description ? descId : undefined;
+  const help = shownError ? errId : description ? descId : undefined;
   const settings: EditorSettings = {
     attributes: {
       "aria-labelledby": labelId,
       ...(help || maxLength ? { "aria-describedby": [help, maxLength ? countId : undefined].filter(Boolean).join(" ") } : {}),
-      ...(error ? { "aria-invalid": "true" } : {}),
+      ...(shownError ? { "aria-invalid": "true" } : {}),
       ...(isReadOnly ? { "aria-readonly": "true" } : {}),
       ...(isRequired ? { "aria-required": "true" } : {}),
       ...(isDisabled ? { "aria-disabled": "true" } : {}),
@@ -151,9 +163,12 @@ export function MarkdownEditor({
     placeholder,
     isReadOnly,
     isDisabled,
-    maxLength,
   };
   const settingsRef = useRef(settings);
+  // Dans un <form>, une limite dépassée refuse l'envoi : un champ caché porte l'erreur (D-343).
+  useEffect(() => {
+    validity.current?.setCustomValidity(over && maxLength !== undefined ? m.tooLong(maxLength) : "");
+  }, [over, maxLength, m]);
   settingsRef.current = settings;
   const initial = useRef(doc);
 
@@ -217,7 +232,7 @@ export function MarkdownEditor({
     <div
       className={cx(fieldRoot(width), fill && "h-full min-h-0")}
       {...(isDisabled ? { "data-disabled": "true" } : {})}
-      {...(error ? { "data-invalid": "true" } : {})}
+      {...(shownError ? { "data-invalid": "true" } : {})}
     >
       <LabelContext.Provider value={{ id: labelId, onClick: () => view.current?.focus() }}>
         <FieldLabel isRequired={isRequired} hidden={hideLabel}>
@@ -230,7 +245,7 @@ export function MarkdownEditor({
         onPointerLeave={() => setHovered(false)}
         {...(focused ? { "data-focused": "true" } : {})}
         {...(hovered && !isDisabled ? { "data-hovered": "true" } : {})}
-        {...(error ? { "data-invalid": "true" } : {})}
+        {...(shownError ? { "data-invalid": "true" } : {})}
         className={cx(fieldBox({ isReadOnly }), "@container relative flex flex-col overflow-hidden p-0", fill && "min-h-0 flex-1")}
       >
         {!isReadOnly && (
@@ -285,11 +300,11 @@ export function MarkdownEditor({
           )}
         </div>
       </div>
-      {(description || error || imageError || maxLength) && (
+      {(description || shownError || imageError || maxLength) && (
         <div className="flex gap-2 text-sm">
-          {error ? (
+          {shownError ? (
             <span id={errId} className="text-danger">
-              {error}
+              {shownError}
             </span>
           ) : description ? (
             <span id={descId} className="text-fg-3">
@@ -299,14 +314,30 @@ export function MarkdownEditor({
           <span role="status" className="text-danger">
             {imageError}
           </span>
-          {maxLength !== undefined && (
-            <span id={countId} className={cx("ml-auto shrink-0 text-xs", doc.length >= maxLength ? "text-danger" : "text-fg-3")}>
-              {m.charCount(doc.length, maxLength)}
-            </span>
-          )}
+          {maxLength !== undefined && <CharCount id={countId} length={doc.length} max={maxLength} />}
         </div>
       )}
-      {name !== undefined && <input type="hidden" name={name} value={doc} />}
+      {maxLength !== undefined ? (
+        <input
+          ref={validity}
+          tabIndex={-1}
+          aria-hidden
+          className="sr-only"
+          {...(name !== undefined ? { name } : {})}
+          value={doc}
+          onChange={() => {}}
+          onInvalid={(e) => {
+            // Pas de bulle du navigateur : le message s'affiche sous le champ, le focus va au texte s'il est le premier en erreur.
+            e.preventDefault();
+            setLimitShown(true);
+            const form = e.currentTarget.form;
+            const first = form ? Array.from(form.elements).find((el) => "validity" in el && !(el as HTMLInputElement).validity.valid) : e.currentTarget;
+            if (first === e.currentTarget) view.current?.focus();
+          }}
+        />
+      ) : (
+        name !== undefined && <input type="hidden" name={name} value={doc} />
+      )}
     </div>
   );
 }

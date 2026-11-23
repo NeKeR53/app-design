@@ -58,8 +58,33 @@ export const Verification: Story = {
     await userEvent.type(c.getByRole("textbox"), "a");
     await userEvent.tab();
     await userEvent.clear(c.getByRole("textbox"));
-    await expect(c.queryByText("Ce champ est obligatoire.")).toBeNull();
+    await expect(c.queryByText("Renseignez « Motif ».")).toBeNull();
     await userEvent.tab();
-    await waitFor(() => expect(c.getByText("Ce champ est obligatoire.")).toBeVisible());
+    await waitFor(() => expect(c.getByText("Renseignez « Motif ».")).toBeVisible());
+  },
+};
+
+/** Limite dépassable : un collage n'est pas coupé ; au-delà, « n caractères en trop » en rouge, lu après une pause, valeur refusée (D-343). */
+export const LimiteDepassable: Story = {
+  args: { label: "Résumé", maxLength: 20 },
+  play: async ({ canvasElement }) => {
+    const c = within(canvasElement);
+    const ta = c.getByRole("textbox");
+    await expect(ta).not.toHaveAttribute("maxlength");
+    await userEvent.type(ta, "Bonjour");
+    await expect(c.getByText("7 / 20")).toHaveClass("text-fg-3");
+    await userEvent.paste(" à toute l'équipe");
+    await expect(ta).toHaveValue("Bonjour à toute l'équipe");
+    const counter = c.getByText("4 caractères en trop");
+    await expect(counter).toHaveClass("text-danger");
+    await expect(ta.getAttribute("aria-describedby")).toContain(counter.id);
+    const live = canvasElement.querySelectorAll('[aria-live="polite"]');
+    await expect(live).toHaveLength(1);
+    await waitFor(() => expect(live[0]).toHaveTextContent("4 caractères en trop"), { timeout: 2000 });
+    // Jamais pendant la frappe : l'erreur vient en quittant le champ.
+    await expect(c.queryByText("Saisissez 20 caractères au plus.")).toBeNull();
+    await userEvent.tab();
+    await waitFor(() => expect(c.getByText("Saisissez 20 caractères au plus.")).toBeVisible());
+    await expect(ta).toHaveAttribute("aria-invalid", "true");
   },
 };

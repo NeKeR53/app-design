@@ -352,3 +352,62 @@ export const PointDansLaGrille: Story = {
     await waitFor(() => expect(body().getByRole("tooltip")).toHaveTextContent("Défini"));
   },
 };
+
+/** Tri à trois états (`allowsUnsort`) : croissant, décroissant, puis ordre d'origine ; `aria-sort` suit ; l'état est mémorisé (D-347, D-007). */
+export const TriTroisEtats: Story = {
+  render: () => {
+    const [n, setN] = useState(0);
+    return (
+      <div className="flex h-[360px] flex-col p-4">
+        <button type="button" onClick={() => setN(n + 1)}>
+          Rouvrir
+        </button>
+        <TriTroisEtatsDemo key={n} />
+      </div>
+    );
+  },
+  play: async ({ canvasElement }) => {
+    const c = within(canvasElement);
+    const names = () => c.getAllByRole("rowheader").map((r) => r.textContent);
+    const original = names();
+    const header = () => c.getByRole("columnheader", { name: /Taille/ });
+    await userEvent.click(header());
+    await waitFor(() => expect(header()).toHaveAttribute("aria-sort", "ascending"));
+    await expect(names()[0]).toMatch(/Compte rendu/);
+    await userEvent.click(header());
+    await waitFor(() => expect(header()).toHaveAttribute("aria-sort", "descending"));
+    await expect(names()[0]).toMatch(/Rapport trimestriel/);
+    await userEvent.click(header());
+    await waitFor(() => expect(header()).not.toHaveAttribute("aria-sort", "ascending"));
+    await expect(header()).not.toHaveAttribute("aria-sort", "descending");
+    await expect(names()).toEqual(original);
+    // Mémorisé : un tri choisi revient à la réouverture ; l'ordre d'origine aussi.
+    await userEvent.click(header());
+    await userEvent.click(c.getByRole("button", { name: "Rouvrir" }));
+    await waitFor(() => expect(header()).toHaveAttribute("aria-sort", "ascending"));
+  },
+};
+
+function TriTroisEtatsDemo() {
+  const [sort, setSort] = useState<SortDescriptor | null>(null);
+  const rows = useMemo(() => {
+    if (!sort) return ROWS;
+    const c = sort.column as keyof Docu;
+    return [...ROWS].sort((a, b) => (a[c] > b[c] ? 1 : a[c] < b[c] ? -1 : 0) * (sort.direction === "ascending" ? 1 : -1));
+  }, [sort]);
+  return <Table label="Documents triés" storageId="tri3" columns={COLS} rows={rows} allowsUnsort onSortChange={setSort} />;
+}
+
+/** `hiddenColumns` masque des colonnes ; la première et celles marquées `required` restent (D-346). */
+export const ColonnesMasquees: Story = {
+  render: () => (
+    <div className="flex h-[300px] flex-col p-4">
+      <Table label="Documents" columns={COLS.map((c) => (c.id === "size" ? { ...c, required: true } : c))} rows={ROWS} hiddenColumns={["name", "owner", "size"]} />
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    const c = within(canvasElement);
+    const heads = c.getAllByRole("columnheader").map((h) => h.textContent);
+    await expect(heads).toEqual(["Nom", "Modifié le", "Taille"]);
+  },
+};

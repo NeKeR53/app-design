@@ -78,7 +78,11 @@ export const RendLesValeurs: Story = {
     await expect(dialog.getBoundingClientRect().width).toBeLessThanOrEqual(400);
     // Vérification à l'envoi (D-132).
     await userEvent.click(d.getByRole("button", { name: "Ajouter" }));
-    await waitFor(() => expect(d.getAllByText("Ce champ est obligatoire.")).toHaveLength(2));
+    await waitFor(() => expect(d.getByText("Renseignez « Nom ».")).toBeVisible());
+    await expect(d.getByText("Renseignez « Adresse e-mail ».")).toBeVisible();
+    // Modale (6 champs au plus) : pas de récapitulatif, le focus va au premier champ en erreur (D-341).
+    await expect(d.getByRole("textbox", { name: "Nom" })).toHaveFocus();
+    await expect(d.queryByText(/erreurs à corriger/)).toBeNull();
     await userEvent.type(d.getByRole("textbox", { name: "Nom" }), " Camille Martin ");
     await userEvent.type(d.getByRole("textbox", { name: "Adresse e-mail" }), "camille@exemple.fr");
     // Entrée dans un champ d'une ligne envoie (D-196).

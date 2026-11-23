@@ -11,10 +11,11 @@ Ne pas l'utiliser pour :
 
 ## Anatomie
 1. **`header`** (obligatoire) : titre de la page (`--fs-lg`, `--fw-semibold`) et description courte facultative (`--fs-sm`, `--fg-2`) à gauche ; actions de la page à droite, en `ActionBar` zone `header` (D-111).
-2. **`toolbar`** (si recherche ou filtres) : `SearchInput` puis les filtres en `Select` à gauche (D-174). Quand des lignes sont cochées, la barre devient la barre de sélection : « 3 sélectionnés », « Tout désélectionner », et les actions groupées en `ActionBar` zone `toolbar` à droite (D-178).
+2. **`toolbar`** (si recherche, filtres ou choix des colonnes) : `SearchInput` puis les filtres en `Select` à gauche (D-174) ; bouton « Colonnes » à droite si `allowColumnChoice` (D-346). Quand des lignes sont cochées, la barre devient la barre de sélection : « 3 sélectionnés », « Tout désélectionner », et les actions groupées en `ActionBar` zone `toolbar` à droite (D-178). Avec `allowSelectAll`, toute la page cochée et d'autres éléments ailleurs : lien « Sélectionner les 312 éléments » ; choisi, la barre dit « 312 éléments sélectionnés » et « Effacer la sélection » (D-345).
 3. **`list`** (obligatoire) : `Table` (défaut) ou `List`, selon `layout`. Chaque cellule est une `FormattedValue` du type de sa colonne (D-170, D-172). Actions de ligne en zone `row` (D-114).
-4. **`footer`** : compteur à gauche ; pagination « 1–50 sur 312 » avec page précédente et suivante, ou bouton « Afficher plus » (D-175).
+4. **`footer`** : compteur à gauche ; en mode `pages`, « 1–50 sur 312 » et le composant `Pagination` à droite (‹ 1 2 3 … 7 › ; sous 641 px : ‹ Page 2 sur 7 ›) ; en mode `more`, bouton « Afficher plus » (D-175, D-359). Avec `pagination.pageSizes` : « Lignes par page [25] » avant `Pagination` (D-348).
 5. **`empty`** (à la place de `toolbar`, `list` et `footer` quand il n'y a aucun élément) : `EmptyState` avec icône, titre, phrase et l'action principale de la page en zone `empty` (D-176).
+6. **`forbidden`** (si `isForbidden`, à la place de tout sauf le titre) : `EmptyState` variante `forbidden` (cadenas), « Vous n'avez pas accès à cette liste », « Demandez l'accès à un administrateur. », bouton « Demander l'accès » si `onRequestAccess` (D-351).
 
 ## Variantes
 | `layout` | Quand | Rendu |
@@ -29,7 +30,7 @@ Ne pas l'utiliser pour :
 | `description` | `string` | aucune | Une phrase sous le titre. |
 | `actions` | `Action[]` | aucune | Actions de la page (zone `header`). L'action `primary` revient dans l'état vide. |
 | `rows` | `Row[] \| undefined` | — (obligatoire) | Les lignes, chacune avec un `id` texte. `undefined` : premier chargement. |
-| `columns` | `ListPageColumn<Row>[]` | — (obligatoire) | Colonnes : `{ id, label, value?, sortable?, …ValueFormat }`. `id` est lu dans la ligne, sauf si `value(row)` est donné. La première est le nom de l'élément. |
+| `columns` | `ListPageColumn<Row>[]` | — (obligatoire) | Colonnes : `{ id, label, value?, sortable?, required?, …ValueFormat }`. `id` est lu dans la ligne, sauf si `value(row)` est donné. La première est le nom de l'élément. `required` : le menu « Colonnes » ne la masque pas. |
 | `layout` | `"table" \| "list"` | `"table"` | Variante. |
 | `item` | `{ title, subtitle?, meta?, status? }` | `title` = 1re colonne | Pour `list` : l'`id` de la colonne qui donne chaque pièce de la ligne. |
 | `search` | `boolean \| { label?, text? }` | `true` | Recherche dans la barre. `label` : nom accessible (« les demandes ») ; `text(row)` : le texte où chercher (défaut : le texte affiché de toutes les colonnes). |
@@ -37,15 +38,21 @@ Ne pas l'utiliser pour :
 | `rowActions` | `(row) => Action[]` | aucune | Actions d'une ligne (zone `row`). |
 | `selectionMode` | `"single" \| "multiple"` | `"single"` | `multiple` : cases et barre de sélection. |
 | `selectedId` / `onSelect` | `string \| null` / `(row \| null) => void` | aucun | Ligne sélectionnée (clic ou flèches), par exemple pour le panneau de détail. |
-| `selectionActions` | `(rows) => Action[]` | aucune | Actions groupées sur les lignes cochées (`multiple`). |
+| `selectionActions` | `(rows, selection) => Action[]` | aucune | Actions groupées sur les lignes cochées (`multiple`). `selection` : `"rows"`, ou `"all"` après « Sélectionner les N éléments » (`rows` = lignes connues ; en `remote`, l'app agit sur tous les éléments qui correspondent). |
+| `allowSelectAll` | `boolean` | `false` | Lien « Sélectionner les N éléments » quand toute la page est cochée et qu'il reste des éléments (D-345). |
+| `allowColumnChoice` | `boolean` | `false` | Menu « Colonnes » : une case par colonne ; choix mémorisé par page (D-346, D-007). |
+| `allowsUnsort` | `boolean` | `false` | Tri à trois états : croissant, décroissant, ordre d'origine (D-347). |
 | `onOpen` | `(row) => void` | aucun | Ouverture (double-clic ou Entrée), dans une vue fermable (D-021). |
-| `pagination` | `{ mode?: "more" \| "pages", pageSize? }` | `{ mode: "more", pageSize: 50 }` | Pied de liste (D-175). |
+| `pagination` | `{ mode?: "more" \| "pages", pageSize?, pageSizes? }` | `{ mode: "more", pageSize: 50 }` | Pied de liste (D-175). `pageSizes` (mode `pages`) : `true` (25, 50, 100) ou une liste ; choix mémorisé (D-348). |
 | `empty` | `{ title, description?, icon? }` | — (obligatoire) | État vide : « Aucune demande ». |
+| `isForbidden` | `boolean` | `false` | Accès refusé : état dédié à la place de la liste (D-351). |
+| `forbidden` | `{ title?, description? }` | textes de `messages` | Textes de l'accès refusé : « Vous n'avez pas accès à ces demandes ». |
+| `onRequestAccess` | `() => void` | aucun | Bouton « Demander l'accès » de l'accès refusé. |
 | `isLoading` | `boolean` | `false` | Rechargement avec des lignes déjà là : barre fine (D-084). |
 | `hasError` / `onRetry` | `boolean` / `() => void` | `false` | Le dernier chargement a échoué (D-085). |
 | `remote` | `boolean` | `false` | Données côté serveur : le gabarit ne filtre, ne trie, ne découpe rien ; il signale chaque changement à `onStateChange` (D-174). |
 | `total` | `number` | nombre de lignes | En mode `remote` : nombre total d'éléments qui correspondent. |
-| `onStateChange` | `(state: ListPageState) => void` | aucun | `{ query, filters, sort, page }` à chaque changement. |
+| `onStateChange` | `(state: ListPageState) => void` | aucun | `{ query, filters, sort, page }` à chaque changement ; plus `pageSize` avec `pageSizes`, et `selection: "all"` en `remote` après « Sélectionner les N éléments ». |
 | `storageId` | `string` | `title` | Clé de mémorisation des filtres et du tri (D-177). |
 | `onActionError` / `onActionDone` | comme `ActionBar` | aucun | Transmis à toutes les `ActionBar` du gabarit. |
 
@@ -55,6 +62,7 @@ Ne pas l'utiliser pour :
 - Pas de bouton « Actualiser » dans le gabarit : l'app le met dans ses actions si elle en a besoin.
 - Pas de visuel (icône, avatar) en `list` dans cette version.
 - Pas de regroupement de lignes ni de tri multiple.
+- Pas de réordonnancement des colonnes par glisser ; le menu « Colonnes » ne fait que masquer.
 - Pas de bandeau en tête de page (D-159).
 - Pas de `className` ni de `style`.
 
@@ -68,6 +76,8 @@ Ne pas l'utiliser pour :
 | Erreur au premier chargement | En-tête, puis message centré « Impossible de charger les résultats » et « Réessayer » (D-085). |
 | Erreur avec des lignes | Lignes gardées, bandeau « Résultats non mis à jour » et « Réessayer » au-dessus (D-085). |
 | Lignes cochées | Barre de sélection à la place de la barre d'outils (D-178). |
+| Tous les éléments sélectionnés (`allowSelectAll`) | « 312 éléments sélectionnés » et « Effacer la sélection » ; les lignes chargées ensuite sont cochées (D-345). |
+| Accès refusé (`isForbidden`) | Titre de la page, puis `EmptyState` `forbidden` ; ni actions, ni barre, ni liste, ni pied (D-351). |
 
 ## Comportement
 | Règle | Niveau de réglage | Test (story) |
@@ -76,13 +86,18 @@ Ne pas l'utiliser pour :
 | Un filtre garde les lignes dont la valeur est la clé choisie (ou la contient, pour une liste) ; les filtres se combinent en ET (D-174) | verrouillé | `Filtres` |
 | « Effacer la recherche » vide la recherche et les filtres (D-176) | verrouillé | `AucunResultat` |
 | Tri au clic sur l'en-tête, sur la valeur et non sur le texte ; vides en dernier (D-172) | verrouillé | `Tri` |
-| Les filtres et le tri sont mémorisés par page ; la recherche ne l'est pas (D-177) | verrouillé | `Memorisation` |
-| Pied « more » : « 50 sur 312 » et « Afficher plus » ajoute une page ; « pages » : « 1–50 sur 312 » et flèches ; une recherche ou un filtre ramène à la page 1 (D-175) | verrouillé | `Pagination`, `AfficherPlus` |
+| Les filtres, le tri, les colonnes masquées et les lignes par page sont mémorisés par page ; la recherche et la sélection ne le sont pas (D-177) | verrouillé | `Memorisation`, `Colonnes`, `LignesParPage` |
+| Pied « more » : « 50 sur 312 » et « Afficher plus » ajoute une page ; « pages » : « 1–50 sur 312 » et `Pagination` (numéros, précédente, suivante ; focus gardé dans la pagination) ; une nouvelle page s'affiche depuis le haut ; une recherche ou un filtre ramène à la page 1 (D-175, D-359) | verrouillé | `Pagination`, `PaginationDefilement`, `AfficherPlus` |
 | Tout tient sur une page : le pied ne montre que le compteur « 12 éléments » (D-175) | verrouillé | `ParDefaut` |
 | Clic ou flèches : sélection (`onSelect`) ; double-clic ou Entrée : ouverture (`onOpen`) | verrouillé | `Ouverture` |
 | Lignes cochées : barre « n sélectionnés », actions groupées, « Tout désélectionner » (D-178) | verrouillé | `Selection` |
 | Vide : `EmptyState` avec l'action `primary` de la page ; pas de barre ni de pied (D-176) | verrouillé | `Vide` |
 | `remote` : rien n'est filtré ni découpé par le gabarit ; `onStateChange` reçoit chaque changement (D-174) | verrouillé | `Distant` |
+| Toute la page cochée, d'autres éléments ailleurs : « Sélectionner les N éléments » ; l'état « tout » va aux actions groupées (`"all"`) et, en `remote`, à `onStateChange` ; une recherche, un filtre ou une ligne décochée l'efface (D-345) | réglable par l'app (`allowSelectAll`) | `ToutSelectionner`, `ToutSelectionnerDistant`, `ToutSelectionnerParDefaut` |
+| Menu « Colonnes » : une case par colonne ; la première et les `required` sont inactives ; choix mémorisé par page (D-346, D-007) | réglable par l'app (`allowColumnChoice`) | `Colonnes` |
+| Tri à trois états : le troisième clic rend l'ordre d'origine, mémorisé comme le tri (D-347, D-177) | réglable par l'app (`allowsUnsort`) | `TriTroisEtats` |
+| Lignes par page : 25, 50 ou 100 (liste réglable), mémorisé ; la page courante se lit dans `Pagination`, sans « Page n sur N » en double (seulement sous 641 px, dans `Pagination`) ; le changement ramène à la page 1 (D-348) | réglable par l'app (`pagination.pageSizes`) | `LignesParPage` |
+| Accès refusé : cadenas, titre, phrase, « Demander l'accès » facultatif (D-351) | réglable par l'app (`isForbidden`) | `AccesRefuse` |
 
 ## Contenu
 - Titre au pluriel, nom de ce qui est listé : « Demandes ».
@@ -110,7 +125,7 @@ Erreur de chargement : états ci-dessus (D-085). Erreur d'une action : `onAction
 Zone `main` d'`AppShell` (layout-rules, gabarit ListPage). Le panneau de détail montre la ligne sélectionnée.
 
 ## Composition
-`ActionBar`, `SearchInput`, `Select`, `Table`, `List`, `EmptyState`, `FormattedValue`, `Button`, `IconButton`. Rien d'autre.
+`ActionBar`, `SearchInput`, `Select`, `Table`, `List`, `EmptyState`, `FormattedValue`, `Button`, `Pagination`. Rien d'autre.
 
 ## Décisions
 D-021, D-080, D-084 à D-087, D-111, D-114, D-117, D-159, D-170 à D-178

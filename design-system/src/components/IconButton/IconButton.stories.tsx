@@ -116,3 +116,21 @@ export const Chargement: Story = {
     await waitFor(() => expect(body().getByRole("tooltip")).toHaveTextContent("Actualiser"), { timeout: 1500 });
   },
 };
+
+/** Inactif avec une raison : le nom reste `label`, la raison est la description ; focusable, sans action. */
+export const InactifAvecRaison: Story = {
+  render: (args) => <IconButton icon={<Settings />} label="Réglages" disabledReason="Réservé aux administrateurs." {...(args.onPress ? { onPress: args.onPress } : {})} />,
+  play: async ({ canvasElement, args }) => {
+    const button = within(canvasElement).getByRole("button", { name: "Réglages" });
+    await expect(button).toHaveAttribute("aria-disabled", "true");
+    await expect(button).toHaveAccessibleDescription("Réservé aux administrateurs.");
+    await userEvent.tab();
+    await expect(button).toHaveFocus();
+    const tip = await waitFor(() => body().getByRole("tooltip"));
+    await expect(tip).toHaveTextContent("Réglages");
+    await expect(tip).toHaveTextContent("Réservé aux administrateurs.");
+    await userEvent.keyboard("{Enter}");
+    await userEvent.click(button);
+    await expect(args.onPress).not.toHaveBeenCalled();
+  },
+};

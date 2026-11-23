@@ -150,19 +150,63 @@ export const Coloration: Story = {
   },
 };
 
-/** Compteur « n / max » ; la saisie s'arrête à la limite. */
+/** Compteur « n / max » ; limite dépassable : « n caractères en trop » en rouge, lu après une pause (D-343). */
 export const Compteur: Story = {
   args: { defaultValue: "1234567", maxLength: 10, description: "Court résumé." },
   play: async ({ canvasElement }) => {
     const c = within(canvasElement);
     const { box, view } = await editor(canvasElement);
-    await expect(c.getByText("7 / 10")).toBeInTheDocument();
+    await expect(c.getByText("7 / 10")).toHaveClass("text-fg-3");
     box.focus();
     view.dispatch({ selection: EditorSelection.cursor(7) });
     view.dispatch(view.state.update({ changes: { from: 7, insert: "8901234" }, userEvent: "input.type" }));
-    await expect(view.state.doc.toString()).toBe("1234567");
-    view.dispatch(view.state.update({ changes: { from: 7, insert: "890" }, userEvent: "input.type" }));
-    await expect(await c.findByText("10 / 10")).toBeInTheDocument();
+    await expect(view.state.doc.toString()).toBe("12345678901234");
+    const counter = await c.findByText("4 caractères en trop");
+    await expect(counter).toHaveClass("text-danger");
+    // Une seule zone pour le compteur (CodeMirror a la sienne, à part).
+    const live = canvasElement.querySelectorAll('.sr-only[aria-live="polite"]');
+    await expect(live).toHaveLength(1);
+    await waitFor(() => expect(live[0]).toHaveTextContent("4 caractères en trop"), { timeout: 2000 });
+    // Pas d'erreur pendant la frappe ; en quittant le champ, oui.
+    await expect(c.queryByText("Saisissez 10 caractères au plus.")).toBeNull();
+    box.blur();
+    await waitFor(() => expect(c.getByText("Saisissez 10 caractères au plus.")).toBeVisible());
+    await waitFor(() => expect(box).toHaveAttribute("aria-invalid", "true"));
+  },
+};
+
+/** Dans un formulaire : une limite dépassée refuse l'envoi et met le focus dans le texte (D-343). */
+export const LimiteEnvoi: Story = {
+  render: () => {
+    function Demo() {
+      const [sent, setSent] = useState(false);
+      return (
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            setSent(true);
+          }}
+          className="flex flex-col gap-3"
+        >
+          <MarkdownEditor label="Contenu" name="body" defaultValue="Un texte bien trop long" maxLength={10} minRows={2} />
+          <button type="submit" className="w-fit">Publier</button>
+          {sent && <output>Envoyé</output>}
+        </form>
+      );
+    }
+    return <Demo />;
+  },
+  play: async ({ canvasElement }) => {
+    const c = within(canvasElement);
+    const { box, view } = await editor(canvasElement);
+    await userEvent.click(c.getByRole("button", { name: "Publier" }));
+    await waitFor(() => expect(c.getByText("Saisissez 10 caractères au plus.")).toBeVisible());
+    await expect(c.queryByText("Envoyé")).toBeNull();
+    await waitFor(() => expect(box).toHaveFocus());
+    view.dispatch({ changes: { from: 0, to: view.state.doc.length, insert: "Court" } });
+    await waitFor(() => expect(c.queryByText("Saisissez 10 caractères au plus.")).toBeNull());
+    await userEvent.click(c.getByRole("button", { name: "Publier" }));
+    await waitFor(() => expect(c.getByText("Envoyé")).toBeVisible());
   },
 };
 

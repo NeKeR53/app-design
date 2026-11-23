@@ -92,7 +92,7 @@ export const Groupe: Story = {
     const c = within(canvasElement);
     await expect(c.getByRole("group", { name: "Jours de livraison" })).toBeVisible();
     await userEvent.click(c.getByRole("button", { name: "Valider" }));
-    await waitFor(() => expect(c.getByText("Cochez au moins une case.")).toBeVisible());
+    await waitFor(() => expect(c.getByText("Choisissez une valeur pour « Jours de livraison ».")).toBeVisible());
     await userEvent.click(c.getByText("Mercredi"));
     await userEvent.click(c.getByRole("button", { name: "Valider" }));
     await waitFor(() => expect(c.getByTestId("sent")).toHaveTextContent("mer"));
@@ -110,7 +110,39 @@ export const Verification: Story = {
   play: async ({ canvasElement }) => {
     const c = within(canvasElement);
     await userEvent.click(c.getByRole("button", { name: "Valider" }));
-    await waitFor(() => expect(c.getByText("Cochez cette case pour continuer.")).toBeVisible());
+    await waitFor(() => expect(c.getByText("Cochez « Le client a accepté les conditions de vente ».")).toBeVisible());
     await expect(c.getByRole("checkbox")).toHaveFocus();
+  },
+};
+
+/** Lecture seule (D-342) : case grise, coche en `--fg-2`, cadenas ; focusable, un clic ne change rien. */
+export const LectureSeule: Story = {
+  render: () => (
+    <div className="flex flex-col gap-4">
+      <Checkbox isReadOnly defaultSelected>Facturé</Checkbox>
+      <CheckboxGroup label="Suivi" isReadOnly defaultValue={["mail"]}>
+        <Checkbox value="mail">Par e-mail</Checkbox>
+        <Checkbox value="sms">Par SMS</Checkbox>
+      </CheckboxGroup>
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    const c = within(canvasElement);
+    const billed = c.getByRole("checkbox", { name: "Facturé" });
+    await expect(billed).toHaveAttribute("aria-readonly", "true");
+    await userEvent.click(c.getByText("Facturé"));
+    await expect(billed).toBeChecked();
+    await userEvent.click(c.getByText("Par SMS"));
+    await expect(c.getByRole("checkbox", { name: "Par SMS" })).not.toBeChecked();
+    // Focusable au clavier ; Espace ne change rien.
+    (document.activeElement as HTMLElement | null)?.blur();
+    await userEvent.tab();
+    await expect(billed).toHaveFocus();
+    await userEvent.keyboard(" ");
+    await expect(billed).toBeChecked();
+    // Cadenas : après le libellé de la case seule, après le libellé du groupe (pas sur chaque case).
+    await expect(canvasElement.querySelectorAll('[title="Lecture seule"]')).toHaveLength(2);
+    const box = c.getByText("Facturé").closest("label")?.querySelector(".size-4");
+    await expect(box).toHaveClass("bg-surface-side", "text-fg-2");
   },
 };

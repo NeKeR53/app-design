@@ -20,7 +20,7 @@ Aucune.
 ## Options
 | Option | Type | Défaut | Description |
 |---|---|---|---|
-| `label`, `hideLabel`, `description`, `isRequired`, `validate`, `error`, `isDisabled`, `isReadOnly`, `name` | | | Comme `Field` (D-132). |
+| `label`, `hideLabel`, `description`, `isRequired`, `requiredMessage`, `validate`, `error`, `isDisabled`, `isReadOnly`, `name` | | | Comme `Field` (D-132). Groupe obligatoire sans choix : « Choisissez une valeur pour « <libellé> ». » (D-344). |
 | `value` / `defaultValue` / `onChange` | `string \| null` | `null` | Option choisie. |
 | `orientation` | `"vertical" \| "horizontal"` | `"vertical"` | Horizontal : 2 ou 3 options courtes, retour à la ligne (D-138). |
 | `Option` : `value`, `children` (libellé), `description`, `isDisabled` | | | Une option. |
@@ -31,13 +31,14 @@ Aucune.
 - Pas de `className` ni de `style`.
 
 ## États
-Comme `Checkbox` : non choisi, survol, choisi (fond `--accent`, point `--accent-fg` de 6 px), focus, erreur, désactivé (groupe ou option), lecture seule.
+Comme `Checkbox` : non choisi, survol, choisi (fond `--accent`, point `--accent-fg` de 6 px), focus, erreur, désactivé (groupe ou option). Lecture seule (D-342, comme D-131) : ronds en `--surface-side`, bord `--line`, point en `--fg-2`, pas de survol, cadenas après le libellé du groupe ; focusable, un clic ne change rien.
 
 ## Comportement
 | Règle | Niveau de réglage | Test (story) |
 |---|---|---|
 | Tab entre dans le groupe sur l'option choisie (ou la première) ; flèches : passent à l'option suivante et la choisissent | verrouillé | `Clavier` |
 | Vérification : un groupe obligatoire sans choix est en erreur à l'envoi (D-132) | verrouillé | `Verification` |
+| Lecture seule : rendu gris et cadenas, focusable, rien ne change (D-342) | verrouillé | `LectureSeule` |
 
 ## Contenu
 Libellé long : retour à la ligne, le rond reste en face de la première ligne.
@@ -64,7 +65,7 @@ Celles de `Field`.
 Contient des `RadioButtonGroup.Option`.
 
 ## Décisions
-D-007, D-022, D-130, D-132, D-135, D-138
+D-007, D-022, D-130, D-132, D-135, D-138 ; D-342, D-344
 
 ## Questions ouvertes
 Aucune.

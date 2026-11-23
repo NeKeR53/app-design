@@ -12,6 +12,7 @@ import { CenterMessage, ErrorBanner, ReloadBar, RetryButton } from "../../lib/re
 import { useFieldValue } from "./value";
 import { isEmptyValue, type ValueFormat } from "../../components/FormattedValue/FormattedValue";
 import { Button } from "react-aria-components/Button";
+import { Button as SocleButton } from "../../components/Button/Button";
 import { useMessages, useStoredState } from "../../provider/SocleProvider";
 import { buttonReset, cx, focusRing } from "../../lib/cx";
 import { ChevronDown, ChevronRight } from "../../icons";
@@ -120,6 +121,12 @@ export interface DrawerDeclarativeProps extends DetailPanelCommon {
   onRetry?: () => void;
   /** L'élément n'existe plus (D-184). */
   isNotFound?: boolean;
+  /** L'utilisateur n'a pas le droit de voir l'élément : cadenas, « Vous n'avez pas accès à cet élément » (D-351). */
+  isForbidden?: boolean;
+  /** Textes de l'accès refusé, à la place des textes par défaut. */
+  forbidden?: { title?: string; description?: string };
+  /** Avec `isForbidden` : bouton « Demander l'accès ». */
+  onRequestAccess?: () => void;
   /** Après la réussite d'une action de l'en-tête ou d'une section. */
   onActionDone?: (action: Action) => void;
   /** Une action a échoué ; l'app affiche la notification (D-116). */
@@ -133,7 +140,7 @@ const ActionHandlers = createContext<{ onDone?: (a: Action) => void; onError?: (
 
 export function Drawer(props: DrawerProps) {
   const m = useMessages();
-  if (props.header !== undefined || props.sections !== undefined || "isLoading" in props || "hasError" in props || "isNotFound" in props)
+  if (props.header !== undefined || props.sections !== undefined || "isLoading" in props || "hasError" in props || "isNotFound" in props || "isForbidden" in props)
     return <Declarative {...(props as DrawerDeclarativeProps)} />;
   const { children, emptyMessage } = props as DrawerComposedProps;
   if (!children || Children.count(children) === 0)
@@ -142,8 +149,21 @@ export function Drawer(props: DrawerProps) {
 }
 
 /* ---------- Forme déclarative (D-180 à D-184) ---------- */
-function Declarative({ header, sections, isLoading, hasError, onRetry, isNotFound, emptyMessage, onActionDone, onActionError }: DrawerDeclarativeProps) {
+function Declarative({ header, sections, isLoading, hasError, onRetry, isNotFound, isForbidden, forbidden, onRequestAccess, emptyMessage, onActionDone, onActionError }: DrawerDeclarativeProps) {
   const m = useMessages();
+  // Accès refusé : passe avant tout autre état, sans montrer de donnée (D-351).
+  if (isForbidden)
+    return (
+      <div className="font-sans">
+        <EmptyState
+          size="compact"
+          variant="forbidden"
+          title={forbidden?.title ?? m.forbiddenItem}
+          description={forbidden?.description ?? m.forbiddenText}
+          {...(onRequestAccess ? { action: <SocleButton size="sm" onPress={onRequestAccess}>{m.requestAccess}</SocleButton> } : {})}
+        />
+      </div>
+    );
   const hasData = header !== undefined || sections !== undefined;
   if (hasError && !hasData)
     return <CenterMessage alert title={m.detailLoadErrorTitle} text={m.detailLoadErrorText} action={<RetryButton onRetry={onRetry} />} />;

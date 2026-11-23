@@ -206,3 +206,42 @@ export const AvecTitre: Story = {
     await userEvent.keyboard("{Escape}");
   },
 };
+
+const onArchive = fn();
+const onExport = fn();
+
+/**
+ * Élément inactif avec une raison : atteint aux flèches, `aria-disabled`, raison sous le libellé
+ * et en description ; le choisir ne fait rien et laisse le menu ouvert.
+ */
+export const InactifAvecRaison: Story = {
+  render: () => (
+    <DropdownMenu label="Actions sur le rapport" trigger={<IconButton icon={<MoreHorizontal />} label="Plus d'actions" />}>
+      <DropdownMenu.Item label="Renommer…" onAction={onRename} />
+      <DropdownMenu.Item label="Archiver" onAction={onArchive} disabledReason="Un rapport en cours ne peut pas être archivé." />
+      <DropdownMenu.Item label="Exporter" onAction={onExport} />
+    </DropdownMenu>
+  ),
+  play: async ({ canvasElement }) => {
+    onArchive.mockClear();
+    const button = within(canvasElement).getByRole("button", { name: "Plus d'actions" });
+    button.focus();
+    await userEvent.keyboard("{ArrowDown}");
+    await waitFor(() => expect(document.activeElement).toHaveTextContent("Renommer"));
+    await userEvent.keyboard("{ArrowDown}");
+    const item = body().getByRole("menuitem", { name: "Archiver" });
+    await expect(document.activeElement).toBe(item);
+    await expect(item).toHaveAttribute("aria-disabled", "true");
+    await expect(item).toHaveAccessibleDescription("Un rapport en cours ne peut pas être archivé.");
+    await expect(item).toHaveTextContent("Un rapport en cours ne peut pas être archivé.");
+    await userEvent.keyboard("{Enter}");
+    await userEvent.click(item);
+    await expect(onArchive).not.toHaveBeenCalled();
+    await expect(body().getByRole("menu")).toBeInTheDocument();
+    // La flèche continue après l'élément inactif.
+    item.focus();
+    await userEvent.keyboard("{ArrowDown}");
+    await expect(document.activeElement).toHaveTextContent("Exporter");
+    await userEvent.keyboard("{Escape}");
+  },
+};

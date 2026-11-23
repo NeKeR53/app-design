@@ -128,6 +128,16 @@ export interface SocleMessages {
   invalidValue: string;
   choose: string;
   charCount: (n: number, max: number) => string;
+  /* Message d'un champ obligatoire vide, construit à partir du libellé (D-344) */
+  requiredText: (label: string) => string;
+  requiredPick: (label: string) => string;
+  requiredTick: (label: string) => string;
+  /* Limite de caractères dépassable (D-343) */
+  charsOver: (n: number) => string;
+  charsLeft: (n: number) => string;
+  tooLong: (max: number) => string;
+  /* Récapitulatif des erreurs de FormPage (D-341) */
+  errorSummary: (n: number) => string;
   /* ComboBox */
   showChoices: string;
   chosenItems: (label: string) => string;
@@ -320,11 +330,71 @@ export interface SocleMessages {
   loginIdentifierMissing: string;
   loginPasswordMissing: string;
   loginProviders: string;
+  /* Tableau, onglets, zones, accès refusé (D-345 à D-351) */
+  selectAllMatching: (n: string) => string;
+  allSelectedCount: (n: string) => string;
+  clearAllSelection: string;
+  columns: string;
+  rowsPerPage: string;
+  pageOfPages: (page: string, pages: string) => string;
+  modified: string;
+  skipToContent: string;
+  forbiddenList: string;
+  forbiddenItem: string;
+  forbiddenText: string;
+  requestAccess: string;
+  /* DatePicker, DateRangePicker (Nouveaux P1, D1 à D4) */
+  openCalendar: string;
+  previousMonth: string;
+  nextMonth: string;
+  previousYear: string;
+  nextYear: string;
+  /** Titre du calendrier, bouton qui ouvre le choix du mois : « novembre 2026, choisir le mois et l'année ». */
+  pickMonthYear: (current: string) => string;
+  /** Titre de la vue des mois, bouton qui revient aux jours : « 2026, revenir aux jours ». */
+  backToDays: (year: string) => string;
+  datePresets: string;
+  dateTooEarly: (min: string) => string;
+  dateTooLate: (max: string) => string;
+  dateUnavailable: string;
+  dateRangeReversed: string;
+  /* NumberField (Nouveaux P1, N1 à N3) */
+  increase: string;
+  decrease: string;
+  numberRange: (min: string, max: string) => string;
+  numberMin: (min: string) => string;
+  numberMax: (max: string) => string;
+  numberStep: (step: string) => string;
+  /* Alert (Nouveaux P1, A1 à A3) */
+  closeAlert: string;
+  /* FileUpload, FileList (Nouveaux P2-P3, F1 à F3) */
+  /** Début de la phrase de la zone, avant le bouton : « Déposez des fichiers ici ou ». */
+  fileDropHere: (multiple: boolean) => string;
+  /** Bouton de la zone : « choisir des fichiers ». */
+  fileChoose: (multiple: boolean) => string;
+  /** Aide de la zone : « PDF ou image, 10 Mo au plus ». */
+  fileHint: (types: string | undefined, maxSize: string | undefined) => string;
+  /** Famille de types dans l'aide : `image/*` → « image ». */
+  fileKind: (kind: "image" | "video" | "audio" | "text") => string;
+  fileTypeRejected: (type: string) => string;
+  fileTooLarge: (size: string, maxSize: string) => string;
+  fileOnlyOne: string;
+  fileList: string;
+  filesRejected: string;
+  fileStatusPending: string;
+  fileStatusUploading: (percent: string | undefined) => string;
+  fileStatusDone: string;
+  fileStatusError: string;
+  fileUploadingName: (name: string) => string;
+  fileAnnounce: (name: string, status: string) => string;
+  retryFile: (name: string) => string;
+  /* Card (Nouveaux P2-P3, C1) : ton d'une évolution, lu après le texte. */
+  cardDeltaTone: (tone: "positive" | "negative") => string;
 }
 
 const s = (n: number) => (n > 1 ? "s" : "");
 const num = (n: number) => n.toLocaleString("fr-FR");
-
+/** Libellé dans une phrase : initiale en minuscule, sauf sigle (« URL du site » reste tel quel). */
 export const frenchMessages: SocleMessages = {
   keyShift: "Maj",
   keyBackspace: "Retour arrière",
@@ -435,6 +505,13 @@ export const frenchMessages: SocleMessages = {
   invalidValue: "Vérifiez cette valeur.",
   choose: "Choisir…",
   charCount: (n, max) => `${n} / ${max}`,
+  requiredText: (l) => `Renseignez « ${l} ».`,
+  requiredPick: (l) => `Choisissez une valeur pour « ${l} ».`,
+  requiredTick: (l) => `Cochez « ${l} ».`,
+  charsOver: (n) => `${num(n)} caractère${s(n)} en trop`,
+  charsLeft: (n) => `${num(n)} caractère${s(n)} restant${s(n)}`,
+  tooLong: (max) => `Saisissez ${num(max)} caractère${s(max)} au plus.`,
+  errorSummary: (n) => `${n} erreur${s(n)} à corriger`,
 
   showChoices: "Afficher les choix",
   chosenItems: (l) => `${l} choisis`,
@@ -617,4 +694,52 @@ export const frenchMessages: SocleMessages = {
   loginIdentifierMissing: "Saisissez votre adresse e-mail ou votre identifiant.",
   loginPasswordMissing: "Saisissez votre mot de passe.",
   loginProviders: "Autres moyens de connexion",
+  selectAllMatching: (n) => `Sélectionner les ${n} éléments`,
+  allSelectedCount: (n) => `${n} éléments sélectionnés`,
+  clearAllSelection: "Effacer la sélection",
+  columns: "Colonnes",
+  rowsPerPage: "Lignes par page",
+  pageOfPages: (p, n) => `Page ${p} sur ${n}`,
+  modified: "modifié",
+  skipToContent: "Aller au contenu",
+  forbiddenList: "Vous n'avez pas accès à cette liste",
+  forbiddenItem: "Vous n'avez pas accès à cet élément",
+  forbiddenText: "Demandez l'accès à un administrateur.",
+  requestAccess: "Demander l'accès",
+  openCalendar: "Ouvrir le calendrier",
+  previousMonth: "Mois précédent",
+  nextMonth: "Mois suivant",
+  previousYear: "Année précédente",
+  nextYear: "Année suivante",
+  pickMonthYear: (c) => `${c}, choisir le mois et l'année`,
+  backToDays: (y) => `${y}, revenir aux jours`,
+  datePresets: "Raccourcis de période",
+  dateTooEarly: (min) => `Choisissez une date à partir du ${min}.`,
+  dateTooLate: (max) => `Choisissez une date jusqu'au ${max}.`,
+  dateUnavailable: "Cette date n'est pas disponible. Choisissez-en une autre.",
+  dateRangeReversed: "La date de fin doit suivre la date de début.",
+  increase: "Augmenter",
+  decrease: "Diminuer",
+  numberRange: (min, max) => `Saisissez une valeur de ${min} à ${max}.`,
+  numberMin: (min) => `Saisissez une valeur d'au moins ${min}.`,
+  numberMax: (max) => `Saisissez une valeur de ${max} au plus.`,
+  numberStep: (step) => `Saisissez une valeur par pas de ${step}.`,
+  closeAlert: "Fermer le message",
+  fileDropHere: (multiple) => (multiple ? "Déposez des fichiers ici ou" : "Déposez un fichier ici ou"),
+  fileChoose: (multiple) => (multiple ? "choisir des fichiers" : "choisir un fichier"),
+  fileHint: (types, max) => [types, max ? `${max} au plus` : ""].filter(Boolean).join(", "),
+  fileKind: (k) => ({ image: "image", video: "vidéo", audio: "audio", text: "texte" })[k],
+  fileTypeRejected: (t) => `Type non accepté : ${t}.`,
+  fileTooLarge: (size, max) => `Fichier trop lourd : ${size}, ${max} au plus.`,
+  fileOnlyOne: "Un seul fichier à la fois.",
+  fileList: "Fichiers",
+  filesRejected: "Fichiers refusés",
+  fileStatusPending: "En attente",
+  fileStatusUploading: (p) => (p ? `Envoi : ${p}` : "Envoi en cours"),
+  fileStatusDone: "Envoyé",
+  fileStatusError: "L'envoi a échoué.",
+  fileUploadingName: (n) => `Envoi de ${n}`,
+  fileAnnounce: (n, status) => `${n} : ${status}`,
+  retryFile: (n) => `Réessayer ${n}`,
+  cardDeltaTone: (t) => (t === "positive" ? "favorable" : "défavorable"),
 };

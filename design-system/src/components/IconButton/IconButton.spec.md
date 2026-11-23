@@ -25,6 +25,7 @@ Une seule, transparente : fond seulement au survol, à la pression ou en sélect
 | `shortcut` | `string` (ex. `"Mod+B"`) | aucun | Raccourci affiché dans l'info-bulle (D-032). Le raccourci lui-même est déclaré par l'app. |
 | `onPress` | `() => void` | — | Action. |
 | `isDisabled` | `boolean` | `false` | Désactivé : pas d'info-bulle (voir Tooltip). |
+| `disabledReason` | `string` | aucune | Inactif avec une raison : le bouton reste focusable, un clic ne fait rien ; l'info-bulle montre `label` puis la raison. Prime sur `isDisabled`. Exemple : « Réservé aux administrateurs. » |
 | `isPending` | `boolean` | `false` | Chargement : l'icône devient une roue, clics ignorés, focus et info-bulle gardés (D-107). Exemple : « Actualiser ». Sans effet sur une bascule. |
 | `isSelected` / `onChange` | `boolean` / `(v) => void` | non défini | Si fourni, le bouton devient une bascule (`aria-pressed`). Exemple : afficher le panneau de détail. |
 | `tooltipPlacement` | `"top" \| "bottom" \| "start" \| "end"` | `"bottom"` | Côté préféré de l'info-bulle. |
@@ -45,6 +46,7 @@ Une seule, transparente : fond seulement au survol, à la pression ou en sélect
 | Sélectionné (bascule) | Fond `--hover` (clair), icône en `--fg` (D-034). |
 | Sélectionné + survol | Fond `--selected` (plus foncé) : le survol reste visible (D-034). |
 | Désactivé | Opacité 40 %, aucun survol, pas d'info-bulle. |
+| Inactif avec une raison | Opacité 40 %, ni survol ni pression ; anneau de focus visible ; info-bulle `label` puis la raison, en `--tip-fg-2`. |
 | Chargement | Une roue de 14 px remplace l'icône ; aucun survol ; `aria-disabled` (D-107). |
 
 ## Comportement
@@ -53,6 +55,7 @@ Une seule, transparente : fond seulement au survol, à la pression ou en sélect
 | L'info-bulle affiche `label`, et `shortcut` s'il existe (D-031, D-032) | verrouillé | `InfoBulle` |
 | Bascule : un clic inverse `isSelected` et met à jour `aria-pressed` | verrouillé | `Bascule` |
 | Désactivé : ni action, ni info-bulle | verrouillé | `Desactive` |
+| `disabledReason` : focusable, `aria-disabled`, aucune action ; info-bulle `label` puis raison au survol et au focus ; la raison est la description | verrouillé | `InactifAvecRaison` |
 | Chargement : clics ignorés, focus gardé, `aria-disabled`, attente annoncée (D-107) | verrouillé | `Chargement` |
 | Sélectionné : le survol fonce le fond, pour rester visible (D-034) | verrouillé | `Bascule` |
 | Changements d'état sans transition de couleur supérieure à 120 ms (D-014) | verrouillé | `Etats` |
@@ -70,6 +73,7 @@ Focusable avec Tab. Entrée ou Espace déclenche l'action. Le focus affiche l'in
 ## Accessibilité
 - Rôle `button`, nom accessible = `label`.
 - Bascule : `aria-pressed`.
+- Inactif avec une raison : `aria-disabled="true"` (pas `disabled`) ; le nom reste `label`, la raison est la description (`aria-describedby`, liée même info-bulle fermée).
 - Chargement : `aria-disabled="true"` et un `progressbar` nommé « Chargement… » (dictionnaire `messages`).
 - Cible d'au moins 24 × 24 px (WCAG 2.2, critère 2.5.8).
 - Contraste de l'icône d'au moins 3:1 sur le fond, dans tous les états actifs.

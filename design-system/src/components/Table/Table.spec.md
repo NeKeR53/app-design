@@ -27,10 +27,12 @@ Variante signature d'un thème d'organisation (`theme.signature.tableHeader`, D-
 ## Options
 | Option | Type | Défaut | Description |
 |---|---|---|---|
-| `columns` | `{ id, label, align?, width?, sortable? }[]` | — (obligatoire) | Colonnes. `align: "end"` pour les nombres. Une `width` sous 80 px est aussi la largeur minimale, 32 px au moins (D-274). |
+| `columns` | `{ id, label, align?, width?, sortable?, required? }[]` | — (obligatoire) | Colonnes. `align: "end"` pour les nombres. Une `width` sous 80 px est aussi la largeur minimale, 32 px au moins (D-274). `required` : jamais masquée par `hiddenColumns` (D-346). |
 | `rows` | `{ id, … }[]` | — (obligatoire) | Lignes. |
 | `selectionMode` | `"none" \| "single" \| "multiple"` | `"single"` | Sélection. |
-| `sortDescriptor` / `onSortChange` | — | aucun | Tri courant. |
+| `sortDescriptor` / `onSortChange` | — | aucun | Tri courant. Avec `allowsUnsort`, `onSortChange` reçoit `null` pour l'ordre d'origine. |
+| `allowsUnsort` | `boolean` | `false` | Tri à trois états : croissant, décroissant, puis ordre d'origine (D-347). |
+| `hiddenColumns` | `Iterable<string>` | aucune | Colonnes masquées, par `id`. La première colonne et les colonnes `required` restent affichées (D-346). |
 | `searchTerms` / `onClearSearch` | `string[]` / `() => void` | aucun | Critères de la recherche en cours, pour l'état « aucun résultat » (D-086) et la mise en gras du texte trouvé (D-087). |
 | `onAction` | `(id) => void` | — | Ouverture d'une ligne (double-clic ou Entrée). |
 | `rowActions` | `(row) => { icon, label, onPress }[]` (2 au plus) | aucune | Actions de ligne, au survol ; « … » et le clic droit ouvrent le même menu (D-066). |
@@ -65,6 +67,8 @@ Variante signature d'un thème d'organisation (`theme.signature.tableHeader`, D-
 |---|---|---|
 | Un clic sélectionne la ligne et affiche son détail ; un double-clic ou Entrée l'ouvre dans une vue fermable (layout-rules, D-021) | verrouillé | `Selection` |
 | Tri : un clic sur un en-tête triable trie ; un second clic inverse ; une flèche indique le sens | verrouillé | `Tri` |
+| Tri à trois états : un troisième clic rend l'ordre d'origine (`onSortChange(null)`), sans flèche ni `aria-sort` ; l'état, ordre d'origine compris, est mémorisé (D-347, D-007) | réglable par l'app (`allowsUnsort`) | `TriTroisEtats` |
+| Colonnes masquées : `hiddenColumns` retire les colonnes, sauf la première et les `required` (D-346) | réglable par l'app (`hiddenColumns`) | `ColonnesMasquees` |
 | En-tête collé en haut quand le tableau défile | verrouillé | `Defilement` |
 | Le tri et la largeur des colonnes sont mémorisés par tableau (D-007) | verrouillé | `Memorisation` |
 | Colonnes redimensionnables de 80 à 480 px ; double-clic : largeur par défaut ; flèches au clavier par 16 px ; la colonne principale prend la place restante (D-067) | verrouillé | `Redimension` |
@@ -96,7 +100,7 @@ Hauteur de ligne et d'en-tête : `--row-h` (34 px en web, 28 px en desktop) (D-0
 - Sur une ligne de groupe : Entrée ou Espace replient ou déplient (D-272).
 
 ## Accessibilité
-- Rôle `grid` (React Aria `Table`), avec `aria-sort` sur la colonne triée.
+- Rôle `grid` (React Aria `Table`), avec `aria-sort` sur la colonne triée ; sans tri (ordre d'origine), aucune colonne ne porte `aria-sort` croissant ou décroissant.
 - La poignée de largeur a le rôle `separator`, nommée « Largeur de la colonne <libellé> ».
 - La case « tout cocher » de l'en-tête a un nom : « Tout sélectionner ».
 - Les actions de ligne ont un nom qui reprend la ligne : « Archiver Rapport trimestriel ».

@@ -32,3 +32,9 @@ export const choiceDescription = "text-sm text-fg-3";
 /** Liste des options d'un groupe (D-138). */
 export const groupList = (orientation: "vertical" | "horizontal" | undefined) =>
   cx("flex", orientation === "horizontal" ? "flex-col gap-1 tablet:flex-row tablet:flex-wrap tablet:gap-x-5" : "flex-col gap-1");
+
+/**
+ * Case ou rond en lecture seule (D-342, comme D-131) : fond `--surface-side`, bord `--line`,
+ * marque en `--fg-2` au lieu de l'accent, pas de survol ; le focus clavier reste visible.
+ */
+export const indicatorReadOnly = cx("socle-box grid size-4 shrink-0 place-items-center border border-line bg-surface-side text-fg-2", alignFirstLine(16), indicatorFocus);

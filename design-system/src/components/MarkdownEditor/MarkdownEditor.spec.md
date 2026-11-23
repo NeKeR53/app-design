@@ -29,7 +29,7 @@ Les options communes de `Field` (`label`, `hideLabel`, `description`, `error`, `
 | `onBlur` | `() => void` | — | Sortie du champ. |
 | `isReadOnly` | `boolean` | `false` | Lecture seule (D-131, D-305). |
 | `placeholder` | `string` | — | Texte d'attente. |
-| `maxLength` | `number` | — | Longueur maximale ; affiche le compteur ; la saisie s'arrête à la limite. |
+| `maxLength` | `number` | — | Longueur maximale, dépassable ; affiche le compteur ; au-delà, refusée en quittant le champ et à l'envoi du formulaire (D-343). |
 | `minRows` / `maxRows` | `number` | `6` / `20` | Hauteur du texte en lignes ; au-delà, il défile (D-305). |
 | `fill` | `boolean` | `false` | Occupe la hauteur du conteneur. |
 | `preview` | `"toggle" \| "split"` | — | Aperçu (D-309). |
@@ -61,7 +61,7 @@ Les options communes de `Field` (`label`, `hideLabel`, `description`, `error`, `
 | Raccourcis Mod+B, I, E, K, Mod+Alt+1…3, Mod+Maj+7, 8, 9 (D-307) | verrouillé | `Raccourcis` |
 | Entrée continue une liste, puis la quitte sur un élément vide (deux appuis) ; Tab quitte l'éditeur (D-307) | verrouillé | `Listes` |
 | Coloration aux tokens, clair et sombre (D-306) | verrouillé | `Coloration` |
-| Compteur et limite `maxLength` | par page | `Compteur` |
+| Compteur et limite `maxLength` dépassable : pas d'arrêt de la saisie ; au-delà, « n caractères en trop » en `--danger`, lu après 1 s de pause ; en quittant le champ, « Saisissez n caractères au plus. » ; dans un `<form>`, l'envoi est refusé et le focus va au texte (D-343) | par page | `Compteur`, `LimiteEnvoi` |
 | Désactivé, lecture seule, erreur (D-305) | par page | `Etats` |
 | Aperçu en bascule ou côte à côte (D-309) | par page | `Apercu` |
 | Image collée : attente, puis lien ; échec : message (D-308) | par page | `ImageCollee` |
@@ -96,7 +96,7 @@ Comme les champs : `FormPage`, formulaire en `Modal` (taille `lg`), ligne de ré
 Contient `IconButton`, `Separator`, `Markdown` (aperçu), les pièces de `Field`. Ne se met pas dans un `Fieldset` avec d'autres éditeurs.
 
 ## Décisions
-D-006, D-032, D-089, D-130, D-131, D-132, D-300, D-305, D-306, D-307, D-308, D-309
+D-006, D-032, D-089, D-130, D-131, D-132, D-300, D-305, D-306, D-307, D-308, D-309; D-343
 
 ## Questions ouvertes
 Aucune.

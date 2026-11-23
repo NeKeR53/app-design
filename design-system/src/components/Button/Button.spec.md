@@ -38,6 +38,7 @@ Variante signature d'un thème d'organisation (`theme.signature.buttonSecondary`
 | `onPress` | `() => void` | — | Action. |
 | `isPending` | `boolean` | `false` | Chargement : roue, clics ignorés, focus gardé, attente annoncée (D-105). |
 | `isDisabled` | `boolean` | `false` | Désactivé. |
+| `disabledReason` | `string` | aucune | Inactif avec une raison (« Complétez le titre pour publier. ») : le bouton reste focusable, un clic ne fait rien, l'info-bulle et le lecteur d'écran donnent la raison. Prime sur `isDisabled`. Sans raison : comportement de `isDisabled`. |
 | `type` | `"button" \| "submit" \| "reset"` | `"button"` | Rôle dans un formulaire. |
 | `form` | `string` | aucun | Identifiant du formulaire à envoyer, quand le bouton est hors du `<form>` (pied de FormPage, de modale). |
 | `aria-label` | `string` | aucun | Nom accessible plus précis quand le libellé seul est ambigu (« Approuver Projet X »). Il commence par le libellé visible (WCAG 2.5.3). |
@@ -59,6 +60,7 @@ Variante signature d'un thème d'organisation (`theme.signature.buttonSecondary`
 | Pressé | `primary` : mélange à 28 %. `secondary` et `subtle` : fond `--selected`. `danger` : mélange plus marqué. |
 | Focus clavier | Anneau `--accent`, 2 px, décalé de 1 px. |
 | Désactivé | Opacité 40 %, ni survol ni action. |
+| Inactif avec une raison | Comme désactivé (opacité 40 %, ni survol ni pression) ; anneau de focus visible ; info-bulle de la raison au survol et au focus, au-dessus du bouton. |
 | Chargement | La roue remplace l'icône : la largeur ne change pas. Sans icône, la roue se place devant le libellé et le bouton s'élargit de 22 px. Ni survol ni action (D-105). |
 
 ## Comportement
@@ -68,6 +70,7 @@ Variante signature d'un thème d'organisation (`theme.signature.buttonSecondary`
 | Chargement : clics ignorés, focus gardé, `aria-disabled`, attente annoncée au lecteur d'écran (D-105) | verrouillé | `Chargement` |
 | Chargement avec icône : la largeur du bouton ne change pas (D-105) | verrouillé | `Chargement` |
 | Désactivé : aucune action | verrouillé | `Desactive` |
+| `disabledReason` : focusable, `aria-disabled`, aucune action (ni clic, ni Entrée, ni Espace, ni envoi de formulaire), raison en info-bulle et en description | verrouillé | `InactifAvecRaison` |
 | `type="submit"` envoie le formulaire, même hors du `<form>` avec `form` | verrouillé | `Formulaire` |
 | Changements d'état sans transition de couleur supérieure à 120 ms (D-014) | verrouillé | `Etats` |
 
@@ -85,11 +88,12 @@ Variante signature d'un thème d'organisation (`theme.signature.buttonSecondary`
 Icône de 16 px dans les deux tailles, écart de 6 px avec le libellé (D-101).
 
 ## Clavier
-Focusable avec Tab. Entrée ou Espace déclenche l'action. Pendant le chargement, le bouton garde le focus.
+Focusable avec Tab. Entrée ou Espace déclenche l'action. Pendant le chargement, le bouton garde le focus. Inactif avec une raison : Tab l'atteint, Entrée et Espace ne font rien.
 
 ## Accessibilité
 - Rôle `button`, nom accessible = libellé visible, ou `aria-label` s'il est fourni.
 - Chargement : `aria-disabled="true"` et un indicateur `progressbar` nommé « Chargement… » (dictionnaire `messages`, D-089). L'entrée et la sortie de l'attente sont annoncées au lecteur d'écran quand le bouton a le focus (React Aria).
+- Inactif avec une raison : `aria-disabled="true"` (pas `disabled`), la raison est la description accessible (`aria-describedby`, liée même info-bulle fermée). Un `type="submit"` devient `button` : rien n'envoie le formulaire.
 - Contraste du libellé d'au moins 4,5:1 dans toutes les variantes et les deux modes : `--danger-fg` est blanc en clair et sombre en mode sombre (D-104).
 - Cible d'au moins `--target-min` : 24 px, 44 px sur mobile.
 
@@ -107,7 +111,7 @@ Le bouton ne montre pas d'erreur. Après un échec, l'écran l'affiche (notifica
 - Jamais dans la barre supérieure (`IconButton` seulement), ni dans une ligne de liste, de tableau ou de propriété.
 
 ## Composition
-Contient une icône facultative et un indicateur d'attente. Boutons voisins espacés de 8 px. Se combine avec `IconButton` dans une barre d'actions ; ne contient ni `Tooltip` ni `DropdownMenu`.
+Contient une icône facultative et un indicateur d'attente. Boutons voisins espacés de 8 px. Se combine avec `IconButton` dans une barre d'actions ; ne contient pas de `DropdownMenu`. Contient un `Tooltip` seulement avec `disabledReason`.
 
 ## Décisions
 D-011, D-014, D-028, D-040, D-059, D-089, D-100, D-101, D-102, D-103, D-104, D-105, D-106, D-338

@@ -7,16 +7,18 @@ import type { Key, SortDescriptor } from "react-aria-components";
 import { Button } from "../../components/Button/Button";
 import { EmptyState } from "../../components/EmptyState/EmptyState";
 import { FormattedValue, isEmptyValue, isRichValue, useFormatValue, valueLayout, valueSortKey, type ValueFormat } from "../../components/FormattedValue/FormattedValue";
-import { IconButton } from "../../components/IconButton/IconButton";
+import { Link } from "../../components/Link/Link";
+import { Pagination } from "../../components/Pagination/Pagination";
 import { List, type ListItemData } from "../../components/List/List";
 import { DropdownMenu } from "../../components/DropdownMenu/DropdownMenu";
 import { SearchInput } from "../../components/SearchInput/SearchInput";
 import { Select } from "../../components/Select/Select";
 import { Table, type TableColumn, type TableRowAction } from "../../components/Table/Table";
-import { ChevronLeft, ChevronRight, MoreHorizontal } from "../../icons";
+import { MoreHorizontal } from "../../icons";
 import { norm } from "../../lib/results";
 import { ActionBar, arrangeActions, useActionRunner, type Action } from "../../patterns/ActionBar/ActionBar";
 import { useMessages, useStoredState } from "../../provider/SocleProvider";
+import { cx } from "../../lib/cx";
 
 /** Une colonne, décrite par sa donnée : le type fixe format, alignement, largeur et tri (D-172). */
 export interface ListPageColumn<Row> extends ValueFormat {
@@ -28,6 +30,8 @@ export interface ListPageColumn<Row> extends ValueFormat {
   value?: (row: Row) => unknown;
   /** Défaut : vrai. */
   sortable?: boolean;
+  /** Toujours affichée : le menu « Colonnes » ne la masque pas. La première colonne l'est toujours. */
+  required?: boolean;
 }
 
 /** Un filtre de la barre : un `Select` « Tous les … » suivi des options (D-174). */
@@ -53,7 +57,14 @@ export interface ListPageState {
   filters: Readonly<Record<string, string>>;
   sort: ListPageSort | null;
   page: number;
+  /** Avec `pagination.pageSizes` seulement : lignes par page choisies. */
+  pageSize?: number;
+  /** `remote` et `allowSelectAll` : l'utilisateur a choisi « Sélectionner les N éléments ». */
+  selection?: "all";
 }
+
+/** Portée d'une action groupée : les lignes cochées, ou tous les éléments qui correspondent. */
+export type ListPageSelection = "rows" | "all";
 
 export interface ListPageProps<Row extends { id: string }> {
   /** Titre de la page : « Demandes ». */
@@ -79,14 +90,32 @@ export interface ListPageProps<Row extends { id: string }> {
   /** Ligne sélectionnée (panneau de détail). */
   selectedId?: string | null;
   onSelect?: (row: Row | null) => void;
-  /** Actions groupées sur les lignes cochées (`multiple`) (D-178). */
-  selectionActions?: (rows: ReadonlyArray<Row>) => ReadonlyArray<Action>;
+  /**
+   * Actions groupées sur les lignes cochées (`multiple`) (D-178). `selection` vaut `"all"` après
+   * « Sélectionner les N éléments » : `rows` sont alors les lignes connues ; en `remote`, l'app agit sur tout.
+   */
+  selectionActions?: (rows: ReadonlyArray<Row>, selection: ListPageSelection) => ReadonlyArray<Action>;
+  /** Après « tout cocher » sur la page, propose « Sélectionner les N éléments » quand il en reste ailleurs. Défaut : faux. */
+  allowSelectAll?: boolean;
+  /** Menu « Colonnes » dans la barre : l'utilisateur masque des colonnes ; choix mémorisé. Défaut : faux. */
+  allowColumnChoice?: boolean;
+  /** Tri à trois états : croissant, décroissant, puis ordre d'origine. Défaut : faux. */
+  allowsUnsort?: boolean;
   /** Ouverture : double-clic ou Entrée (D-021). */
   onOpen?: (row: Row) => void;
-  /** Pied de liste (D-175). Défaut : `{ mode: "more", pageSize: 50 }`. */
-  pagination?: { mode?: "more" | "pages"; pageSize?: number };
+  /**
+   * Pied de liste (D-175). Défaut : `{ mode: "more", pageSize: 50 }`. `pageSizes` (mode `pages`) :
+   * choix des lignes par page, mémorisé ; `true` vaut `[25, 50, 100]`.
+   */
+  pagination?: { mode?: "more" | "pages"; pageSize?: number; pageSizes?: true | ReadonlyArray<number> };
   /** État vide (D-176). */
   empty: { title: string; description?: string; icon?: ReactNode };
+  /** L'utilisateur n'a pas le droit de voir la liste : état « accès refusé » à la place de tout le reste. */
+  isForbidden?: boolean;
+  /** Textes de l'accès refusé. Défaut : « Vous n'avez pas accès à cette liste », « Demandez l'accès à un administrateur. » */
+  forbidden?: { title?: string; description?: string };
+  /** Avec `isForbidden` : bouton « Demander l'accès ». */
+  onRequestAccess?: () => void;
   /** Rechargement avec des lignes déjà là (D-084). */
   isLoading?: boolean;
   /** Le dernier chargement a échoué (D-085). */
@@ -120,9 +149,15 @@ export function ListPage<Row extends { id: string }>({
   selectedId,
   onSelect,
   selectionActions,
+  allowSelectAll = false,
+  allowColumnChoice = false,
+  allowsUnsort = false,
   onOpen,
   pagination,
   empty,
+  isForbidden = false,
+  forbidden,
+  onRequestAccess,
   isLoading = false,
   hasError = false,
   onRetry,
@@ -137,8 +172,14 @@ export function ListPage<Row extends { id: string }>({
   const fmt = useFormatValue();
   const key = `listpage:${storageId ?? title}`;
   const mode = pagination?.mode ?? "more";
-  const pageSize = Math.max(1, pagination?.pageSize ?? 50);
+  // Lignes par page au choix (mode `pages`), mémorisées par page (D-177).
+  const sizes = mode === "pages" && pagination?.pageSizes ? (pagination.pageSizes === true ? [25, 50, 100] : [...pagination.pageSizes]) : null;
+  const [storedSize, setStoredSize] = useStoredState<number | null>(`${key}:pageSize`, null);
+  const baseSize = pagination?.pageSize ?? 50;
+  const pageSize = Math.max(1, sizes ? (storedSize && sizes.includes(storedSize) ? storedSize : sizes.includes(baseSize) ? baseSize : (sizes[0] ?? baseSize)) : baseSize);
   const nf = useMemo(() => new Intl.NumberFormat(m.locale), [m.locale]);
+  // Colonnes masquées par l'utilisateur, mémorisées par page (D-007).
+  const [hiddenCols, setHiddenCols] = useStoredState<string[]>(`${key}:hidden`, []);
 
   // Filtres et tri mémorisés, recherche oubliée (D-177).
   const [storedFilters, setStoredFilters] = useStoredState<Record<string, string>>(`${key}:filters`, {});
@@ -147,6 +188,8 @@ export function ListPage<Row extends { id: string }>({
   const [searchVersion, setSearchVersion] = useState(0);
   const [page, setPage] = useState(1);
   const [checked, setChecked] = useState<ReadonlySet<string>>(new Set());
+  // « Sélectionner les N éléments » : tous les éléments qui correspondent, chargés ou non.
+  const [allSelected, setAllSelected] = useState(false);
 
   const known = new Set(filters.map((f) => f.id));
   const activeFilters = Object.fromEntries(Object.entries(storedFilters).filter(([id, v]) => v && known.has(id)));
@@ -156,7 +199,12 @@ export function ListPage<Row extends { id: string }>({
   const byId = new Map(columns.map((c) => [c.id, c]));
 
   // État signalé à l'app à chaque changement (mode `remote` surtout).
-  const state = JSON.stringify({ query, filters: activeFilters, sort, page });
+  const state = JSON.stringify({ query, filters: activeFilters, sort, page, ...(sizes ? { pageSize } : {}), ...(remote && allSelected ? { selection: "all" } : {}) });
+  // Une recherche ou un filtre change ce que « tous » désigne : la sélection « tout » s'efface.
+  const criteriaKey = JSON.stringify({ query, filters: activeFilters });
+  useEffect(() => {
+    setAllSelected(false);
+  }, [criteriaKey]);
   const reported = useRef(state);
   const report = useRef(onStateChange);
   report.current = onStateChange;
@@ -212,7 +260,7 @@ export function ListPage<Row extends { id: string }>({
         return c * dir;
       })
       .map((x) => x.row);
-  }, [rows, remote, query, state, columns, filters, search, fmt, m.locale]);
+  }, [rows, remote, query, criteriaKey, sort, columns, filters, search, fmt, m.locale]);
 
   const total = remote ? (totalProp ?? matching.length) : matching.length;
   const pages = Math.max(1, Math.ceil(total / pageSize));
@@ -230,24 +278,12 @@ export function ListPage<Row extends { id: string }>({
     });
   }, [matching]);
 
-  // Pied « pages » : une nouvelle page s'affiche depuis son début. Le focus reste dans la pagination,
-  // même quand le bouton pressé devient inactif (première ou dernière page).
+  // Pied « pages » : une nouvelle page s'affiche depuis son début. `Pagination` garde le focus (D-359).
   const listRef = useRef<HTMLDivElement>(null);
-  const pagerRef = useRef<HTMLElement>(null);
-  const pagerPressed = useRef(false);
-  const goTo = (p: number) => {
-    pagerPressed.current = true;
-    setPage(p);
-  };
   useEffect(() => {
     listRef.current?.querySelectorAll<HTMLElement>("*").forEach((el) => {
       if (el.scrollTop > 0) el.scrollTop = 0;
     });
-    if (!pagerPressed.current) return;
-    pagerPressed.current = false;
-    const nav = pagerRef.current;
-    const active = document.activeElement as HTMLButtonElement | null;
-    if (nav && (!active || !nav.contains(active) || active.disabled)) nav.querySelector<HTMLElement>("button:not([disabled])")?.focus();
   }, [current]);
 
   const firstLoad = rows === undefined;
@@ -282,10 +318,13 @@ export function ListPage<Row extends { id: string }>({
   const multiple = selectionMode === "multiple";
   const selectionProps = {
     selectionMode,
-    selectedKeys: multiple ? [...checked] : selectedId ? [selectedId] : [],
+    selectedKeys: multiple ? (allSelected ? shown.map((r) => r.id) : [...checked]) : selectedId ? [selectedId] : [],
     onSelectionChange: (keys: Set<Key>) => {
       const ids = [...keys].map(String);
-      if (multiple) setChecked(new Set(ids));
+      if (multiple) {
+        setChecked(new Set(ids));
+        setAllSelected(false);
+      }
       onSelect?.(ids.length === 1 ? (rowById.get(ids[0]!) ?? null) : null);
     },
     ...(onOpen ? { onAction: (id: string) => { const r = rowById.get(id); if (r) onOpen(r); } } : {}),
@@ -328,8 +367,13 @@ export function ListPage<Row extends { id: string }>({
   } else {
     const tableColumns: TableColumn[] = columns.map((c, i) => {
       const l = valueLayout(c.type);
-      return { id: c.id, label: c.label, align: l.align, sortable: c.sortable ?? true, ...(i > 0 && l.width ? { width: l.width } : {}) };
+      return { id: c.id, label: c.label, align: l.align, sortable: c.sortable ?? true, ...(i > 0 && l.width ? { width: l.width } : {}), ...(c.required ? { required: true } : {}) };
     });
+    // Tri : `null` (trois états, `allowsUnsort`) rend l'ordre d'origine.
+    const onSort = (d: SortDescriptor | null) => {
+      setSort(d ? { column: String(d.column), direction: d.direction } : null);
+      setPage(1);
+    };
     list = (
       <Table
         label={title}
@@ -339,40 +383,76 @@ export function ListPage<Row extends { id: string }>({
         renderCell={(row, id) => cellText(row, byId.get(id)!)}
         {...selectionProps}
         {...(sort ? { sortDescriptor: sort as SortDescriptor } : {})}
-        onSortChange={(d) => {
-          setSort({ column: String(d.column), direction: d.direction });
-          setPage(1);
-        }}
+        {...(allowsUnsort ? { allowsUnsort: true as const, onSortChange: onSort } : { onSortChange: onSort })}
+        {...(allowColumnChoice ? { hiddenColumns: hiddenCols } : {})}
         {...(rowActions ? { rowActions: toRowActions } : {})}
       />
     );
   }
 
   const searchLabel = typeof search === "object" && search.label ? search.label : title.toLocaleLowerCase(m.locale);
-  const checkedRows = [...checked].map((id) => rowById.get(id)).filter((r): r is Row => Boolean(r));
+  const checkedRows = allSelected ? matching : [...checked].map((id) => rowById.get(id)).filter((r): r is Row => Boolean(r));
+  const clearChecked = () => {
+    setChecked(new Set());
+    setAllSelected(false);
+  };
+  // Toute la page cochée et d'autres éléments ailleurs : « Sélectionner les N éléments » (D-345).
+  const canSelectAll = allowSelectAll && multiple && !allSelected && shown.length > 0 && total > shown.length && shown.every((r) => checked.has(r.id));
+  const countText = allSelected ? m.allSelectedCount(nf.format(total)) : m.selectedCount(nf.format(checkedRows.length));
+
+  // Menu « Colonnes » : une case par colonne ; la première et les `required` restent cochées (D-346).
+  const columnsMenu =
+    allowColumnChoice && layout === "table" ? (
+      <span className="ml-auto">
+        <DropdownMenu
+          label={m.columns}
+          placement="bottom end"
+          trigger={
+            <Button variant="subtle" size="sm">
+              {m.columns}
+            </Button>
+          }
+        >
+          <DropdownMenu.Section
+            selectionMode="multiple"
+            selectedKeys={columns.filter((c, i) => i === 0 || c.required || !hiddenCols.includes(c.id)).map((c) => c.id)}
+            onSelectionChange={(keys) => setHiddenCols(columns.filter((c, i) => i > 0 && !c.required && !keys.has(c.id)).map((c) => c.id))}
+          >
+            {columns.map((c, i) => (
+              <DropdownMenu.Item key={c.id} id={c.id} label={c.label} {...(i === 0 || c.required ? { isDisabled: true } : {})} />
+            ))}
+          </DropdownMenu.Section>
+        </DropdownMenu>
+      </span>
+    ) : null;
 
   const toolbar =
     multiple && checkedRows.length > 0 ? (
-      <div role="toolbar" aria-label={m.selectedCount(nf.format(checkedRows.length))} className="flex min-h-(--row-h) flex-wrap items-center gap-2 rounded-md bg-field pr-0.5 pl-(--pad)">
+      <div role="toolbar" aria-label={countText} className="flex min-h-(--row-h) flex-wrap items-center gap-2 rounded-md bg-field pr-0.5 pl-(--pad)">
         <span className="text-sm font-medium text-fg" aria-live="polite">
-          {m.selectedCount(nf.format(checkedRows.length))}
+          {countText}
         </span>
-        <Button variant="subtle" size="sm" onPress={() => setChecked(new Set())}>
-          {m.clearSelection}
+        {canSelectAll && (
+          <span className="text-sm">
+            <Link onPress={() => setAllSelected(true)}>{m.selectAllMatching(nf.format(total))}</Link>
+          </span>
+        )}
+        <Button variant="subtle" size="sm" onPress={clearChecked}>
+          {allSelected ? m.clearAllSelection : m.clearSelection}
         </Button>
         <span className="ml-auto">
           <ActionBar
             zone="toolbar"
-            actions={selectionActions ? selectionActions(checkedRows) : []}
+            actions={selectionActions ? selectionActions(checkedRows, allSelected ? "all" : "rows") : []}
             {...(onActionError ? { onError: onActionError } : {})}
             onDone={(a) => {
-              setChecked(new Set());
+              clearChecked();
               onActionDone?.(a);
             }}
           />
         </span>
       </div>
-    ) : search || filters.length ? (
+    ) : search || filters.length || columnsMenu ? (
       <div className="flex flex-wrap items-center gap-2">
         {search && (
           <SearchInput
@@ -395,6 +475,7 @@ export function ListPage<Row extends { id: string }>({
             onChange={(v) => setFilter(f.id, v)}
           />
         ))}
+        {columnsMenu}
       </div>
     ) : null;
 
@@ -402,6 +483,25 @@ export function ListPage<Row extends { id: string }>({
   if (!firstLoad && shown.length > 0) {
     // Tout est affiché : seulement le compteur (D-175).
     const fits = mode === "pages" ? total <= pageSize : shown.length >= total;
+    // Choix des lignes par page (D-348) : utile dès que la liste dépasse la plus petite taille.
+    const sizeChoice =
+      sizes && total > Math.min(...sizes) ? (
+        <span className="ml-auto flex items-center gap-2">
+          <span aria-hidden>{m.rowsPerPage}</span>
+          <Select
+            label={m.rowsPerPage}
+            hideLabel
+            width="xs"
+            options={sizes.map((n) => ({ id: String(n), label: nf.format(n) }))}
+            value={String(pageSize)}
+            onChange={(v) => {
+              if (!v) return;
+              setStoredSize(Number(v));
+              setPage(1);
+            }}
+          />
+        </span>
+      ) : null;
     footer = (
       <div className="flex min-h-(--bar-h) items-center gap-3 border-t border-line px-(--pad) text-sm text-fg-3 tabular-nums">
         <span aria-live="polite">
@@ -416,11 +516,11 @@ export function ListPage<Row extends { id: string }>({
             {m.showMore}
           </Button>
         )}
+        {sizeChoice}
         {!fits && mode === "pages" && (
-          <nav ref={pagerRef} aria-label={m.pagination} className="ml-auto flex items-center gap-0.5">
-            <IconButton icon={<ChevronLeft />} label={m.previousPage} isDisabled={current <= 1} onPress={() => goTo(current - 1)} />
-            <IconButton icon={<ChevronRight />} label={m.nextPage} isDisabled={current >= pages} onPress={() => goTo(current + 1)} />
-          </nav>
+          <div className={cx("flex", !sizeChoice && "ml-auto")}>
+            <Pagination page={current} pageCount={pages} onPageChange={setPage} />
+          </div>
         )}
       </div>
     );
@@ -433,11 +533,18 @@ export function ListPage<Row extends { id: string }>({
           <h1 className="m-0 text-lg font-heading">{title}</h1>
           {description && <p className="m-0 mt-0.5 text-sm text-fg-2">{description}</p>}
         </div>
-        {actions.length > 0 && (
+        {actions.length > 0 && !isForbidden && (
           <ActionBar zone="header" actions={isEmpty ? actions.map((a) => (a.primary ? { ...a, isHidden: true } : a)) : actions} subject={title} {...(onActionError ? { onError: onActionError } : {})} {...(onActionDone ? { onDone: onActionDone } : {})} />
         )}
       </header>
-      {isEmpty ? (
+      {isForbidden ? (
+        <EmptyState
+          variant="forbidden"
+          title={forbidden?.title ?? m.forbiddenList}
+          description={forbidden?.description ?? m.forbiddenText}
+          {...(onRequestAccess ? { action: <Button variant="primary" onPress={onRequestAccess}>{m.requestAccess}</Button> } : {})}
+        />
+      ) : isEmpty ? (
         <EmptyState
           title={empty.title}
           {...(empty.description ? { description: empty.description } : {})}

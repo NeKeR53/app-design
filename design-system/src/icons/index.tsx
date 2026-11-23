@@ -56,6 +56,12 @@ export const ICON_NAMES = [
   "TextQuote",
   "Eye",
   "EyeOff",
+  "Calendar",
+  "FileImage",
+  "FileText",
+  "FileArchive",
+  "File",
+  "Upload",
 ] as const;
 export type IconName = (typeof ICON_NAMES)[number];
 
@@ -279,3 +285,40 @@ export const EyeOff = icon(
   <path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68M6.61 6.61A13.53 13.53 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61M9.88 9.88a3 3 0 1 0 4.24 4.24M2 2l20 20" />,
   "EyeOff",
 );
+
+/* DatePicker (D-354) */
+export const Calendar = icon(
+  <>
+    <rect x="3" y="4" width="18" height="18" rx="2" />
+    <path d="M16 2v4M8 2v4M3 10h18" />
+  </>,
+  "Calendar",
+);
+
+/* FileUpload et FileList (D-357) */
+const PAGE = <path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z M14 2v4a2 2 0 0 0 2 2h4" />;
+export const FileImage = icon(
+  <>
+    <rect width="18" height="18" x="3" y="3" rx="2" />
+    <circle cx="9" cy="9" r="2" />
+    <path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21" />
+  </>,
+  "FileImage",
+);
+export const FileText = icon(
+  <>
+    {PAGE}
+    <path d="M10 9H8M16 13H8M16 17H8" />
+  </>,
+  "FileText",
+);
+export const FileArchive = icon(
+  <>
+    {PAGE}
+    <path d="M10 6h2M10 10h2M10 14h2M10 18h2" />
+  </>,
+  "FileArchive",
+);
+export const File = icon(PAGE, "File");
+/** Zone de dépôt : flèche vers le haut. */
+export const Upload = icon(<path d="M12 3v12M7 8l5-5 5 5M5 21h14" />, "Upload");

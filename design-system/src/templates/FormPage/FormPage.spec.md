@@ -37,6 +37,7 @@ Options communes à tous les champs (sauf `fieldset`) :
 | `label` | `string` | — (obligatoire) | Libellé ; « (facultatif) » s'ajoute seul (D-022). |
 | `description` | `string` | aucune | Aide sous le champ. |
 | `isRequired` | `boolean` | `false` | Champ obligatoire (case : doit être cochée). |
+| `requiredMessage` | `string` | aucun | Message du champ obligatoire vide ; défaut construit à partir du libellé (D-344). Sans effet sur `combobox` pour l'instant. |
 | `isDisabled` | `boolean` | `false` | Champ désactivé. |
 | `width` | `FieldWidth` | `sm` pour `number`, sinon `full` | Largeur (D-133, D-191). Sans effet sur les groupes de choix. |
 | `defaultValue` | selon le type | vide | Valeur de départ, si `initialValues` ne la donne pas. |
@@ -97,9 +98,10 @@ Aucune variante visuelle. La disposition des sections dépend de la place (D-193
 | Enregistré | « Enregistré » ; les valeurs envoyées deviennent la référence. |
 | Échec | Phrase en `--danger`, annoncée ; erreurs de champ sous les champs (D-192). |
 | Champ en erreur | Règles de `Field` (D-130, D-132). |
+| Récapitulatif | À partir de 2 champs en erreur à l'envoi : encart en haut du formulaire, sous le titre ; bord 1 px `--danger`, rayon 8 px ; icône d'alerte et « n erreurs à corriger » en `--danger`, `--fw-medium` ; puis un lien par champ (son libellé), dans l'ordre du formulaire (D-341). |
 
 ## Comportement
-- L'envoi vérifie tous les champs ; s'il en reste en erreur, il s'arrête et le focus va au premier (D-132, D-192).
+- L'envoi vérifie tous les champs ; s'il en reste en erreur, il s'arrête (D-132, D-192). Une seule erreur : le focus va au champ. Deux erreurs ou plus (vérification locale ou erreurs rendues par `onSubmit`) : le récapitulatif s'affiche et prend le focus ; un lien met le focus dans son champ. Le récapitulatif se met à jour, ou disparaît, au prochain envoi (D-341). Test : `Recapitulatif`, `RecapitulatifServeur`, `Verification`.
 - Entrée dans un champ d'une ligne envoie ; Mod+Entrée envoie de partout (D-196).
 - « Annuler » après une saisie demande « Abandonner les modifications ? » (D-195).
 - Une erreur rendue par `onSubmit` pour un champ disparaît dès que ce champ change.
@@ -117,6 +119,7 @@ Tab suit l'ordre des champs, puis « Annuler » et l'action. Entrée et Mod+Entr
 
 ## Accessibilité
 - Chaque section est une région nommée par son titre.
+- Le récapitulatif est une région `role="alert"`, nommée par sa phrase, focalisable (`tabIndex=-1`) ; ses liens sont des `<a>`.
 - La phrase d'état est annoncée poliment (`aria-live="polite"`) ; l'erreur, tout de suite (`role="alert"`).
 - Le formulaire est `aria-busy` pendant l'envoi.
 
@@ -138,6 +141,6 @@ Dans le `main` d'AppShell (layout-rules : FormPage).
 `TextInput`, `TextArea`, `Select`, `ComboBox`, `RadioButtonGroup`, `Checkbox`, `CheckboxGroup`, `Fieldset`, `Button`, `Skeleton`, `useConfirm`.
 
 ## Décisions
-D-022, D-130 à D-138, D-190 à D-196.
+D-022, D-130 à D-138, D-190 à D-196 ; D-341, D-344.
 
 ## Questions ouvertes

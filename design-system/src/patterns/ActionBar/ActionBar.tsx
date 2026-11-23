@@ -30,6 +30,11 @@ export interface Action {
   /** Raccourci affiché, par exemple "Mod+E" (D-032, D-048). L'app le déclare elle-même. */
   shortcut?: string;
   isDisabled?: boolean;
+  /**
+   * Inactive avec une raison : le contrôle garde le focus, un clic ne fait rien, la raison est
+   * dans l'info-bulle (bouton) ou sous le libellé (menu « … »). Prime sur `isDisabled`.
+   */
+  disabledReason?: string;
   /** L'action n'existe pas dans cet état : elle n'est pas rendue. */
   isHidden?: boolean;
 }
@@ -137,7 +142,7 @@ export function useActionRunner({ onError, onDone }: { onError?: ActionBarProps[
   const [pending, setPending] = useState<ReadonlySet<string>>(new Set());
   const running = useRef(new Set<string>());
   const run = async (action: Action) => {
-    if (action.isDisabled || running.current.has(action.id)) return;
+    if (action.isDisabled || action.disabledReason || running.current.has(action.id)) return;
     const request = confirmRequest(action, m.confirmQuestion);
     if (request && !(await confirm(request))) return;
     let result: unknown;
@@ -179,7 +184,7 @@ export function ActionBar({ actions, zone, subject, onError, onDone }: ActionBar
 
   if (zone === "empty") {
     return primary ? (
-      <Button variant="primary" isDisabled={Boolean(primary.isDisabled)} isPending={pending.has(primary.id)} onPress={() => void run(primary)}>
+      <Button variant="primary" isDisabled={Boolean(primary.isDisabled)} {...reasonOf(primary)} isPending={pending.has(primary.id)} onPress={() => void run(primary)}>
         {primary.label}
       </Button>
     ) : null;
@@ -196,8 +201,11 @@ export function ActionBar({ actions, zone, subject, onError, onDone }: ActionBar
       {...(a.shortcut ? { shortcut: a.shortcut } : {})}
       {...(a.danger ? { danger: true } : {})}
       {...(a.isDisabled || pending.has(a.id) ? { isDisabled: true } : {})}
+      {...reasonOf(a)}
     />
   );
+  // Une action du menu « … » en cours : le bouton « … » montre l'attente et ignore les clics (D-116).
+  const menuPending = [...menu, ...danger].some((a) => pending.has(a.id));
 
   return (
     <div ref={group} role="group" aria-label={subject ? m.actionsOn(subject) : m.rowActions} className="relative flex shrink-0 items-center gap-0.5" data-zone={zone}>
@@ -221,10 +229,11 @@ export function ActionBar({ actions, zone, subject, onError, onDone }: ActionBar
           isPending={pending.has(a.id)}
           {...(a.shortcut ? { shortcut: a.shortcut } : {})}
           {...(a.isDisabled ? { isDisabled: true } : {})}
+          {...reasonOf(a)}
         />
       ))}
       {menu.length + danger.length > 0 && (
-        <DropdownMenu label={m.moreActions} placement="bottom end" trigger={<IconButton icon={<MoreHorizontal />} label={m.moreActions} />}>
+        <DropdownMenu label={m.moreActions} placement="bottom end" trigger={<IconButton icon={<MoreHorizontal />} label={m.moreActions} isPending={menuPending} />}>
           {menu.map(item)}
           {menu.length > 0 && danger.length > 0 && <DropdownMenu.Separator />}
           {danger.map(item)}
@@ -236,6 +245,7 @@ export function ActionBar({ actions, zone, subject, onError, onDone }: ActionBar
             variant={zone === "section" ? "secondary" : "primary"}
             size={zone === "section" ? "sm" : "md"}
             isDisabled={Boolean(primary.isDisabled)}
+            {...reasonOf(primary)}
             isPending={pending.has(primary.id)}
             onPress={() => void run(primary)}
           >
@@ -245,6 +255,11 @@ export function ActionBar({ actions, zone, subject, onError, onDone }: ActionBar
       )}
     </div>
   );
+}
+
+/** `disabledReason` d'une action, à passer au contrôle qui la dessine. */
+function reasonOf(a: Action): { disabledReason?: string } {
+  return a.disabledReason ? { disabledReason: a.disabledReason } : {};
 }
 
 /** Écart entre deux boutons de la barre (gap-0.5) et avant le bouton à texte en `topbar` (ml-1.5). */

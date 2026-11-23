@@ -58,7 +58,7 @@ export const Verification: Story = {
     await expect(c.queryByText("Les factures partent à cette adresse.")).not.toBeVisible();
     await userEvent.clear(input);
     await userEvent.tab();
-    await waitFor(() => expect(c.getByText("Ce champ est obligatoire.")).toBeVisible());
+    await waitFor(() => expect(c.getByText("Renseignez « Adresse e-mail ».")).toBeVisible());
   },
 };
 
@@ -98,7 +98,8 @@ export const Envoi: Story = {
   play: async ({ canvasElement }) => {
     const c = within(canvasElement);
     await userEvent.click(c.getByRole("button", { name: "Créer" }));
-    await waitFor(() => expect(c.getAllByText("Ce champ est obligatoire.")).toHaveLength(2));
+    await waitFor(() => expect(c.getByText("Renseignez « Raison sociale ».")).toBeVisible());
+    await expect(c.getByText("Renseignez « Adresse e-mail ».")).toBeVisible();
     await expect(c.getByRole("textbox", { name: "Raison sociale" })).toHaveFocus();
     await expect(c.queryByText("Envoyé")).toBeNull();
     await userEvent.type(c.getByRole("textbox", { name: "Raison sociale" }), "Atelier Durand");
@@ -126,5 +127,80 @@ export const LectureSeule: Story = {
     await expect(input).toHaveAttribute("readonly");
     await userEvent.type(input, "zz");
     await expect(input).toHaveValue("7F3A-92C1");
+  },
+};
+
+/** Limite dépassable : pas de `maxlength` natif ; au-delà, compteur en erreur, lu après une pause, envoi refusé (D-343). */
+export const LimiteDepassable: Story = {
+  render: () => {
+    function Demo() {
+      const [sent, setSent] = useState(false);
+      return (
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            setSent(true);
+          }}
+          className="flex flex-col gap-4"
+        >
+          <TextInput label="Code court" name="code" maxLength={10} width="lg" />
+          <button type="submit" className="w-fit">Créer</button>
+          {sent && <output>Envoyé</output>}
+        </form>
+      );
+    }
+    return <Demo />;
+  },
+  play: async ({ canvasElement }) => {
+    const c = within(canvasElement);
+    const input = c.getByRole("textbox", { name: /Code court/ });
+    await expect(input).not.toHaveAttribute("maxlength");
+    // Sous la limite : pas de compteur (TextInput n'en a pas).
+    await userEvent.type(input, "ABCDEFGH");
+    await expect(c.queryByText(/en trop/)).toBeNull();
+    await userEvent.paste("IJKLMN");
+    await expect(input).toHaveValue("ABCDEFGHIJKLMN");
+    const counter = c.getByText("4 caractères en trop");
+    await expect(counter).toHaveClass("text-danger");
+    await expect(input.getAttribute("aria-describedby")).toContain(counter.id);
+    // Lu une fois, dans une seule zone polie, après 1 s sans frappe.
+    const live = canvasElement.querySelectorAll('[aria-live="polite"]');
+    await expect(live).toHaveLength(1);
+    await expect(live[0]).toHaveTextContent("");
+    await waitFor(() => expect(live[0]).toHaveTextContent("4 caractères en trop"), { timeout: 2000 });
+    // Envoi refusé, avec le message.
+    await userEvent.click(c.getByRole("button", { name: "Créer" }));
+    await waitFor(() => expect(c.getByText("Saisissez 10 caractères au plus.")).toBeVisible());
+    await expect(input).toHaveFocus();
+    await expect(c.queryByText("Envoyé")).toBeNull();
+    // De retour sous la limite : plus de compteur, envoi accepté.
+    await userEvent.type(input, "{Backspace}{Backspace}{Backspace}{Backspace}");
+    await expect(c.queryByText(/en trop/, { selector: "span:not(.sr-only)" })).toBeNull();
+    await userEvent.click(c.getByRole("button", { name: "Créer" }));
+    await waitFor(() => expect(c.getByText("Envoyé")).toBeVisible());
+  },
+};
+
+/** Message d'obligation : cite le libellé dans sa casse, sans « : » ni « * » final, ou `requiredMessage` (D-344). */
+export const MessageObligatoire: Story = {
+  render: () => (
+    <form onSubmit={(e) => e.preventDefault()} className="flex flex-col gap-4">
+      <TextInput label="Date de début" isRequired width="md" />
+      <TextInput label="URL du site" isRequired width="lg" />
+      <TextInput label="Commentaire :" isRequired width="lg" />
+      <TextInput label="Code postal *" isRequired width="md" />
+      <TextInput label="Référence" isRequired requiredMessage="Saisissez la référence du bon de commande." width="md" />
+      <button type="submit" className="w-fit">Créer</button>
+    </form>
+  ),
+  play: async ({ canvasElement }) => {
+    const c = within(canvasElement);
+    await userEvent.click(c.getByRole("button", { name: "Créer" }));
+    await waitFor(() => expect(c.getByText("Renseignez « Date de début ».")).toBeVisible());
+    await expect(c.getByText("Renseignez « URL du site ».")).toBeVisible();
+    // Deux-points et astérisque finaux retirés du libellé cité.
+    await expect(c.getByText("Renseignez « Commentaire ».")).toBeVisible();
+    await expect(c.getByText("Renseignez « Code postal ».")).toBeVisible();
+    await expect(c.getByText("Saisissez la référence du bon de commande.")).toBeVisible();
   },
 };

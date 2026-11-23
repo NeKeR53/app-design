@@ -1,9 +1,11 @@
 /*
  * Formulaire déclaratif : modèle de champ, valeurs, envoi et rendu des champs.
  * Partagé par FormPage et le formulaire en modale (useOpenForm). Spec : templates/FormPage/FormPage.spec.md.
- * Décisions : D-190 à D-192, D-196. Module interne : seuls les types sont exportés par index.ts.
+ * Décisions : D-190 à D-192, D-196 ; D-341 (récapitulatif des erreurs) et D-344 (message d'obligation).
+ * Module interne : seuls les types sont exportés par index.ts.
  */
-import { useCallback, useEffect, useMemo, useRef, useState, type KeyboardEvent, type ReactNode } from "react";
+import { useCallback, useEffect, useId, useMemo, useRef, useState, type KeyboardEvent, type ReactNode } from "react";
+import { AlertTriangle } from "../icons";
 import type { SocleMessages } from "../i18n/messages";
 import { useMessages } from "../provider/SocleProvider";
 import { Checkbox, CheckboxGroup } from "../components/Checkbox/Checkbox";
@@ -33,6 +35,8 @@ interface FormFieldBase<V> {
   /** Aide sous le champ. */
   description?: string;
   isRequired?: boolean;
+  /** Message du champ obligatoire vide, à la place de celui construit à partir du libellé (D-344). */
+  requiredMessage?: string;
   isDisabled?: boolean;
   /** Valeur de départ, si `initialValues` ne la donne pas (D-191). */
   defaultValue?: V;
@@ -241,6 +245,12 @@ export interface FormModel {
   submit: () => Promise<FormValues | null>;
   /** Le `<form>` : sert au focus du premier champ en erreur. */
   formRef: React.RefObject<HTMLFormElement | null>;
+  /** Champs du récapitulatif des erreurs, dans l'ordre du formulaire ; `null` sans récapitulatif (D-341). */
+  summary: string[] | null;
+  /** L'encart du récapitulatif : il prend le focus à son affichage. */
+  summaryRef: React.RefObject<HTMLDivElement | null>;
+  /** Place le focus dans le champ `name`. */
+  focusField: (name: string) => void;
   /** Mod+Entrée envoie de partout (D-196). */
   onKeyDown: (e: KeyboardEvent<HTMLElement>) => void;
 }
@@ -256,7 +266,25 @@ function focusFirstInvalid(form: HTMLFormElement | null) {
   el?.focus();
 }
 
-export function useFormModel(all: readonly FormField[], initialValues: object | undefined, onSubmit: FormSubmit | undefined): FormModel {
+/** Chaque champ rendu est enveloppé par `data-form-field="<name>"` (sans effet sur la mise en page). */
+const FIELD_ATTR = "data-form-field";
+
+/** Focus sur le premier contrôle d'un champ : le texte, le bouton d'une liste, la première case. */
+function focusFieldIn(form: HTMLFormElement | null, name: string) {
+  const box = form?.querySelector(`[${FIELD_ATTR}="${CSS.escape(name)}"]`);
+  box?.querySelector<HTMLElement>("input:not([type=hidden]):not(:disabled), textarea:not(:disabled), button:not(:disabled), [contenteditable=true]")?.focus();
+}
+
+/** Le récapitulatif apparaît à partir de 2 champs en erreur ; avec un seul, le focus va au champ (D-341). */
+const SUMMARY_MIN = 2;
+
+export interface FormModelOptions {
+  /** Récapitulatif des erreurs en haut du formulaire, à partir de 2 erreurs (FormPage, D-341). */
+  summary?: boolean;
+}
+
+export function useFormModel(all: readonly FormField[], initialValues: object | undefined, onSubmit: FormSubmit | undefined, options: FormModelOptions = {}): FormModel {
+  const withSummary = options.summary ?? false;
   const m = useMessages();
   const fields = useMemo(() => inputFields(all), [all]);
   const [baseline, setBaseline] = useState<Raw>(() => initialRaw(fields, initialValues));
@@ -265,7 +293,10 @@ export function useFormModel(all: readonly FormField[], initialValues: object | 
   const [status, setStatus] = useState<FormStatus>("idle");
   const [message, setMessage] = useState<string | null>(null);
   const [focusErrors, setFocusErrors] = useState(0);
+  const [summary, setSummary] = useState<string[] | null>(null);
+  const [focusSummary, setFocusSummary] = useState(0);
   const formRef = useRef<HTMLFormElement>(null);
+  const summaryRef = useRef<HTMLDivElement>(null);
   const rawRef = useRef(raw);
   rawRef.current = raw;
   const busy = useRef(false);
@@ -291,6 +322,53 @@ export function useFormModel(all: readonly FormField[], initialValues: object | 
     if (focusErrors) focusFirstInvalid(formRef.current);
   }, [focusErrors]);
 
+  useEffect(() => {
+    if (focusSummary) summaryRef.current?.focus();
+  }, [focusSummary]);
+
+  /** Montre le récapitulatif pour ces champs, ou le retire ; rend vrai s'il est affiché. */
+  const showSummary = useCallback(
+    (names: string[]) => {
+      if (!withSummary) return false;
+      if (names.length < SUMMARY_MIN) {
+        setSummary(null);
+        return false;
+      }
+      setSummary(names);
+      setFocusSummary((n) => n + 1);
+      return true;
+    },
+    [withSummary],
+  );
+
+  // Vérification du navigateur à l'envoi : un événement `invalid` par champ en erreur, dans l'ordre du formulaire,
+  // tous dans la même tâche. React Aria met déjà le focus sur le premier ; le récapitulatif le prend ensuite.
+  useEffect(() => {
+    const form = formRef.current;
+    if (!withSummary || !form) return;
+    let batch: string[] | null = null;
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    const onInvalid = (e: Event) => {
+      const name = (e.target as Element).closest(`[${FIELD_ATTR}]`)?.getAttribute(FIELD_ATTR);
+      if (!batch) {
+        batch = [];
+        timer = setTimeout(() => {
+          const names = batch ?? [];
+          batch = null;
+          showSummary(names);
+        }, 0);
+      }
+      if (name && !batch.includes(name)) batch.push(name);
+    };
+    form.addEventListener("invalid", onInvalid, true);
+    return () => {
+      form.removeEventListener("invalid", onInvalid, true);
+      clearTimeout(timer);
+    };
+  }, [withSummary, showSummary]);
+
+  const focusField = useCallback((name: string) => focusFieldIn(formRef.current, name), []);
+
   const submit = useCallback(async () => {
     if (busy.current) return null;
     const sent = rawRef.current;
@@ -301,12 +379,14 @@ export function useFormModel(all: readonly FormField[], initialValues: object | 
     try {
       const result = await submitRef.current?.(v);
       if (result && ((result.errors && Object.keys(result.errors).length > 0) || result.message)) {
-        setErrors(result.errors ?? {});
+        const errs = result.errors ?? {};
+        setErrors(errs);
         setMessage(result.message ?? m.fixErrors);
         setStatus("error");
-        setFocusErrors((n) => n + 1);
+        if (!showSummary(fields.filter((f) => f.name in errs).map((f) => f.name))) setFocusErrors((n) => n + 1);
         return null;
       }
+      setSummary(null);
       setBaseline(sent);
       setErrors({});
       setStatus("saved");
@@ -318,7 +398,7 @@ export function useFormModel(all: readonly FormField[], initialValues: object | 
     } finally {
       busy.current = false;
     }
-  }, [fields, m]);
+  }, [fields, m, showSummary]);
 
   // Entrée dans un champ d'une ligne, et Mod+Entrée de partout, envoient (D-196). Entrée est traitée ici
   // plutôt que laissée au navigateur : le bouton d'envoi peut être hors du <form> (pied de la modale).
@@ -331,7 +411,23 @@ export function useFormModel(all: readonly FormField[], initialValues: object | 
     formRef.current?.requestSubmit();
   }, []);
 
-  return { fields, raw, set, errors, dirty, status: status === "dirty" && !dirty ? "idle" : status, message, saving: status === "saving", values, submit, formRef, onKeyDown };
+  return {
+    fields,
+    raw,
+    set,
+    errors,
+    dirty,
+    status: status === "dirty" && !dirty ? "idle" : status,
+    message,
+    saving: status === "saving",
+    values,
+    submit,
+    formRef,
+    summary,
+    summaryRef,
+    focusField,
+    onKeyDown,
+  };
 }
 
 /* ---------- Rendu des champs ---------- */
@@ -346,6 +442,7 @@ function Control({ field: f, model }: { field: FormInputField; model: FormModel 
   const value = model.raw[f.name];
   const onChange = (v: unknown) => model.set(f.name, v);
   const common = opt({ name: f.name, description: f.description, isRequired: f.isRequired, isDisabled: f.isDisabled, error: model.errors[f.name] });
+  const required = opt({ requiredMessage: f.requiredMessage });
   // La règle du champ reçoit aussi les autres valeurs (D-192).
   const check = <V,>(rule: FormCheck<V> | undefined) => (rule ? (v: V) => rule(v, model.values()) : undefined);
 
@@ -354,6 +451,7 @@ function Control({ field: f, model }: { field: FormInputField; model: FormModel 
       return (
         <TextInput
           {...common}
+          {...required}
           {...opt({ placeholder: f.placeholder })}
           label={f.label}
           width={f.width ?? "sm"}
@@ -366,6 +464,7 @@ function Control({ field: f, model }: { field: FormInputField; model: FormModel 
       return (
         <TextArea
           {...common}
+          {...required}
           {...opt({ placeholder: f.placeholder, maxLength: f.maxLength, minRows: f.minRows, maxRows: f.maxRows, width: f.width, validate: check(f.validate) })}
           label={f.label}
           value={value as string}
@@ -376,6 +475,7 @@ function Control({ field: f, model }: { field: FormInputField; model: FormModel 
       return (
         <Select
           {...common}
+          {...required}
           {...opt({ placeholder: f.placeholder, width: f.width, validate: check(f.validate) })}
           label={f.label}
           options={f.options}
@@ -389,6 +489,7 @@ function Control({ field: f, model }: { field: FormInputField; model: FormModel 
       return f.selectionMode === "multiple" ? (
         <ComboBox
           {...common}
+          {...required}
           {...source}
           {...opt({ validate: rule ? (v: string[]) => rule(v, model.values()) : undefined })}
           selectionMode="multiple"
@@ -399,6 +500,7 @@ function Control({ field: f, model }: { field: FormInputField; model: FormModel 
       ) : (
         <ComboBox
           {...common}
+          {...required}
           {...source}
           {...opt({ validate: rule ? (v: string | null) => rule(v, model.values()) : undefined })}
           label={f.label}
@@ -409,7 +511,7 @@ function Control({ field: f, model }: { field: FormInputField; model: FormModel 
     }
     case "radio":
       return (
-        <RadioButtonGroup {...common} {...opt({ orientation: f.orientation, validate: check(f.validate) })} label={f.label} value={value as string | null} onChange={onChange}>
+        <RadioButtonGroup {...common} {...required} {...opt({ orientation: f.orientation, validate: check(f.validate) })} label={f.label} value={value as string | null} onChange={onChange}>
           {f.options.map((o) => (
             <RadioButtonGroup.Option key={o.value} value={o.value} {...opt({ description: o.description, isDisabled: o.isDisabled })}>
               {o.label}
@@ -419,13 +521,13 @@ function Control({ field: f, model }: { field: FormInputField; model: FormModel 
       );
     case "checkbox":
       return (
-        <Checkbox {...common} {...opt({ validate: check(f.validate) })} isSelected={value as boolean} onChange={onChange}>
+        <Checkbox {...common} {...required} {...opt({ validate: check(f.validate) })} isSelected={value as boolean} onChange={onChange}>
           {f.label}
         </Checkbox>
       );
     case "checkboxGroup":
       return (
-        <CheckboxGroup {...common} {...opt({ orientation: f.orientation, validate: check(f.validate) })} label={f.label} value={value as string[]} onChange={onChange}>
+        <CheckboxGroup {...common} {...required} {...opt({ orientation: f.orientation, validate: check(f.validate) })} label={f.label} value={value as string[]} onChange={onChange}>
           {f.options.map((o) => (
             <Checkbox key={o.value} value={o.value} {...opt({ description: o.description, isDisabled: o.isDisabled })}>
               {o.label}
@@ -437,6 +539,7 @@ function Control({ field: f, model }: { field: FormInputField; model: FormModel 
       return (
         <TextInput
           {...common}
+          {...required}
           {...opt({ placeholder: f.placeholder, autoComplete: f.autoComplete, maxLength: f.maxLength, width: f.width, validate: check(f.validate) })}
           type={f.type ?? "text"}
           label={f.label}
@@ -449,19 +552,64 @@ function Control({ field: f, model }: { field: FormInputField; model: FormModel 
 
 /** Les champs, l'un sous l'autre, 16 px d'écart (D-191). */
 export function FormFields({ fields, model }: { fields: readonly FormField[]; model: FormModel }): ReactNode {
+  const field = (f: FormInputField) => (
+    <div key={f.name} {...{ [FIELD_ATTR]: f.name }} className="contents">
+      <Control field={f} model={model} />
+    </div>
+  );
   return (
     <div className="flex min-w-0 flex-col gap-4">
       {fields.map((f) =>
         f.type === "fieldset" ? (
           <Fieldset key={`fieldset:${f.legend}`} legend={f.legend} {...opt({ description: f.description, isOptional: f.isOptional, isDisabled: f.isDisabled })}>
-            {f.fields.map((c) => (
-              <Control key={c.name} field={c} model={model} />
-            ))}
+            {f.fields.map(field)}
           </Fieldset>
         ) : (
-          <Control key={f.name} field={f} model={model} />
+          field(f)
         ),
       )}
+    </div>
+  );
+}
+
+/**
+ * Récapitulatif des erreurs (D-341) : à partir de 2 champs en erreur à l'envoi, un encart en haut du
+ * formulaire, bord `--danger`, « n erreurs à corriger » et un lien par champ, dans l'ordre du formulaire.
+ * Il prend le focus ; un lien met le focus dans son champ. Il se met à jour au prochain envoi.
+ */
+export function ErrorSummary({ model }: { model: FormModel }): ReactNode {
+  const m = useMessages();
+  const id = useId();
+  const items = (model.summary ?? []).flatMap((n) => model.fields.filter((f) => f.name === n));
+  if (items.length === 0) return null;
+  return (
+    <div
+      ref={model.summaryRef}
+      role="alert"
+      tabIndex={-1}
+      aria-labelledby={id}
+      className="socle-box mb-4 rounded-md border border-danger bg-surface px-3 py-2.5 text-md outline-none focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-focus"
+    >
+      <p id={id} className="m-0 flex items-center gap-1.5 font-medium text-danger">
+        <AlertTriangle size={14} className="shrink-0" aria-hidden />
+        {m.errorSummary(items.length)}
+      </p>
+      <ul className="m-0 mt-1.5 flex list-none flex-col gap-1 p-0 pl-5">
+        {items.map((f) => (
+          <li key={f.name}>
+            <a
+              href={`#${f.name}`}
+              onClick={(e) => {
+                e.preventDefault();
+                model.focusField(f.name);
+              }}
+              className="rounded-sm text-danger underline underline-offset-2 outline-none hover:no-underline focus-visible:outline-2 focus-visible:outline-focus"
+            >
+              {f.label}
+            </a>
+          </li>
+        ))}
+      </ul>
     </div>
   );
 }

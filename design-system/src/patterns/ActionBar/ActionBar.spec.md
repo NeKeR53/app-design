@@ -31,6 +31,7 @@ Ordre : icônes, « … », action principale (D-111). Écart de 2 px entre bout
 | `confirm` | `string \| { title: string; message?: string; confirmLabel?: string }` | aucune | Question de confirmation, qui nomme l'objet. Le texte seul est le titre. Défaut pour `danger` : « {label} ? ». |
 | `shortcut` | `string` (ex. `"Mod+E"`) | aucun | Raccourci affiché dans l'info-bulle ou le menu (D-032, D-048). L'app déclare le raccourci elle-même. |
 | `isDisabled` | `boolean` | `false` | L'action garde sa place, désactivée. |
+| `disabledReason` | `string` | aucune | Inactive avec une raison : le contrôle garde le focus, un clic ne lance rien ; la raison est dans l'info-bulle (bouton, bouton-icône) ou sous le libellé (entrée de « … »). Prime sur `isDisabled`. |
 | `isHidden` | `boolean` | `false` | L'action n'existe pas dans cet état ; elle n'est pas rendue. |
 
 ## Règle par zone (D-111 à D-114, D-117)
@@ -74,7 +75,8 @@ Aucune variante visuelle propre : la zone décide de la forme. Les variantes vie
 |---|---|
 | Par défaut | Selon la zone (tableau plus haut). |
 | Action désactivée | `isDisabled` du bouton ou de l'entrée de menu : opacité 40 %, aucune action. |
-| Attente | Bouton à texte ou bouton-icône en `isPending` (D-105, D-107, D-118). L'action ne se relance pas. Une entrée de menu ferme le menu tout de suite. |
+| Action inactive avec une raison | `disabledReason` : rendu désactivé, mais focusable ; raison en info-bulle ou sous l'entrée de menu. |
+| Attente | Bouton à texte ou bouton-icône en `isPending` (D-105, D-107, D-118). L'action ne se relance pas. Une entrée de menu ferme le menu tout de suite ; le bouton « … » montre alors la roue et ignore les clics tant que l'action tourne (D-116). |
 | DropdownMenu ouvert | Le bouton « … » est en survol (`aria-expanded`). |
 | Vide | Aucune action visible : `ActionBar` ne rend rien. |
 
@@ -88,6 +90,8 @@ Aucune variante visuelle propre : la zone décide de la forme. Les variantes vie
 | Une action `danger` ou avec `confirm` demande confirmation ; « Annuler » n'appelle pas `onPress` (D-115) | verrouillé | `Confirmation` |
 | Une promesse met le bouton en attente ; un second clic est ignoré ; `onDone` après réussite (D-116, D-118) | verrouillé | `Attente` |
 | Une erreur, levée ou rejetée, est rendue à `onError` (D-116) | verrouillé | `Erreur` |
+| `disabledReason` : le contrôle reste focusable (`aria-disabled`), un clic ne lance rien, la raison est la description | verrouillé | `InactiveAvecRaison` |
+| Action lancée depuis « … » : tant que sa promesse court, « … » est en attente (roue, `aria-disabled`) et ignore les clics (D-116) | verrouillé | `AttenteMenu` |
 | Sous 640 px, les icônes de `topbar`, `header` et `toolbar` passent dans « … » (D-117) | verrouillé | `PetitEcran` |
 | `topbar` : une principale sans icône est à texte, à droite (D-220) | verrouillé | `Zones`, `Regle` |
 | `topbar` dans AppShell : repli selon la place, icônes puis texte (D-221) | verrouillé | `Regle`, AppShell `ActionsDePage` |
@@ -106,7 +110,8 @@ Tab passe d'un bouton à l'autre, dans l'ordre visuel. « … » s'ouvre avec En
 ## Accessibilité
 - Groupe `role="group"` (Tab passe d'un bouton à l'autre) nommé « Actions », ou « Actions sur {subject} » si `subject` est fourni (dictionnaire `messages`, D-089), sauf en `empty` (un seul bouton). Le lecteur d'écran annonce ce nom en entrant dans le groupe : « Modifier » se lit donc avec son objet.
 - Nom accessible d'un bouton-icône : `label` (le même texte que l'info-bulle). Le bouton « … » : « Plus d'actions ».
-- L'attente est annoncée par `Button` et `IconButton` (`aria-busy`, D-105, D-107).
+- L'attente est annoncée par `Button` et `IconButton` (`aria-busy`, D-105, D-107). Une action de « … » en cours : l'attente est portée par le bouton « … ».
+- Action inactive avec une raison : `aria-disabled="true"`, la raison en description (`Button`, `IconButton`, `DropdownMenu.Item`).
 
 ## Taille d'écran
 Voir D-117. Sur écran tactile, les cibles suivent `Button` et `IconButton` (44 px).

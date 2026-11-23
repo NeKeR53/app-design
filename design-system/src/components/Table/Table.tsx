@@ -25,6 +25,8 @@ export interface TableColumn {
   /** Largeur par défaut en px ; la première colonne prend la place restante. Sous 80 px, elle est aussi la largeur minimale (D-274). */
   width?: number;
   sortable?: boolean;
+  /** Colonne toujours affichée : `hiddenColumns` ne la masque pas. La première colonne l'est toujours. */
+  required?: boolean;
 }
 
 export interface TableRowAction {
@@ -35,7 +37,14 @@ export interface TableRowAction {
   menu?: ReactNode;
 }
 
-export interface TableProps<T extends { id: string }> extends ResultsStateProps {
+/** Tri à deux états (défaut) ou à trois états : croissant, décroissant, puis ordre d'origine (`null`). */
+export type TableSortProps =
+  | { allowsUnsort?: false; onSortChange?: (d: SortDescriptor) => void }
+  | { allowsUnsort: true; onSortChange?: (d: SortDescriptor | null) => void };
+
+export type TableProps<T extends { id: string }> = TableBaseProps<T> & TableSortProps;
+
+export interface TableBaseProps<T extends { id: string }> extends ResultsStateProps {
   /** Nom accessible du tableau. */
   label: string;
   columns: TableColumn[];
@@ -48,7 +57,8 @@ export interface TableProps<T extends { id: string }> extends ResultsStateProps 
   selectedKeys?: Iterable<Key>;
   onSelectionChange?: (keys: Set<Key>) => void;
   sortDescriptor?: SortDescriptor;
-  onSortChange?: (d: SortDescriptor) => void;
+  /** Colonnes masquées, par `id` ; une colonne `required` et la première restent affichées. */
+  hiddenColumns?: Iterable<string>;
   /** Ouverture d'une ligne (double-clic ou Entrée), dans une vue fermable (D-021). */
   onAction?: (id: string) => void;
   /** Deux actions au plus, au survol (D-066). */
@@ -91,7 +101,7 @@ function Box({ isSelected, isIndeterminate }: { isSelected: boolean; isIndetermi
 
 export function Table<T extends { id: string }>({
   label,
-  columns,
+  columns: allColumns,
   rows,
   renderCell,
   rowIcon,
@@ -100,6 +110,8 @@ export function Table<T extends { id: string }>({
   onSelectionChange,
   sortDescriptor,
   onSortChange,
+  allowsUnsort = false,
+  hiddenColumns,
   onAction,
   rowActions,
   storageId,
@@ -115,6 +127,9 @@ export function Table<T extends { id: string }>({
 }: TableProps<T>) {
   const m = useMessages();
   const key = storageId ?? label;
+  // Colonnes masquées par l'app ou l'utilisateur ; la principale et les `required` restent (D-346).
+  const hidden = new Set(hiddenColumns ?? []);
+  const columns = allColumns.filter((c, i) => i === 0 || c.required || !hidden.has(c.id));
   // Largeurs mémorisées par tableau (D-067) ; un double-clic sur la poignée rend la largeur par défaut.
   const [widths, setWidths] = useStoredState<Record<string, number>>(`table:${key}:widths`, {});
   const [version, setVersion] = useState(0);
@@ -217,8 +232,10 @@ export function Table<T extends { id: string }>({
             }}
             {...(sort ? { sortDescriptor: sort } : {})}
             onSortChange={(d: SortDescriptor) => {
-              setStoredSort(d);
-              onSortChange?.(d);
+              // Tri à trois états : un clic sur la colonne triée en décroissant rend l'ordre d'origine (D-347).
+              const next = allowsUnsort && sort && sort.column === d.column && sort.direction === "descending" ? null : d;
+              setStoredSort(next);
+              (onSortChange as ((d: SortDescriptor | null) => void) | undefined)?.(next);
             }}
             {...(groupKeys.length ? { disabledKeys: groupKeys, disabledBehavior: "selection" as const } : {})}
             {...(onAction ? { onRowAction: (k: Key) => !String(k).startsWith(GROUP_PREFIX) && onAction(String(k)) } : {})}

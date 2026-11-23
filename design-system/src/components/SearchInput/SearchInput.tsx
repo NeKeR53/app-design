@@ -10,6 +10,7 @@ import { ariaShortcut, formatShortcut } from "../../lib/shortcut";
 import { TruncatedText } from "../../lib/truncated";
 import { Search, X } from "../../icons";
 import { popoverClass } from "../DropdownMenu/DropdownMenu";
+import { Spinner } from "../Spinner/Spinner";
 
 export interface SearchTag {
   id: string;
@@ -323,7 +324,7 @@ export function SearchInput({ label, onChange, tagMode = false, tags: tagsProp, 
           {sugg.status === "loading" && open ? m.searching : ""}
         </span>
       )}
-      {sugg.status === "loading" && open && <span aria-hidden="true" className="socle-spin size-3.5 shrink-0 rounded-full border-2 border-line-strong border-t-fg-2" />}
+      {sugg.status === "loading" && open && <Spinner decorative />}
       {!filled && !focused && (
         <kbd className="mr-1 shrink-0 rounded-sm border border-line-strong px-1.5 font-sans text-xs leading-4 text-fg-3">{formatShortcut("Mod+F", isMac, m)}</kbd>
       )}
@@ -350,7 +351,7 @@ export function SearchInput({ label, onChange, tagMode = false, tags: tagsProp, 
               {sugg.status === "loading" && (
                 // Pas de role="status" ici : la zone d'état du champ annonce déjà « Recherche en cours ».
                 <div className="flex h-(--row-h) items-center gap-2 px-2.5 text-sm text-fg-3">
-                  <span aria-hidden="true" className="socle-spin size-3.5 rounded-full border-2 border-line-strong border-t-fg-2" />
+                  <Spinner decorative />
                   {m.searchingRow}
                 </div>
               )}

@@ -14,6 +14,8 @@ export interface TooltipProps {
   placement?: "top" | "bottom" | "start" | "end";
   /** Raccourci affiché après le texte, par exemple "Mod+K" (D-032). */
   shortcut?: string;
+  /** Deuxième ligne, en `--tip-fg-2` : la raison d'une action inactive (`disabledReason`). */
+  description?: string;
   /** Élément focusable qui déclenche l'info-bulle. */
   children: ReactElement;
 }
@@ -25,7 +27,7 @@ export const TOOLTIP_DELAY = 500;
 export const TOOLTIP_CLASS =
   "max-w-[240px] rounded-md border border-tip-line bg-tip-bg px-2 py-[3px] font-sans text-sm leading-[1.4] text-tip-fg transition-opacity duration-[var(--dur-fast)] ease-standard data-entering:opacity-0 data-exiting:opacity-0";
 
-export function Tooltip({ content, placement = "bottom", shortcut, children }: TooltipProps) {
+export function Tooltip({ content, placement = "bottom", shortcut, description, children }: TooltipProps) {
   const { isMac } = useSocle();
   const m = useMessages();
   // React Aria filtre aria-keyshortcuts : on le pose directement sur l'élément.
@@ -47,6 +49,7 @@ export function Tooltip({ content, placement = "bottom", shortcut, children }: T
       >
         {content}
         {shortcut && <kbd className="ml-2 font-sans text-tip-fg-2">{formatShortcut(shortcut, isMac, m)}</kbd>}
+        {description && <span className="block text-tip-fg-2">{description}</span>}
       </RACTooltip>
     </TooltipTrigger>
   );

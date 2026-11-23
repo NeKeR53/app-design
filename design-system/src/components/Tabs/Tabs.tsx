@@ -30,6 +30,8 @@ export interface TabItem {
   label: string;
   /** Vue ouverte depuis un élément : elle se ferme (D-021). Les vues de la page sont fixes. */
   closable?: boolean;
+  /** Vue modifiée, non enregistrée : un point remplace le × (le × revient au survol et au focus) ; nom « … (modifié) » (D-349). */
+  isDirty?: boolean;
 }
 
 export interface TabsProps {
@@ -235,10 +237,21 @@ export function Tabs({ items, selectedId, onSelectionChange, onClose, pageTitle,
           className="flex min-w-0 items-center gap-0.5 overflow-x-auto [scrollbar-width:none]"
         >
           {(t) => (
-            <Tab id={t.id} className={cx(tabClass, t.closable ? "pr-1" : "pr-2.5")}>
+            <Tab id={t.id} className={cx(tabClass, t.closable || t.isDirty ? "pr-1" : "pr-2.5")}>
               <span data-tab-id={t.id} className="contents">
                 <OverflowTooltip text={t.label} />
+                {t.isDirty && <span className="sr-only"> ({m.modified})</span>}
               </span>
+              {/* Vue modifiée : point de 6 px à la place du × ; au survol et au focus, le × revient (D-349). */}
+              {t.isDirty && (
+                <span
+                  aria-hidden
+                  data-dirty=""
+                  className={cx("ml-0.5 inline-grid size-5 shrink-0 place-items-center", t.closable && "group-data-hovered:hidden group-data-focus-visible:hidden")}
+                >
+                  <span className="size-1.5 rounded-full bg-fg-2" />
+                </span>
+              )}
               {t.closable && (
                 <button
                   type="button"
@@ -252,9 +265,12 @@ export function Tabs({ items, selectedId, onSelectionChange, onClose, pageTitle,
                   }}
                   className={cx(
                     buttonReset,
-                    "ml-0.5 inline-grid size-5 shrink-0 place-items-center rounded-sm text-fg-2 hover:bg-field hover:text-fg",
+                    "ml-0.5 size-5 shrink-0 place-items-center rounded-sm text-fg-2 hover:bg-field hover:text-fg",
                     // × au survol, au focus et sur l'onglet actif ; place réservée (D-041).
-                    "invisible group-data-hovered:visible group-data-focus-visible:visible group-data-selected:visible",
+                    // Vue modifiée : le point tient la place ; le × revient au survol et au focus (D-349).
+                    t.isDirty
+                      ? "hidden group-data-hovered:inline-grid group-data-focus-visible:inline-grid"
+                      : "invisible inline-grid group-data-hovered:visible group-data-focus-visible:visible group-data-selected:visible",
                   )}
                 >
                   <X size={12} />
@@ -328,7 +344,11 @@ function ViewList({ trigger, placement, items, selectedId, onSelect, onClose }: 
               <GridListItem id={t.id} textValue={t.label} className={cx(itemClass, "group pr-1 data-hovered:bg-hover data-focus-visible:bg-hover")}>
                 {({ isSelected }) => (
                   <>
-                    <span data-view-id={t.id} className="min-w-0 flex-1 truncate">{t.label}</span>
+                    <span data-view-id={t.id} className="min-w-0 flex-1 truncate">
+                      {t.label}
+                      {t.isDirty && <span className="sr-only"> ({m.modified})</span>}
+                    </span>
+                    {t.isDirty && <span aria-hidden data-dirty="" className="size-1.5 shrink-0 rounded-full bg-fg-2" />}
                     <span className="inline-grid w-4 shrink-0 place-items-center">{isSelected && <Check />}</span>
                     {t.closable && (
                       <Button

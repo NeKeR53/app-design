@@ -10,6 +10,7 @@ import { cx } from "../../lib/cx";
 import { X } from "../../icons";
 import { useMessages } from "../../provider/SocleProvider";
 import { IconButton } from "../IconButton/IconButton";
+import { captureFocusOrigin, restoreFocusAfterClose, type FocusOrigin, type ReturnFocusTarget } from "./focusFallback";
 
 export type ModalSize = "sm" | "md" | "lg" | "xl";
 
@@ -30,6 +31,11 @@ export interface ModalProps {
   size?: ModalSize;
   /** Action en cours : rien ne ferme la modale, le × est désactivé (D-122). */
   isBusy?: boolean;
+  /**
+   * Focus à la fermeture, à la place du déclencheur. Défaut : le déclencheur ; s'il a disparu,
+   * l'élément suivant de sa collection, sinon le précédent, sinon la collection, sinon `main`.
+   */
+  returnFocusTo?: ReturnFocusTarget;
 }
 
 /* ---------- Pièces partagées avec la confirmation ---------- */
@@ -93,6 +99,30 @@ function useScrollEdges(open: boolean) {
   return { ref, edges, update };
 }
 
+/**
+ * Focus de repli (voir `focusFallback`) : note le déclencheur à l'ouverture (pendant le rendu, avant que
+ * React Aria ne déplace le focus), puis l'applique après la fermeture. `windowRef` : la fenêtre de la modale.
+ */
+export function useFocusFallback(isOpen: boolean, windowRef: RefObject<HTMLElement | null>, returnFocusTo: ReturnFocusTarget | undefined) {
+  const [origin, setOrigin] = useState<FocusOrigin | null>(() => (isOpen && typeof document !== "undefined" ? captureFocusOrigin() : null));
+  const [wasOpen, setWasOpen] = useState(isOpen);
+  if (isOpen !== wasOpen) {
+    setWasOpen(isOpen);
+    if (isOpen) setOrigin(captureFocusOrigin());
+  }
+  const target = useRef(returnFocusTo);
+  useLayoutEffect(() => {
+    target.current = returnFocusTo;
+  });
+  const opened = useRef(isOpen);
+  useEffect(() => {
+    const closing = opened.current && !isOpen;
+    opened.current = isOpen;
+    if (!closing || !origin) return;
+    return restoreFocusAfterClose(origin, windowRef.current, target.current);
+  }, [isOpen, origin, windowRef]);
+}
+
 /** `aria-busy` sur la modale : React Aria ne le transmet pas, on le pose sur l'élément. */
 export function useAriaBusy(busy: boolean) {
   const ref = useRef<HTMLElement>(null);
@@ -135,10 +165,11 @@ export function FocusFirstField({ body }: { body: RefObject<HTMLDivElement | nul
   return null;
 }
 
-export function Modal({ isOpen, onOpenChange, title, description, children, footer, size = "md", isBusy = false }: ModalProps) {
+export function Modal({ isOpen, onOpenChange, title, description, children, footer, size = "md", isBusy = false, returnFocusTo }: ModalProps) {
   const m = useMessages();
   const id = useId();
   const modalRef = useRef<HTMLDivElement>(null);
+  useFocusFallback(isOpen, modalRef, returnFocusTo);
   const edited = useRef(false);
   const busy = useRef(isBusy);
   busy.current = isBusy;

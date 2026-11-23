@@ -20,7 +20,7 @@ Puis la **liste flottante** : style du DropdownMenu (rayon 12 px, fond `--surfac
 Aucune.
 
 ## Options
-Les options communes de `Field`, sauf `isReadOnly`, plus :
+Les options communes de `Field`, plus :
 | Option | Type | Défaut | Description |
 |---|---|---|---|
 | `options` | `{ id: string; label: string; isDisabled?: boolean }[]` ou sections `{ title, options }[]` | — (obligatoire) | Les options. |
@@ -37,7 +37,7 @@ Les options communes de `Field`, sauf `isReadOnly`, plus :
 - Les exclusions de `Field`.
 
 ## États
-Ceux de `Field`, sauf lecture seule. Ouvert : la liste flottante est visible, le cadre garde l'anneau de focus. Option mise en avant : fond `--hover`. Option désactivée : opacité 40 %.
+Ceux de `Field`. Lecture seule (D-131, D-342) : cadre `--surface-side`, bord `--line`, cadenas à droite à la place du chevron ; la valeur est un texte en lecture seule, sélectionnable et copiable ; la liste ne s'ouvre pas ; la valeur (`id`) est envoyée avec le formulaire. Ouvert : la liste flottante est visible, le cadre garde l'anneau de focus. Option mise en avant : fond `--hover`. Option désactivée : opacité 40 %.
 
 ## Comportement
 | Règle | Niveau de réglage | Test (story) |
@@ -45,7 +45,8 @@ Ceux de `Field`, sauf lecture seule. Ouvert : la liste flottante est visible, le
 | Clic, Espace, Entrée, flèche haut ou bas : ouvre la liste, sur la valeur choisie (D-134) | verrouillé | `Clavier` |
 | Flèches, Origine, Fin : parcourent ; lettres tapées : sautent à l'option qui commence par elles ; Entrée ou clic : choisit et ferme ; Échap ou clic dehors : ferme sans changer (D-134) | verrouillé | `Clavier` |
 | La liste s'ouvre en dessous, ou au-dessus si la place manque ; elle défile au-delà de la hauteur disponible | verrouillé | `ParDefaut` |
-| Vérification : celle de `Field` ; un `Select` obligatoire sans valeur est en erreur à l'envoi (D-132) | verrouillé | `Verification` |
+| Vérification : celle de `Field` ; un `Select` obligatoire sans valeur est en erreur à l'envoi, avec « Choisissez une valeur pour « <libellé> ». » (D-132, D-344) | verrouillé | `Verification` |
+| Lecture seule : cadre gris et cadenas, valeur sélectionnable, liste fermée (D-342) | verrouillé | `LectureSeule` |
 
 ## Contenu
 Valeur ou option trop longue : ellipse dans le cadre, retour à la ligne interdit ; la liste s'élargit jusqu'à 320 px, puis ellipse avec info-bulle.
@@ -72,7 +73,7 @@ Celui de `Field`. Aussi dans une ligne de réglage de `SettingsPage`, libellé m
 `Field`, un bouton et une liste au style du `DropdownMenu`. La liste est partagée avec `ComboBox`.
 
 ## Décisions
-D-022, D-040, D-050, D-130, D-132, D-133, D-134
+D-022, D-040, D-050, D-130, D-132, D-133, D-134 ; D-342, D-344
 
 ## Questions ouvertes
 Aucune.

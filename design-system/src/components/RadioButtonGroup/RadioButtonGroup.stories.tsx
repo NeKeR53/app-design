@@ -73,6 +73,28 @@ export const Verification: Story = {
   play: async ({ canvasElement }) => {
     const c = within(canvasElement);
     await userEvent.click(c.getByRole("button", { name: "Valider" }));
-    await waitFor(() => expect(c.getByText("Choisissez une option.")).toBeVisible());
+    await waitFor(() => expect(c.getByText("Choisissez une valeur pour « Mode de livraison ».")).toBeVisible());
+  },
+};
+
+/** Lecture seule (D-342) : ronds gris, point en `--fg-2`, cadenas après le libellé ; focusable, rien ne change. */
+export const LectureSeule: Story = {
+  render: () => (
+    <RadioButtonGroup label="Mode de livraison" isReadOnly defaultValue="exp">
+      {options}
+    </RadioButtonGroup>
+  ),
+  play: async ({ canvasElement }) => {
+    const c = within(canvasElement);
+    await expect(c.getByRole("radiogroup")).toHaveAttribute("aria-readonly", "true");
+    await userEvent.click(c.getByText("Standard"));
+    await expect(c.getByRole("radio", { name: /Express/ })).toBeChecked();
+    await expect(c.getByRole("radio", { name: /Standard/ })).not.toBeChecked();
+    (document.activeElement as HTMLElement | null)?.blur();
+    await userEvent.tab();
+    await expect(c.getByRole("radio", { name: /Express/ })).toHaveFocus();
+    await expect(canvasElement.querySelectorAll('[title="Lecture seule"]')).toHaveLength(1);
+    const dot = c.getByText("Express").closest("label")?.querySelector(".size-1\\.5");
+    await expect(dot).toHaveClass("bg-fg-2");
   },
 };

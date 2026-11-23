@@ -44,7 +44,7 @@ Taille automatique : `sm` jusqu'à quatre champs sans zone de texte ni groupe, s
 | Échec | Phrase en `--danger` au-dessus du pied ; erreurs de champ sous les champs (D-192). |
 
 ## Comportement
-- L'action vérifie tous les champs ; le focus va au premier en erreur (D-132).
+- L'action vérifie tous les champs ; le focus va au premier en erreur (D-132). Pas de récapitulatif des erreurs : six champs au plus restent visibles (D-341).
 - Sans `onSubmit`, la modale se ferme et rend les valeurs. Avec, elle attend la promesse et ne se ferme qu'à la réussite.
 - Entrée dans un champ d'une ligne envoie ; Mod+Entrée envoie de partout (D-196).
 - Une nouvelle demande ferme la précédente, qui rend `null` (D-197).

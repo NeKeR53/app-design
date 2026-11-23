@@ -79,15 +79,17 @@ function Commande() {
 
 export const Formulaire: Story = { render: () => <Commande /> };
 
-/** Envoi : chaque champ obligatoire vide montre son erreur ; le focus va au premier (D-132). */
+/** Envoi : chaque champ obligatoire vide montre son erreur, construite à partir du libellé ; le focus va au premier (D-132, D-344). */
 export const Envoi: Story = {
   render: () => <Commande />,
   play: async ({ canvasElement }) => {
     const c = within(canvasElement);
     await userEvent.click(c.getByRole("button", { name: "Créer la commande" }));
     await waitFor(() => expect(c.getByRole("textbox", { name: "Raison sociale" })).toHaveFocus());
-    await expect(c.getAllByText("Choisissez une option.")).toHaveLength(2);
-    await expect(c.getByText("Cochez cette case pour continuer.")).toBeVisible();
+    await expect(c.getByText("Renseignez « Raison sociale ».")).toBeVisible();
+    await expect(c.getByText("Choisissez une valeur pour « Pays ».")).toBeVisible();
+    await expect(c.getByText("Choisissez une valeur pour « Mode de livraison ».")).toBeVisible();
+    await expect(c.getByText("Cochez « Le client a accepté les conditions de vente ».")).toBeVisible();
     await expect(c.getByText("Corrigez les champs signalés")).toBeVisible();
   },
 };

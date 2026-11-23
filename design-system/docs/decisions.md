@@ -2333,3 +2333,179 @@
 - Raison : chaque app a une page de connexion ; un gabarit commun donne le même comportement sûr et accessible partout. Garder le mot de passe évite de tout ressaisir pour une faute de frappe ; la bascule permet de le vérifier.
 - Options écartées : vider le mot de passe après un échec (plus de saisie, gain de sécurité faible : la valeur reste dans la page) ; erreurs par champ (fuite d'information) ; texte indicatif à la place des libellés.
 - Validation : comportement validé par l'utilisateur, 2026-11-23
+
+## D-340 — Action indisponible : « inactif » avec une raison
+- Date : 2026-11-23
+- Portée : Button, IconButton, DropdownMenu, ActionBar, Tooltip
+- Décision : option `disabledReason` sur Button, IconButton, `DropdownMenu.Item` et `Action` d'ActionBar. Le contrôle reste focusable (`aria-disabled`), un clic ne fait rien, il garde le rendu désactivé. La raison s'affiche dans l'info-bulle (sous le libellé dans un menu) et sert de description accessible. Tooltip gagne `description` (deuxième ligne). Sans raison, le comportement ne change pas.
+- Raison : un bouton désactivé ne prend pas le focus et ne dit pas pourquoi (Primer, GOV.UK).
+- Options écartées : masquer l'action (l'utilisateur ne sait pas qu'elle existe).
+- Validation : choix de l'utilisateur, 2026-11-23 — docs/validation/components/Revue-UX-B-v1.html
+
+## D-341 — Récapitulatif des erreurs
+- Date : 2026-11-23
+- Portée : FormPage
+- Décision : dans FormPage, à partir de 2 champs en erreur à l'envoi, un encart s'affiche en haut du formulaire : bord `--danger`, titre « n erreurs à corriger », un lien par champ dans l'ordre du formulaire ; région `role="alert"` qui prend le focus ; chaque lien met le focus dans son champ. Avec une seule erreur, le focus va au champ. L'encart se met à jour au prochain envoi. FormDialog garde le focus sur la première erreur.
+- Raison : dans un long formulaire, les erreurs sous la première restent hors de vue (Primer, GOV.UK).
+- Options écartées : encart dès 1 erreur.
+- Validation : choix de l'utilisateur, 2026-11-23 — docs/validation/components/Revue-UX-B-v1.html
+
+## D-342 — Lecture seule des choix
+- Date : 2026-11-23
+- Portée : Checkbox, CheckboxGroup, RadioButtonGroup, Toggle, Select
+- Décision : Checkbox, CheckboxGroup, RadioButtonGroup et Toggle en lecture seule suivent D-131 : fond `--surface-side`, bord `--line`, marque en `--fg-2` au lieu de l'accent, pas de survol, cadenas après le libellé ou dans le groupe ; focusables et lisibles ; un clic ne change rien. Select gagne `isReadOnly` : cadre gris et cadenas, valeur sélectionnable, liste fermée.
+- Raison : un choix en lecture seule avait l'air modifiable et ne réagissait pas (Carbon).
+- Options écartées : valeur en texte seul.
+- Validation : choix de l'utilisateur, 2026-11-23 — docs/validation/components/Revue-UX-B-v1.html
+
+## D-343 — Limite de caractères dépassable
+- Date : 2026-11-23
+- Portée : TextInput, TextArea, InlineEdit, MarkdownEditor
+- Décision : `maxLength` ne bloque plus la frappe ni le collage (TextInput, TextArea, InlineEdit, MarkdownEditor). Au-delà, le compteur dit « n caractère(s) en trop » en `--danger`, lu poliment 1 s après la dernière frappe ; l'envoi ou l'enregistrement est refusé avec « Saisissez n caractères au plus. ».
+- Raison : la limite stricte coupait un collage sans rien dire (GOV.UK Character count).
+- Options écartées : garder le blocage et prévenir.
+- Validation : choix de l'utilisateur, 2026-11-23 — docs/validation/components/Revue-UX-B-v1.html
+
+## D-344 — Message d'un champ obligatoire vide
+- Date : 2026-11-23
+- Portée : Field et tous les champs
+- Décision : le message d'un champ obligatoire vide cite le libellé : « Renseignez « Date de début ». » pour un champ texte, « Choisissez une valeur pour « Statut ». » pour un choix, « Cochez « … ». » pour une case seule ; option `requiredMessage` sur les champs et sur `FormField` pour un texte propre ; « Ce champ est obligatoire. » reste le message sans libellé.
+- Raison : un message qui nomme le champ dit quoi corriger (GOV.UK Error message).
+- Options écartées : message générique seulement remplaçable.
+- Validation : choix de l'utilisateur, 2026-11-23 — docs/validation/components/Revue-UX-B-v1.html
+
+## D-345 — Tableau : tout sélectionner
+- Date : 2026-11-23
+- Portée : ListPage
+- Décision : avec `allowSelectAll`, quand toute la page est cochée et qu'il reste des éléments, la barre propose « Sélectionner les N éléments » ; ensuite « N éléments sélectionnés · Effacer la sélection ». Les actions groupées reçoivent `"all"` (second argument de `selectionActions`), `onStateChange` reçoit `selection: "all"` en `remote`. Une recherche, un filtre ou une ligne décochée efface cet état.
+- Raison : en mode distant, l'app doit savoir que l'action vise tous les éléments (Carbon, Polaris).
+- Options écartées : tout cocher par la case d'en-tête ; garder « tout » après un changement de critères.
+- Validation : choix de l'utilisateur, 2026-11-23 — docs/validation/components/Revue-UX-B-v1.html
+
+## D-346 — Tableau : colonnes visibles
+- Date : 2026-11-23
+- Portée : ListPage, Table
+- Décision : avec `allowColumnChoice`, un menu « Colonnes » dans la barre de ListPage donne une case par colonne ; la première colonne et les colonnes `required` ne se masquent pas ; choix mémorisé par page (D-007). Table reçoit `hiddenColumns`.
+- Raison : chacun garde les colonnes utiles à son travail (Carbon).
+- Options écartées : réordonner par glisser ; menu actif par défaut.
+- Validation : choix de l'utilisateur, 2026-11-23 — docs/validation/components/Revue-UX-B-v1.html
+
+## D-347 — Tableau : tri à trois états
+- Date : 2026-11-23
+- Portée : Table, ListPage
+- Décision : avec `allowsUnsort` (Table, ListPage), un clic sur l'en-tête donne croissant, décroissant, puis l'ordre d'origine (`onSortChange(null)`, sans `aria-sort`) ; état mémorisé (D-177).
+- Raison : retrouver l'ordre d'origine sans recharger (Carbon).
+- Options écartées : trois états par défaut ; bouton « Retirer le tri ».
+- Validation : choix de l'utilisateur, 2026-11-23 — docs/validation/components/Revue-UX-B-v1.html
+
+## D-348 — Tableau : lignes par page
+- Date : 2026-11-23
+- Portée : ListPage
+- Décision : en mode `pages`, `pagination.pageSizes` (`true` = 25, 50, 100) ajoute le choix du nombre de lignes, mémorisé, et « Page n sur N » ; un changement ramène à la page 1.
+- Raison : adapter la densité de la liste à la tâche (Carbon).
+- Options écartées : saisie libre ; choix en mode « Afficher plus ».
+- Validation : choix de l'utilisateur, 2026-11-23 — docs/validation/components/Revue-UX-B-v1.html
+
+## D-349 — Onglet d'une vue modifiée
+- Date : 2026-11-23
+- Portée : Tabs
+- Décision : `TabItem.isDirty` : un point remplace le ×, qui revient au survol et au focus ; nom accessible « <libellé> (modifié) » ; la fermeture passe par `onClose`, qui peut rendre `false`.
+- Raison : voir le travail non enregistré avant de fermer (Carbon Tabs).
+- Options écartées : aucune marque ; confirmation intégrée au composant.
+- Validation : choix de l'utilisateur, 2026-11-23 — docs/validation/components/Revue-UX-B-v1.html
+
+## D-350 — Passer d'une zone à l'autre (F6, « Aller au contenu »)
+- Date : 2026-11-23
+- Portée : AppShell
+- Décision : F6 et Maj+F6 passent de la barre à la sidebar, au contenu, au détail (et à la barre d'onglets mobile), en sautant les zones masquées ; le focus va au dernier élément focalisé de la zone ; F6 ne fait rien dans un dialogue. En web, un lien « Aller au contenu » est le premier élément focalisable, caché jusqu'au focus ; pas de lien en bureau (Tauri).
+- Raison : usage des apps de bureau ; WCAG 2.4.1.
+- Options écartées : lien seul ; composant Skip link à part.
+- Validation : choix de l'utilisateur, 2026-11-23 — docs/validation/components/Revue-UX-B-v1.html
+
+## D-351 — État « accès refusé »
+- Date : 2026-11-23
+- Portée : EmptyState, ListPage, Drawer
+- Décision : EmptyState `variant="forbidden"` (cadenas). ListPage et Drawer (forme déclarative) reçoivent `isForbidden` : « Vous n'avez pas accès à cette liste / à cet élément », « Demandez l'accès à un administrateur. », bouton « Demander l'accès » avec `onRequestAccess` ; textes réglables par `forbidden`. Aucune donnée ni action de page n'est montrée.
+- Raison : sans cet état, l'utilisateur voit une erreur ou une liste vide (Carbon).
+- Options écartées : réutiliser l'état d'erreur ; masquer la page.
+- Validation : choix de l'utilisateur, 2026-11-23 — docs/validation/components/Revue-UX-B-v1.html
+
+## D-352 — Focus de repli quand le déclencheur a disparu
+- Date : 2026-11-23
+- Portée : Modal, useConfirm
+- Décision : si le déclencheur d'une Modal ou de `useConfirm` a disparu à la fermeture, le focus va à l'élément suivant de sa collection (place notée à l'ouverture), sinon au précédent, sinon à la collection, sinon à `main`. Option `returnFocusTo` pour un autre choix ; type `ReturnFocusTarget`.
+- Raison : sans repli, le focus tombe sur la page après une suppression (WAI-ARIA APG Dialog).
+- Options écartées : laisser le repli à l'app.
+- Validation : choix de l'utilisateur, 2026-11-23 — docs/validation/components/Revue-UX-B-v1.html
+
+## D-353 — Action lancée depuis « … »
+- Date : 2026-11-23
+- Portée : ActionBar
+- Décision : tant qu'une action lancée depuis « … » tourne, le bouton « … » montre l'indicateur rotatif et ignore les clics, comme D-116.
+- Raison : le menu se ferme et rien ne montrait que l'action tournait (Carbon).
+- Options écartées : aucun retour.
+- Validation : choix de l'utilisateur, 2026-11-23 — docs/validation/components/Revue-UX-B-v1.html
+
+## D-354 — DatePicker et DateRangePicker
+- Date : 2026-11-23
+- Portée : DatePicker, DateRangePicker
+- Décision : champ par segments JJ/MM/AAAA dans l'ordre de la langue, bouton calendrier à droite. Le volet montre un mois ; son titre ouvre le choix du mois et de l'année. Aujourd'hui est encadré ; les jours indisponibles sont barrés et non choisissables ; la semaine suit la langue. Choisir un jour ferme le volet. La plage tient dans un seul champ « début – fin » : premier clic le début, second la fin, plage teintée, puis fermeture. Raccourcis `presets` en option, dans une colonne à gauche. Valeurs en ISO `AAAA-MM-JJ` à l'API.
+- Raison : la date se tape toujours au clavier ; le calendrier aide sans ajouter de clic (D-007) ; l'ISO évite à l'app de dépendre de `@internationalized/date`.
+- Options écartées : texte libre ; deux mois côte à côte ; deux champs « Du / Au » ; pas de raccourcis ; valeurs `CalendarDate`.
+- Validation : choix de l'utilisateur, 2026-11-23 — docs/validation/components/Nouveaux-P1-v1.html
+
+## D-355 — Alert (encart dans le contenu)
+- Date : 2026-11-23
+- Portée : Alert
+- Décision : carte neutre (`--surface`, trait `--line`, rayon 8 px), seule l'icône porte la couleur du ton (info, succès, alerte, erreur). Titre facultatif, texte (lien permis), une action secondaire au plus. La croix n'existe qu'avec `onDismiss`, jamais pour `danger`. `announce` donne `role="status"`, ou `role="alert"` pour `danger` ; sinon bloc statique. Jamais de bandeau pleine largeur.
+- Raison : même langage que les toasts (D-151) ; une erreur se corrige, elle ne se ferme pas ; seul un message qui apparaît après une action est annoncé (D-159).
+- Options écartées : fond teinté ; barre de ton à gauche ; deux actions.
+- Validation : choix de l'utilisateur, 2026-11-23 — docs/validation/components/Nouveaux-P1-v1.html
+
+## D-356 — NumberField
+- Date : 2026-11-23
+- Portée : NumberField
+- Décision : anatomie de Field ; flèches ▲▼ empilées à droite, hors de l'ordre de tabulation ; ↑↓ un pas, Maj+↑↓ et Page haut/bas dix pas, Origine et Fin le minimum et le maximum ; molette désactivée ; format de la langue, nombre aligné à droite, unité en suffixe (`unit`) ou symbole par `formatOptions` ; minimum et maximum vérifiés en quittant le champ, avec un message, sans correction silencieuse.
+- Raison : largeur d'un champ normal ; le clavier suffit ; faire défiler la page ne change jamais une valeur ; l'utilisateur voit pourquoi sa saisie est refusée.
+- Options écartées : − et + de part et d'autre ; pas de flèches ; correction silencieuse.
+- Validation : choix de l'utilisateur, 2026-11-23 — docs/validation/components/Nouveaux-P1-v1.html
+
+## D-357 — FileUpload et FileList
+- Date : 2026-11-23
+- Portée : FileUpload, FileList
+- Décision : zone en pointillés « Déposez des fichiers ici ou choisir des fichiers », types et taille maximale écrits dans la zone, zone marquée au survol d'un fichier glissé. Type et taille vérifiés avant `onAdd` ; fichiers refusés listés avec leur erreur. Une ligne par fichier : icône, nom coupé au milieu, taille, barre fine pendant l'envoi, erreur sous le nom, ×, « Réessayer ». L'app fait l'envoi et rend l'état de chaque fichier (en attente, envoi, envoyé, erreur) ; les changements d'état sont annoncés.
+- Raison : le dépôt reste utilisable au clavier par le bouton ; l'erreur arrive avant tout envoi ; l'app garde la main sur l'authentification et l'API.
+- Options écartées : bouton seul ; vignettes ; envoi intégré vers une URL.
+- Validation : choix de l'utilisateur, 2026-11-23 — docs/validation/components/Nouveaux-P2-P3-v1.html
+
+## D-358 — SegmentedControl
+- Date : 2026-11-23
+- Portée : SegmentedControl
+- Décision : fond `--field`, segment choisi en carte claire (`--surface`, `--shadow-sm`), 2 à 4 options (texte, icône et texte, ou icône seule nommée avec info-bulle). Rôle `radiogroup` : un arrêt de Tab, les flèches déplacent et choisissent, le choix s'applique tout de suite. Segments au rayon de 4 px (D-040).
+- Raison : choix exclusif visible sans clic de plus (D-007), monochrome (D-001).
+- Options écartées : contour avec segments séparés ; rôle de navigation (Tabs).
+- Validation : choix de l'utilisateur, 2026-11-23 — docs/validation/components/Nouveaux-P2-P3-v1.html
+
+## D-359 — Pagination
+- Date : 2026-11-23
+- Portée : Pagination, ListPage
+- Décision : « ‹ 1 … 4 5 6 … 13 › », sept entrées au plus, page courante `aria-current="page"` en `--selected`, repère `nav` « Pagination » ; sous 641 px : « Page n sur N » et les flèches ; précédent et suivant désactivés aux bornes, le focus passe alors à la page courante. ListPage la réutilise.
+- Raison : sauter à une page précise ; largeur stable (D-175).
+- Options écartées : flèches et « Page n sur N » seulement.
+- Validation : choix de l'utilisateur, 2026-11-23 — docs/validation/components/Nouveaux-P2-P3-v1.html
+
+## D-360 — Spinner
+- Date : 2026-11-23
+- Portée : Spinner, Button, IconButton, SearchInput
+- Décision : l'indicateur rotatif de Button et SearchInput devient public, en 14 et 20 px, nommé (`role="status"`, « Chargement… ») ou décoratif ; trois fois plus lent sous mouvement réduit. Button, IconButton et SearchInput l'utilisent. Réservé aux attentes courtes et locales ; au-delà, ProgressBar ou Skeleton.
+- Raison : un seul dessin d'attente dans tout le socle.
+- Options écartées : ne pas l'exposer.
+- Validation : choix de l'utilisateur, 2026-11-23 — docs/validation/components/Nouveaux-P2-P3-v1.html
+
+## D-361 — Card
+- Date : 2026-11-23
+- Portée : Card
+- Décision : conteneur neutre (`--surface`, trait `--line`, rayon 12 px, sans ombre), titre facultatif à niveau réglable, contenu libre, pied d'actions. Variante `metric` : libellé, valeur en chiffres à chasse fixe, évolution avec flèche, texte et ton lu (« favorable », « défavorable »). Carte cliquable (`href` ou `onPress`) : toute la carte est la cible, son nom est le titre, survol `--hover`, anneau `--focus` ; les autres actions vont dans « … », hors du lien ; sans titre, la carte n'est pas cliquable.
+- Raison : les ombres restent réservées à ce qui flotte (D-001) ; une seule cible principale au nom court.
+- Options écartées : carte avec ombre ; lien seulement dans la carte.
+- Validation : choix de l'utilisateur, 2026-11-23 — docs/validation/components/Nouveaux-P2-P3-v1.html

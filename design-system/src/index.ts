@@ -26,6 +26,7 @@ export { Modal } from "./components/Modal/Modal";
 export type { ModalProps, ModalSize } from "./components/Modal/Modal";
 export { useConfirm } from "./components/Modal/useConfirm";
 export type { ConfirmOptions, ConfirmFunction } from "./components/Modal/useConfirm";
+export type { ReturnFocusTarget } from "./components/Modal/focusFallback";
 export { DropdownMenu, useContextMenu } from "./components/DropdownMenu/DropdownMenu";
 export type { DropdownMenuProps, DropdownMenuItemProps, DropdownMenuSectionProps, DropdownMenuSubmenuProps, MenuPoint, ContextMenuState, ContextMenuTargetProps } from "./components/DropdownMenu/DropdownMenu";
 export { Tabs, TabPanel, useTabPanelProps } from "./components/Tabs/Tabs";
@@ -154,6 +155,12 @@ export { ProgressIndicator } from "./components/ProgressIndicator/ProgressIndica
 export type { ProgressIndicatorProps, StepItem, StepStatus } from "./components/ProgressIndicator/ProgressIndicator";
 export { Popover } from "./components/Popover/Popover";
 export type { PopoverProps, PopoverWidth, PopoverPlacement } from "./components/Popover/Popover";
+export { DatePicker, DateRangePicker } from "./components/DatePicker/DatePicker";
+export type { DatePickerProps, DateRangePickerProps, DatePreset, DateRange, IsoDate } from "./components/DatePicker/DatePicker";
+export { Alert } from "./components/Alert/Alert";
+export type { AlertProps, AlertTone, AlertAction } from "./components/Alert/Alert";
+export { NumberField } from "./components/NumberField/NumberField";
+export type { NumberFieldProps } from "./components/NumberField/NumberField";
 
 /*
  * Anciens noms, dépréciés en 1.0.0 (D-336) : les composants portent les noms de
@@ -246,3 +253,19 @@ export type DetailPanelDeclarativeProps = DrawerDeclarativeProps;
 export const RadioGroup = RadioButtonGroup;
 /** @deprecated Utiliser RadioButtonGroupProps (1.0.0). */
 export type RadioGroupProps = RadioButtonGroupProps;
+/* Tri à trois états, portée de la sélection (D-345, D-347). */
+export type { TableSortProps, TableBaseProps } from "./components/Table/Table";
+export type { ListPageSelection } from "./templates/ListPage/ListPage";
+/* Nouveaux composants P2 et P3 (FileUpload, SegmentedControl, Pagination, Spinner, Card). */
+export { FileUpload } from "./components/FileUpload/FileUpload";
+export type { FileUploadProps } from "./components/FileUpload/FileUpload";
+export { FileList } from "./components/FileUpload/FileList";
+export type { FileListProps, FileItem, FileStatus } from "./components/FileUpload/FileList";
+export { SegmentedControl } from "./components/SegmentedControl/SegmentedControl";
+export type { SegmentedControlProps, SegmentedOption } from "./components/SegmentedControl/SegmentedControl";
+export { Pagination, pageEntries } from "./components/Pagination/Pagination";
+export type { PaginationProps, PageEntry } from "./components/Pagination/Pagination";
+export { Spinner } from "./components/Spinner/Spinner";
+export type { SpinnerProps, SpinnerSize } from "./components/Spinner/Spinner";
+export { Card } from "./components/Card/Card";
+export type { CardProps, CardDefaultProps, CardMetricProps, CardDelta, CardDeltaTone, CardHeadingLevel } from "./components/Card/Card";

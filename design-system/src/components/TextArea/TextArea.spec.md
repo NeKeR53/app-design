@@ -11,7 +11,7 @@ Ne pas l'utiliser pour :
 ## Anatomie
 Celle de `Field` (Field.spec.md), plus :
 - dans le cadre, le texte, avec 10 px de marge à gauche et à droite et 6 px en haut et en bas ;
-- **compteur** (si `maxLength`) : « 12 / 500 », en `--fs-xs`, `--fg-3`, calé à droite sur la ligne de l'aide.
+- **compteur** (si `maxLength`) : « 12 / 500 », en `--fs-xs`, `--fg-3`, calé à droite sur la ligne de l'aide ; au-delà de la limite, « 4 caractères en trop » en `--danger` (D-343).
 
 ## Variantes
 Aucune.
@@ -23,7 +23,7 @@ Les options communes de `Field`, plus :
 | `value` / `defaultValue` | `string` | `""` | Valeur contrôlée ou initiale. |
 | `onChange` | `(value: string) => void` | aucune | À chaque frappe. |
 | `placeholder` | `string` | aucun | Exemple de valeur. |
-| `maxLength` | `number` | aucune | Longueur maximale ; affiche le compteur. |
+| `maxLength` | `number` | aucune | Longueur maximale, dépassable ; affiche le compteur ; au-delà, valeur refusée (D-343). |
 | `minRows` | `number` | `3` | Hauteur de départ, en lignes (D-133). |
 | `maxRows` | `number` | `10` | Hauteur maximale, en lignes ; au-delà, le texte défile (D-133). |
 
@@ -33,13 +33,14 @@ Les options communes de `Field`, plus :
 - Les exclusions de `Field`.
 
 ## États
-Ceux de `Field`. Compteur : en `--danger` quand la limite est atteinte.
+Ceux de `Field`. Compteur : « n caractères en trop » en `--danger` au-delà de la limite ; à la limite, il reste en `--fg-3` (D-343).
 
 ## Comportement
 | Règle | Niveau de réglage | Test (story) |
 |---|---|---|
 | Commence à `minRows` lignes, grandit avec le texte jusqu'à `maxRows`, puis défile (D-133) | réglable par page (`minRows`, `maxRows`) | `Hauteur` |
 | Compteur mis à jour à chaque frappe | verrouillé | `Compteur` |
+| Limite dépassable : pas de `maxlength` natif, un collage n'est pas coupé ; au-delà, compteur en `--danger`, lu par une zone `aria-live="polite"` 1 s après la dernière frappe ; erreur « Saisissez n caractères au plus. » en quittant le champ ou à l'envoi, envoi refusé (D-343) | verrouillé | `LimiteDepassable` |
 | Vérification : celle de `Field` (D-132) | verrouillé | `Verification` |
 
 ## Contenu
@@ -52,7 +53,7 @@ Celle de `Field` ; la hauteur d'une ligne suit `--fs-md` et `--lh`.
 Entrée ajoute une ligne. Tab sort du champ.
 
 ## Accessibilité
-React Aria `TextField` avec `TextArea` : rôle `textbox` multiligne. Le compteur est relié au champ par `aria-describedby`.
+React Aria `TextField` avec `TextArea` : rôle `textbox` multiligne. Le compteur est relié au champ par `aria-describedby` ; une zone `aria-live="polite"` lit « n caractères restants » ou « n caractères en trop » après une pause d'1 s.
 
 ## Taille d'écran
 Celle de `Field`.

@@ -282,3 +282,25 @@ export const AncienNom: Story = {
     await expect(within(canvasElement).getByText("En relecture")).toBeVisible();
   },
 };
+
+/** Accès refusé (`isForbidden`) : cadenas, « Vous n'avez pas accès à cet élément », « Demander l'accès » ; aucune donnée montrée (D-351). */
+export const AccesRefuse: Story = {
+  render: () => {
+    const [asked, setAsked] = useState(false);
+    return (
+      <div>
+        <output data-testid="asked">{String(asked)}</output>
+        {frame(<Drawer isForbidden header={{ title: "Contrat secret" }} onRequestAccess={() => setAsked(true)} />)}
+      </div>
+    );
+  },
+  play: async ({ canvasElement }) => {
+    const c = within(canvasElement);
+    await expect(c.getByRole("heading", { name: "Vous n'avez pas accès à cet élément" })).toBeVisible();
+    await expect(c.getByText("Demandez l'accès à un administrateur.")).toBeVisible();
+    await expect(c.queryByText("Contrat secret")).toBeNull();
+    await expect(canvasElement.querySelector('[data-variant="forbidden"] svg')).not.toBeNull();
+    await userEvent.click(c.getByRole("button", { name: "Demander l'accès" }));
+    await waitFor(() => expect(c.getByTestId("asked").textContent).toBe("true"));
+  },
+};

@@ -83,6 +83,13 @@ export const SuggestionsApi: Story = {
     // (le <output> de la démo a lui aussi le rôle status : on l'écarte)
     const zones = () => body().getAllByRole("status").filter((z) => z.tagName !== "OUTPUT");
     await waitFor(() => expect(zones().map((z) => z.textContent)).toEqual(["Recherche en cours"]));
+    // Deux roues `Spinner` décoratives de 14 px : dans le champ et dans la ligne « Recherche… » (D-360).
+    const rings = [...document.body.querySelectorAll<HTMLElement>("[data-spinner]")];
+    await expect(rings).toHaveLength(2);
+    for (const r of rings) {
+      await expect(r).toHaveAttribute("aria-hidden", "true");
+      await expect(r.getBoundingClientRect().width).toBe(14);
+    }
     await waitFor(() => expect(body().getAllByRole("option")).toHaveLength(4), { timeout: 2000 });
     await userEvent.keyboard("{ArrowDown}{Enter}");
     await expect(c.getByRole("group", { name: "Critères de recherche" })).toHaveTextContent("Demande d'accès au dossier Clients");

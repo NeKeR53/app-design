@@ -30,7 +30,8 @@ Aucune.
 | `Checkbox` : `value` | `string` | — (obligatoire dans un groupe) | Valeur dans le groupe. |
 | `Checkbox` : `isIndeterminate` | `boolean` | `false` | État mixte : case parente d'une liste partiellement cochée. |
 | `Checkbox` : `isRequired`, `validate`, `error`, `isDisabled`, `isReadOnly`, `name` | | | Comme `Field` (D-132). |
-| `CheckboxGroup` : `label`, `hideLabel`, `description`, `isRequired`, `validate`, `error`, `isDisabled`, `name` | | | Comme `Field`. `isRequired` : au moins une case. |
+| `Checkbox` : `requiredMessage` | `string` | aucun | Remplace « Cochez « <libellé> ». » (D-344). |
+| `CheckboxGroup` : `label`, `hideLabel`, `description`, `isRequired`, `requiredMessage`, `validate`, `error`, `isDisabled`, `isReadOnly`, `name` | | | Comme `Field`. `isRequired` : au moins une case ; message « Choisissez une valeur pour « <libellé> ». » (D-344). |
 | `CheckboxGroup` : `value` / `defaultValue` / `onChange` | `string[]` | `[]` | Valeurs cochées. |
 | `CheckboxGroup` : `orientation` | `"vertical" \| "horizontal"` | `"vertical"` | Horizontal : 2 ou 3 options courtes (D-138). |
 
@@ -49,7 +50,7 @@ Aucune.
 | Focus | Anneau `--accent` de 2 px autour de la case. |
 | Erreur | Bord `--danger` ; message sous la case ou sous le groupe. |
 | Désactivée | Opacité 40 %, case et libellé. |
-| Lecture seule | Rendu normal ; un clic ne change rien. |
+| Lecture seule | Comme D-131 : case en `--surface-side`, bord `--line`, coche ou trait en `--fg-2` au lieu de l'accent, pas de survol ; cadenas de 14 px en `--fg-3` après le libellé (case seule) ou après le libellé du groupe ; focusable, lisible ; un clic ou Espace ne change rien (D-342). |
 
 ## Comportement
 | Règle | Niveau de réglage | Test (story) |
@@ -58,6 +59,7 @@ Aucune.
 | Case parente : placée au-dessus du groupe, hors de lui, avec le groupe décalé de 24 px ; l'app calcule l'état mixte ; un clic sur une case mixte coche tout | verrouillé | `Mixte` |
 | Vérification : celle de `Field` ; erreur au changement ou à l'envoi (D-132) | verrouillé | `Verification` |
 | La valeur est envoyée avec le formulaire ; rien ne s'applique avant (D-137) | verrouillé | `Groupe` |
+| Lecture seule : rendu gris et cadenas, focusable, rien ne change (D-342) | verrouillé | `LectureSeule` |
 
 ## Contenu
 Libellé long : retour à la ligne, la case reste en face de la première ligne.
@@ -75,7 +77,7 @@ React Aria `Checkbox` et `CheckboxGroup` : `input type="checkbox"` caché, nom =
 Sur mobile, un groupe horizontal passe en vertical.
 
 ## Erreurs
-Voir États ; la phrase dit quoi faire (« Cochez cette case pour continuer. »).
+Voir États ; la phrase dit quoi faire, construite à partir du libellé : « Cochez « <libellé> ». » pour une case seule, « Choisissez une valeur pour « <libellé> ». » pour un groupe (D-344).
 
 ## Placement
 `FormPage`, formulaire en modale. Jamais dans une ligne de réglage ni dans le panneau de détail : y mettre un `Toggle` (D-137).
@@ -84,7 +86,7 @@ Voir États ; la phrase dit quoi faire (« Cochez cette case pour continuer. »)
 Le groupe contient des `Checkbox`. Ne contient pas d'autre champ.
 
 ## Décisions
-D-022, D-040, D-130, D-132, D-135, D-137, D-138
+D-022, D-040, D-130, D-132, D-135, D-137, D-138 ; D-342, D-344
 
 ## Questions ouvertes
 Aucune.

@@ -28,11 +28,12 @@ Ne pas l'utiliser pour :
 | `onSave` | `(value) => void \| Promise` | — (obligatoire) | Enregistre ; une promesse rejetée garde la saisie ouverte (D-323). |
 | `mode` | `"line" \| "multiline"` | `"line"` | Une ou plusieurs lignes. |
 | `placeholder` | `string` | « — » | Texte d'invite d'une valeur vide. |
-| `isRequired` | `boolean` | `false` | Valeur vide refusée (D-132). |
+| `isRequired` | `boolean` | `false` | Valeur vide refusée (D-132), avec « Renseignez « <libellé> ». » (D-344). |
+| `requiredMessage` | `string` | aucun | Remplace ce message (D-344). |
 | `validate` | `(value) => string \| null` | aucune | Vérification ; la phrase s'affiche sous le champ (D-132). |
 | `isDisabled` | `boolean` | `false` | Texte simple, sans saisie. |
 | `isEditing`, `onEditingChange` | `boolean`, `(v) => void` | aucun | Ouverture pilotée par l'app (« Renommer » dans un menu). |
-| `maxLength` | `number` | aucune | Longueur maximale. |
+| `maxLength` | `number` | aucune | Longueur maximale, dépassable : au-delà, « n caractères en trop » sous le champ et enregistrement refusé (D-343). |
 
 ## Exclus
 - Pas d'éditeur fourni par l'app (`renderEditor` d'Alfred) : du texte seulement (D-324).
@@ -60,7 +61,8 @@ Ne pas l'utiliser pour :
 | Un clic à côté ou Tab enregistre (D-323) | verrouillé | `ClicACote` |
 | Échap annule ; valeur inchangée : pas d'appel à `onSave` (D-323) | verrouillé | `Clavier` |
 | Promesse en cours : lecture seule ; rejetée : saisie ouverte, valeur gardée, message `actionFailed` (D-323) | verrouillé | `Echec` |
-| `isRequired` et `validate` bloquent l'enregistrement, message sous le champ (D-132) | réglable par l'app | `Obligatoire` |
+| `isRequired` et `validate` bloquent l'enregistrement, message sous le champ (D-132) ; message d'obligation construit à partir du libellé, ou `requiredMessage` (D-344) | réglable par l'app | `Obligatoire`, `MessageObligatoire` |
+| Limite dépassable : la saisie continue ; au-delà, « n caractères en trop » en `--danger`, lu après 1 s de pause ; Entrée ou sortie : « Saisissez n caractères au plus. », saisie ouverte (D-343) | verrouillé | `LimiteDepassable` |
 | Après Entrée ou Échap, le focus revient à la valeur (D-323) | verrouillé | `ParDefaut`, `Clavier` |
 | Le texte ne bouge pas à l'ouverture (D-322) | verrouillé | `DansLePanneau` |
 
@@ -93,7 +95,7 @@ Titre d'un élément (en-tête de `DetailPage`, haut du panneau de détail) ; va
 Reprend les pièces internes de `Field` (cadre D-130, libellé, erreur) et le `TextField` de React Aria.
 
 ## Décisions
-D-040, D-130, D-132, D-322, D-323, D-324
+D-040, D-130, D-132, D-322, D-323, D-324 ; D-343, D-344
 
 ## Questions ouvertes
 Aucune.

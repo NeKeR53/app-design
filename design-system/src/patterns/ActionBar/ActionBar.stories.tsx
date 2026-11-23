@@ -274,3 +274,64 @@ export const PetitEcran: Story = {
     }
   },
 };
+
+/** `disabledReason` : bouton, bouton-icône et entrée de « … » restent focusables ; un clic ne lance rien. */
+export const InactiveAvecRaison: Story = {
+  render: (args) => <ActionBar {...args} />,
+  args: {
+    zone: "header",
+    actions: [
+      { id: "export", label: "Exporter en CSV", icon: <ArrowDown />, onPress: fn(), disabledReason: "Aucune ligne à exporter." },
+      { id: "import", label: "Importer un fichier…", onPress: fn(), disabledReason: "Import réservé aux éditeurs." },
+      { id: "save", label: "Publier", primary: true, onPress: fn(), disabledReason: "Complétez le titre pour publier." },
+    ],
+  },
+  play: async ({ canvasElement, args }) => {
+    const c = within(canvasElement);
+    const [exp, imp, save] = args.actions as [Action, Action, Action];
+    const icon = c.getByRole("button", { name: "Exporter en CSV" });
+    await expect(icon).toHaveAttribute("aria-disabled", "true");
+    await expect(icon).toHaveAccessibleDescription("Aucune ligne à exporter.");
+    const publish = c.getByRole("button", { name: "Publier" });
+    await expect(publish).toHaveAccessibleDescription("Complétez le titre pour publier.");
+    await userEvent.click(icon);
+    await userEvent.click(publish);
+    publish.focus();
+    await expect(publish).toHaveFocus();
+    await userEvent.click(c.getByRole("button", { name: "Plus d'actions" }));
+    const item = await waitFor(() => body().getByRole("menuitem", { name: "Importer un fichier…" }));
+    await expect(item).toHaveAccessibleDescription("Import réservé aux éditeurs.");
+    await userEvent.click(item);
+    await expect(body().getByRole("menu")).toBeInTheDocument();
+    await userEvent.keyboard("{Escape}");
+    await expect(exp.onPress).not.toHaveBeenCalled();
+    await expect(imp.onPress).not.toHaveBeenCalled();
+    await expect(save.onPress).not.toHaveBeenCalled();
+  },
+};
+
+/** Une action lancée depuis « … » : le bouton « … » montre l'attente et ignore les clics (D-116). */
+export const AttenteMenu: Story = {
+  name: "Attente depuis « … »",
+  render: (args) => <ActionBar {...args} />,
+  args: {
+    zone: "header",
+    onDone: fn(),
+    actions: [{ id: "import", label: "Importer un fichier…", onPress: fn(() => wait(500)) }],
+  },
+  play: async ({ canvasElement, args }) => {
+    const c = within(canvasElement);
+    const more = c.getByRole("button", { name: "Plus d'actions" });
+    await userEvent.click(more);
+    await userEvent.click(await waitFor(() => body().getByRole("menuitem", { name: "Importer un fichier…" })));
+    await waitFor(() => expect(more).toHaveAttribute("data-pending", "true"));
+    await expect(more).toHaveAttribute("aria-disabled", "true");
+    await expect(within(more).getByRole("progressbar")).toBeInTheDocument();
+    // Pendant l'attente, un clic n'ouvre pas le menu.
+    await userEvent.click(more);
+    await expect(body().queryByRole("menu")).toBeNull();
+    await waitFor(() => expect(more).not.toHaveAttribute("data-pending"), { timeout: 2000 });
+    await expect(args.onDone).toHaveBeenCalledTimes(1);
+    await expect(args.actions[0]!.onPress).toHaveBeenCalledTimes(1);
+  },
+};

@@ -511,3 +511,62 @@ export const ReperesNommes: Story = {
     for (const el of c.getAllByRole("complementary")) await expect(el).toHaveAccessibleName();
   },
 };
+
+/** F6 et Maj+F6 : barre, sidebar, contenu, détail, puis retour ; chaque zone retrouve son dernier élément (D-350). */
+export const ZonesF6: Story = {
+  render: () => <Demo />,
+  play: async ({ canvasElement }) => {
+    const c = within(canvasElement);
+    const zone = () => (document.activeElement as HTMLElement | null)?.closest<HTMLElement>("[data-socle-zone]")?.dataset.socleZone;
+    await waitFor(() => expect(c.getByRole("complementary", { name: "Détail" })).toBeVisible());
+    (document.activeElement as HTMLElement | null)?.blur();
+    await userEvent.keyboard("{F6}");
+    await expect(zone()).toBe("bar");
+    await userEvent.keyboard("{F6}");
+    await expect(zone()).toBe("side");
+    // Dans la sidebar, on va sur « Planning » : F6 puis Maj+F6 y reviennent.
+    c.getByRole("row", { name: /Planning/ }).focus();
+    await userEvent.keyboard("{F6}");
+    await expect(zone()).toBe("main");
+    await userEvent.keyboard("{Shift>}{F6}{/Shift}");
+    await expect(document.activeElement).toBe(c.getByRole("row", { name: /Planning/ }));
+    await userEvent.keyboard("{F6}{F6}");
+    await expect(zone()).toBe("detail");
+    await userEvent.keyboard("{F6}");
+    await expect(zone()).toBe("bar");
+    await userEvent.keyboard("{Shift>}{F6}{/Shift}");
+    await expect(zone()).toBe("detail");
+  },
+};
+
+/** Web : « Aller au contenu » est le premier élément atteignable, caché jusqu'au focus ; il envoie le focus sur le contenu (D-350, WCAG 2.4.1). */
+export const LienEvitement: Story = {
+  render: () => <Demo />,
+  play: async ({ canvasElement }) => {
+    const c = within(canvasElement);
+    (document.activeElement as HTMLElement | null)?.blur();
+    const skip = c.getByRole("link", { name: "Aller au contenu" });
+    await expect(skip.getBoundingClientRect().width).toBeLessThanOrEqual(1);
+    await userEvent.tab();
+    await expect(skip).toHaveFocus();
+    await expect(skip.getBoundingClientRect().width).toBeGreaterThan(20);
+    await userEvent.keyboard("{Enter}");
+    await expect(document.activeElement).toBe(canvasElement.querySelector("main"));
+  },
+};
+
+/** Bureau (Tauri) : pas de lien d'évitement ; F6 reste (D-350). */
+export const SansLienEnBureau: Story = {
+  render: () => (
+    <SocleProvider storageKey="storybook" platform="windows">
+      <Demo />
+    </SocleProvider>
+  ),
+  play: async ({ canvasElement }) => {
+    const c = within(canvasElement);
+    await expect(c.queryByRole("link", { name: "Aller au contenu" })).toBeNull();
+    (document.activeElement as HTMLElement | null)?.blur();
+    await userEvent.keyboard("{F6}");
+    await expect((document.activeElement as HTMLElement).closest("[data-socle-zone]")).toHaveAttribute("data-socle-zone", "bar");
+  },
+};

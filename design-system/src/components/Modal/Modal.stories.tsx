@@ -4,6 +4,8 @@ import { expect, fn, userEvent, waitFor, within } from "storybook/test";
 import { Modal, type ModalSize } from "./Modal";
 import { useConfirm, type ConfirmOptions } from "./useConfirm";
 import { Button } from "../Button/Button";
+import { List } from "../List/List";
+import { X } from "../../icons";
 
 const meta: Meta<typeof Modal> = {
   title: "Composants/Modal",
@@ -418,5 +420,88 @@ export const Empilement: Story = {
     await expect(body().getByRole("dialog")).toBeInTheDocument();
     await userEvent.keyboard("{Escape}");
     await waitFor(() => expect(body().queryByRole("dialog")).toBeNull());
+  },
+};
+
+/* ---------- Focus de repli : le déclencheur a disparu ---------- */
+
+const TICKETS = [
+  { id: "vpn", title: "Accès au VPN" },
+  { id: "ecran", title: "Écran qui scintille" },
+  { id: "badges", title: "Commande de badges" },
+];
+
+function DeleteFromList() {
+  const confirm = useConfirm();
+  const [items, setItems] = useState(TICKETS);
+  return (
+    <main className="max-w-[420px] font-sans text-md text-fg">
+      <List
+        label="Demandes"
+        items={items}
+        itemActions={(it) => [
+          {
+            icon: <X />,
+            label: "Supprimer",
+            onPress: async () => {
+              if (await confirm({ title: `Supprimer « ${it.title} » ?`, confirmLabel: "Supprimer" })) setItems((all) => all.filter((x) => x.id !== it.id));
+            },
+          },
+        ]}
+      />
+    </main>
+  );
+}
+
+async function deleteRow(title: string) {
+  const row = body().getByRole("row", { name: new RegExp(title) });
+  // Ligne choisie : ses actions s'affichent (D-066).
+  await userEvent.click(row);
+  await userEvent.click(await waitFor(() => within(row).getByRole("button", { name: "Supprimer" })));
+  const dialog = await waitFor(() => body().getByRole("alertdialog"));
+  await userEvent.click(within(dialog).getByRole("button", { name: "Supprimer" }));
+  await waitFor(() => expect(body().queryByRole("alertdialog")).toBeNull());
+}
+
+/**
+ * Le déclencheur supprimé : le focus va à la ligne suivante, sinon à la précédente, sinon à la liste
+ * (WAI-ARIA APG, Dialog). Jamais sur `body`.
+ */
+export const FocusApresSuppression: StoryObj = {
+  render: () => <DeleteFromList />,
+  play: async () => {
+    await deleteRow("Écran qui scintille");
+    await waitFor(() => expect(document.activeElement).toBe(body().getByRole("row", { name: /Commande de badges/ })));
+    // Dernière ligne : la précédente.
+    await deleteRow("Commande de badges");
+    await waitFor(() => expect(document.activeElement).toBe(body().getByRole("row", { name: /Accès au VPN/ })));
+    // Dernière ligne restante : la liste, ou à défaut `main`.
+    await deleteRow("Accès au VPN");
+    await waitFor(() => expect(document.activeElement?.matches("[role=grid], main")).toBe(true));
+  },
+};
+
+/** `returnFocusTo` remplace le déclencheur à la fermeture. */
+export const RetourDuFocus: Story = {
+  render: () => {
+    const [open, setOpen] = useState(false);
+    return (
+      <div className="flex gap-2">
+        <Button onPress={() => setOpen(true)}>Ouvrir</Button>
+        <input aria-label="Recherche" className={fieldClass} />
+        <Modal
+          isOpen={open}
+          onOpenChange={setOpen}
+          title="Filtres"
+          returnFocusTo={() => document.querySelector<HTMLElement>("input[aria-label=Recherche]")}
+          footer={<Button onPress={() => setOpen(false)}>Fermer</Button>}
+        />
+      </div>
+    );
+  },
+  play: async ({ canvasElement }) => {
+    await openWith(canvasElement, "Ouvrir");
+    await userEvent.keyboard("{Escape}");
+    await waitFor(() => expect(within(canvasElement).getByRole("textbox", { name: "Recherche" })).toHaveFocus());
   },
 };

@@ -76,6 +76,28 @@ function tabbables(root: HTMLElement): HTMLElement[] {
 }
 const OVERLAY_CLOSE_DELAY = 250;
 
+/** Visible à l'écran (pas `display: none`, pas hors du DOM). */
+const isShown = (el: HTMLElement) => el.isConnected && el.getClientRects().length > 0;
+
+/**
+ * Donne le focus à une zone (F6, lien d'évitement) : dernier élément focalisé de la zone, sinon
+ * le premier atteignable, sinon la zone elle-même, rendue focalisable le temps du focus.
+ */
+function focusZone(zone: HTMLElement, last: HTMLElement | undefined, preferZone = false) {
+  if (!preferZone) {
+    const target = last && zone.contains(last) && isShown(last) ? last : tabbables(zone)[0];
+    if (target) {
+      target.focus();
+      return;
+    }
+  }
+  if (!zone.hasAttribute("tabindex")) {
+    zone.setAttribute("tabindex", "-1");
+    zone.addEventListener("blur", () => zone.removeAttribute("tabindex"), { once: true });
+  }
+  zone.focus();
+}
+
 function navItems(sidebar: ReactElement<SidebarProps>): SidebarItemProps[] {
   const out: SidebarItemProps[] = [];
   // Navigation, puis entrées fixes du bas (D-230) : elles peuvent aussi aller dans la barre d'onglets.
@@ -106,6 +128,26 @@ export function AppShell({ pageTitle, pageSummary, pageStatus, views, activeView
   const viewsId = useId();
   const hasViews = Boolean(views && views.length > 0 && activeView && onViewChange);
   const panelProps = useTabPanelProps(hasViews ? viewsId : undefined);
+  // Zones (D-350) : F6 et Maj+F6 passent de la barre à la sidebar, au contenu, au détail.
+  const rootRef = useRef<HTMLDivElement>(null);
+  const mainId = useId();
+  // `main` garde l'id que lui donne le lien des vues (tabpanel), sinon le sien.
+  const mainDomId = typeof panelProps.id === "string" ? panelProps.id : mainId;
+  const lastInZone = useRef(new WeakMap<HTMLElement, HTMLElement>());
+  const zones = () => [...(rootRef.current?.querySelectorAll<HTMLElement>("[data-socle-zone]") ?? [])].filter(isShown);
+  const rememberFocus = (e: { target: EventTarget }) => {
+    if (!(e.target instanceof HTMLElement)) return;
+    const zone = e.target.closest<HTMLElement>("[data-socle-zone]");
+    if (zone && zone !== e.target) lastInZone.current.set(zone, e.target);
+  };
+  const cycleZone = (dir: 1 | -1) => {
+    const list = zones();
+    if (list.length === 0) return;
+    const active = document.activeElement;
+    const i = list.findIndex((z) => z.contains(active));
+    const next = list[i < 0 ? (dir > 0 ? 0 : list.length - 1) : (i + dir + list.length) % list.length]!;
+    focusZone(next, lastInZone.current.get(next));
+  };
 
   // Sidebar dépliée par défaut, état mémorisé (D-016).
   const [collapsed, setCollapsed] = useStoredState("shell:sidebar-collapsed", false);
@@ -133,6 +175,14 @@ export function AppShell({ pageTitle, pageSummary, pageStatus, views, activeView
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       const mod = isMac ? e.metaKey : e.ctrlKey;
+      // F6 / Maj+F6 : zone suivante ou précédente, sauf depuis une fenêtre hors du cadre (D-350).
+      if (e.key === "F6" && !mod && !e.altKey) {
+        const active = document.activeElement;
+        if (active && active !== document.body && !rootRef.current?.contains(active)) return;
+        e.preventDefault();
+        cycleZone(e.shiftKey ? -1 : 1);
+        return;
+      }
       if (mod && e.key.toLowerCase() === "b" && !isMobile) {
         e.preventDefault();
         toggleSidebar();
@@ -196,9 +246,32 @@ export function AppShell({ pageTitle, pageSummary, pageStatus, views, activeView
   const width = detailWidth ?? undefined;
 
   return (
-    <div className="relative box-border grid h-dvh max-h-full grid-rows-[var(--bar-h)_minmax(0,1fr)] overflow-hidden bg-surface font-sans text-md text-fg max-tablet:grid-rows-[var(--bar-h)_minmax(0,1fr)_auto]">
+    <div
+      ref={rootRef}
+      onFocus={rememberFocus}
+      className="relative box-border grid h-dvh max-h-full grid-rows-[var(--bar-h)_minmax(0,1fr)] overflow-hidden bg-surface font-sans text-md text-fg max-tablet:grid-rows-[var(--bar-h)_minmax(0,1fr)_auto]"
+    >
+      {/* Web : lien d'évitement, premier élément atteignable, visible au focus (WCAG 2.4.1, D-350).
+          Hors de la grille (position absolue) pour ne pas décaler les rangées. */}
+      {platform === "web" && (
+        <a
+          href={`#${mainDomId}`}
+          onClick={(e) => {
+            e.preventDefault();
+            const main = document.getElementById(mainDomId);
+            if (main) focusZone(main, undefined, true);
+          }}
+          className={cx(
+            "sr-only rounded-md bg-surface font-medium text-fg shadow-lg",
+            "focus:not-sr-only focus:absolute focus:top-1.5 focus:left-1.5 focus:z-[60] focus:px-3 focus:py-1.5",
+            focusRing,
+          )}
+        >
+          {m.skipToContent}
+        </a>
+      )}
       {/* ---------- Barre supérieure ---------- */}
-      <header className="flex min-w-0 border-b border-line" {...dragRegion}>
+      <header data-socle-zone="bar" className="flex min-w-0 border-b border-line" {...dragRegion}>
         <div
           className={cx(
             "flex shrink-0 items-center gap-0.5 px-2",
@@ -258,9 +331,10 @@ export function AppShell({ pageTitle, pageSummary, pageStatus, views, activeView
       <div className="relative flex min-h-0 min-w-0">
         {/* Pas de repère `complementary` autour de la sidebar : son repère est la `navigation`
             nommée qu'elle contient (AppShell.spec.md, Accessibilité). */}
-        {sidebarVisible && <div className="socle-side box-border w-(--side-w) shrink-0 border-r border-line">{sidebar}</div>}
+        {sidebarVisible && <div data-socle-zone="side" className="socle-side box-border w-(--side-w) shrink-0 border-r border-line">{sidebar}</div>}
         {overlay && collapsed && !isMobile && (
           <div
+            data-socle-zone="side"
             onPointerEnter={enterOverlay}
             onPointerLeave={leaveOverlay}
             onFocus={focusOverlay}
@@ -271,7 +345,7 @@ export function AppShell({ pageTitle, pageSummary, pageStatus, views, activeView
           </div>
         )}
         {/* Panneau large : le contenu garde au moins 360 px (D-241). */}
-        <main {...panelProps} className={cx("min-w-0 flex-1 overflow-auto", wide && showDetail && "min-w-[360px]")}>{children}</main>
+        <main {...panelProps} id={mainDomId} data-socle-zone="main" className={cx("min-w-0 flex-1 overflow-auto outline-none", wide && showDetail && "min-w-[360px]")}>{children}</main>
         {detail && showDetail && (
           <DetailColumn
             floating={floating}
@@ -289,7 +363,7 @@ export function AppShell({ pageTitle, pageSummary, pageStatus, views, activeView
 
       {/* ---------- Barre d'onglets mobile (D-003) ---------- */}
       {isMobile && (
-        <nav aria-label={m.mainNavigation} className="flex border-t border-line bg-surface-side px-1.5 py-1">
+        <nav data-socle-zone="tabbar" aria-label={m.mainNavigation} className="flex border-t border-line bg-surface-side px-1.5 py-1">
           {entries.map((e) => {
             const on = sidebar.props.selectedId === e.id;
             return (
@@ -420,6 +494,7 @@ function DetailColumn({ floating, fullscreen, width, form, wide, onWidth, onClos
   return (
     <aside
       ref={ref}
+      data-socle-zone="detail"
       aria-label={m.detail}
       onKeyDown={trapTab}
       style={!floating && !wide && width ? { width } : undefined}

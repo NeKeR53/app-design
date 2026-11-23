@@ -10,6 +10,7 @@ import { AlertTriangle } from "../../icons";
 import { useMessages } from "../../provider/SocleProvider";
 import { Button } from "../Button/Button";
 import { modalClass, nudge, overlayClass, useAriaBusy } from "./Modal";
+import { captureFocusOrigin, restoreFocusAfterClose, type FocusOrigin, type ReturnFocusTarget } from "./focusFallback";
 
 export interface ConfirmOptions {
   /** La question (« Supprimer « Atelier » ? »). */
@@ -24,6 +25,11 @@ export interface ConfirmOptions {
   tone?: "danger" | "default";
   /** Action lancée au clic : la confirmation reste ouverte pendant l'action et montre l'erreur si elle échoue (D-128). */
   onConfirm?: () => Promise<void> | void;
+  /**
+   * Focus à la fermeture, à la place du déclencheur. Défaut : le déclencheur ; s'il a disparu (la ligne
+   * supprimée), l'élément suivant de sa collection, sinon le précédent, sinon la collection, sinon `main`.
+   */
+  returnFocusTo?: ReturnFocusTarget;
 }
 
 /** Ouvre la confirmation ; rend `true` si l'utilisateur confirme, `false` s'il annule. */
@@ -41,6 +47,8 @@ export function useConfirm(): ConfirmFunction {
 interface Request {
   options: ConfirmOptions;
   resolve: (ok: boolean) => void;
+  /** Déclencheur et sa place, notés à la demande (focus de repli). */
+  origin: FocusOrigin;
 }
 
 /** Hôte unique de la confirmation, placé par SocleProvider autour de l'app. */
@@ -55,6 +63,7 @@ export function ConfirmProvider({ children }: { children: ReactNode }) {
   const current = useRef<Request | null>(null);
   const busy = useRef(false);
   const dialogRef = useAriaBusy(pending);
+  const cancelRestore = useRef<(() => void) | null>(null);
 
   const settle = useCallback((ok: boolean) => {
     const r = current.current;
@@ -63,14 +72,19 @@ export function ConfirmProvider({ children }: { children: ReactNode }) {
     setOpen(false);
     setPending(false);
     r?.resolve(ok);
+    // Focus de repli si le déclencheur a disparu, une fois la fenêtre retirée.
+    if (r) cancelRestore.current = restoreFocusAfterClose(r.origin, modalRef.current, r.options.returnFocusTo);
   }, []);
 
   // Une seule confirmation à la fois : une nouvelle demande annule la précédente (D-127).
   const confirm = useCallback<ConfirmFunction>(
     (options) =>
       new Promise<boolean>((resolve) => {
+        cancelRestore.current?.();
+        // Une demande qui en remplace une autre garde le déclencheur de la première.
+        const origin = current.current?.origin ?? captureFocusOrigin();
         current.current?.resolve(false);
-        const r = { options, resolve };
+        const r = { options, resolve, origin };
         current.current = r;
         busy.current = false;
         setRequest(r);
@@ -81,7 +95,13 @@ export function ConfirmProvider({ children }: { children: ReactNode }) {
     [],
   );
 
-  useEffect(() => () => current.current?.resolve(false), []);
+  useEffect(
+    () => () => {
+      current.current?.resolve(false);
+      cancelRestore.current?.();
+    },
+    [],
+  );
 
   const cancel = () => {
     if (busy.current) return nudge(modalRef.current);

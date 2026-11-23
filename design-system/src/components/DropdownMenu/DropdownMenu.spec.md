@@ -34,6 +34,7 @@ Aucune variante du conteneur. Élément danger (option `danger`) : libellé et i
 | `DropdownMenu.Item` : `shortcut` | `string` (ex. `"Mod+N"`) | aucun | Raccourci affiché à droite, converti selon la plateforme (D-048). |
 | `DropdownMenu.Item` : `danger` | `boolean` | `false` | Action destructrice : rouge, placée en dernier après un séparateur (D-049). |
 | `DropdownMenu.Item` : `isDisabled` | `boolean` | `false` | Élément désactivé. |
+| `DropdownMenu.Item` : `disabledReason` | `string` | aucune | Inactif avec une raison : l'élément reste atteignable aux flèches, le choisir ne fait rien et laisse le menu ouvert ; la raison s'affiche sous le libellé, en `--fs-sm` et `--fg-3`. Prime sur `isDisabled`. Dans une section de choix, l'élément garde son état coché. |
 | `DropdownMenu.Section` : `title`, `selectionMode` | `string`, `"single" \| "multiple"` | aucun | Groupe d'éléments ; avec `selectionMode`, les éléments sont des choix cochables. |
 | `placement` | `"bottom start" \| "bottom end" \| "top start" \| "top end"` | `"bottom start"` | Côté préféré ; il change si la place manque. |
 | `title` | `string` | aucun | Titre en tête du menu : l'objet visé (D-327). |
@@ -53,6 +54,7 @@ Aucune variante du conteneur. Élément danger (option `danger`) : libellé et i
 | Par défaut | Sans fond, libellé `--fg`, icône `--fg-2`. |
 | Survol et focus clavier | Fond `--hover`. Un seul élément mis en avant à la fois (souris ou clavier). |
 | Désactivé | Opacité 40 %, aucune action. |
+| Inactif avec une raison | Opacité 40 %, raison sous le libellé (la ligne s'agrandit) ; fond `--hover` au focus et au survol ; aucune action. |
 | Coché | Coche en fin de ligne (D-050). |
 
 ## Comportement
@@ -61,6 +63,7 @@ Aucune variante du conteneur. Élément danger (option `danger`) : libellé et i
 | S'ouvre au clic ou avec Entrée, Espace ou flèche bas sur le bouton ; le focus va au premier élément | verrouillé | `Ouverture` |
 | Un clic ou Entrée sur un élément déclenche l'action et ferme le menu | verrouillé | `Action` |
 | Choix : coche à droite ; un choix unique ferme le menu, un choix multiple le laisse ouvert (D-050) | verrouillé | `Choix` |
+| `disabledReason` : atteint aux flèches, `aria-disabled`, raison visible et en description ; un clic ou Entrée ne fait rien et le menu reste ouvert | verrouillé | `InactifAvecRaison` |
 | Échap, un clic dehors ou Tab ferment le menu ; le focus revient au bouton | verrouillé | `Fermeture` |
 | Se place du côté où il y a de la place ; jamais coupé par un bord (layout-rules) | verrouillé | `Placement` |
 | Ouverture et fermeture sans animation (D-026) | verrouillé | `Ouverture` |
@@ -78,12 +81,13 @@ Aucune variante du conteneur. Élément danger (option `danger`) : libellé et i
 Hauteur d'élément `--row-h` (34 px en web, 28 px en desktop). Texte `--fs-md`.
 
 ## Clavier
-Flèches haut et bas : élément suivant ou précédent, en boucle. Origine et Fin. Une lettre : premier élément qui commence par elle. Entrée ou Espace : action. Échap : ferme. Sur une zone branchée par `useContextMenu` : Maj+F10 ou touche Menu ouvrent le menu (D-327). Sous-menu : flèche droite l'ouvre, flèche gauche ou Échap le referme et rend le focus à l'élément parent (D-051).
+Flèches haut et bas : élément suivant ou précédent, en boucle ; un élément désactivé est sauté, un élément inactif avec une raison est atteint. Origine et Fin. Une lettre : premier élément qui commence par elle. Entrée ou Espace : action. Échap : ferme. Sur une zone branchée par `useContextMenu` : Maj+F10 ou touche Menu ouvrent le menu (D-327). Sous-menu : flèche droite l'ouvre, flèche gauche ou Échap le referme et rend le focus à l'élément parent (D-051).
 
 ## Accessibilité
 - Rôles `menu`, `menuitem`, `menuitemcheckbox` ou `menuitemradio` (React Aria `Menu`).
 - Le bouton porte `aria-haspopup="menu"` et `aria-expanded`.
 - Si `shortcut` est fourni, l'élément reçoit `aria-keyshortcuts`.
+- Inactif avec une raison : `aria-disabled="true"` ; le nom est le libellé, la raison est la description (`aria-describedby`, React Aria `Text slot="description"`).
 - Les icônes sont décoratives (`aria-hidden`) ; le libellé seul porte le sens.
 
 ## Taille d'écran

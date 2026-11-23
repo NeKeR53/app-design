@@ -102,7 +102,7 @@ export const Obligatoire: Story = {
     await userEvent.click(c.getByText("Plan de lancement"));
     await userEvent.clear(c.getByRole("textbox"));
     await userEvent.keyboard("{Enter}");
-    await expect(c.getByText("Ce champ est obligatoire.")).toBeVisible();
+    await expect(c.getByText("Renseignez « Titre ».")).toBeVisible();
     await expect(args.onSave).not.toHaveBeenCalled();
   },
 };
@@ -148,4 +148,36 @@ export const DansLePanneau: Story = {
       </Drawer>
     </div>
   ),
+};
+
+/** Limite dépassable : la saisie continue ; au-delà, compteur en erreur et enregistrement refusé (D-343). */
+export const LimiteDepassable: Story = {
+  args: { label: "Titre", value: "Plan", maxLength: 12 },
+  render: (args) => <div className="w-72"><Live {...args} save={args.onSave} /></div>,
+  play: async ({ canvasElement, args }) => {
+    const c = within(canvasElement);
+    await userEvent.click(c.getByText("Plan"));
+    const field = c.getByRole("textbox", { name: "Titre" });
+    await expect(field).not.toHaveAttribute("maxlength");
+    await userEvent.type(field, " de lancement");
+    await expect(field).toHaveValue("Plan de lancement");
+    await expect(c.getByText("5 caractères en trop")).toHaveClass("text-danger");
+    await userEvent.keyboard("{Enter}");
+    await expect(c.getByText("Saisissez 12 caractères au plus.")).toBeVisible();
+    await expect(args.onSave).not.toHaveBeenCalled();
+    await expect(field).toBeInTheDocument();
+  },
+};
+
+/** `requiredMessage` remplace le message construit à partir du libellé (D-344). */
+export const MessageObligatoire: Story = {
+  args: { isRequired: true, label: "Titre", value: "Plan", requiredMessage: "Donnez un titre à la liste." },
+  render: (args) => <div className="w-72"><Live {...args} save={args.onSave} /></div>,
+  play: async ({ canvasElement }) => {
+    const c = within(canvasElement);
+    await userEvent.click(c.getByText("Plan"));
+    await userEvent.clear(c.getByRole("textbox"));
+    await userEvent.keyboard("{Enter}");
+    await expect(c.getByText("Donnez un titre à la liste.")).toBeVisible();
+  },
 };
