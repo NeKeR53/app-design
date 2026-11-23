@@ -47,3 +47,5 @@ export { Switch } from "./components/Switch/Switch";
 export type { SwitchProps } from "./components/Switch/Switch";
 export { Fieldset } from "./components/Fieldset/Fieldset";
 export type { FieldsetProps } from "./components/Fieldset/Fieldset";
+export { ComboBox } from "./components/ComboBox/ComboBox";
+export type { ComboBoxProps, ComboBoxSingleProps, ComboBoxMultipleProps, ComboBoxItem } from "./components/ComboBox/ComboBox";

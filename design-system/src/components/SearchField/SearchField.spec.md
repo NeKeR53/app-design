@@ -8,7 +8,7 @@ Elle peut proposer des suggestions pendant la frappe et transformer chaque crit�
 Ne pas l'utiliser pour :
 - chercher dans toute l'app ou lancer une commande : prendre la palette de commandes (Mod+K, D-006) ;
 - saisir une valeur de formulaire : prendre `TextField` ;
-- choisir une ou plusieurs valeurs enregistrées avec un formulaire : prendre `ComboBox` (liste longue ou distante) ou `Select` (7 éléments au plus) (D-141) ;
+- choisir une ou plusieurs valeurs enregistrées avec un formulaire : prendre `ComboBox` (liste longue ou distante) ou `Select` (liste courte, sans saisie) (D-141) ;
 - filtrer par une propriété (statut, type, personne) : un bouton de filtre avec un `Menu` à choix (D-074, D-141).
 
 ## Anatomie

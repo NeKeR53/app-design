@@ -1,5 +1,5 @@
 # ComboBox
-Statut : validé (2026-11-23) — Version : depuis 0.2.0 (non publié)
+Statut : validé (2026-11-23) — Version : prochaine version mineure (non publiée)
 Validation : docs/validation/components/ComboBox-v1.html
 
 ## Rôle
@@ -7,12 +7,14 @@ Champ de formulaire qui propose une liste de choix pendant la saisie. On choisit
 Ne pas l'utiliser pour (D-141) :
 - filtrer ou trier le tableau ou la liste d'une page : prendre `SearchField` ;
 - filtrer par une propriété (statut, type, personne) : un bouton de filtre avec un `Menu` à choix, dans la `toolbar` ;
-- choisir dans une liste courte (7 éléments au plus), sans taper : prendre `Select` ;
+- choisir une valeur dans une liste fermée et courte (15 options environ), sans taper : prendre `Select` ;
 - saisir un texte libre sans liste : prendre `TextField` ;
 - chercher dans toute l'app ou lancer une commande : palette Mod+K (D-006).
 
 ## Anatomie
-1. **Libellé** (obligatoire), au-dessus du champ ; « (facultatif) » si le champ l'est (D-022, D-130).
+Celle de `Field` (Field.spec.md) : libellé au-dessus, cadre, aide ou erreur en dessous (D-022, D-130). Dans le cadre et autour :
+
+1. **Libellé** (obligatoire, masquable avec `hideLabel`), au-dessus du champ ; « (facultatif) » quand `isRequired` est faux (D-022, D-130).
 2. **Champ** (obligatoire), hauteur `--row-h` au repos, rayon de 8 px (D-040), fond `--surface`, bord de 1 px `--line-strong` (D-130, D-073). Il contient, dans l'ordre :
    1. **Étiquettes** (choix multiple ; 0 ou plus) : libellé, puis × ; rayon de 4 px ; elles passent à la ligne et le champ grandit (D-143) ;
    2. **Texte en cours**, avec un texte d'aide facultatif (`placeholder`) quand il n'y a ni texte ni étiquette ;
@@ -26,9 +28,10 @@ Ne pas l'utiliser pour (D-141) :
 Aucune variante visuelle : même apparence que `TextField` (D-130). Deux réglages de fonctionnement, indépendants : choix simple ou multiple (`selectionMode`), source locale ou asynchrone (`items` ou `loadItems`) (D-140).
 
 ## Options
+Les options communes de `Field` (`label`, `hideLabel`, `description`, `isRequired`, `validate`, `error`, `isDisabled`, `isReadOnly`, `width`, `name`), plus :
+
 | Option | Type | Défaut | Description |
 |---|---|---|---|
-| `label` | `string` | — (obligatoire) | Libellé visible et nom accessible. |
 | `selectionMode` | `"single" \| "multiple"` | `"single"` | Choix simple ou multiple (D-140). |
 | `items` | `ComboBoxItem[]` | — | Source locale : la liste se filtre à chaque lettre (D-145). |
 | `loadItems` | `(text, signal) => Promise<ComboBoxItem[]>` | — | Source asynchrone : à partir de 2 caractères, après 300 ms ; `signal` abandonne une demande périmée (D-145). Fournir `items` ou `loadItems`, pas les deux. |
@@ -36,15 +39,10 @@ Aucune variante visuelle : même apparence que `TextField` (D-130). Deux réglag
 | `onChange` | `(value) => void` | — | Appelée à chaque choix ou retrait. |
 | `selectedItems` | `ComboBoxItem[]` | — | Source asynchrone : éléments déjà choisis, pour afficher leur libellé avant toute recherche. |
 | `allowsCustomValue` | `boolean` | `false` | Ligne « Ajouter « texte » » (D-142). |
-| `onCreate` | `(text) => ComboBoxItem \| Promise<ComboBoxItem>` | — | Obligatoire avec `allowsCustomValue` : l'app crée l'élément et le renvoie ; il est choisi (D-142). |
+| `onCreate` | `(text) => ComboBoxItem \| Promise<ComboBoxItem>` | aucune | Avec `allowsCustomValue` : l'app crée l'élément (en local ou par son API) et le renvoie ; il est choisi (D-142). Sans elle, l'élément a pour libellé le texte saisi. |
 | `placeholder` | `string` | aucun | Texte d'aide dans le champ vide. |
-| `description` | `string` | aucune | Aide sous le champ (D-130). |
-| `errorMessage` | `string` | aucun | Erreur fournie par l'app (D-132). |
-| `isRequired`, `validate` | `boolean`, `(value) => string \| null` | — | Vérification par le composant, au moment de D-022 (D-132). |
-| `isDisabled` | `boolean` | `false` | Champ désactivé. |
-| `isOptional` | `boolean` | `false` | Ajoute « (facultatif) » au libellé (D-022). |
-| `width` | `"xs" \| "sm" \| "md" \| "lg" \| "full"` | `"full"` | Largeur, comme `TextField` (D-133). |
-| `name` | `string` | — | Nom pour l'envoi du formulaire. |
+
+`validate` reçoit la valeur (id, ou liste d'ids). Un ComboBox obligatoire est vide sans aucun choix ; en choix multiple, aussi avec une liste vide (D-132).
 
 `ComboBoxItem` : `{ id: string; label: string; description?: string; icon?: ReactNode; isDisabled?: boolean; section?: string }`. Les éléments qui partagent `section` sont groupés sous ce titre, dans l'ordre d'apparition.
 
@@ -53,7 +51,6 @@ Aucune variante visuelle : même apparence que `TextField` (D-130). Deux réglag
 - Pas de « +n » : toutes les étiquettes restent visibles (D-143).
 - Pas d'élément sur deux lignes, ni d'avatar ou de couleur dans un élément (D-146).
 - Pas d'appel à l'API sans texte (D-145).
-- Pas de lecture seule dans cette version : afficher la valeur avec le panneau de détail ou un `TextField` en lecture seule.
 - Pas de `className` ni de `style`.
 
 ## États
@@ -69,6 +66,7 @@ Aucune variante visuelle : même apparence que `TextField` (D-130). Deux réglag
 | Erreur de chargement | Ligne « Résultats indisponibles » et « Réessayer » (D-145, D-082). |
 | Aucun résultat | Ligne « Aucun résultat » en `--fg-3` ; avec `allowsCustomValue`, seulement « Ajouter « texte » ». |
 | Erreur de validation | Bord `--danger`, message sous le champ (D-022, D-130). |
+| Lecture seule | Cadre de `Field` en lecture seule : fond `--surface-side`, bord `--line`, cadenas à la place du chevron ; étiquettes sans × ; la liste ne s'ouvre pas (D-131). |
 | Désactivé | Opacité 40 %. |
 
 ## Comportement
@@ -98,8 +96,8 @@ Hauteur `--row-h` (34 px en web, 28 px en desktop) pour le champ et les élémen
 Tab entre et sort du champ (le chevron n'est pas dans l'ordre de tabulation). Flèche bas ouvre la liste ; flèches haut et bas parcourent les éléments ; Entrée choisit ; Échap ferme puis rétablit. Flèches gauche et droite depuis le début du texte : passent d'une étiquette à l'autre (choix multiple).
 
 ## Accessibilité
-- React Aria `ComboBox` : rôle `combobox` sur le champ, `listbox` sur la liste ; `aria-multiselectable` en choix multiple.
-- Le libellé nomme le champ ; l'aide et l'erreur le décrivent (`aria-describedby`).
+- Rôle `combobox` sur le texte, `listbox` sur la liste, `option` et `aria-selected` sur les éléments, comme `SearchField` ; `aria-multiselectable` en choix multiple ; `aria-activedescendant` suit l'élément mis en avant.
+- Le libellé nomme le champ ; l'aide et l'erreur le décrivent (`aria-describedby`) ; `aria-invalid` et `aria-required` comme `Field`.
 - Le chevron est nommé « Afficher les choix » ; chaque × « Retirer <libellé> » ; les étiquettes forment un groupe nommé « <libellé> choisis ».
 - L'attente est annoncée (« Recherche en cours ») ; l'erreur de chargement porte `role="alert"`.
 - Cibles : chevron et × de 24 px au moins.
@@ -114,13 +112,13 @@ Erreur de validation : sous le champ, au moment de D-022 (D-130, D-132). Erreur 
 Toutes les règles sont verrouillées. Options par usage : `selectionMode`, source, `allowsCustomValue`, `width`.
 
 ## Placement
-Formulaires (`FormPage`, formulaire en modale), panneau de détail (`detail`), lignes de réglage (`SettingsPage`). Jamais dans la `toolbar`, la `topbar` ni la `sidebar` (D-141).
+Celui de `Field` : sections de `FormPage`, formulaire dans une modale, ligne de réglage de `SettingsPage` (libellé masqué). Jamais dans la `toolbar`, la `topbar`, la `sidebar`, ni dans une ligne du panneau de détail (D-141, spec Field).
 
 ## Composition
-Reprend l'anatomie commune des champs (libellé, aide, erreur, D-130), des étiquettes au style de `SearchField` et une liste au style du `Menu`. Ne contient pas d'autre champ. Ne se combine pas avec `SearchField` dans un même usage.
+Reprend l'anatomie commune des champs (`Field`, D-130 à D-133), des étiquettes au style de `SearchField` et une liste au style du `Menu`. Ne contient pas d'autre champ. Ne se combine pas avec `SearchField` dans un même usage.
 
 ## Décisions
-D-006, D-022, D-040, D-047, D-050, D-073, D-074, D-081, D-082, D-087, D-089, D-130, D-132, D-133, D-140, D-141, D-142, D-143, D-144, D-145, D-146, D-147
+D-006, D-022, D-040, D-047, D-050, D-073, D-074, D-081, D-082, D-087, D-089, D-130, D-131, D-132, D-133, D-134, D-140, D-141, D-142, D-143, D-144, D-145, D-146, D-147
 
 ## Questions ouvertes
 Aucune.

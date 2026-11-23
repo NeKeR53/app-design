@@ -850,8 +850,9 @@
 - Décision : on choisit le composant par ce qu'il produit.
   - `SearchField` produit des critères (`{ text, tags }`) qui filtrent ou trient le tableau ou la liste de la page ; il va dans la `toolbar` (D-077).
   - Un filtre par propriété (statut, type, personne) est un bouton de filtre avec un `Menu` à choix, dans la `toolbar` (D-074).
-  - `Select` choisit une valeur dans une liste courte, de 7 éléments au plus, sans taper.
-  - `ComboBox` choisit une ou plusieurs valeurs d'un formulaire dans une liste plus longue, connue ou distante ; la valeur (un id ou une liste d'ids) est enregistrée avec le formulaire. Il va dans un formulaire, une modale ou le panneau de détail, jamais dans la `toolbar`.
+  - `Select` choisit une valeur dans une liste fermée et courte (15 options environ), sans taper (spec Select).
+  - `ComboBox` sert au-delà, ou dès qu'il faut chercher dans les options ou en choisir plusieurs.
+  - `ComboBox` choisit une ou plusieurs valeurs d'un formulaire dans une liste plus longue, connue ou distante ; la valeur (un id ou une liste d'ids) est enregistrée avec le formulaire. Il va là où vont les champs (spec Field : `FormPage`, formulaire en modale, ligne de réglage), jamais dans la `toolbar`.
 - Raison : choix de l'utilisateur ; deux règles nettes évitent deux composants pour le même besoin.
 - Options écartées : ComboBox multiple autorisé comme filtre dans la `toolbar` (mode `compact` d'Alfred).
 - Validation : docs/validation/components/ComboBox-v1.html
