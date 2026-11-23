@@ -1,13 +1,20 @@
 /*
  * ComboBox : champ de formulaire qui propose une liste de choix pendant la saisie.
  * Choix simple ou multiple, source locale ou asynchrone (D-140).
- * Spec : ComboBox.spec.md. Décisions : D-140 à D-147 ; anatomie des champs : Field.spec.md (D-130 à D-133).
+ * Spec : ComboBox.spec.md. Décisions : D-140 à D-147 ; anatomie des champs : Field.spec.md (D-130 à D-134).
+ * Le champ n'est pas un ComboBox de React Aria (étiquettes, « Ajouter », lignes d'attente dans la liste) :
+ * il fournit lui-même les contextes de libellé, d'aide et d'erreur pour reprendre les pièces de Field.
  */
 import { Fragment, useCallback, useEffect, useId, useMemo, useRef, useState, type KeyboardEvent, type ReactNode } from "react";
+import { FieldErrorContext } from "react-aria-components/FieldError";
+import { LabelContext } from "react-aria-components/Label";
 import { Popover } from "react-aria-components/Popover";
+import { TextContext } from "react-aria-components/Text";
+import type { ValidationResult } from "react-aria-components/TextField";
 import { useMessages } from "../../provider/SocleProvider";
 import { buttonReset, cx } from "../../lib/cx";
-import { Check, ChevronDown, Lock, Plus, X } from "../../icons";
+import { Check, ChevronDown, Plus, X } from "../../icons";
+import { FieldHelp, FieldLabel, ReadOnlyLock, fieldBox, fieldRoot, listPopoverClass, optionClass, sectionHeaderClass, type FieldBaseProps } from "../Field/Field";
 
 export interface ComboBoxItem {
   id: string;
@@ -21,24 +28,9 @@ export interface ComboBoxItem {
   section?: string;
 }
 
-interface ComboBoxBaseProps {
-  /** Libellé visible et nom accessible. */
-  label: string;
-  /** Masque le libellé à l'écran ; il reste le nom accessible. */
-  hideLabel?: boolean;
-  /** Aide sous le champ. */
-  description?: string;
-  /** Champ obligatoire ; sans lui, « (facultatif) » suit le libellé (D-022, D-132). */
-  isRequired?: boolean;
-  /** Erreur imposée par l'app ; affichée tout de suite (D-132). */
-  error?: string;
-  isDisabled?: boolean;
+interface ComboBoxBaseProps extends FieldBaseProps {
   /** Lecture seule (D-131). */
   isReadOnly?: boolean;
-  /** Largeur : 96, 160, 240, 360 px ou toute la largeur (D-133). */
-  width?: "xs" | "sm" | "md" | "lg" | "full";
-  /** Nom dans le formulaire envoyé. */
-  name?: string;
   /** Texte d'aide dans le champ vide. */
   placeholder?: string;
   /** Source locale : filtrée à chaque lettre (D-145). */
@@ -76,7 +68,21 @@ export type ComboBoxProps = ComboBoxSingleProps | ComboBoxMultipleProps;
 const MIN_CHARS = 2;
 const DELAY = 300;
 
-const WIDTHS = { xs: "w-24", sm: "w-40", md: "w-60", lg: "w-90", full: "w-full" } as const;
+/** Validité « vide », complétée selon la vérification (D-132). */
+const VALID: ValidityState = {
+  badInput: false,
+  customError: false,
+  patternMismatch: false,
+  rangeOverflow: false,
+  rangeUnderflow: false,
+  stepMismatch: false,
+  tooLong: false,
+  tooShort: false,
+  typeMismatch: false,
+  valid: true,
+  valueMissing: false,
+};
+type Verdict = { missing: boolean; custom: string | null };
 
 type Row = { kind: "add"; text: string } | { kind: "item"; item: ComboBoxItem };
 type AsyncState = { status: "short" } | { status: "loading" } | { status: "error" } | { status: "done"; items: ComboBoxItem[] };
@@ -133,7 +139,9 @@ export function ComboBox(props: ComboBoxProps) {
   const baseId = useId();
   const inputId = `${baseId}-input`;
   const listId = `${baseId}-list`;
+  const labelId = `${baseId}-label`;
   const helpId = `${baseId}-help`;
+  const errId = `${baseId}-error`;
   const rootRef = useRef<HTMLDivElement>(null);
   const frameRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -254,17 +262,24 @@ export function ComboBox(props: ComboBoxProps) {
 
   /* ---------- Vérification (D-132) ---------- */
   const value = multiple ? ids : (ids[0] ?? null);
-  const localError = (() => {
-    if (isRequired && ids.length === 0) return m.requiredField;
+  const check: Verdict = (() => {
+    if (isRequired && ids.length === 0) return { missing: true, custom: null };
     const v = props.validate as ((v: string | string[] | null) => string | null | undefined) | undefined;
-    return v?.(value) ?? null;
+    return { missing: false, custom: v?.(value) ?? null };
   })();
+  const checkText = check.missing ? m.requiredChoice : check.custom;
   const [dirty, setDirty] = useState(false);
-  const [shownError, setShownError] = useState<string | null>(null);
-  const visibleError = error ?? shownError;
+  const [shown, setShown] = useState<Verdict | null>(null); // vérification affichée, figée jusqu'à la prochaine sortie (D-132)
+  const isInvalid = Boolean(error) || Boolean(shown && (shown.missing || shown.custom));
+  const validation: ValidationResult = {
+    isInvalid,
+    validationErrors: error ? [error] : shown?.custom ? [shown.custom] : [],
+    validationDetails: isInvalid ? { ...VALID, valid: false, valueMissing: !error && Boolean(shown?.missing), customError: Boolean(error || shown?.custom) } : VALID,
+  };
+  // Le champ natif porte la vérification : l'envoi du formulaire déclenche l'événement `invalid`.
   useEffect(() => {
-    inputRef.current?.setCustomValidity(error ?? localError ?? "");
-  }, [error, localError]);
+    inputRef.current?.setCustomValidity(error ?? checkText ?? "");
+  }, [error, checkText]);
 
   /* ---------- Actions ---------- */
   const choose = async (i: number) => {
@@ -357,17 +372,19 @@ export function ComboBox(props: ComboBoxProps) {
       closeList();
       setArmed(null);
       restoreText(); // la valeur ne change jamais sans un choix (D-147)
-      if (dirty) setShownError(localError);
+      if (dirty) setShown(check);
     }, 0);
   };
 
+  const checkRef = useRef(check);
+  checkRef.current = check;
   // Envoi du formulaire : l'erreur s'affiche ; le premier champ en erreur reçoit le focus (D-132).
   useEffect(() => {
     const input = inputRef.current;
     if (!input) return;
     const onInvalid = (e: Event) => {
       e.preventDefault();
-      setShownError(input.validationMessage || null);
+      setShown(checkRef.current);
       if (input.form?.querySelector(":invalid") === input) input.focus();
     };
     input.addEventListener("invalid", onInvalid);
@@ -378,28 +395,30 @@ export function ComboBox(props: ComboBoxProps) {
   const hasIcon = rows.some((r) => r.kind === "item" && r.item.icon);
   const activeId = open && hl >= 0 ? `${listId}-${hl}` : undefined;
   const loading = Boolean(loadItems) && open && remote.status === "loading";
-  const describedBy = visibleError || description ? helpId : undefined;
+  const describedBy = [description && !isInvalid ? helpId : null, isInvalid ? errId : null].filter(Boolean).join(" ") || undefined;
+  const [hovered, setHovered] = useState(false);
 
   return (
-    <div ref={rootRef} className={cx("socle-box flex max-w-full flex-col gap-1 font-sans max-tablet:w-full", WIDTHS[width], isDisabled && "opacity-40")}>
-      <label htmlFor={inputId} className={cx("text-sm font-medium text-fg", hideLabel && "sr-only")}>
-        {label}
-        {!isRequired && <span className="font-normal text-fg-3"> {m.optional}</span>}
-      </label>
+    <div ref={rootRef} className={fieldRoot(width)} data-disabled={isDisabled || undefined} data-invalid={isInvalid || undefined}>
+      <LabelContext.Provider value={{ htmlFor: inputId, id: labelId }}>
+        <FieldLabel isRequired={isRequired} hidden={hideLabel}>
+          {label}
+        </FieldLabel>
+      </LabelContext.Provider>
       <div
         ref={frameRef}
+        data-focused={focused || undefined}
+        data-hovered={(hovered && !isDisabled) || undefined}
+        data-invalid={isInvalid || undefined}
+        onMouseEnter={() => setHovered(true)}
+        onMouseLeave={() => setHovered(false)}
         onMouseDown={(e) => {
           if (e.target === e.currentTarget && !isDisabled) {
             e.preventDefault();
             inputRef.current?.focus();
           }
         }}
-        className={cx(
-          "flex min-h-(--row-h) w-full cursor-text items-center gap-1 rounded-md border pr-[3px] pl-2.5 text-md",
-          multiple && "flex-wrap py-[3px]",
-          isReadOnly ? "border-line bg-surface-side" : visibleError ? "border-danger bg-surface" : "border-line-strong bg-surface hover:border-fg-3",
-          !isReadOnly && "focus-within:outline-2 focus-within:outline-offset-1 focus-within:outline-accent focus-within:outline-solid",
-        )}
+        className={cx(fieldBox({ isReadOnly }), "relative flex min-h-(--row-h) cursor-text items-center gap-1 pl-2.5", isReadOnly ? "pr-8" : "pr-[3px]", multiple && "flex-wrap py-[3px]")}
       >
         {multiple && ids.length > 0 && (
           <span role="group" aria-label={m.chosenItems(label)} className="contents">
@@ -441,7 +460,8 @@ export function ComboBox(props: ComboBoxProps) {
           aria-autocomplete="list"
           aria-activedescendant={activeId}
           aria-describedby={describedBy}
-          aria-invalid={visibleError ? true : undefined}
+          aria-labelledby={labelId}
+          aria-invalid={isInvalid || undefined}
           aria-required={isRequired || undefined}
           autoComplete="off"
           disabled={isDisabled}
@@ -464,11 +484,7 @@ export function ComboBox(props: ComboBoxProps) {
         />
         <span className="ml-auto flex shrink-0 items-center gap-0.5 self-center">
           {loading && <span role="status" aria-label={m.searching} className="socle-spin size-3.5 shrink-0 rounded-full border-2 border-line-strong border-t-fg-2" />}
-          {isReadOnly ? (
-            <span className="inline-grid size-6 place-items-center text-fg-3" aria-label={m.readOnly} role="img">
-              <Lock size={14} />
-            </span>
-          ) : (
+          {isReadOnly ? null : (
             <button
               type="button"
               tabIndex={-1}
@@ -487,12 +503,13 @@ export function ComboBox(props: ComboBoxProps) {
             </button>
           )}
         </span>
+        {isReadOnly && <ReadOnlyLock />}
       </div>
-      {(visibleError || description) && (
-        <span id={helpId} className={cx("text-sm", visibleError ? "text-danger" : "text-fg-3")}>
-          {visibleError ?? description}
-        </span>
-      )}
+      <TextContext.Provider value={{ slots: { description: { id: helpId }, errorMessage: { id: errId } } }}>
+        <FieldErrorContext.Provider value={validation}>
+          <FieldHelp description={description} error={error} kind="choice" />
+        </FieldErrorContext.Provider>
+      </TextContext.Provider>
       {name && (multiple ? ids : ids.slice(0, 1)).map((id) => <input key={id} type="hidden" name={name} value={id} />)}
       <Popover
         triggerRef={frameRef}
@@ -502,7 +519,7 @@ export function ComboBox(props: ComboBoxProps) {
         placement="bottom start"
         offset={4}
         containerPadding={8}
-        className="socle-box box-border max-h-[calc(var(--row-h)*8+10px)] w-(--trigger-width) overflow-auto rounded-lg border border-line bg-surface-raised p-1 font-sans text-md text-fg shadow-md outline-none"
+        className={listPopoverClass.replace("max-h-80", "max-h-[calc(var(--row-h)*8+10px)]")}
       >
         <div ref={listRef} id={listId} role="listbox" aria-label={label} aria-multiselectable={multiple || undefined} onMouseDown={(e) => e.preventDefault()}>
           {rows.map((row, i) => {
@@ -520,7 +537,7 @@ export function ComboBox(props: ComboBoxProps) {
             return (
               <Fragment key={it.id}>
                 {section && (
-                  <div role="presentation" className="px-2.5 pt-1.5 pb-0.5 text-sm text-fg-3">
+                  <div role="presentation" className={sectionHeaderClass}>
                     {section}
                   </div>
                 )}
@@ -588,7 +605,9 @@ function Option({
       aria-disabled={disabled || undefined}
       onMouseMove={onHover}
       onClick={disabled ? undefined : onChoose}
-      className={cx("flex h-(--row-h) cursor-default items-center gap-2 rounded-md px-2.5 text-fg select-none", active && "bg-hover", disabled && "opacity-40")}
+      data-focused={active || undefined}
+      data-disabled={disabled || undefined}
+      className={cx(optionClass, "text-fg")}
     >
       {children}
     </div>

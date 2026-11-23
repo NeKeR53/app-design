@@ -21,7 +21,7 @@ Celle de `Field` (Field.spec.md) : libellé au-dessus, cadre, aide ou erreur en 
    3. **Indicateur d'attente** (automatique, source asynchrone) : indicateur rotatif de 14 px (D-081, D-145) ;
    4. **Chevron** (obligatoire), à droite : ouvre et ferme la liste (D-147).
 3. **Aide** (facultative), sous le champ, en `--fs-sm`, `--fg-3` ; l'erreur prend sa place (D-130).
-4. **Liste** (flottante), sous le champ, à sa largeur, au style du `Menu` : conteneur de 12 px, 8 lignes visibles puis défilement (D-145). Chaque élément tient sur une ligne : icône facultative, libellé, description facultative, coche à droite (D-146, D-047, D-050). Sections titrées facultatives.
+4. **Liste** (flottante), sous le champ, au moins aussi large que lui (D-134), au style du `Menu` : conteneur de 12 px, 8 lignes visibles puis défilement (D-145). Chaque élément tient sur une ligne : icône facultative, libellé, description facultative, coche à droite (D-146, D-047, D-050). Sections titrées facultatives.
 5. **Lignes d'information** de la liste (automatiques) : « Ajouter « texte » » (D-142), « Tapez au moins 2 caractères », « Recherche… », « Résultats indisponibles » avec « Réessayer », « Aucun résultat » (D-145).
 
 ## Variantes
@@ -103,7 +103,7 @@ Tab entre et sort du champ (le chevron n'est pas dans l'ordre de tabulation). Fl
 - Cibles : chevron et × de 24 px au moins.
 
 ## Taille d'écran
-Le champ prend la largeur demandée (`width`), jamais plus que sa colonne. Sur mobile, la liste prend la largeur du champ, qui est celle de la colonne.
+Le champ prend la largeur demandée (`width`), jamais plus que sa colonne. Sur mobile, le champ prend toute la colonne ; la liste est au moins aussi large.
 
 ## Erreurs
 Erreur de validation : sous le champ, au moment de D-022 (D-130, D-132). Erreur de chargement (asynchrone) : ligne dans la liste avec « Réessayer » ; le choix reste possible après une nouvelle frappe (D-145).

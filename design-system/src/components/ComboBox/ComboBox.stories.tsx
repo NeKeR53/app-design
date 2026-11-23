@@ -274,14 +274,14 @@ export const Verification: Story = {
     const pays = c.getByRole("combobox", { name: /Pays/ });
     await userEvent.click(pays);
     await userEvent.tab();
-    await expect(c.queryByText("Ce champ est obligatoire.")).toBeNull();
+    await expect(c.queryByText("Choisissez une option.")).toBeNull();
     await userEvent.click(c.getByRole("button", { name: "Envoyer" }));
-    await waitFor(() => expect(c.getByText("Ce champ est obligatoire.")).toBeInTheDocument());
+    await waitFor(() => expect(c.getByText("Choisissez une option.")).toBeInTheDocument());
     await expect(pays).toHaveAttribute("aria-invalid", "true");
     await expect(pays).toHaveFocus();
     await userEvent.type(pays, "ita{Enter}");
     await userEvent.tab();
-    await waitFor(() => expect(c.queryByText("Ce champ est obligatoire.")).toBeNull());
+    await waitFor(() => expect(c.queryByText("Choisissez une option.")).toBeNull());
     await expect(c.getByText("(facultatif)")).toBeInTheDocument();
   },
 };
