@@ -90,7 +90,7 @@ export const Chargement: Story = {
     // Case de 16 px, cercle `Spinner` de 14 px dans la couleur du bouton (D-105, D-360).
     await expect(bar.getBoundingClientRect().width).toBe(16);
     const ring = bar.querySelector<HTMLElement>("[data-spinner]")!;
-    await expect(ring.getBoundingClientRect().width).toBe(14);
+    await expect((ring as HTMLElement).offsetWidth).toBe(14); // taille avant rotation
     await expect(getComputedStyle(ring).color).toBe(getComputedStyle(button).color);
     // Avec une icône, la largeur ne change pas.
     await expect(button.getBoundingClientRect().width).toBe(width);

@@ -19,7 +19,7 @@ export const ParDefaut: Story = {
     const status = c.getByRole("status");
     await expect(status).toHaveTextContent("Chargement…");
     await expect(ring(canvasElement)).toHaveAttribute("aria-hidden", "true");
-    await expect(ring(canvasElement).getBoundingClientRect().width).toBe(14);
+    await expect((ring(canvasElement) as HTMLElement).offsetWidth).toBe(14);
   },
 };
 
@@ -41,8 +41,8 @@ export const Tailles: Story = {
   ),
   play: async ({ canvasElement }) => {
     const rings = canvasElement.querySelectorAll<HTMLElement>("[data-spinner]");
-    await expect(rings[0]!.getBoundingClientRect().width).toBe(14);
-    await expect(rings[1]!.getBoundingClientRect().width).toBe(20);
+    await expect((rings[0] as HTMLElement).offsetWidth).toBe(14);
+    await expect((rings[1] as HTMLElement).offsetWidth).toBe(20);
   },
 };
 

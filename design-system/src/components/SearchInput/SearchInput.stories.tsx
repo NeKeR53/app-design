@@ -88,7 +88,7 @@ export const SuggestionsApi: Story = {
     await expect(rings).toHaveLength(2);
     for (const r of rings) {
       await expect(r).toHaveAttribute("aria-hidden", "true");
-      await expect(r.getBoundingClientRect().width).toBe(14);
+      await expect((r as HTMLElement).offsetWidth).toBe(14); // taille avant rotation
     }
     await waitFor(() => expect(body().getAllByRole("option")).toHaveLength(4), { timeout: 2000 });
     await userEvent.keyboard("{ArrowDown}{Enter}");
