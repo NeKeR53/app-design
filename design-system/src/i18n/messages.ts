@@ -17,6 +17,7 @@ export interface SocleMessages {
   detail: string;
   closeDetail: string;
   detailWidth: string;
+  expandDetail: string;
   more: string;
   /* Sidebar */
   mainNavigation: string;
@@ -135,6 +136,7 @@ export const frenchMessages: SocleMessages = {
   detail: "Détail",
   closeDetail: "Fermer le détail",
   detailWidth: "Largeur du panneau de détail",
+  expandDetail: "Agrandir le panneau de détail",
   more: "Plus",
   mainNavigation: "Navigation principale",
   expandItem: (l) => `Déplier ${l}`,

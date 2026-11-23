@@ -1321,3 +1321,27 @@
 - Raison : « où je suis » et « qui je suis » restent ensemble, au même endroit dans toutes les apps ; ce qui ne passe pas le test du générique reste hors du design system.
 - Options écartées : un trait entre chaque groupe du pied ; un raccourci global d'ouverture du sélecteur dans Socle.
 - Validation : par délégation de l'utilisateur, 2026-11-23 — docs/validation/components/Sidebar-footer-v1.html
+
+## D-240 — Panneau de détail : largeur de départ choisie par la page
+- Date : 2026-11-23
+- Portée : AppShell, tokens
+- Décision : l'option `detailWidth` d'AppShell vaut `"default"` (des sections de propriétés : `--detail-w`, 300 px web, 272 px desktop) ou `"form"` (un formulaire : nouveau token `--detail-w-form`, 460 px web, 420 px desktop). Elle fixe la largeur de départ, en colonne sur bureau comme en overlay sur tablette. La poignée garde sa plage de 240 à 480 px (D-025). La largeur réglée est mémorisée à part pour chacune (`shell:detail-width` et `shell:detail-width:form`) ; le double-clic revient au défaut de la page.
+- Raison : un formulaire à l'étroit coupe ses champs ; la page sait ce qu'elle montre, pas l'utilisateur au premier affichage.
+- Options écartées : largeur en pixels libre par page (pas de cohérence entre apps) ; une seule largeur mémorisée pour tout (un réglage pour un formulaire élargirait toutes les sections).
+- Validation : par délégation de l'utilisateur, 2026-11-23 — docs/validation/components/DetailPanel-width-v1.html
+
+## D-241 — Panneau de détail : bouton Agrandir facultatif
+- Date : 2026-11-23
+- Portée : AppShell
+- Décision : avec l'option `detailExpandable`, un bouton bascule « Agrandir le panneau de détail » (`aria-pressed`) se place dans la barre du haut, juste avant le bouton du panneau. Icône : flèches vers l'extérieur, puis vers l'intérieur une fois large. Il n'existe que sur bureau, quand le panneau est ouvert. Large, le panneau mesure 960 px au plus et rétrécit pour laisser au moins 360 px au contenu ; il n'a pas de poignée. Réduire rend la largeur d'avant. L'état large est mémorisé (`shell:detail-wide`). Aucune animation (D-026).
+- Raison : un contenu riche (aperçu, conversation) a parfois besoin de place sans quitter la page ; le bouton se place au-dessus du panneau, sans ajouter d'en-tête sur bureau.
+- Options écartées : en-tête dans le panneau, comme Alfred (une ligne de plus sur bureau, D-018 n'en a pas) ; double-clic sur la poignée (déjà pris par D-025, introuvable).
+- Validation : par délégation de l'utilisateur, 2026-11-23 — docs/validation/components/DetailPanel-width-v1.html
+
+## D-242 — Panneau de détail : deux états, pas de cycle
+- Date : 2026-11-23
+- Portée : AppShell
+- Décision : Agrandir bascule entre deux états, la largeur de la page et la largeur large. Il ne fait pas passer par trois largeurs à la suite. Les trois largeurs d'Alfred (340, 460, large) deviennent `default`, `form` et l'état large.
+- Raison : un bouton à deux états se comprend d'un coup d'œil ; un cycle oblige à compter les clics.
+- Options écartées : cycle sections, formulaire, large (Alfred, OneApp).
+- Validation : par délégation de l'utilisateur, 2026-11-23 — docs/validation/components/DetailPanel-width-v1.html

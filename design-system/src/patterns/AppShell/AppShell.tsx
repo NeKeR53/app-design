@@ -1,6 +1,6 @@
 /*
  * Cadre commun de toutes les apps. Spec : AppShell.spec.md.
- * Décisions : D-003, D-016 à D-021, D-025 à D-027, D-220 à D-222.
+ * Décisions : D-003, D-016 à D-021, D-025 à D-027, D-220 à D-222, D-240 à D-242.
  */
 import { Children, isValidElement, useEffect, useRef, useState, type PointerEvent as ReactPointerEvent, type ReactElement, type ReactNode } from "react";
 import { Button } from "react-aria-components/Button";
@@ -8,7 +8,7 @@ import { Dialog } from "react-aria-components/Dialog";
 import { Modal, ModalOverlay } from "react-aria-components/Modal";
 import { useMessages, useSocle, useStoredState } from "../../provider/SocleProvider";
 import { buttonReset, cx, focusRing } from "../../lib/cx";
-import { ChevronLeft, ChevronRight, ListDetail, MoreHorizontal, PanelLeft, X } from "../../icons";
+import { ChevronLeft, ChevronRight, ListDetail, Maximize, Minimize, MoreHorizontal, PanelLeft, X } from "../../icons";
 import { IconButton } from "../../components/IconButton/IconButton";
 import { Tabs, type TabItem } from "../../components/Tabs/Tabs";
 import { HiddenNavIds, Sidebar, type SidebarItemProps, type SidebarProps } from "../Sidebar/Sidebar";
@@ -33,6 +33,10 @@ export interface AppShellProps {
   sidebar: ReactElement<SidebarProps>;
   /** Contenu du panneau de détail ; sans lui, ni colonne ni bouton (D-018). */
   detail?: ReactNode;
+  /** Largeur de départ du panneau : `default` (sections, `--detail-w`) ou `form` (formulaire, `--detail-w-form`) (D-240). */
+  detailWidth?: "default" | "form";
+  /** Bouton Agrandir dans la barre du haut, sur bureau : panneau large (D-241). */
+  detailExpandable?: boolean;
   /** Entrées de la barre d'onglets mobile (4 au plus). Défaut : éléments `tabbar` de la sidebar, sinon les 4 premiers (D-003, D-019). */
   tabbar?: TabbarEntry[];
   /** Affiche précédent/suivant. */
@@ -66,7 +70,7 @@ function useMedia(query: string): boolean {
   return match;
 }
 
-export function AppShell({ pageTitle, views, activeView, onViewChange, onViewClose, actions, sidebar, detail, tabbar, history = true, children }: AppShellProps) {
+export function AppShell({ pageTitle, views, activeView, onViewChange, onViewClose, actions, sidebar, detail, detailWidth: detailKind = "default", detailExpandable = false, tabbar, history = true, children }: AppShellProps) {
   const { isMac, platform } = useSocle();
   const m = useMessages();
   const isMobile = useMedia("(max-width: 640px)");
@@ -80,10 +84,13 @@ export function AppShell({ pageTitle, views, activeView, onViewChange, onViewClo
   // Panneau de détail : colonne mémorisée sur bureau (D-018), largeur réglable (D-025).
   const [detailOpen, setDetailOpen] = useStoredState("shell:detail-open", true);
   const [detailFloat, setDetailFloat] = useState(false);
-  const [detailWidth, setDetailWidth] = useStoredState<number | null>("shell:detail-width", null);
+  // Largeur réglée, mémorisée à part pour chaque largeur de départ (D-240) ; panneau large (D-241).
+  const [detailWidth, setDetailWidth] = useStoredState<number | null>(detailKind === "form" ? "shell:detail-width:form" : "shell:detail-width", null);
+  const [wideStored, setWide] = useStoredState("shell:detail-wide", false);
   const [sheet, setSheet] = useState(false);
   const floating = isMobile || isTablet;
   const showDetail = Boolean(detail) && (floating ? detailFloat : detailOpen);
+  const wide = detailExpandable && !floating && wideStored;
 
   const toggleSidebar = () => {
     setOverlay(false);
@@ -172,6 +179,9 @@ export function AppShell({ pageTitle, views, activeView, onViewChange, onViewClo
               Sa largeur minimale (--socle-fit-min) est posée par ActionBar : ce qui reste tout replié. */}
           <div data-socle-fit="" className="flex min-w-[var(--socle-fit-min,min-content)] flex-1 basis-0 items-center justify-end gap-0.5">
             {actions}
+            {detail && detailExpandable && !floating && showDetail && (
+              <IconButton icon={wide ? <Minimize /> : <Maximize />} label={m.expandDetail} isSelected={wide} onChange={setWide} />
+            )}
             {detail && <IconButton icon={<ListDetail />} label={m.detailPanel} shortcut="Mod+." isSelected={showDetail} onChange={toggleDetail} />}
           </div>
         </div>
@@ -189,12 +199,15 @@ export function AppShell({ pageTitle, views, activeView, onViewChange, onViewClo
             {sidebar}
           </aside>
         )}
-        <main className="min-w-0 flex-1 overflow-auto">{children}</main>
+        {/* Panneau large : le contenu garde au moins 360 px (D-241). */}
+        <main className={cx("min-w-0 flex-1 overflow-auto", wide && showDetail && "min-w-[360px]")}>{children}</main>
         {detail && showDetail && (
           <DetailColumn
             floating={floating}
             fullscreen={isMobile}
             width={width}
+            form={detailKind === "form"}
+            wide={wide}
             onWidth={setDetailWidth}
             onClose={() => setDetailFloat(false)}
           >
@@ -242,10 +255,12 @@ export function AppShell({ pageTitle, views, activeView, onViewChange, onViewClo
 }
 
 /** Panneau de détail : colonne réglable sur bureau, overlay sur tablette, plein écran sur mobile (D-018, D-025). */
-function DetailColumn({ floating, fullscreen, width, onWidth, onClose, children }: {
+function DetailColumn({ floating, fullscreen, width, form, wide, onWidth, onClose, children }: {
   floating: boolean;
   fullscreen: boolean;
   width: number | undefined;
+  form: boolean;
+  wide: boolean;
   onWidth: (w: number | null) => void;
   onClose: () => void;
   children: ReactNode;
@@ -270,15 +285,18 @@ function DetailColumn({ floating, fullscreen, width, onWidth, onClose, children 
     <aside
       ref={ref}
       aria-label={m.detail}
-      style={!floating && width ? { width } : undefined}
+      style={!floating && !wide && width ? { width } : undefined}
+      data-width={wide ? "wide" : form ? "form" : "default"}
       className={cx(
         "box-border flex min-h-0 flex-col border-l border-line bg-surface",
-        !floating && "relative w-(--detail-w) shrink-0",
-        floating && !fullscreen && "absolute top-0 right-0 bottom-0 z-40 w-(--detail-w) shadow-lg",
+        !floating && !wide && cx("relative shrink-0", form ? "w-(--detail-w-form)" : "w-(--detail-w)"),
+        // Large : 960 px au plus ; il rétrécit pour laisser 360 px au contenu (D-241).
+        !floating && wide && "relative w-[960px] min-w-(--detail-w) shrink",
+        floating && !fullscreen && cx("absolute top-0 right-0 bottom-0 z-40 max-w-full shadow-lg", form ? "w-(--detail-w-form)" : "w-(--detail-w)"),
         fullscreen && "absolute inset-0 z-40 border-l-0",
       )}
     >
-      {!floating && (
+      {!floating && !wide && (
         <div
           role="separator"
           aria-orientation="vertical"

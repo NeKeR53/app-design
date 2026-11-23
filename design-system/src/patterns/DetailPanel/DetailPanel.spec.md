@@ -9,7 +9,7 @@ Ne pas l'utiliser pour :
 - les réglages de l'app : prendre `SettingsPage` (D-015).
 
 ## Anatomie
-1. **En-tête** (fourni par AppShell) : titre « Détail » et × sur tablette et mobile (D-018).
+1. **En-tête** (fourni par AppShell) : titre « Détail » et × sur tablette et mobile (D-018). La largeur du panneau vient d'AppShell : `detailWidth` (`default` pour des sections, `form` pour un formulaire) et le bouton Agrandir facultatif (`detailExpandable`) (D-240 à D-242).
 2. **Section** `DetailPanel.Section` (au moins une) : titre en `--fs-sm`, `--fg-3`, suivi d'un chevron ; un clic replie ou déplie la section, état mémorisé (D-061). Puis ses lignes. Les sections sont séparées par un trait `--line`.
 3. **Ligne de propriété** `PropertyRow` :
    1. icône (facultative, 16 px, `--fg-2`) : si une ligne de la section en a une, les autres gardent la place vide (D-057) ;

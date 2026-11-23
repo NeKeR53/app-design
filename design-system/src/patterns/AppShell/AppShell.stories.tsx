@@ -243,3 +243,65 @@ export const ActionsDePage: Story = {
     await waitFor(() => expect(bar().getByRole("button", { name: "Réglages de la liste" })).toBeVisible());
   },
 };
+
+/* ---------- P15 : largeurs du panneau de détail (D-240 à D-242) ---------- */
+function WidthDemo({ form = false }: { form?: boolean }) {
+  return (
+    <div className="fixed inset-0">
+      <AppShell
+        pageTitle="Contacts"
+        detail={<DemoDetail />}
+        {...(form ? { detailWidth: "form" as const } : {})}
+        detailExpandable
+        sidebar={
+          <Sidebar selectedId="contacts" onSelectionChange={() => {}} account={<Sidebar.Account name="Camille Martin" onSettings={() => {}} />}>
+            <Sidebar.Item id="contacts" icon={<Doc />} label="Contacts" />
+          </Sidebar>
+        }
+      >
+        <div className="p-6">Liste des contacts.</div>
+      </AppShell>
+    </div>
+  );
+}
+
+const cssPx = (name: string) => parseFloat(getComputedStyle(document.documentElement).getPropertyValue(name));
+
+/** Largeur de départ `form` (--detail-w-form) ; la largeur réglée est mémorisée à part (D-240). */
+export const DetailFormulaire: Story = {
+  render: () => <WidthDemo form />,
+  play: async ({ canvasElement }) => {
+    const c = within(canvasElement);
+    const panel = c.getByRole("complementary", { name: "Détail" });
+    await expect(Math.round(panel.getBoundingClientRect().width)).toBe(Math.round(cssPx("--detail-w-form")));
+    c.getByRole("separator", { name: "Largeur du panneau de détail" }).focus();
+    await userEvent.keyboard("{ArrowRight}");
+    await waitFor(() => expect(localStorage.getItem("storybook:shell:detail-width:form")).not.toBeNull());
+    await expect(localStorage.getItem("storybook:shell:detail-width")).toBeNull();
+  },
+};
+
+/** Agrandir : bouton bascule ; panneau large, sans poignée ; le contenu garde 360 px ; état mémorisé (D-241). */
+export const DetailLarge: Story = {
+  render: () => <WidthDemo />,
+  play: async ({ canvasElement }) => {
+    const c = within(canvasElement);
+    const panel = () => c.getByRole("complementary", { name: "Détail" });
+    const w0 = panel().getBoundingClientRect().width;
+    const expand = c.getByRole("button", { name: "Agrandir le panneau de détail" });
+    await expect(expand).toHaveAttribute("aria-pressed", "false");
+    await userEvent.click(expand);
+    await waitFor(() => expect(panel().getBoundingClientRect().width).toBeGreaterThan(w0 + 100));
+    await expect(panel().getBoundingClientRect().width).toBeLessThanOrEqual(960);
+    await expect(c.getByRole("main").getBoundingClientRect().width).toBeGreaterThanOrEqual(359);
+    await expect(c.queryByRole("separator", { name: "Largeur du panneau de détail" })).toBeNull();
+    await expect(expand).toHaveAttribute("aria-pressed", "true");
+    await expect(localStorage.getItem("storybook:shell:detail-wide")).toBe("true");
+    // Réduire rend la largeur d'avant.
+    await userEvent.click(expand);
+    await waitFor(() => expect(Math.round(panel().getBoundingClientRect().width)).toBe(Math.round(w0)));
+    // Panneau fermé : pas de bouton Agrandir.
+    await userEvent.click(c.getByRole("button", { name: "Panneau de détail" }));
+    await waitFor(() => expect(c.queryByRole("button", { name: "Agrandir le panneau de détail" })).toBeNull());
+  },
+};

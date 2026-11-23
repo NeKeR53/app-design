@@ -19,7 +19,7 @@ Ces règles s'appliquent à toutes les apps. Si aucune règle ne couvre un cas, 
 ## Comportements globaux
 
 - **Sidebar** : dépliée à l'ouverture, état mémorisé (D-016). Une fois repliée, elle revient en overlay au survol du bouton ; un clic la redéplie (D-017).
-- **Panneau de détail** : colonne sur bureau, état mémorisé ; overlay à droite sur tablette ; plein écran sur mobile (D-018).
+- **Panneau de détail** : colonne sur bureau, état mémorisé ; overlay à droite sur tablette ; plein écran sur mobile (D-018). La page choisit sa largeur de départ : `default` pour des sections, `form` pour un formulaire (D-240). Agrandir, facultatif, l'ouvre en grand : 960 px au plus, le contenu garde 360 px (D-241).
 - **Onglets de vues** : chaque page déclare ses vues, et retient la dernière vue ouverte. Ouvrir un élément ajoute une vue fermable (D-021).
 - **Mobile** : barre d'onglets en bas. « Plus » ouvre une feuille sans les entrées déjà présentes dans les onglets (D-003, D-019).
 - **Réglages** : modale sur bureau et tablette, plein écran sur mobile (D-015).
