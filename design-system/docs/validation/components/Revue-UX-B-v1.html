@@ -1,0 +1,228 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Revue UX, groupe B — validation</title>
+<style>
+/* Tokens socle-ui (base.css), clair puis sombre. */
+:root {
+  --surface: #ffffff; --surface-side: #f3f3f3; --surface-raised: #ffffff; --field: #f2f2f2; --hover: #e9e9e9; --selected: #dedede;
+  --line: #e4e4e4; --line-strong: #cfcfcf; --fg: #1a1a1a; --fg-2: #5c5c5c; --fg-3: #6b6b6b;
+  --accent: #1d4ed8; --accent-fg: #ffffff; --accent-text: #1d4ed8; --danger: #c62828; --warning: #b45309; --success: #15803d;
+  --tip-bg: #1f1f1f; --tip-fg: #f2f2f2; --page: #ebebeb;
+  --radius-sm: 4px; --radius-md: 8px; --radius-lg: 12px; --shadow-md: 0 6px 20px rgb(0 0 0 / .10);
+}
+body:has(#m-dark:checked) {
+  --surface: #181818; --surface-side: #222222; --surface-raised: #262626; --field: #2a2a2a; --hover: #303030; --selected: #3d3d3d;
+  --line: #333333; --line-strong: #4a4a4a; --fg: #ececec; --fg-2: #ababab; --fg-3: #8f8f8f;
+  --accent: #5b8def; --accent-fg: #0b1630; --accent-text: #7da4f2; --danger: #f07167; --warning: #e0a24a; --success: #5cc98a;
+  --tip-bg: #3a3a3a; --page: #111111; --shadow-md: 0 6px 20px rgb(0 0 0 / .5);
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--page); color: var(--fg); font: 14px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif; }
+.wrap { max-width: 1200px; margin: 0 auto; padding: 24px 16px 64px; }
+h1 { font-size: 22px; margin: 0; } h2 { font-size: 17px; margin: 0 0 4px; } h3 { font-size: 13px; margin: 0 0 6px; text-transform: uppercase; letter-spacing: .04em; color: var(--fg-3); }
+.muted { color: var(--fg-2); }
+.status { display: inline-block; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 999px; background: #fde68a; color: #713f12; margin-left: 8px; vertical-align: middle; }
+.boxes { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 16px 0; }
+.box, .q { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; }
+.box ul, .box ol { margin: 4px 0 0; padding-left: 20px; }
+.bar { position: sticky; top: 0; z-index: 5; background: var(--page); padding: 10px 0; display: flex; gap: 8px; align-items: center; }
+.seg { display: inline-flex; border: 1px solid var(--line-strong); border-radius: 8px; overflow: hidden; background: var(--surface); }
+.seg input { position: absolute; opacity: 0; } .seg label { padding: 4px 12px; cursor: pointer; }
+.seg input:checked + label { background: var(--fg); color: var(--surface); }
+.q { margin-top: 16px; }
+.cols { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 12px; margin-top: 10px; }
+.col { border: 1px solid var(--line); border-radius: 8px; padding: 10px; background: var(--surface); }
+.col.now { background: var(--surface-side); }
+.col.reco { outline: 2px solid #16a34a; }
+.tag { font-size: 11px; font-weight: 700; color: #15803d; margin-left: 6px; }
+.col b { display: block; margin-bottom: 6px; }
+.demo { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-md); padding: 10px; margin-top: 8px; position: relative; font-size: 13px; }
+.src { font-size: 12px; color: var(--fg-3); margin-top: 6px; }
+/* Mini composants */
+.btn { display: inline-flex; align-items: center; gap: 6px; height: 28px; padding: 0 10px; border-radius: var(--radius-md); border: 0; font: inherit; font-weight: 500; background: var(--field); color: var(--fg); }
+.btn.pri { background: var(--fg); color: var(--surface); }
+.btn.off { opacity: .4; }
+.btn.inactive { opacity: .55; outline: 2px solid var(--accent); outline-offset: 1px; }
+.tip { position: absolute; background: var(--tip-bg); color: var(--tip-fg); font-size: 12px; padding: 4px 8px; border-radius: var(--radius-sm); white-space: nowrap; }
+.field { margin-top: 6px; } .field label { display: block; font-size: 12px; font-weight: 500; margin-bottom: 3px; }
+.in { height: 28px; border: 1px solid var(--line-strong); border-radius: var(--radius-md); padding: 0 8px; display: flex; align-items: center; background: var(--surface); color: var(--fg); }
+.in.err { border-color: var(--danger); } .in.ro { background: var(--surface-side); border-color: transparent; justify-content: space-between; }
+.msg { font-size: 12px; color: var(--danger); margin-top: 2px; }
+.sum { border: 1px solid var(--danger); border-radius: var(--radius-md); padding: 8px 10px; font-size: 12px; }
+.sum a { color: var(--danger); display: block; }
+.chk { display: inline-flex; align-items: center; gap: 6px; margin-right: 10px; }
+.box14 { width: 14px; height: 14px; border-radius: var(--radius-sm); background: var(--fg); display: inline-block; }
+.box14.ro { background: var(--surface-side); border: 1px solid var(--line-strong); position: relative; }
+.box14.ro::after { content: "✓"; position: absolute; inset: -3px 0 0 2px; font-size: 11px; color: var(--fg-2); }
+.tg { width: 28px; height: 16px; border-radius: 999px; background: var(--fg); display: inline-block; position: relative; }
+.tg::after { content: ""; position: absolute; right: 2px; top: 2px; width: 12px; height: 12px; border-radius: 50%; background: var(--surface); }
+.tg.ro { background: var(--line-strong); }
+.lock { font-size: 11px; color: var(--fg-3); }
+.cnt { font-size: 12px; color: var(--fg-3); text-align: right; } .cnt.err { color: var(--danger); font-weight: 600; }
+table { width: 100%; border-collapse: collapse; font-size: 12px; } th, td { text-align: left; padding: 4px 6px; border-bottom: 1px solid var(--line); } th { color: var(--fg-2); font-weight: 500; }
+.selbar { display: flex; gap: 8px; align-items: center; font-size: 12px; background: var(--selected); padding: 4px 8px; border-radius: var(--radius-sm); margin-bottom: 4px; }
+.selbar a { color: var(--accent-text); }
+.tabs { display: flex; gap: 4px; } .tab { padding: 3px 8px; border-radius: var(--radius-md); color: var(--fg-2); display: inline-flex; gap: 6px; align-items: center; } .tab.on { background: var(--selected); color: var(--fg); }
+.dot { width: 7px; height: 7px; border-radius: 50%; background: var(--fg-2); display: inline-block; }
+.skip { background: var(--fg); color: var(--surface); padding: 4px 8px; border-radius: var(--radius-sm); display: inline-block; font-size: 12px; }
+.zone { border: 2px dashed var(--line-strong); border-radius: 6px; padding: 4px 6px; font-size: 11px; color: var(--fg-3); display: inline-block; margin: 2px; }
+.zone.on { border-color: var(--accent); color: var(--accent-text); }
+.empty { text-align: center; padding: 10px 6px; } .empty .t { font-weight: 600; } .empty .i { font-size: 20px; color: var(--fg-3); }
+.row { display: flex; justify-content: space-between; align-items: center; padding: 4px 6px; border-bottom: 1px solid var(--line); }
+.row.focus { outline: 2px solid var(--accent); outline-offset: -2px; }
+.spin { width: 12px; height: 12px; border: 2px solid var(--line-strong); border-top-color: var(--fg-2); border-radius: 50%; display: inline-block; }
+@media (max-width: 800px) { .boxes { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Revue UX — groupe B <span class="status" style="background:#bbf7d0;color:#14532d">VALIDÉ le 23/11/2026 — toutes les recommandations</span></h1>
+  <p class="muted">Écarts trouvés en comparant socle-ui aux guides publics (GOV.UK, Carbon, Atlassian, Primer, WAI-ARIA APG) et à un design system d'entreprise. Chaque question montre l'état actuel puis les options. La recommandation est encadrée en vert. Réponse de l'utilisateur : toutes les recommandations (Q1 à Q14 : A ; partie C : A pour C1 à C7 et C9, B pour C10 à C15).</p>
+
+  <div class="boxes">
+    <div class="box"><h2>Déjà décidé</h2><ul>
+      <li>D-022 : libellé au-dessus du champ, « (facultatif) » sur les champs non obligatoires.</li>
+      <li>D-105 / D-116 : un bouton en attente ignore les clics.</li>
+      <li>D-131 : un champ en lecture seule a un cadre gris et un cadenas.</li>
+      <li>D-153 : un toast <code>danger</code> reste jusqu'à sa fermeture.</li>
+      <li>D-175 : ListPage affiche « Afficher plus » par défaut, la pagination en option.</li>
+      <li>Toute nouvelle option est facultative ; le comportement par défaut ne change pas sans votre accord.</li>
+    </ul></div>
+    <div class="box"><h2>À décider</h2><ol>
+      <li>Action indisponible : bouton grisé ou « inactif » avec raison.</li>
+      <li>Récapitulatif des erreurs d'un formulaire.</li>
+      <li>Lecture seule des cases, boutons radio, interrupteurs et listes.</li>
+      <li>Limite de caractères.</li>
+      <li>Message d'un champ obligatoire vide.</li>
+      <li>Tableau : tout sélectionner sur toutes les pages.</li>
+      <li>Tableau : choix des colonnes visibles.</li>
+      <li>Tableau : tri à trois états.</li>
+      <li>Tableau : nombre de lignes par page.</li>
+      <li>Onglet d'une vue modifiée.</li>
+      <li>Passer d'une zone à l'autre (F6, « Aller au contenu »).</li>
+      <li>État « accès refusé ».</li>
+      <li>Focus après la disparition du déclencheur (suppression).</li>
+      <li>Action lancée depuis « … ».</li>
+    </ol><p class="muted" style="margin:6px 0 0">Puis partie C : les composants de Component Gallery à ajouter (C1 à C15).</p></div>
+  </div>
+
+  <div class="bar"><span class="seg" role="radiogroup" aria-label="Mode"><input type="radio" name="m" id="m-light" checked><label for="m-light">Clair</label><input type="radio" name="m" id="m-dark"><label for="m-dark">Sombre</label></span></div>
+
+  <!-- Q1 -->
+  <div class="q"><h2>1. Action indisponible</h2><p class="muted">Un bouton désactivé ne prend pas le focus, n'a pas d'info-bulle et ne dit pas pourquoi. Concerne Button, IconButton, DropdownMenu et ActionBar.</p>
+  <div class="cols">
+    <div class="col now"><h3>Actuellement</h3><b>Grisé, muet</b><div class="demo"><button class="btn pri off">Publier</button> <span class="muted" style="font-size:12px">Tab saute le bouton.</span></div></div>
+    <div class="col reco"><h3>Option A <span class="tag">recommandé</span></h3><b>« Inactif » avec une raison</b>Option <code>disabledReason</code> : le bouton reste focusable (<code>aria-disabled</code>), un clic ne fait rien, l'info-bulle et le lecteur d'écran donnent la raison. Sans raison : comportement actuel.<div class="demo" style="padding-bottom:36px"><button class="btn pri inactive">Publier</button><span class="tip" style="left:10px;top:44px">Complétez le titre pour publier.</span></div><div class="src">Primer, GOV.UK.</div></div>
+    <div class="col"><h3>Option B</h3><b>Masquer l'action</b>L'action indisponible n'apparaît pas. Plus simple, mais l'utilisateur ne sait pas qu'elle existe.<div class="demo"><span class="muted" style="font-size:12px">(aucun bouton)</span></div></div>
+  </div></div>
+
+  <!-- Q2 -->
+  <div class="q"><h2>2. Récapitulatif des erreurs (FormPage)</h2><p class="muted">Aujourd'hui, le focus va sur le premier champ en erreur. Dans un long formulaire, les autres erreurs restent hors de vue.</p>
+  <div class="cols">
+    <div class="col now"><h3>Actuellement</h3><b>Focus sur la première erreur</b><div class="demo"><div class="field"><label>Nom</label><div class="in err"></div><div class="msg">Saisissez le nom.</div></div></div></div>
+    <div class="col reco"><h3>Option A <span class="tag">recommandé</span></h3><b>Encart en haut dès 2 erreurs</b>« 3 erreurs à corriger », un lien par champ ; l'encart prend le focus. Avec une seule erreur : focus sur le champ.<div class="demo"><div class="sum"><b style="margin:0">3 erreurs à corriger</b><a href="#">Nom</a><a href="#">Adresse e-mail</a><a href="#">Date de début</a></div></div><div class="src">Primer (à partir de 2-3 erreurs), GOV.UK.</div></div>
+    <div class="col"><h3>Option B</h3><b>Encart dès 1 erreur</b>Comme GOV.UK : toujours l'encart, même pour une seule erreur.</div>
+  </div></div>
+
+  <!-- Q3 -->
+  <div class="q"><h2>3. Lecture seule des choix</h2><p class="muted">Une case, un bouton radio ou un interrupteur en lecture seule ont le même rendu qu'en mode normal : on clique et rien ne se passe. Select n'a pas de lecture seule.</p>
+  <div class="cols">
+    <div class="col now"><h3>Actuellement</h3><b>Rendu normal</b><div class="demo"><span class="chk"><i class="box14"></i>Facturé</span><span class="chk"><i class="tg"></i>Suivi</span></div></div>
+    <div class="col reco"><h3>Option A <span class="tag">recommandé</span></h3><b>Comme les champs (D-131)</b>Fond gris, coche en <code>--fg-2</code>, cadenas dans le groupe ; focusable, lisible. Select gagne <code>isReadOnly</code>.<div class="demo"><span class="chk"><i class="box14 ro"></i>Facturé</span><span class="chk"><i class="tg ro"></i>Suivi</span><span class="lock">🔒 lecture seule</span></div><div class="src">Carbon.</div></div>
+    <div class="col"><h3>Option B</h3><b>Texte seul</b>En lecture seule, on affiche la valeur en texte (« Oui », « Suivi actif »), sans contrôle.</div>
+  </div></div>
+
+  <!-- Q4 -->
+  <div class="q"><h2>4. Limite de caractères</h2><p class="muted"><code>maxLength</code> bloque la frappe et coupe un collage sans rien dire (TextInput, TextArea, InlineEdit, MarkdownEditor).</p>
+  <div class="cols">
+    <div class="col now"><h3>Actuellement</h3><b>Saisie bloquée à la limite</b><div class="demo"><div class="in">Rapport trimestriel des ven</div><div class="cnt">30 / 30</div></div></div>
+    <div class="col reco"><h3>Option A <span class="tag">recommandé</span></h3><b>Dépassement permis, erreur</b>On peut dépasser ; le compteur passe en erreur (« 4 caractères en trop »), annoncé après une pause ; l'envoi est refusé avec un message.<div class="demo"><div class="in err">Rapport trimestriel des ventes Sud</div><div class="cnt err">4 caractères en trop</div></div><div class="src">GOV.UK Character count.</div></div>
+    <div class="col"><h3>Option B</h3><b>Garder le blocage, prévenir</b>On garde la limite, mais un message s'affiche quand un collage est coupé.</div>
+  </div></div>
+
+  <!-- Q5 -->
+  <div class="q"><h2>5. Message d'un champ obligatoire vide</h2>
+  <div class="cols">
+    <div class="col now"><h3>Actuellement</h3><b>Message générique</b><div class="demo"><div class="field"><label>Date de début</label><div class="in err"></div><div class="msg">Ce champ est obligatoire.</div></div></div></div>
+    <div class="col reco"><h3>Option A <span class="tag">recommandé</span></h3><b>Construit à partir du libellé</b>« Saisissez la date de début. » ; « Choisissez … » pour une liste. Option <code>requiredMessage</code> pour un texte propre.<div class="demo"><div class="field"><label>Date de début</label><div class="in err"></div><div class="msg">Saisissez la date de début.</div></div></div><div class="src">GOV.UK Error message.</div></div>
+    <div class="col"><h3>Option B</h3><b>Option seule</b>On garde le message générique ; l'app peut le remplacer par <code>requiredMessage</code>.</div>
+  </div></div>
+
+  <!-- Q6-Q9 -->
+  <div class="q"><h2>6 à 9. Tableau (Table, ListPage)</h2><p class="muted">Quatre ajouts facultatifs, à valider un par un (A = oui, B = non).</p>
+  <div class="cols">
+    <div class="col reco"><h3>6. Tout sélectionner <span class="tag">recommandé : A</span></h3>Après « tout cocher » sur la page : lien « Sélectionner les 312 éléments » ; l'état « tout » est passé à l'app (utile en mode distant).<div class="demo"><div class="selbar">25 sélectionnés · <a href="#">Sélectionner les 312 éléments</a></div></div><div class="src">Carbon, Polaris.</div></div>
+    <div class="col reco"><h3>7. Colonnes visibles <span class="tag">recommandé : A</span></h3>Menu « Colonnes » dans la barre, cases à cocher, choix mémorisé (D-007). Une colonne marquée <code>required</code> ne se masque pas.<div class="demo"><button class="btn">Colonnes ▾</button></div><div class="src">Carbon.</div></div>
+    <div class="col reco"><h3>8. Tri à trois états <span class="tag">recommandé : A</span></h3>Croissant, décroissant, puis retour à l'ordre d'origine.<div class="demo"><table><tr><th>Montant ↑</th><th>Créée</th></tr></table></div><div class="src">Carbon.</div></div>
+    <div class="col reco"><h3>9. Lignes par page <span class="tag">recommandé : A</span></h3>En mode pagination : choix 25 / 50 / 100, mémorisé ; « Page 2 sur 13 ».<div class="demo"><span class="muted" style="font-size:12px">Lignes : 25 ▾ · Page 2 sur 13 ‹ ›</span></div><div class="src">Carbon.</div></div>
+  </div></div>
+
+  <!-- Q10 -->
+  <div class="q"><h2>10. Onglet d'une vue modifiée</h2>
+  <div class="cols">
+    <div class="col now"><h3>Actuellement</h3><b>Aucune marque</b><div class="demo"><div class="tabs"><span class="tab">Tous</span><span class="tab on">Rapport T3 ×</span></div></div></div>
+    <div class="col reco"><h3>Option A <span class="tag">recommandé</span></h3><b>Point « modifié »</b>Option <code>isDirty</code> : un point remplace le × ; au survol, le × revient. Fermer demande confirmation (via <code>onClose</code> qui peut annuler, déjà en place).<div class="demo"><div class="tabs"><span class="tab">Tous</span><span class="tab on">Rapport T3 <i class="dot"></i></span></div></div><div class="src">Carbon Tabs.</div></div>
+    <div class="col"><h3>Option B</h3><b>Rien</b>L'app gère seule la confirmation.</div>
+  </div></div>
+
+  <!-- Q11 -->
+  <div class="q"><h2>11. Passer d'une zone à l'autre</h2><p class="muted">Pour atteindre le contenu au clavier, il faut tabuler à travers la barre et la sidebar.</p>
+  <div class="cols">
+    <div class="col now"><h3>Actuellement</h3><b>Tab seulement</b></div>
+    <div class="col reco"><h3>Option A <span class="tag">recommandé</span></h3><b>F6 et lien d'évitement</b>F6 / Maj+F6 passent de la barre à la sidebar, au contenu, au détail (usage des apps de bureau). En web, un lien « Aller au contenu » apparaît au premier Tab.<div class="demo"><span class="skip">Aller au contenu</span><div style="margin-top:6px"><span class="zone">Barre</span><span class="zone">Sidebar</span><span class="zone on">Contenu</span><span class="zone">Détail</span></div></div><div class="src">WCAG 2.4.1, usage Windows et macOS.</div></div>
+    <div class="col"><h3>Option B</h3><b>Lien d'évitement seul</b>Pas de F6.</div>
+  </div></div>
+
+  <!-- Q12 -->
+  <div class="q"><h2>12. État « accès refusé »</h2><p class="muted">Aucun état prévu quand l'utilisateur n'a pas le droit de voir une liste ou un élément.</p>
+  <div class="cols">
+    <div class="col now"><h3>Actuellement</h3><b>Rien de prévu</b><div class="muted" style="font-size:12px">L'app affiche une erreur ou une liste vide.</div></div>
+    <div class="col reco"><h3>Option A <span class="tag">recommandé</span></h3><b>État dédié</b>Option <code>isForbidden</code> dans ListPage et Drawer : icône cadenas, « Vous n'avez pas accès à cette liste », phrase « Demandez l'accès à un administrateur », action facultative « Demander l'accès ».<div class="demo"><div class="empty"><div class="i">🔒</div><div class="t">Vous n'avez pas accès à ces demandes</div><div class="muted" style="font-size:12px">Demandez l'accès à un administrateur.</div></div></div><div class="src">Carbon Empty states.</div></div>
+  </div></div>
+
+  <!-- Q13 -->
+  <div class="q"><h2>13. Focus après une suppression</h2><p class="muted">On supprime une ligne depuis son menu et on confirme : la ligne disparaît, le focus tombe sur la page.</p>
+  <div class="cols">
+    <div class="col now"><h3>Actuellement</h3><b>Focus perdu</b></div>
+    <div class="col reco"><h3>Option A <span class="tag">recommandé</span></h3><b>Repli automatique</b>Si le déclencheur a disparu : ligne suivante, sinon précédente, sinon la liste. Option <code>returnFocusTo</code> dans Modal et <code>useConfirm</code> pour un autre choix.<div class="demo"><div class="row">Accès au VPN</div><div class="row focus">Écran qui scintille</div><div class="row">Commande de badges</div></div><div class="src">WAI-ARIA APG Dialog.</div></div>
+  </div></div>
+
+  <!-- Q14 -->
+  <div class="q"><h2>14. Action lancée depuis « … »</h2><p class="muted">Le menu se ferme et rien ne montre que l'action tourne.</p>
+  <div class="cols">
+    <div class="col now"><h3>Actuellement</h3><b>Aucun retour</b><div class="demo"><button class="btn">…</button></div></div>
+    <div class="col reco"><h3>Option A <span class="tag">recommandé</span></h3><b>« … » en attente</b>Tant qu'une action du menu tourne, le bouton « … » montre l'indicateur rotatif et ignore les clics (comme D-116).<div class="demo"><button class="btn"><i class="spin"></i></button></div><div class="src">Carbon.</div></div>
+  </div></div>
+
+  <!-- Partie C : composants manquants -->
+  <h2 style="margin-top:32px">Partie C — composants de Component Gallery absents de socle-ui</h2>
+  <p class="muted">Sur 60 composants de la galerie, environ 35 existent déjà dans socle-ui. Pour chaque composant absent : A = l'ajouter (spec, page de validation, code), B = non. Chacun aura ensuite sa propre page de validation, comme tout nouveau composant.</p>
+  <div class="q"><table>
+    <thead><tr><th>#</th><th>Composant (galerie)</th><th>À quoi il sert dans une app de travail</th><th>Recommandation</th></tr></thead>
+    <tbody>
+      <tr><td>C1</td><td><b>Date input / Datepicker</b></td><td>Saisir une date ou une plage, au clavier d'abord, calendrier en appui. Déjà noté « à spécifier » (TextInput).</td><td><b>A</b> — priorité 1</td></tr>
+      <tr><td>C2</td><td><b>Alert</b> (encart)</td><td>Message dans le contenu : information, alerte, erreur, avec une action. Prévu par D-159, jamais spécifié.</td><td><b>A</b> — priorité 1</td></tr>
+      <tr><td>C3</td><td><b>Stepper</b> (champ nombre ±)</td><td><code>NumberField</code> : nombre avec pas, Maj pour un grand pas, unité. Déjà noté « à spécifier ».</td><td><b>A</b> — priorité 1</td></tr>
+      <tr><td>C4</td><td><b>File upload</b> et <b>File</b></td><td>Déposer des fichiers, puis voir la liste avec progression, erreur et retrait.</td><td><b>A</b> — priorité 2</td></tr>
+      <tr><td>C5</td><td><b>Segmented control</b></td><td>Choix de 2 à 4 options : liste / grille, période, filtre court.</td><td><b>A</b> — priorité 2</td></tr>
+      <tr><td>C6</td><td><b>Pagination</b> (seule)</td><td>Aujourd'hui seulement dans ListPage ; utile pour une liste faite à la main.</td><td><b>A</b> — priorité 3</td></tr>
+      <tr><td>C7</td><td><b>Spinner</b> (seul)</td><td>Indicateur rotatif exposé : état « en cours » dans une cellule, un panneau.</td><td><b>A</b> — priorité 3</td></tr>
+      <tr><td>C8</td><td><b>Skip link</b></td><td>« Aller au contenu ». Se règle avec la question 11 : pas de composant à part.</td><td>Voir Q11</td></tr>
+      <tr><td>C9</td><td><b>Card</b></td><td>Tuiles d'indicateurs, tableau de bord, grille d'éléments.</td><td><b>A</b> — priorité 3</td></tr>
+      <tr><td>C10</td><td><b>Breadcrumbs</b></td><td>Fil d'Ariane. Écarté par D-211 (navigation sur 2 niveaux, lien de retour).</td><td><b>B</b> — à revoir si un arbre profond navigue</td></tr>
+      <tr><td>C11</td><td><b>Slider</b></td><td>Valeur approximative (volume, seuil). Peu utile pour saisir des valeurs exactes.</td><td><b>B</b> — sur besoin</td></tr>
+      <tr><td>C12</td><td><b>Color picker</b></td><td>Choisir une couleur (étiquettes, accent d'une app).</td><td><b>B</b> — sur besoin</td></tr>
+      <tr><td>C13</td><td><b>Rating</b></td><td>Note en étoiles.</td><td><b>B</b> — hors cible</td></tr>
+      <tr><td>C14</td><td><b>Carousel</b>, <b>Hero</b>, <b>Quote</b>, <b>Video</b>, <b>Image</b>, <b>Footer</b></td><td>Composants de site vitrine (D-001 : « pas de landing pages »).</td><td><b>B</b> — hors cible</td></tr>
+      <tr><td>C15</td><td><b>Heading</b>, <b>Stack</b>, <b>Label</b>, <b>Icon</b>, <b>Visually hidden</b></td><td>Déjà couverts par les tokens, <code>Field</code>, <code>PageSection</code>, les icônes et <code>sr-only</code>. Les exposer ajouterait de l'API sans gain.</td><td><b>B</b> — couvert</td></tr>
+    </tbody>
+  </table></div>
+
+  <h2 style="margin-top:32px">Avant / après</h2>
+  <p class="muted">À remplir une fois les choix codés : captures Storybook, avant et après, sur les mêmes écrans.</p>
+</div>
+</body>
+</html>
