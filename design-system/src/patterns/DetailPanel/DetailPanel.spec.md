@@ -13,17 +13,13 @@ Deux formes, qui s'excluent (D-180) :
 - **déclarative** : l'app passe `header`, `sections` et les états ; le panneau dessine tout. Il ne charge rien : l'app lit la sélection et charge l'objet.
 
 ## Anatomie
-1. **En-tête** (fourni par AppShell) : titre « Détail » et × sur tablette et mobile (D-018).
+1. **En-tête** (fourni par AppShell) : titre « Détail » et × sur tablette et mobile (D-018). La largeur du panneau vient d'AppShell : `detailWidth` (`default` pour des sections, `form` pour un formulaire) et le bouton Agrandir facultatif (`detailExpandable`) (D-240 à D-242).
 2. **En-tête de l'objet** (forme déclarative, facultatif, D-181) : collé en haut pendant le défilement, trait `--line` dessous.
    1. titre en `--fs-lg`, gras, deux lignes au plus ;
    2. actions à droite : `ActionBar`, règle de la zone `section` (2 icônes, « … », action principale en `Button` `secondary` `sm`) ;
    3. ligne 2 : statut (`StatusBadge`), puis sous-titre en `--fs-sm`, `--fg-2`, une ligne.
 3. **Section** `DetailPanel.Section` (au moins une) : titre en `--fs-sm`, `--fg-3`, suivi d'un chevron ; un clic replie ou déplie la section, état mémorisé (D-061). Après le chevron, un résumé facultatif (`StatusBadge`), lisible même section repliée ; à droite de la ligne du titre, des actions facultatives (`ActionBar` zone `section`) (D-183). Puis ses lignes, puis son contenu libre. Les sections sont séparées par un trait `--line`.
 4. **Ligne de propriété** `PropertyRow` :
-
-1. **En-tête** (fourni par AppShell) : titre « Détail » et × sur tablette et mobile (D-018). La largeur du panneau vient d'AppShell : `detailWidth` (`default` pour des sections, `form` pour un formulaire) et le bouton Agrandir facultatif (`detailExpandable`) (D-240 à D-242).
-2. **Section** `DetailPanel.Section` (au moins une) : titre en `--fs-sm`, `--fg-3`, suivi d'un chevron ; un clic replie ou déplie la section, état mémorisé (D-061). Puis ses lignes. Les sections sont séparées par un trait `--line`.
-3. **Ligne de propriété** `PropertyRow` :
    1. icône (facultative, 16 px, `--fg-2`) : si une ligne de la section en a une, les autres gardent la place vide (D-057) ;
    2. libellé (obligatoire), en `--fg-2`, dans une colonne de 96 px (D-058) ;
    3. valeur (obligatoire), en `--fg`, alignée sur la même colonne pour toutes les lignes (D-058) ;
@@ -156,7 +152,7 @@ Uniquement dans le slot `detail` d'AppShell.
 Contient `IconButton`, `Menu`, `Switch` (D-136), `Button` (D-100) et `Tooltip`. Forme déclarative : `ActionBar` (D-110), `StatusBadge` (D-160), `SkeletonGroup` et `Skeleton` (D-165), `EmptyState` (D-166), et `FormattedValue` (D-170). Peut contenir `InlineEdit` comme valeur (D-324) et `Disclosure` dans une section (D-321).
 
 ## Décisions
-D-007, D-015, D-018, D-025, D-026, D-040, D-047, D-057, D-058, D-059, D-060, D-061, D-084, D-085, D-110, D-113, D-116, D-160, D-165, D-166, D-170, D-171, D-180, D-181, D-182, D-183, D-184, D-185, D-321, D-324
+D-007, D-015, D-018, D-025, D-026, D-040, D-047, D-057, D-058, D-059, D-060, D-061, D-084, D-085, D-110, D-113, D-116, D-160, D-165, D-166, D-170, D-171, D-180, D-181, D-182, D-183, D-184, D-185, D-240, D-241, D-242, D-321, D-324
 
 ## Questions ouvertes
 Aucune.
