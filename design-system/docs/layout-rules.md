@@ -67,6 +67,9 @@ Une app décrit ses actions par des données (`Action`) et les passe à `ActionB
 ### SettingsPage (D-015)
 - `nav` : recherche, groupes séparés par un trait, éléments de navigation (icône et libellé), lien externe en pied.
 - `content` : titre de section, puis lignes de réglage pleine largeur. Le libellé et la description sont à gauche, le contrôle calé à droite. Les changements s'appliquent immédiatement (D-007).
+- L'app décrit ses réglages par des données ; le gabarit choisit le contrôle (D-200). Un texte s'applique à Entrée ou en quittant le champ (D-204).
+- Une liste gérée dans les réglages (environnements, clés) : lignes `item`, actions de ligne par `Action` (D-206).
+- Conteneur : `Dialog` `xl` sans pied, ou zone `main` ; sous 640 px de large, liste puis rubrique (D-208).
 
 ## Petites règles
 

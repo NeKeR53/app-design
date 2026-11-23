@@ -18,4 +18,7 @@
   --dlg-pad: 16px;        /* marge intérieure d'une modale (Dialog) */
   --icon-btn: 24px;       /* bouton-icône (D-035) */
   --btn-h-sm: 24px;       /* bouton à texte, taille sm (D-101) */
+  --settings-nav-w: 200px; /* navigation de SettingsPage (D-201) */
+  --settings-pad: 24px;   /* marge du contenu de SettingsPage (D-207) */
+  --setting-py: 10px;     /* marge verticale d'une ligne de réglage (D-203) */
 }

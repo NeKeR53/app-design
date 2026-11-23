@@ -167,7 +167,9 @@ export function Dialog({ isOpen, onOpenChange, title, description, children, foo
   const escape = useEscapeFlag(isOpen);
   const dialogRef = useAriaBusy(isBusy);
 
-  const markEdited = () => {
+  // Un réglage appliqué tout de suite (SettingsPage) n'est pas une saisie à protéger (D-208).
+  const markEdited = (e: { target: EventTarget }) => {
+    if (e.target instanceof Element && e.target.closest("[data-socle-immediate]")) return;
     edited.current = true;
   };
   const flush = size === "xl";

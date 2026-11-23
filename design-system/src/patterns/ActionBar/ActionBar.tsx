@@ -83,7 +83,7 @@ export function arrangeActions(actions: ReadonlyArray<Action>, zone: ActionZone,
   return { primary, icons, menu, danger };
 }
 
-function confirmRequest(action: Action, question: (label: string) => string): ConfirmRequest | null {
+export function confirmRequest(action: Action, question: (label: string) => string): ConfirmRequest | null {
   if (!action.danger && !action.confirm) return null;
   const c = typeof action.confirm === "string" ? { title: action.confirm } : action.confirm;
   return {

@@ -77,3 +77,18 @@ export { Fieldset } from "./components/Fieldset/Fieldset";
 export type { FieldsetProps } from "./components/Fieldset/Fieldset";
 export { ComboBox } from "./components/ComboBox/ComboBox";
 export type { ComboBoxProps, ComboBoxSingleProps, ComboBoxMultipleProps, ComboBoxItem } from "./components/ComboBox/ComboBox";
+export { SettingsPage } from "./templates/SettingsPage/SettingsPage";
+export type {
+  SettingsPageProps,
+  SettingsGroup,
+  SettingsCategory,
+  SettingsSection,
+  Setting,
+  SwitchSetting,
+  SelectSetting,
+  TextSetting,
+  ActionSetting,
+  ItemSetting,
+  InfoSetting,
+  SettingTag,
+} from "./templates/SettingsPage/SettingsPage";
