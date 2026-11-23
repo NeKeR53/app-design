@@ -1,5 +1,5 @@
 # Sidebar
-Statut : validé (2026-11-21, v1 et v2) — Version : depuis 0.1.0
+Statut : validé (2026-11-21, v1 et v2) — Version : depuis 0.1.0 ; hauteur des lignes et espace de travail : 1.1.0 (D-368, D-369, par délégation de l'utilisateur)
 Validation : docs/validation/components/Sidebar-v1.html (sections et éléments sur deux lignes), docs/validation/components/Sidebar-v2.html (éléments du haut), docs/validation/components/Sidebar-footer-v1.html (pied : par délégation de l'utilisateur, 2026-11-23)
 
 ## Rôle
@@ -29,13 +29,13 @@ Ne pas l'utiliser pour :
 1. Ligne 1 : titre, chevron s'il a des enfants, icône d'état facultative à droite (alerte, en cours).
 2. Ligne 2 : sous-titre en `--fg-2`, coupé ; étiquette facultative à droite en `--fg-3`.
 3. Enfants (facultatifs) : des `TreeItem` d'un seul niveau, en retrait. Une fois dépliés, ils sont reliés au parent par un trait vertical de 1 px en `--tree-line` ; le dernier enfant se termine par un coude arrondi de 8 px (D-042). Une fois repliés, ils sont résumés par une ligne de 24 px sous le parent (« 4 éléments · 2 non lus ») ; un clic sur la ligne les déplie (D-043).
-4. Bouton « … » (automatique si l'app fournit des actions) : visible au survol et sur l'élément sélectionné ; il ouvre un `DropdownMenu`.
+4. Bouton « … » (automatique si l'app fournit des actions) : visible au survol, au focus et sur l'élément sélectionné ; il ouvre un `DropdownMenu`. Place : ligne 1, tout à droite, après le point non lu et l'icône d'état ; son icône s'aligne sur le bord droit de l'étiquette de la ligne 2 (D-368).
 
 ### `Sidebar.Section`
 Titre en `--fs-sm`, `--fg-3`, sans majuscules, suivi d'un chevron. Un clic sur le titre replie ou déplie la section.
 
 ### `Sidebar.Workspace` (D-231)
-Repère carré de 24 px (rayon 4 px, fond `--selected`, initiale), nom de l'espace ouvert, chevron haut-bas en `--fg-3`. Il ouvre un `DropdownMenu` au-dessus du pied : section « Espaces de travail » en choix unique, l'espace ouvert coché, puis un trait et les actions de l'app. Un seul espace sans action : simple étiquette.
+Nom de l'espace ouvert, puis chevron haut-bas en `--fg-3`, sans repère ni avatar : l'avatar du compte, juste en dessous, reste le seul du pied (D-369). Il ouvre un `DropdownMenu` au-dessus du pied : section « Espaces de travail » en choix unique, l'espace ouvert coché, puis un trait et les actions de l'app. Un seul espace sans action : simple étiquette.
 
 ### `Sidebar.Account`
 Avatar (initiales), nom, plan ou rôle en `--fg-3`, puis le bouton Réglages (roue dentée, `IconButton`, Mod+,). Un clic sur l'avatar et le nom ouvre le menu du compte, au-dessus du pied, si l'app fournit des entrées ; un chevron double le signale (D-046).
@@ -85,7 +85,7 @@ Couleurs : la sidebar lit des rôles dédiés, égaux par défaut aux rôles gé
 | État | Rendu |
 |---|---|
 | Par défaut | Sans fond ; libellé `--fg-2` (Item) ou titre `--fg` (TreeItem). |
-| Survol | Fond `--hover` ; les actions et le « … » apparaissent. |
+| Survol | Fond `--hover` ; les actions et le « … » apparaissent ; la hauteur de la ligne ne change pas (D-368). |
 | Sélectionné | Fond `--selected`, fixe au survol : un clic sur l'élément sélectionné ne fait rien (D-039). Le texte tertiaire passe en `--fg-2` (contraste AA). |
 | Focus clavier | Anneau de focus `--accent`. |
 | Section repliée | Chevron vers la droite ; contenu masqué. |
@@ -100,10 +100,11 @@ Couleurs : la sidebar lit des rôles dédiés, égaux par défaut aux rôles gé
 | Item : le chevron déplie les sous-pages sans sélectionner ; le parent d'une sous-page sélectionnée reste déplié ; état mémorisé (D-056) | verrouillé | `SousPages` |
 | TreeItem : le chevron replie ou déplie les enfants, sans sélectionner ; la ligne résumé les déplie (D-043) ; état mémorisé | verrouillé | `Enfants` |
 | Actions et « … » : visibles au survol, au focus et sur l'élément sélectionné ; elles remplacent alors le compteur ; sur tactile, appui long (D-007, D-053, D-054) | verrouillé | `ActionsAuSurvol` |
+| Hauteur de ligne fixe au survol, au focus et à la sélection ; icône du « … » alignée sur l'étiquette de la ligne 2 (D-368) | verrouillé | `HauteurStable` |
 | Section longue : « Afficher plus (n) » au-delà de `limit` ; choix mémorisé ; l'élément sélectionné reste toujours visible (D-045) | réglable par app (`limit`) | `SectionLongue` |
 | Aucune animation au repli des sections et des enfants (D-026) | verrouillé | `Sections` |
 | Entrées fixes : en bas, hors du défilement, même sélection que la navigation (D-230, D-232) | verrouillé | `PiedFixe` |
-| Espace de travail : menu au-dessus, espace ouvert coché ; choisir l'espace ouvert ne fait rien ; un seul espace sans action : étiquette (D-231) | verrouillé | `EspaceDeTravail`, `EspaceUnique` |
+| Espace de travail : nom seul, sans repère (D-369) ; menu au-dessus, espace ouvert coché ; choisir l'espace ouvert ne fait rien ; un seul espace sans action : étiquette (D-231) | verrouillé | `EspaceDeTravail`, `EspaceUnique` |
 
 ## Contenu
 - Libellé ou titre trop long : coupé avec une ellipse, et texte complet dans une info-bulle.
@@ -112,7 +113,7 @@ Couleurs : la sidebar lit des rôles dédiés, égaux par défaut aux rôles gé
 - Section longue : 5 éléments, puis « Afficher plus (n) » ; ensuite « Afficher moins ». Choix mémorisé par section. Si l'élément sélectionné est au-delà, la section s'affiche en entier (D-045).
 
 ## Densité
-Hauteurs `--row-h` (Item) et `--row2-h` (TreeItem). Largeur `--side-w`. Rayon de 8 px (D-040).
+Hauteurs `--row-h` (Item) et `--row2-h` (TreeItem), marges comprises. La hauteur d'une ligne ne change jamais au survol, au focus ni à la sélection : les actions et le « … » apparaissent sans l'agrandir (D-368). Largeur `--side-w`. Rayon de 8 px (D-040).
 
 ## Clavier
 - Tab entre dans la sidebar sur l'élément sélectionné, puis passe aux entrées fixes, à l'espace de travail et au compte.
@@ -143,7 +144,7 @@ Uniquement dans la zone `sidebar` d'AppShell. Une seule sidebar par fenêtre.
 Contient `IconButton`, `Tooltip` et `DropdownMenu`. Utilisée par `AppShell`.
 
 ## Décisions
-D-002, D-003, D-006, D-007, D-016, D-017, D-019, D-021, D-026, D-039, D-040, D-042, D-043, D-044, D-045, D-046, D-052, D-053, D-054, D-055, D-056, D-230, D-231, D-232, D-260, D-337, D-338
+D-002, D-003, D-006, D-007, D-016, D-017, D-019, D-021, D-026, D-039, D-040, D-042, D-043, D-044, D-045, D-046, D-052, D-053, D-054, D-055, D-056, D-230, D-231, D-232, D-260, D-337, D-338, D-368, D-369
 
 ## Questions ouvertes
 Aucune.

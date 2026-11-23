@@ -2245,6 +2245,7 @@
 - Raison : Slack, Notion, Linear et Alfred ont un sélecteur d'espace ; le repère carré le distingue de l'avatar rond d'une personne (D-163).
 - Options écartées : sélecteur en haut de la sidebar (la zone au-dessus porte déjà le repli et l'historique, D-020) ; fusion avec le compte (le menu de D-046 mêlerait deux sujets) ; description de chaque espace dans le menu (le chemin d'un dossier est propre à Alfred).
 - Validation : par délégation de l'utilisateur, 2026-11-23 — docs/validation/components/Sidebar-footer-v1.html
+- Repère carré : remplacé par D-369 (le reste de la décision tient).
 
 ## D-232 — Sidebar : ordre du pied et ce qui reste dans l'app
 - Date : 2026-11-23
@@ -2565,3 +2566,19 @@
 - Raison : un nuancier fermé garde des couleurs cohérentes et nommées ; l'alerte protège la lisibilité du texte posé sur la couleur.
 - Options écartées : ne pas l'ajouter ; sélecteur libre (roue, zone de teinte).
 - Validation : choix de l'utilisateur, 2026-11-23 — docs/validation/components/Nouveaux-P4-v1.html
+
+## D-368 — Sidebar : hauteur fixe des lignes et place du « … »
+- Date : 2026-11-23
+- Portée : Sidebar
+- Décision : la hauteur d'une ligne de la sidebar ne change jamais au survol, au focus ni à la sélection. Dans `Sidebar.TreeItem`, la ligne du titre a la hauteur d'une ligne de texte : le bouton « … » (22 px, D-053) et l'icône d'état la débordent sans l'agrandir ; la ligne compte ses marges dans `--row2-h`, avec ou sans reset CSS dans l'app. Le « … » reste sur la ligne du titre, tout à droite, après le point non lu et l'icône d'état ; son icône s'aligne sur le bord droit de l'étiquette de la ligne 2, et sa cible finit à 4 px du bord de la ligne, comme les actions de `Sidebar.Item`.
+- Raison : une ligne qui bouge au passage de la souris fait sauter toute la liste ; la référence (app Claude desktop) pose le « … » à droite de la ligne du titre, dans la colonne de l'étiquette.
+- Options écartées : « … » centré sur les deux lignes (il cacherait l'étiquette de la ligne 2) ; cible réduite à 18 px (contraire à D-053) ; hauteur de ligne du titre portée à 22 px (toutes les lignes grandiraient).
+- Validation : par délégation de l'utilisateur, 2026-11-23
+
+## D-369 — Sidebar : espace de travail sans repère
+- Date : 2026-11-23
+- Portée : Sidebar
+- Décision : `Sidebar.Workspace` montre le nom de l'espace ouvert seul, suivi du chevron haut-bas ; il n'a plus de repère carré d'initiale. Le menu, l'étiquette d'un espace unique et les options ne changent pas. `workspaceInitial` reste exporté, déprécié, jusqu'à 2.0.0. Remplace le repère carré de D-231.
+- Raison : juste au-dessus de l'avatar de `Sidebar.Account`, le repère se lisait comme un second avatar ; le nom et le chevron suffisent à dire « on peut changer d'espace ».
+- Options écartées : garder le repère en option (deux dessins pour la même ligne) ; une icône générique de dossier (encore une pastille devant le nom).
+- Validation : par délégation de l'utilisateur, 2026-11-23

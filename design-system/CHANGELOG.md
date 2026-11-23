@@ -4,6 +4,20 @@ Versions selon semver (règle 6 du skill design) : une nouvelle option facultati
 
 ## [Non publié]
 
+## [1.1.0] — 2026-11-23
+
+Version mineure : aucune API ne casse.
+
+### Corrigé
+- `Sidebar.TreeItem` : la ligne ne grandit plus au survol, au focus ni à la sélection quand le « … » (22 px) apparaît ; la ligne du titre a la hauteur d'une ligne de texte, et la ligne compte ses marges dans `--row2-h`, avec ou sans reset CSS dans l'app (D-368). Une ligne avec icône d'état a la même hauteur qu'une ligne sans.
+- `Sidebar.TreeItem` : l'icône du « … » s'aligne sur le bord droit de l'étiquette de la ligne 2 ; sa cible finit à 4 px du bord, comme les actions de `Sidebar.Item` (D-368).
+
+### Changé
+- `Sidebar.Workspace` : le repère carré d'initiale est retiré ; le nom de l'espace et le chevron restent (D-369). Aucune option ne change.
+
+### Déprécié
+- `workspaceInitial` : plus utilisé par `Sidebar.Workspace` (D-369). Toujours exporté ; retrait en 2.0.0.
+
 ## [1.0.0] — 2026-11-23
 
 Version majeure. Les composants prennent les noms de Component Gallery (D-336) ; les anciens noms restent exportés, dépréciés, jusqu'à 2.0.0. Avec : le thème d'organisation (D-337, D-338), LoginPage (D-339), la revue UX des groupes A et B (D-340 à D-353) et les nouveaux composants (D-354 à D-367). Deux changements de comportement : `maxLength` ne bloque plus la saisie (D-343) et le message d'un champ obligatoire cite le libellé (D-344).

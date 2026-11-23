@@ -392,13 +392,15 @@ function TwoLine({ id, title, subtitle, meta, status, unread, actions, children 
   const unreadKids = kids.filter((k) => k.props.unread).length;
   const showSummary = kids.length > 0 && !ctx.isExpanded(id);
   const row = (
-    <TreeItem ref={currentRef} id={id} textValue={title} className={cx(rowBase, "min-h-(--row2-h) py-1.5", depth > 0 ? "pl-8" : "pl-2", "pr-1")}>
+    <TreeItem ref={currentRef} id={id} textValue={title} className={cx(rowBase, "box-border min-h-(--row2-h) py-1.5", depth > 0 ? "pl-8" : "pl-2", "pr-2")}>
       <TreeItemContent>
         {({ isExpanded }) => (
           <>
             <Connector />
             <span className="flex min-w-0 flex-1 flex-col">
-              <span className="flex min-w-0 items-center gap-1.5">
+              {/* Ligne du titre : hauteur fixe d'une ligne de texte (h-lh). Ni le « … » de 22 px,
+                  ni l'icône d'état ne la font grandir, au survol, au focus ou à la sélection (D-368). */}
+              <span className="flex h-lh min-w-0 items-center gap-1.5">
                 <OverflowTooltip text={title} textClass="min-w-0 truncate text-fg" />
                 {kids.length > 0 && (
                   <Button slot="chevron" aria-label={isExpanded ? m.collapseItem(title) : m.expandItem(title)} className={cx(buttonReset, "inline-grid size-4 shrink-0 place-items-center rounded-sm text-fg-3 data-hovered:bg-selected")}>
@@ -412,8 +414,9 @@ function TwoLine({ id, title, subtitle, meta, status, unread, actions, children 
                     <AlertTriangle size={14} />
                   </span>
                 )}
+                {/* « … » à droite de la ligne du titre ; son icône s'aligne sur l'étiquette de la ligne 2 (D-368). */}
                 {actions && (
-                  <span className="hidden group-data-focus-visible:inline-flex group-data-hovered:inline-flex group-data-selected:inline-flex group-has-[[aria-haspopup][aria-expanded=true]]:inline-flex">
+                  <span className="-mr-1 hidden group-data-focus-visible:inline-flex group-data-hovered:inline-flex group-data-selected:inline-flex group-has-[[aria-haspopup][aria-expanded=true]]:inline-flex">
                     <DropdownMenu label={m.actionsOn(title)} placement="bottom end" trigger={<SmallAction action={{ icon: <MoreHorizontal />, label: m.actionsOn(title) }} rowMenu />}>
                       {actions}
                     </DropdownMenu>
@@ -525,8 +528,11 @@ function Account({ name, detail, avatar, onSettings, menu }: SidebarAccountProps
   );
 }
 
-/* ---------- Sidebar.Workspace (D-231) ---------- */
-/** Lettre du repère d'un espace : la première lettre ou le premier chiffre de son nom. */
+/* ---------- Sidebar.Workspace (D-231, D-369) ---------- */
+/**
+ * Lettre du repère d'un espace : la première lettre ou le premier chiffre de son nom.
+ * @deprecated Depuis 1.1.0 : `Sidebar.Workspace` n'a plus de repère (D-369). Retrait prévu en 2.0.0.
+ */
 export function workspaceInitial(name: string): string {
   const ch = Array.from(name).find((c) => /[\p{L}\p{N}]/u.test(c));
   return (ch ?? "·").toLocaleUpperCase();
@@ -536,14 +542,8 @@ function Workspace({ workspaces, currentId, onChange, actions, isDisabled }: Sid
   const m = useMessages();
   const current = workspaces.find((w) => w.id === currentId) ?? workspaces[0];
   if (!current) return null;
-  const who = (
-    <>
-      <span aria-hidden className="inline-grid size-6 shrink-0 place-items-center rounded-sm bg-selected text-xs font-semibold text-fg">
-        {workspaceInitial(current.name)}
-      </span>
-      <OverflowTooltip text={current.name} />
-    </>
-  );
+  // Le nom seul, sans repère : l'avatar du compte, juste en dessous, reste le seul rond du pied (D-369).
+  const who = <OverflowTooltip text={current.name} />;
   // Un seul espace et aucune action : simple étiquette (comme le compte, D-046).
   if (workspaces.length < 2 && !actions) {
     return (

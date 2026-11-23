@@ -5,7 +5,7 @@
  * au fur et à mesure qu'ils sont spécifiés (mode `define`) puis codés.
  * Styles : importer `socle-ui/styles.css` une fois dans l'app.
  */
-export const SOCLE_VERSION = "1.0.0";
+export const SOCLE_VERSION = "1.1.0";
 
 export { SocleProvider, useSocle } from "./provider/SocleProvider";
 export { frenchMessages } from "./i18n/messages";
@@ -31,7 +31,7 @@ export { DropdownMenu, useContextMenu } from "./components/DropdownMenu/Dropdown
 export type { DropdownMenuProps, DropdownMenuItemProps, DropdownMenuSectionProps, DropdownMenuSubmenuProps, MenuPoint, ContextMenuState, ContextMenuTargetProps } from "./components/DropdownMenu/DropdownMenu";
 export { Tabs, TabPanel, useTabPanelProps } from "./components/Tabs/Tabs";
 export type { TabsProps, TabItem, TabPanelProps } from "./components/Tabs/Tabs";
-export { Sidebar, workspaceInitial } from "./patterns/Sidebar/Sidebar";
+export { Sidebar, workspaceInitial } from "./patterns/Sidebar/Sidebar"; // workspaceInitial : déprécié en 1.1.0 (D-369)
 export type { SidebarProps, SidebarItemProps, SidebarTreeItemProps, SidebarSectionProps, SidebarAccountProps, SidebarAction, SidebarWorkspaceProps, SidebarWorkspaceEntry } from "./patterns/Sidebar/Sidebar";
 export { AppShell } from "./patterns/AppShell/AppShell";
 export type { AppShellProps, TabbarEntry } from "./patterns/AppShell/AppShell";

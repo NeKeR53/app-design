@@ -77,7 +77,7 @@ function Demo({ initial = "home" }: { initial?: string }) {
               <Sidebar.TreeItem id="t1a" title="Devis Atelier Nord" subtitle="Envoyé le 12 nov." meta="Achats" unread />
               <Sidebar.TreeItem id="t1b" title="Devis Méca Services" subtitle="Reçu le 14 nov." meta="Achats" />
             </Sidebar.TreeItem>
-            <Sidebar.TreeItem id="t2" title="Clôture mensuelle" subtitle="3 écritures à vérifier" meta="Compta" />
+            <Sidebar.TreeItem id="t2" title="Clôture mensuelle" subtitle="3 écritures à vérifier" meta="Compta" actions={<DropdownMenu.Item label="Archiver" />} />
             <Sidebar.TreeItem id="t3" title="Arrivée de Camille" subtitle="Accès à créer" meta="RH" unread />
             <Sidebar.TreeItem id="t4" title="Contrat de maintenance" subtitle="Échéance le 30 nov." meta="Juridique" />
             <Sidebar.TreeItem id="t5" title="Inventaire annuel" subtitle="Planifié le 15 déc." meta="Logistique" />
@@ -156,6 +156,51 @@ export const ActionsAuSurvol: Story = {
     // L'indicateur a son info-bulle (D-055).
     await userEvent.hover(lock);
     await waitFor(() => expect(body().getByRole("tooltip")).toHaveTextContent("Lecture seule"), { timeout: 1500 });
+  },
+};
+
+/**
+ * La hauteur d'une ligne ne change ni au survol, ni au focus, ni à la sélection, même quand le « … »
+ * de 22 px apparaît (D-368). L'icône du « … » s'aligne sur l'étiquette de la ligne 2.
+ */
+export const HauteurStable: Story = {
+  render: () => <Demo />,
+  // Densité « desktop » : la ligne y est au plus juste, le « … » la faisait grandir.
+  globals: { density: "desktop" },
+  play: async ({ canvasElement }) => {
+    const c = within(canvasElement);
+    const height = (el: Element) => el.getBoundingClientRect().height;
+    // Une ligne avec icône d'état, une ligne sans : même hauteur au repos.
+    const warn = c.getByRole("row", { name: /^Relance fournisseur/ });
+    const row = c.getByRole("row", { name: /^Clôture mensuelle/ });
+    const docs = c.getByRole("row", { name: /^Documents/ });
+    const h = height(row);
+    const hDocs = height(docs);
+    await expect(height(warn)).toBe(h);
+    const more = within(row).getByRole("button", { name: "Actions sur Clôture mensuelle", hidden: true });
+    await expect(more).not.toBeVisible();
+    // Survol : le « … » apparaît, la ligne garde sa hauteur.
+    await userEvent.hover(row);
+    await waitFor(() => expect(more).toBeVisible());
+    await expect(height(row)).toBe(h);
+    // L'icône (14 px, centrée dans 22 px) finit au même bord que l'étiquette de la ligne 2.
+    const glyphRight = more.getBoundingClientRect().right - 4;
+    await expect(Math.abs(glyphRight - within(row).getByText("Compta").getBoundingClientRect().right)).toBeLessThanOrEqual(1);
+    await userEvent.hover(warn);
+    await waitFor(() => expect(within(warn).getByRole("button", { name: "Actions sur Relance fournisseur" })).toBeVisible());
+    await expect(height(warn)).toBe(h);
+    // Ligne d'une ligne, avec deux actions : même règle.
+    await userEvent.hover(docs);
+    await waitFor(() => expect(within(docs).getByRole("button", { name: "Nouveau document" })).toBeVisible());
+    await expect(height(docs)).toBe(hDocs);
+    // Sélection, puis focus clavier sur la ligne voisine : même hauteur.
+    await userEvent.click(row);
+    await expect(row).toHaveAttribute("aria-selected", "true");
+    await userEvent.unhover(row);
+    await expect(more).toBeVisible();
+    await expect(height(row)).toBe(h);
+    await userEvent.keyboard("{ArrowUp}");
+    await expect(height(row)).toBe(h);
   },
 };
 
@@ -293,6 +338,8 @@ export const EspaceDeTravail: Story = {
   play: async ({ canvasElement }) => {
     const c = within(canvasElement);
     const trigger = c.getByRole("button", { name: "Espace de travail : Atelier. Changer d'espace" });
+    // Le nom seul, sans repère d'initiale : l'avatar du compte reste le seul du pied (D-369).
+    await expect(trigger).toHaveTextContent(/^Atelier$/);
     await userEvent.click(trigger);
     const menu = await waitFor(() => body().getByRole("menu"));
     await expect(within(menu).getByRole("menuitemradio", { name: "Atelier" })).toHaveAttribute("aria-checked", "true");
