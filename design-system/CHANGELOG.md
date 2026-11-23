@@ -47,6 +47,15 @@ Versions selon semver (règle 6 du skill design) : une nouvelle option facultati
 ### Corrigé
 - Interrupteur du panneau de détail : la pastille blanche n'apparaissait pas (`bg-white` n'existe pas dans le thème Socle).
 
+### Ajouté — ComboBox (D-140 à D-147)
+- `ComboBox` : champ de formulaire qui propose une liste de choix pendant la saisie. Un seul composant : choix simple ou multiple (`selectionMode`), source locale (`items`) ou asynchrone (`loadItems(texte, signal)`) (D-140).
+- Choix multiple en étiquettes, toutes visibles, avec retour à la ligne (D-143) ; élément choisi coché, liste ouverte (D-144).
+- Valeur libre facultative : `allowsCustomValue` et `onCreate` (D-142).
+- Source asynchrone : 2 caractères, 300 ms, attente et erreur comme `SearchField` (D-145) ; éléments avec icône, description et sections facultatives (D-146).
+- Options communes des champs, avec les pièces internes de `Field` : `hideLabel`, `description`, `isRequired`, `validate`, `error`, `isDisabled`, `isReadOnly`, `width`, `name` (D-130 à D-133).
+- Libellés ajoutés au dictionnaire `messages` : `showChoices`, `chosenItems`, `removeItem`, `addValue`, `typeMoreChars`, `resultsUnavailable`, `noResults`.
+- Règle de choix entre `ComboBox`, `SearchField`, `Select` et filtres de la `toolbar` (D-141), reportée dans la spec `SearchField`.
+
 ## [0.1.0] — 2026-11-22
 
 Première version de Socle, issue de l'init (décisions D-001 à D-089, dans docs/decisions.md).

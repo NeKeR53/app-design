@@ -1204,3 +1204,72 @@
 - Raison : le rôle accessible du groupe (`radiogroup`, `group`) vient avec le composant ; une liste verticale se lit d'un coup d'œil.
 - Options écartées : un seul `Fieldset` pour tous les groupes.
 - Validation : docs/validation/components/FormChoices-v1.html — par délégation de l'utilisateur, 2026-11-23.
+
+## D-140 — ComboBox : un seul composant, choix simple ou multiple, source locale ou asynchrone
+- Date : 2026-11-23
+- Portée : ComboBox
+- Décision : un seul composant `ComboBox` couvre les trois cas. `selectionMode="single" | "multiple"` choisit le choix simple ou multiple (`"single"` par défaut). La source est soit locale (`items`), soit asynchrone (`loadItems(texte, signal)`). L'anatomie et le clavier sont les mêmes dans tous les cas.
+- Raison : choix de l'utilisateur ; trois composants voisins dériveraient ; React Aria gère déjà le choix multiple dans un seul ComboBox, comme `selectionMode` du Menu.
+- Options écartées : trois composants (`Combobox`, `MultiSelectCombobox`, `SearchCombobox`, comme dans Alfred).
+- Validation : docs/validation/components/ComboBox-v1.html
+
+## D-141 — ComboBox, SearchField, Select : choisir par le résultat
+- Date : 2026-11-23
+- Portée : ComboBox, SearchField, Select
+- Décision : on choisit le composant par ce qu'il produit.
+  - `SearchField` produit des critères (`{ text, tags }`) qui filtrent ou trient le tableau ou la liste de la page ; il va dans la `toolbar` (D-077).
+  - Un filtre par propriété (statut, type, personne) est un bouton de filtre avec un `Menu` à choix, dans la `toolbar` (D-074).
+  - `Select` choisit une valeur dans une liste fermée et courte (15 options environ), sans taper (spec Select).
+  - `ComboBox` sert au-delà, ou dès qu'il faut chercher dans les options ou en choisir plusieurs.
+  - `ComboBox` choisit une ou plusieurs valeurs d'un formulaire dans une liste plus longue, connue ou distante ; la valeur (un id ou une liste d'ids) est enregistrée avec le formulaire. Il va là où vont les champs (spec Field : `FormPage`, formulaire en modale, ligne de réglage), jamais dans la `toolbar`.
+- Raison : choix de l'utilisateur ; deux règles nettes évitent deux composants pour le même besoin.
+- Options écartées : ComboBox multiple autorisé comme filtre dans la `toolbar` (mode `compact` d'Alfred).
+- Validation : docs/validation/components/ComboBox-v1.html
+
+## D-142 — ComboBox : valeur libre en option
+- Date : 2026-11-23
+- Portée : ComboBox
+- Décision : l'option facultative `allowsCustomValue` (désactivée par défaut) permet d'ajouter une valeur absente de la liste. Activée, la ligne « Ajouter « texte » » s'affiche en tête de liste quand aucun élément n'a exactement ce libellé (sans casse ni accents). Le premier élément trouvé reste mis en avant, et Entrée le choisit ; « Ajouter » est mis en avant seulement s'il n'y a aucun élément. Choisir « Ajouter » appelle `onCreate(texte)` : l'app crée l'élément (en local ou par son API) et le renvoie ; le ComboBox le choisit. Désactivée, seuls des éléments de la liste sont acceptés.
+- Raison : choix de l'utilisateur ; même forme que « Rechercher « texte » » (D-074), et par défaut on ne garde que des valeurs connues.
+- Options écartées : aucune valeur libre.
+- Validation : docs/validation/components/ComboBox-v1.html
+
+## D-143 — ComboBox : étiquettes toutes visibles, retour à la ligne
+- Date : 2026-11-23
+- Portée : ComboBox
+- Décision : en choix multiple, chaque élément choisi est une étiquette dans le champ, avant le texte en cours (rayon de 4 px, D-040 ; × « Retirer <libellé> »). Quand elles ne tiennent plus sur une ligne, elles passent à la ligne et le champ grandit en hauteur ; toutes restent visibles. Le texte en cours garde au moins 60 px. Une étiquette trop longue est coupée à 200 px, avec une info-bulle.
+- Raison : choix de l'utilisateur ; dans un formulaire, on doit voir tout ce qu'on enregistre ; « +n » (D-078) sert une barre d'outils à largeur fixe.
+- Options écartées : « +n » comme la barre de recherche.
+- Validation : docs/validation/components/ComboBox-v1.html
+
+## D-144 — ComboBox : élément choisi coché, liste ouverte en choix multiple
+- Date : 2026-11-23
+- Portée : ComboBox
+- Décision : un élément choisi reste dans la liste, avec la coche en fin de ligne (D-050). En choix multiple, un clic ou Entrée ajoute ou retire l'élément ; la liste reste ouverte et le texte en cours se vide. En choix simple, le choix remplace le texte du champ et ferme la liste.
+- Raison : choix de l'utilisateur ; même règle que le Menu à choix (D-050) ; on retire aussi un choix depuis la liste.
+- Options écartées : élément choisi retiré de la liste.
+- Validation : docs/validation/components/ComboBox-v1.html
+
+## D-145 — ComboBox : source locale filtrée à chaque lettre, source asynchrone au rythme de la recherche
+- Date : 2026-11-23
+- Portée : ComboBox
+- Décision : source locale (`items`) : la liste se filtre à chaque lettre, sans délai ; un élément reste s'il contient le texte (sans casse ni accents, D-074) ; la liste montre 8 lignes, puis défile. Source asynchrone (`loadItems(texte, signal)`) : la demande part à partir de 2 caractères, après 300 ms sans frappe (D-080) ; seule la réponse à la dernière saisie s'affiche, et les demandes périmées sont abandonnées par `signal` ; l'attente se montre dans le champ et par la ligne « Recherche… » (D-081) ; une erreur se montre par la ligne « Résultats indisponibles » avec « Réessayer » (D-082). Sous 2 caractères, la liste ouverte affiche « Tapez au moins 2 caractères ». Le texte cherché passe en gras dans les éléments (D-087).
+- Raison : choix de l'utilisateur ; un seul rythme pour toutes les recherches distantes du design system.
+- Options écartées : appel de l'API dès l'ouverture, sans texte.
+- Validation : docs/validation/components/ComboBox-v1.html
+
+## D-146 — ComboBox : un élément sur une ligne
+- Date : 2026-11-23
+- Portée : ComboBox
+- Décision : un élément de la liste tient sur une ligne de `--row-h`, au style du Menu : icône facultative de 16 px à gauche (place réservée si un autre élément en a une, D-047), libellé, description courte facultative en `--fs-sm` et `--fg-3` juste après le libellé, coche en fin de ligne (D-050). Le libellé et la description se coupent avec « … » ; la description se coupe d'abord. Un élément peut être désactivé (opacité 40 %). Les éléments peuvent être groupés en sections titrées, comme le Menu.
+- Raison : choix de l'utilisateur ; la description distingue deux homonymes sans doubler la hauteur de la liste.
+- Options écartées : description sur une deuxième ligne ; libellé seul.
+- Validation : docs/validation/components/ComboBox-v1.html
+
+## D-147 — ComboBox : ouverture, clavier et sortie du champ
+- Date : 2026-11-23
+- Portée : ComboBox
+- Décision : un chevron à droite du champ montre que c'est une liste ; il l'ouvre et la ferme. La liste s'ouvre aussi à la frappe et avec flèche bas ; elle ne s'ouvre pas au simple focus. Flèches haut et bas parcourent les éléments ; Entrée choisit ; Échap ferme la liste, puis rétablit le texte de la valeur choisie. En choix simple, quitter le champ avec un texte qui ne correspond à aucun élément rétablit le texte de la valeur choisie (ou vide le champ) : la valeur ne change jamais sans un choix. En choix multiple, Retour arrière dans un texte vide met en avant la dernière étiquette, un second appui la retire (comme D-071). La liste se place sous le champ, ou au-dessus si la place manque ; elle est au moins aussi large que le champ (D-134).
+- Raison : comportements montrés dans la page de validation v1 et repris de la barre de recherche (D-071) et du Menu, pour un seul clavier dans le design system.
+- Options écartées : liste ouverte au focus (Alfred) ; champ sans chevron (Combobox d'Alfred).
+- Validation : docs/validation/components/ComboBox-v1.html

@@ -106,6 +106,14 @@ export interface SocleMessages {
   invalidValue: string;
   choose: string;
   charCount: (n: number, max: number) => string;
+  /* ComboBox */
+  showChoices: string;
+  chosenItems: (label: string) => string;
+  removeItem: (label: string) => string;
+  addValue: (text: string) => string;
+  typeMoreChars: (n: number) => string;
+  resultsUnavailable: string;
+  noResults: string;
 }
 
 const s = (n: number) => (n > 1 ? "s" : "");
@@ -201,4 +209,12 @@ export const frenchMessages: SocleMessages = {
   invalidValue: "Vérifiez cette valeur.",
   choose: "Choisir…",
   charCount: (n, max) => `${n} / ${max}`,
+
+  showChoices: "Afficher les choix",
+  chosenItems: (l) => `${l} choisis`,
+  removeItem: (l) => `Retirer ${l}`,
+  addValue: (t) => `Ajouter « ${t} »`,
+  typeMoreChars: (n) => `Tapez au moins ${n} caractères.`,
+  resultsUnavailable: "Résultats indisponibles",
+  noResults: "Aucun résultat",
 };
