@@ -7,6 +7,8 @@ Versions selon semver (règle 6 du skill design) : une nouvelle option facultati
 ### Ajouté (lot 3, coquille)
 - `ActionBar`, zone `topbar` : une action principale sans icône devient un bouton à texte, tout à droite (D-220). Dans la barre du haut d'AppShell, repli selon la place : les icônes passent dans « … » depuis la dernière, puis le bouton à texte (D-221). Option `fit` de `arrangeActions`, type `ActionFit`.
 - `AppShell` : le slot `actions` prend la place libre de la barre et accepte `ActionBar zone="topbar"` avec les boutons-icônes de l'app (D-222).
+- `Sidebar` : option `footer`, des `Sidebar.Item` fixes en bas, au-dessus du compte, hors du défilement (D-230). Nouveau `Sidebar.Workspace` (option `workspace`) : sélecteur d'espace de travail, menu au-dessus, espace ouvert coché, actions de l'app après un trait (D-231). Ordre du pied : entrées fixes, espace, compte (D-232). Fonction `workspaceInitial`, types `SidebarWorkspaceProps` et `SidebarWorkspaceEntry`.
+- Libellés internes `footerNavigation`, `workspaces`, `workspaceLabel` et `workspaceSwitch` dans le dictionnaire `messages`.
 
 ### Changé
 - `ActionBar`, zone `topbar` : une action `primary` **sans icône** était en tête de « … » ; elle est maintenant un bouton à texte (D-220, remplace une partie de D-112). Migration : pour une forme compacte, donner une icône à l’action principale (elle reste alors une icône, en premier, D-112) ; pour la garder dans « … », retirer `primary`.

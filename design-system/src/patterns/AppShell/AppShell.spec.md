@@ -13,7 +13,7 @@ Cadre commun de toutes les apps : barre supérieure, sidebar, zone de contenu, p
    - actions de la page (facultatives) : boutons-icônes de l'app (cloche), puis `ActionBar` `zone="topbar"` : icônes, « … », action principale à texte (D-220 à D-222) ;
    - bouton du panneau de détail, avec l'icône liste (présent si `detail` est fourni) ;
    - en Tauri, la place réservée aux boutons de fenêtre (D-020).
-2. `sidebar` (obligatoire sur bureau et tablette) : navigation, sections, compte (voir `Sidebar`).
+2. `sidebar` (obligatoire sur bureau et tablette) : navigation, sections, puis le pied : entrées fixes, espace de travail, compte (voir `Sidebar`, D-230 à D-232).
 3. `main` (obligatoire) : le gabarit de la page.
 4. `detail` (facultatif) : panneau de détail (D-018).
 5. `tabbar` (mobile uniquement) : quatre entrées au plus, puis « Plus » (D-003, D-019).
@@ -30,7 +30,7 @@ Aucune variante visuelle. La disposition dépend de la largeur (D-013) et de la 
 | `actions` | slot `ReactNode` : `ActionBar` `zone="topbar"` et boutons-icônes `IconButton` | aucune | Actions de la page (D-222). Le slot prend la place libre ; `ActionBar` y replie ses actions selon la place (D-221). |
 | `sidebar` | slot `Sidebar` | — (obligatoire) | Contenu de la sidebar. |
 | `detail` | slot `ReactNode` | aucun | Contenu du panneau de détail ; s'il est absent, ni la colonne ni le bouton ne s'affichent. |
-| `tabbar` | `{ id, label, icon }[]` (4 au plus) | les 4 premières entrées de navigation | Entrées de la barre d'onglets mobile. |
+| `tabbar` | `{ id, label, icon }[]` (4 au plus) | les 4 premières entrées de navigation | Entrées de la barre d'onglets mobile. Les entrées fixes du bas de la Sidebar peuvent y aller (`tabbar`, D-230). |
 | `history` | `boolean` | `true` | Affiche précédent/suivant. |
 
 ## Exclus

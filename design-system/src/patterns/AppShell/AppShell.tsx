@@ -47,7 +47,8 @@ const OVERLAY_CLOSE_DELAY = 250;
 
 function navItems(sidebar: ReactElement<SidebarProps>): SidebarItemProps[] {
   const out: SidebarItemProps[] = [];
-  Children.forEach(sidebar.props.children, (child) => {
+  // Navigation, puis entrées fixes du bas (D-230) : elles peuvent aussi aller dans la barre d'onglets.
+  Children.forEach([sidebar.props.children, sidebar.props.footer], (child) => {
     if (isValidElement<SidebarItemProps>(child) && child.type === Sidebar.Item) out.push(child.props);
   });
   return out;

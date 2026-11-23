@@ -9,7 +9,9 @@ Ces règles s'appliquent à toutes les apps. Si aucune règle ne couvre un cas, 
 | `topbar` | Bouton de repli de la sidebar, précédent/suivant, **nom de la page**, **onglets des vues de la page** (D-021), actions de la page (`ActionBar` `topbar` : icônes, « … », action principale à texte, D-220), cloche du centre de notifications (D-157), état durable de la page en indicateur compact (D-159), bouton du panneau de détail (icône liste), commandes (Mod+K). En Tauri, la place des boutons de fenêtre (D-020). | Les filtres, la recherche dans une liste, les actions sur un élément précis. Aucun bandeau pleine largeur dessous (D-159). |
 | `sidebar` → navigation | Les pages principales : une icône, puis un libellé. Une action facultative peut apparaître au survol (D-002). | Les vues d'une page : elles sont dans les onglets (D-021). |
 | `sidebar` → sections | Des sections repliables, qui contiennent soit des éléments de navigation, soit des éléments sur deux lignes avec enfants (D-002). | Des réglages, ou du contenu de travail. |
-| `sidebar` → `account` | L'avatar, le nom et le plan ; le bouton Réglages (roue dentée). | Toute autre action. |
+| `sidebar` → `footer` | Trois pages fixes au plus (assistant, aide, corbeille), toujours visibles (D-230). | Des sections, du contenu qui s'allonge. |
+| `sidebar` → `workspace` | L'espace de travail ouvert et le menu pour en changer (D-231). | Le compte de la personne. |
+| `sidebar` → `account` | L'avatar, le nom et le plan ; le bouton Réglages (roue dentée). Tout en bas, sous les entrées fixes et l'espace de travail (D-232). | Toute autre action. |
 | `main` | Le gabarit de la page (ListPage, DetailPage, FormPage…). | La navigation globale. |
 | `detail` | Les propriétés de l'élément courant, modifiables sur place ; l'aide contextuelle ; les pièces jointes. Ce panneau est facultatif (D-018). | Le contenu principal, et les actions destructrices sans confirmation. |
 | `tabbar` (mobile) | Quatre entrées principales au plus, puis « Plus » (D-003). | Les vues d'une page. |

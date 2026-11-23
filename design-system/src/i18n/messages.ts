@@ -30,6 +30,10 @@ export interface SocleMessages {
   showLess: string;
   actionsOn: (title: string) => string;
   account: string;
+  footerNavigation: string;
+  workspaces: string;
+  workspaceLabel: string;
+  workspaceSwitch: (name: string) => string;
   settings: string;
   opensInBrowser: string;
   readOnly: string;
@@ -143,6 +147,10 @@ export const frenchMessages: SocleMessages = {
   showLess: "Afficher moins",
   actionsOn: (t) => `Actions sur ${t}`,
   account: "Compte",
+  footerNavigation: "Navigation du bas",
+  workspaces: "Espaces de travail",
+  workspaceLabel: "Espace de travail :",
+  workspaceSwitch: (name) => `Espace de travail : ${name}. Changer d'espace`,
   settings: "Réglages",
   opensInBrowser: "S'ouvre dans le navigateur",
   readOnly: "Lecture seule",

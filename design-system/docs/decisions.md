@@ -1297,3 +1297,27 @@
 - Raison : une seule forme d'action dans la barre ; les vues ont déjà leur place.
 - Options écartées : bascule de vue à deux boutons dans la barre (D-110 l'exclut déjà) ; deuxième slot pour le bouton à texte.
 - Validation : par délégation de l'utilisateur, 2026-11-23 — docs/validation/components/AppShell-actions-v1.html
+
+## D-230 — Sidebar : entrées fixes du bas
+- Date : 2026-11-23
+- Portée : Sidebar, AppShell
+- Décision : l'option `footer` de Sidebar reçoit des `Sidebar.Item` (3 au plus) : des pages que l'app veut toujours à portée, par exemple un assistant, l'aide ou la corbeille. Elles sont collées en bas, au-dessus de l'espace de travail et du compte, hors de la zone qui défile. Même dessin, mêmes états, mêmes options (compteur, indicateur, actions) et même sélection (`selectedId`) que la navigation. Elles forment un second arbre, nommé « Navigation du bas ». Sur mobile, elles vont dans la feuille « Plus », ou dans la barre d'onglets avec `tabbar` (D-003, D-019).
+- Raison : générique (aide de Linear, corbeille de Notion, assistant d'Alfred) ; une page fixe ne doit pas disparaître quand la navigation défile.
+- Options écartées : un composant d'entrée propre au pied ; une section « épinglée » dans la zone qui défile ; plus de 3 entrées (le pied mangerait la navigation).
+- Validation : par délégation de l'utilisateur, 2026-11-23 — docs/validation/components/Sidebar-footer-v1.html
+
+## D-231 — Sidebar : sélecteur d'espace de travail
+- Date : 2026-11-23
+- Portée : Sidebar
+- Décision : `Sidebar.Workspace`, passé par l'option `workspace` de Sidebar, montre l'espace ouvert : un repère carré de 24 px (rayon 4 px, fond `--selected`, initiale en `--fs-xs` semi-gras), le nom (coupé, info-bulle), puis un chevron haut-bas en `--fg-3`. Un clic, Entrée, Espace ou flèche bas ouvre un `Menu` au-dessus : la section « Espaces de travail » en choix unique, l'espace ouvert coché (D-050), puis un trait et les actions de l'app (`actions`, des `Menu.Item`). Choisir l'espace ouvert ne fait rien ; choisir un autre appelle `onChange(id)`. Avec un seul espace et aucune action, c'est une simple étiquette, sans menu. `isDisabled` le désactive (pendant une ouverture, par exemple).
+- Raison : Slack, Notion, Linear et Alfred ont un sélecteur d'espace ; le repère carré le distingue de l'avatar rond d'une personne (D-163).
+- Options écartées : sélecteur en haut de la sidebar (la zone au-dessus porte déjà le repli et l'historique, D-020) ; fusion avec le compte (le menu de D-046 mêlerait deux sujets) ; description de chaque espace dans le menu (le chemin d'un dossier est propre à Alfred).
+- Validation : par délégation de l'utilisateur, 2026-11-23 — docs/validation/components/Sidebar-footer-v1.html
+
+## D-232 — Sidebar : ordre du pied et ce qui reste dans l'app
+- Date : 2026-11-23
+- Portée : Sidebar, layout-rules
+- Décision : le pied de la sidebar contient, dans cet ordre : les entrées fixes (`footer`), l'espace de travail (`workspace`), le compte (`account`). Un seul trait le sépare de la navigation ; 2 px entre ses lignes. Restent des solutions locales de l'app : une zone de conversations sous une entrée fixe (elle se construit avec `Sidebar.Section` et `Sidebar.TreeItem`), les pastilles d'état d'agent à trois tons (prendre `count` ou `indicator="activity"`), le raccourci d'ouverture du sélecteur, renommer et réordonner les entrées.
+- Raison : « où je suis » et « qui je suis » restent ensemble, au même endroit dans toutes les apps ; ce qui ne passe pas le test du générique reste hors du design system.
+- Options écartées : un trait entre chaque groupe du pied ; un raccourci global d'ouverture du sélecteur dans Socle.
+- Validation : par délégation de l'utilisateur, 2026-11-23 — docs/validation/components/Sidebar-footer-v1.html
