@@ -9,3 +9,5 @@ coverage/
 # Captures d'inspiration : elles contiennent des données personnelles
 docs/inspirations/**/*.png
 docs/inspirations/**/*.webp
+# Règle Biome générée par `npm run build:biome` et livrée avec le package
+biome/no-socle-override.grit

@@ -17,6 +17,7 @@ export interface SocleMessages {
   detail: string;
   closeDetail: string;
   detailWidth: string;
+  expandDetail: string;
   more: string;
   /* Sidebar */
   mainNavigation: string;
@@ -30,6 +31,10 @@ export interface SocleMessages {
   showLess: string;
   actionsOn: (title: string) => string;
   account: string;
+  footerNavigation: string;
+  workspaces: string;
+  workspaceLabel: string;
+  workspaceSwitch: (name: string) => string;
   settings: string;
   opensInBrowser: string;
   readOnly: string;
@@ -41,10 +46,17 @@ export interface SocleMessages {
   currentView: (label: string) => string;
   /* DetailPanel */
   detailEmpty: string;
+  detailLoadErrorTitle: string;
+  detailLoadErrorText: string;
+  detailNotUpdated: string;
+  detailNotFoundTitle: string;
+  detailNotFoundText: string;
+  detailSectionEmpty: string;
   /* Table et List */
   selectAll: string;
   columnWidth: (label: string) => string;
   rowActions: string;
+  groupCount: (n: number) => string;
   showMore: string;
   countOf: (n: number, total: number) => string;
   loadingResults: string;
@@ -73,6 +85,12 @@ export interface SocleMessages {
   /* Petits éléments d'affichage (D-160 à D-169) */
   codeSample: string;
   progressOf: (value: string, max: string) => string;
+  /* Gabarits DetailPage et Page */
+  backTo: (label: string) => string;
+  pageLoadErrorTitle: string;
+  pageLoadErrorText: string;
+  sectionLoadError: string;
+  notFoundTitle: string;
   /* ActionBar */
   moreActions: string;
   confirmQuestion: (label: string) => string;
@@ -114,9 +132,181 @@ export interface SocleMessages {
   typeMoreChars: (n: number) => string;
   resultsUnavailable: string;
   noResults: string;
+  /* Valeurs typées (D-170, D-171) */
+  locale: string;
+  yes: string;
+  no: string;
+  justNow: string;
+  emptyValue: string;
+  /* ListPage (D-173 à D-178) */
+  itemCount: (n: string) => string;
+  rangeOf: (first: string, last: string, total: string) => string;
+  shownOf: (n: string, total: string) => string;
+  pagination: string;
+  previousPage: string;
+  nextPage: string;
+  selectedCount: (n: string) => string;
+  clearSelection: string;
+  /* Formulaires déclaratifs : FormPage, useOpenForm (D-190 à D-198) */
+  unsavedChanges: string;
+  saving: string;
+  saved: string;
+  saveFailed: string;
+  fixErrors: string;
+  discardTitle: string;
+  discardMessage: string;
+  discard: string;
+  invalidNumber: string;
+  numberTooSmall: (min: number) => string;
+  numberTooLarge: (max: number) => string;
+  /* SettingsPage */
+  settingsSections: string;
+  /** Ce que cherche la recherche des réglages : « Rechercher dans {…} ». */
+  settingsSearchScope: string;
+  noSettingsFound: string;
+  backToSections: string;
+  settingNotSaved: string;
+  settingsLoadError: string;
+  settingsLoadErrorText: string;
+  loadingSettings: string;
+  /* TreeView (D-266 à D-268) */
+  childrenLoadFailed: string;
+  noItems: string;
+  /** Bouton chevron d'un nœud ; React Aria y ajoute le libellé du nœud. */
+  expand: string;
+  collapse: string;
+  moveItem: (label: string) => string;
+  /* Terminal (D-282 à D-284) */
+  terminalDescription: string;
+  terminalReadOnlyDescription: string;
+  terminalOpening: string;
+  terminalConnecting: string;
+  terminalOpen: string;
+  terminalClosed: (reason?: string) => string;
+  terminalError: (reason?: string) => string;
+  terminalUnavailable: (reason: string) => string;
+  terminalLeave: string;
+  terminalSize: string;
+  terminalReadOnly: string;
+  selectionCopied: string;
+  copyFailed: string;
+  /* LogViewer (D-285 à D-289) */
+  logTools: string;
+  logLevel: (level: string) => string;
+  levelAll: string;
+  levelWarning: string;
+  levelError: string;
+  levelAllLines: string;
+  levelWarnings: string;
+  levelErrors: string;
+  logSearch: string;
+  matchOf: (index: number, total: number) => string;
+  noMatchingLine: string;
+  previousMatch: string;
+  nextMatch: string;
+  followEnd: string;
+  wrapLines: string;
+  showTimestamps: string;
+  errorList: string;
+  copyLog: string;
+  copySelection: string;
+  copied: string;
+  lineCount: (n: number) => string;
+  droppedLines: (n: number) => string;
+  errorCount: (n: number) => string;
+  warningCount: (n: number) => string;
+  logLive: string;
+  logEnded: string;
+  followPaused: (newLines: number) => string;
+  backToEnd: string;
+  loadingLog: string;
+  waitingLines: string;
+  emptyLog: string;
+  noLineAtLevel: string;
+  logErrors: string;
+  errorsTitle: (n: number) => string;
+  lineNumber: (n: number) => string;
+  noErrors: string;
+  errorListLimit: (n: number) => string;
+  lineCut: string;
+  /* DiffView (D-290 à D-299) */
+  diffToolbar: string;
+  diffSideBySide: string;
+  diffShowUnchanged: string;
+  diffPrevious: string;
+  diffNext: string;
+  diffKeysHint: string;
+  diffAddedLine: string;
+  diffRemovedLine: string;
+  diffStat: (added: number, removed: number) => string;
+  diffChanges: (n: number) => string;
+  diffNone: string;
+  diffNoneText: string;
+  diffBinary: string;
+  diffBinaryNotice: string;
+  diffEolNotice: (from: string, to: string) => string;
+  diffNoEol: string;
+  diffTruncated: string;
+  diffUnchanged: (n: number) => string;
+  diffShowLines: (n: number) => string;
+  diffUnchangedFrom: (n: number, line: number) => string;
+  diffChangeAt: (index: number, total: number, before?: string, after?: string) => string;
+  diffLines: (from: number, to: number) => string;
+  diffFile: string;
+  diffFileAdded: string;
+  diffFileDeleted: string;
+  diffFileRenamed: string;
+  /* DocumentViewer et HtmlContent (D-310 à D-319) */
+  documentToolbar: string;
+  pageOf: (n: number, total: number) => string;
+  pageNumber: (n: number) => string;
+  documentPages: (label: string, n: number) => string;
+  zoomIn: string;
+  zoomOut: string;
+  fitWidth: string;
+  zoomPercent: (n: number) => string;
+  download: string;
+  readingDocument: string;
+  documentUnreadable: string;
+  documentReadFailed: string;
+  pdfPassword: string;
+  pdfInvalid: string;
+  pdfUnavailable: string;
+  unsupportedFormat: string;
+  unsupportedFormatText: (kind: string) => string;
+  unknownFormat: string;
+  imagesHidden: (n: number) => string;
+  showImages: string;
+  /* InlineEdit, StepList (D-323, D-325) */
+  editValue: (label: string) => string;
+  stepDone: string;
+  stepError: string;
+  /* Markdown et MarkdownEditor (D-303 à D-309) */
+  copyBlock: string;
+  blockCopied: string;
+  table: string;
+  taskDone: string;
+  taskTodo: string;
+  image: string;
+  formatting: string;
+  heading: (level: number) => string;
+  bold: string;
+  italic: string;
+  inlineCode: string;
+  link: string;
+  bulletList: string;
+  orderedList: string;
+  quote: string;
+  preview: string;
+  nothingToPreview: string;
+  imageUploading: (name: string) => string;
+  imageNotAdded: (name: string) => string;
+  linkTextPlaceholder: string;
+  linkUrlPlaceholder: string;
 }
 
 const s = (n: number) => (n > 1 ? "s" : "");
+const num = (n: number) => n.toLocaleString("fr-FR");
 
 export const frenchMessages: SocleMessages = {
   keyShift: "Maj",
@@ -131,6 +321,7 @@ export const frenchMessages: SocleMessages = {
   detail: "Détail",
   closeDetail: "Fermer le détail",
   detailWidth: "Largeur du panneau de détail",
+  expandDetail: "Agrandir le panneau de détail",
   more: "Plus",
   mainNavigation: "Navigation principale",
   expandItem: (l) => `Déplier ${l}`,
@@ -143,6 +334,10 @@ export const frenchMessages: SocleMessages = {
   showLess: "Afficher moins",
   actionsOn: (t) => `Actions sur ${t}`,
   account: "Compte",
+  footerNavigation: "Navigation du bas",
+  workspaces: "Espaces de travail",
+  workspaceLabel: "Espace de travail :",
+  workspaceSwitch: (name) => `Espace de travail : ${name}. Changer d'espace`,
   settings: "Réglages",
   opensInBrowser: "S'ouvre dans le navigateur",
   readOnly: "Lecture seule",
@@ -152,9 +347,16 @@ export const frenchMessages: SocleMessages = {
   allViews: "Toutes les vues",
   currentView: (l) => `Vue : ${l}`,
   detailEmpty: "Sélectionnez un élément pour voir son détail.",
+  detailLoadErrorTitle: "Impossible de charger le détail",
+  detailLoadErrorText: "Le service ne répond pas.",
+  detailNotUpdated: "Le détail n'a pas pu être mis à jour.",
+  detailNotFoundTitle: "Élément introuvable",
+  detailNotFoundText: "Il a peut-être été supprimé.",
+  detailSectionEmpty: "Aucune information",
   selectAll: "Tout sélectionner",
   columnWidth: (l) => `Largeur de la colonne ${l}`,
   rowActions: "Actions",
+  groupCount: (n) => `${n} ligne${n > 1 ? "s" : ""}`,
   showMore: "Afficher plus",
   countOf: (n, t) => `${n} sur ${t}`,
   loadingResults: "Chargement des résultats",
@@ -180,6 +382,11 @@ export const frenchMessages: SocleMessages = {
   loading: "Chargement…",
   codeSample: "Extrait de code",
   progressOf: (v, max) => `${v} sur ${max}`,
+  backTo: (l) => `Retour à ${l}`,
+  pageLoadErrorTitle: "Impossible de charger la page",
+  pageLoadErrorText: "Le service ne répond pas. Réessayez dans un instant.",
+  sectionLoadError: "Impossible de charger cette partie",
+  notFoundTitle: "Élément introuvable",
   moreActions: "Plus d'actions",
   confirmQuestion: (l) => `${l} ?`,
   notifications: "Notifications",
@@ -217,4 +424,166 @@ export const frenchMessages: SocleMessages = {
   typeMoreChars: (n) => `Tapez au moins ${n} caractères.`,
   resultsUnavailable: "Résultats indisponibles",
   noResults: "Aucun résultat",
+
+  locale: "fr-FR",
+  yes: "Oui",
+  no: "Non",
+  justNow: "à l'instant",
+  emptyValue: "vide",
+
+  itemCount: (n) => `${n} élément${n === "0" || n === "1" ? "" : "s"}`,
+  rangeOf: (a, b, t) => `${a}–${b} sur ${t}`,
+  shownOf: (n, t) => `${n} sur ${t}`,
+  pagination: "Pagination",
+  previousPage: "Page précédente",
+  nextPage: "Page suivante",
+  selectedCount: (n) => `${n} sélectionné${n === "1" ? "" : "s"}`,
+  clearSelection: "Tout désélectionner",
+  unsavedChanges: "Modifications non enregistrées",
+  saving: "Enregistrement…",
+  saved: "Enregistré",
+  saveFailed: "L'enregistrement a échoué. Réessayez.",
+  fixErrors: "Corrigez les champs signalés.",
+  discardTitle: "Abandonner les modifications ?",
+  discardMessage: "Les modifications non enregistrées seront perdues.",
+  discard: "Abandonner",
+  invalidNumber: "Saisissez un nombre.",
+  numberTooSmall: (min) => `Saisissez un nombre supérieur ou égal à ${min}.`,
+  numberTooLarge: (max) => `Saisissez un nombre inférieur ou égal à ${max}.`,
+  settingsSections: "Rubriques des réglages",
+  settingsSearchScope: "les réglages",
+  noSettingsFound: "Aucune rubrique trouvée.",
+  backToSections: "Retour aux rubriques",
+  settingNotSaved: "Le réglage n'a pas été enregistré.",
+  settingsLoadError: "Impossible de charger ces réglages",
+  settingsLoadErrorText: "Le service ne répond pas. Réessayez dans un instant.",
+  loadingSettings: "Chargement des réglages",
+  childrenLoadFailed: "Impossible de charger",
+  noItems: "Aucun élément",
+  expand: "Déplier",
+  collapse: "Replier",
+  moveItem: (l) => `Déplacer ${l}`,
+  terminalDescription: "Terminal interactif : la saisie est envoyée au programme. Ctrl+Maj+C copie, Ctrl+V colle, F6 pour en sortir.",
+  terminalReadOnlyDescription: "Terminal en lecture seule. F6 pour en sortir.",
+  terminalOpening: "Ouverture du terminal…",
+  terminalConnecting: "Connexion…",
+  terminalOpen: "Connecté",
+  terminalClosed: (r) => (r ? `Session terminée : ${r}` : "Session terminée"),
+  terminalError: (r) => (r ? `Connexion interrompue : ${r}` : "Connexion interrompue"),
+  terminalUnavailable: (r) => `Terminal indisponible : ${r}`,
+  terminalLeave: "F6 pour sortir",
+  terminalSize: "Taille",
+  terminalReadOnly: "Lecture seule",
+  selectionCopied: "Sélection copiée",
+  copyFailed: "Copie impossible",
+
+  logTools: "Outils du journal",
+  logLevel: (l) => `Niveau : ${l}`,
+  levelAll: "Tous",
+  levelWarning: "Alertes",
+  levelError: "Erreurs",
+  levelAllLines: "Toutes les lignes",
+  levelWarnings: "Alertes et erreurs",
+  levelErrors: "Erreurs",
+  logSearch: "le journal",
+  matchOf: (i, n) => `${num(i)} sur ${num(n)}`,
+  noMatchingLine: "Aucune ligne",
+  previousMatch: "Résultat précédent",
+  nextMatch: "Résultat suivant",
+  followEnd: "Suivre la fin",
+  wrapLines: "Retour à la ligne",
+  showTimestamps: "Horodatage",
+  errorList: "Liste des erreurs",
+  copyLog: "Copier le journal",
+  copySelection: "Copier la sélection",
+  copied: "Copié",
+  lineCount: (n) => `${num(n)} ligne${s(n)}`,
+  droppedLines: (n) => `${num(n)} plus ancienne${s(n)} oubliée${s(n)}`,
+  errorCount: (n) => `${num(n)} erreur${s(n)}`,
+  warningCount: (n) => `${num(n)} alerte${s(n)}`,
+  logLive: "En direct",
+  logEnded: "Terminé",
+  followPaused: (n) => (n ? `Suivi en pause · ${num(n)} nouvelle${s(n)} ligne${s(n)}` : "Suivi en pause"),
+  backToEnd: "Revenir à la fin",
+  loadingLog: "Chargement du journal…",
+  waitingLines: "En attente des premières lignes…",
+  emptyLog: "Journal vide",
+  noLineAtLevel: "Aucune ligne de ce niveau.",
+  logErrors: "Erreurs du journal",
+  errorsTitle: (n) => `Erreurs · ${num(n)}`,
+  lineNumber: (n) => `Ligne ${num(n)}`,
+  noErrors: "Aucune erreur relevée dans ce journal.",
+  errorListLimit: (n) => `Seules les ${num(n)} premières erreurs sont listées.`,
+  lineCut: " … ligne coupée à l'affichage",
+  diffToolbar: "Affichage des différences",
+  diffSideBySide: "Côte à côte",
+  diffShowUnchanged: "Afficher les lignes inchangées",
+  diffPrevious: "Changement précédent",
+  diffNext: "Changement suivant",
+  diffKeysHint: "F7 ou Alt+Flèche bas : changement suivant ; Maj+F7 ou Alt+Flèche haut : changement précédent.",
+  diffAddedLine: "Ajoutée : ",
+  diffRemovedLine: "Retirée : ",
+  diffStat: (a, r) => `${a} ligne${s(a)} ajoutée${s(a)}, ${r} retirée${s(r)}`,
+  diffChanges: (n) => `${n} changement${s(n)}`,
+  diffNone: "Aucune différence",
+  diffNoneText: "Les deux versions sont identiques.",
+  diffBinary: "Fichier binaire",
+  diffBinaryNotice: "Fichier binaire : contenu non comparé",
+  diffEolNotice: (from, to) => `Fins de ligne converties : ${from} → ${to}`,
+  diffNoEol: "sans fin de ligne",
+  diffTruncated: "Diff coupé : la suite n'est pas affichée",
+  diffUnchanged: (n) => `${n} ligne${s(n)} inchangée${s(n)}`,
+  diffShowLines: (n) => `Afficher ${n} ligne${s(n)}`,
+  diffUnchangedFrom: (n, line) => `${n} ligne${s(n)} inchangée${s(n)}, à partir de la ligne ${line}`,
+  diffChangeAt: (i, total, before, after) =>
+    `Changement ${i} sur ${total}` + [before ? ` : avant, ${before}` : "", after ? `${before ? " ;" : " :"} après, ${after}` : ""].join(""),
+  diffLines: (from, to) => (from === to ? `ligne ${from}` : `lignes ${from} à ${to}`),
+  diffFile: "Fichier",
+  diffFileAdded: "Ajouté",
+  diffFileDeleted: "Supprimé",
+  diffFileRenamed: "Renommé",
+  documentToolbar: "Affichage du document",
+  pageOf: (n, t) => `Page ${n} / ${t}`,
+  pageNumber: (n) => `Page ${n}`,
+  documentPages: (l, n) => `${l}, ${n} page${s(n)}`,
+  zoomIn: "Zoom avant",
+  zoomOut: "Zoom arrière",
+  fitWidth: "Ajuster à la largeur",
+  zoomPercent: (n) => `${n} %`,
+  download: "Télécharger",
+  readingDocument: "Lecture du document…",
+  documentUnreadable: "Document illisible",
+  documentReadFailed: "Le fichier n'a pas pu être lu.",
+  pdfPassword: "Ce PDF est protégé par un mot de passe.",
+  pdfInvalid: "Ce fichier n'est pas un PDF valide, ou il est abîmé.",
+  pdfUnavailable: "Aperçu PDF indisponible dans cette app.",
+  unsupportedFormat: "Format non pris en charge",
+  unsupportedFormatText: (k) => `Ce type de fichier (${k}) ne s'affiche pas ici.`,
+  unknownFormat: "inconnu",
+  imagesHidden: (n) => (n > 1 ? `${n} images masquées.` : "1 image masquée."),
+  showImages: "Afficher les images",
+  editValue: (l) => `Modifier « ${l} »`,
+  stepDone: "fait",
+  stepError: "erreur",
+  copyBlock: "Copier le bloc",
+  blockCopied: "Bloc copié",
+  table: "Tableau",
+  taskDone: "Fait",
+  taskTodo: "À faire",
+  image: "Image",
+  formatting: "Mise en forme",
+  heading: (n) => `Titre ${n}`,
+  bold: "Gras",
+  italic: "Italique",
+  inlineCode: "Code",
+  link: "Lien",
+  bulletList: "Liste à puces",
+  orderedList: "Liste numérotée",
+  quote: "Citation",
+  preview: "Aperçu",
+  nothingToPreview: "Rien à afficher",
+  imageUploading: (n) => `Envoi de ${n}…`,
+  imageNotAdded: (n) => `Image non ajoutée : ${n}`,
+  linkTextPlaceholder: "texte",
+  linkUrlPlaceholder: "adresse",
 };

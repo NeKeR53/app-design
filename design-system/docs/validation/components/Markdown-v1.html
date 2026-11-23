@@ -1,0 +1,329 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Markdown et MarkdownEditor — validation v1</title>
+<style>
+/* ---------- Page de validation ---------- */
+:root{--pg-bg:#f6f6f6;--pg-fg:#1a1a1a;--pg-muted:#5c5c5c;--pg-line:#e2e2e2;--pg-card:#fff;--pg-badge:#e3f5e9;--pg-badge-fg:#14532d;--pg-reco:#e7f0ff;--pg-reco-fg:#1d4ed8}
+:root[data-theme="dark"]{--pg-bg:#121212;--pg-fg:#ececec;--pg-muted:#9a9a9a;--pg-line:#2c2c2c;--pg-card:#1b1b1b;--pg-badge:#173323;--pg-badge-fg:#bfe8cf;--pg-reco:#16233d;--pg-reco-fg:#9cc0ff}
+*{box-sizing:border-box}html,body{margin:0}
+body{background:var(--pg-bg);color:var(--pg-fg);font:15px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif}
+.pg{max-width:1180px;margin:0 auto;padding:24px 16px 64px}
+h1{font-size:22px;font-weight:600;margin:0 0 4px;display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+h2.sec{font-size:16px;margin:28px 0 8px}
+.intro{color:var(--pg-muted);margin:0 0 20px}
+.badge{font-size:12px;font-weight:600;letter-spacing:.04em;padding:3px 8px;border-radius:6px;background:var(--pg-badge);color:var(--pg-badge-fg)}
+.boxes{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px}
+@media (max-width:760px){.boxes{grid-template-columns:1fr}}
+.box{background:var(--pg-card);border:1px solid var(--pg-line);border-radius:10px;padding:14px 16px;font-size:14px}
+.box h2{font-size:14px;margin:0 0 8px;font-weight:600}.box ul,.box ol{margin:0;padding-left:20px}.box li{margin:5px 0}
+.reco{font-size:11.5px;font-weight:600;padding:1px 6px;border-radius:5px;background:var(--pg-reco);color:var(--pg-reco-fg);margin-left:4px}
+.toolbar{position:sticky;top:0;z-index:100;background:var(--pg-bg);padding:10px 0;border-bottom:1px solid var(--pg-line);margin-bottom:16px;display:flex;flex-wrap:wrap;gap:10px 16px;align-items:center}
+.seg{display:inline-flex;border:1px solid var(--pg-line);border-radius:8px;overflow:hidden;background:var(--pg-card)}
+.seg button{border:0;background:transparent;color:var(--pg-fg);padding:5px 10px;font:inherit;font-size:13px;cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--pg-fg);color:var(--pg-bg)}
+.tlabel{font-size:12px;color:var(--pg-muted);margin-right:6px}
+.cmp{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+@media (max-width:760px){.cmp{grid-template-columns:1fr}}
+.opt{background:var(--pg-card);border:1px solid var(--pg-line);border-radius:10px;padding:12px 14px;font-size:13px}
+.opt h3{margin:0 0 2px;font-size:13px}.opt p{margin:0 0 10px;color:var(--pg-muted)}
+.opt pre{font-size:12px;white-space:pre-wrap;margin:0}
+
+/* ---------- Tokens (copie de src/tokens) ---------- */
+.tk{--surface:#fff;--surface-side:#f3f3f3;--field:#f2f2f2;--hover:#e9e9e9;--selected:#dedede;--line:#e4e4e4;--line-strong:#cfcfcf;--fg:#1a1a1a;--fg-2:#5c5c5c;--fg-3:#6b6b6b;
+  --accent:#1d4ed8;--accent-text:#1d4ed8;--danger:#c62828;
+  --font-sans:-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;--font-mono:ui-monospace,"SF Mono","Cascadia Code",Consolas,monospace;
+  --radius-sm:4px;--radius-md:8px;--icon:16px;--icon-stroke:1.6;--fs-xs:11.5px;--fs-sm:12.5px;--fs-md:14px;--lh:1.45;--row-h:34px;--icon-btn:30px;--bar-h:44px;--side-w:200px;
+  background:var(--surface);color:var(--fg);font-family:var(--font-sans);font-size:var(--fs-md);line-height:var(--lh)}
+.tk.dark{--surface:#181818;--surface-side:#222;--field:#2a2a2a;--hover:#303030;--selected:#3d3d3d;--line:#333;--line-strong:#4a4a4a;--fg:#ececec;--fg-2:#ababab;--fg-3:#8f8f8f;--accent:#5b8def;--accent-text:#7da4f2;--danger:#f07167}
+.tk.desktop{--fs-xs:10.5px;--fs-sm:11.5px;--fs-md:13px;--lh:1.4;--row-h:28px;--icon-btn:26px;--bar-h:38px;--side-w:180px}
+
+/* ---------- Mini AppShell ---------- */
+.app{border:1px solid var(--pg-line);border-radius:12px;overflow:hidden;display:grid;grid-template-columns:var(--side-w) minmax(0,1fr);grid-template-rows:var(--bar-h) 1fr;min-height:640px}
+@media (max-width:900px){.app{grid-template-columns:minmax(0,1fr)}.side{display:none}}
+.app *{box-sizing:border-box}.app button{font:inherit;color:inherit}
+.ic{width:var(--icon);height:var(--icon);flex:none;stroke:currentColor;fill:none;stroke-width:var(--icon-stroke);stroke-linecap:round;stroke-linejoin:round}
+.side{grid-row:1 / span 2;background:var(--surface-side);border-right:1px solid var(--line);padding:6px}
+.nav{display:flex;align-items:center;gap:8px;height:var(--row-h);padding:0 8px;border-radius:var(--radius-md);color:var(--fg-2)}
+.nav.on{background:var(--selected);color:var(--fg)}
+.bar{display:flex;align-items:center;gap:10px;padding:0 16px;border-bottom:1px solid var(--line);font-weight:600}
+.main{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:0;min-width:0}
+@media (max-width:1000px){.main{grid-template-columns:minmax(0,1fr)}}
+.col{padding:16px 20px;min-width:0;border-right:1px solid var(--line)}
+.col:last-child{border-right:0}
+.colh{font-size:var(--fs-sm);color:var(--fg-3);margin:0 0 10px}
+
+/* ---------- Markdown (rendu proposé) ---------- */
+.md{font-size:var(--fs-md);line-height:1.6;color:var(--fg);overflow-wrap:anywhere}
+.md>:first-child{margin-top:0}.md>:last-child{margin-bottom:0}
+.md p{margin:0 0 12px}
+.md .h{font-weight:600;line-height:1.35;margin:20px 0 8px}
+.md .h1{font-size:1.25em}.md .h2{font-size:1.125em}.md .h3{font-size:1em}
+.md ul,.md ol{margin:0 0 12px;padding-left:24px}.md li{margin:2px 0}
+.md li>ul,.md li>ol{margin:2px 0 0}
+.md .tasks{list-style:none;padding-left:0}
+.md .task{display:flex;gap:8px;align-items:flex-start}
+.md .tbox{flex:none;width:14px;height:14px;margin-top:.3em;border:1px solid var(--line-strong);border-radius:4px;display:grid;place-items:center;background:var(--surface)}
+.md .tbox.on{background:var(--fg);border-color:var(--fg);color:var(--surface)}
+.md .tbox .ic{width:11px;height:11px;stroke-width:2.4}
+.md .task.done{color:var(--fg-2)}
+.md a{color:var(--accent-text);text-decoration:underline;text-underline-offset:2px}
+.md a:hover{text-decoration-thickness:2px}
+.md code{font-family:var(--font-mono);font-size:.92em;background:var(--field);border-radius:4px;padding:1px 5px}
+.md .cb{position:relative;margin:0 0 12px}
+.md .cb pre{margin:0;background:var(--field);border-radius:var(--radius-md);padding:10px 12px;font-family:var(--font-mono);font-size:var(--fs-sm);overflow:auto;white-space:pre}
+.md .cb pre code{background:none;padding:0;font-size:inherit}
+.md .cb .copy{position:absolute;top:4px;right:4px;opacity:0;transition:opacity .12s}
+.md .cb:hover .copy,.md .cb:focus-within .copy{opacity:1}
+@media (hover:none){.md .cb .copy{opacity:1}}
+.ibtn{display:inline-grid;place-items:center;width:var(--icon-btn);height:var(--icon-btn);border:0;border-radius:var(--radius-md);background:transparent;color:var(--fg-2);cursor:default}
+.ibtn:hover{background:var(--hover);color:var(--fg)}
+.ibtn:disabled{opacity:.4;background:transparent}
+.ibtn[aria-pressed="true"]{background:var(--hover);color:var(--fg)}
+.cb .ibtn{background:var(--field)}
+.md .tw{overflow:auto;margin:0 0 12px}
+.md table{border-collapse:separate;border-spacing:0;min-width:100%}
+.md th{font-size:var(--fs-sm);font-weight:500;color:var(--fg-2);text-align:left;border-bottom:1px solid var(--line);padding:6px 10px;white-space:nowrap}
+.md td{border-bottom:1px solid var(--line);padding:6px 10px;vertical-align:top}
+.md .num{text-align:right;font-variant-numeric:tabular-nums}
+.md hr{border:0;height:1px;background:var(--line);margin:12px 0}
+/* Citation : option A (trait) ou B (fond) */
+.md blockquote{margin:0 0 12px;color:var(--fg-2)}
+.qA .md blockquote{border-left:3px solid var(--line-strong);padding:0 0 0 12px}
+.qB .md blockquote{background:var(--field);border-radius:var(--radius-md);padding:8px 12px}
+
+/* ---------- MarkdownEditor (proposé) ---------- */
+.fld{display:flex;flex-direction:column;gap:4px}
+.flbl{font-size:var(--fs-sm);font-weight:500}.flbl span{font-weight:400;color:var(--fg-3)}
+.ed{border:1px solid var(--line-strong);border-radius:var(--radius-md);background:var(--surface);display:flex;flex-direction:column;overflow:hidden}
+.ed:hover{border-color:var(--fg-3)}
+.ed:focus-within{outline:2px solid var(--accent);outline-offset:1px}
+.ed .tb{display:flex;align-items:center;gap:2px;padding:2px 4px;border-bottom:1px solid var(--line);flex-wrap:wrap}
+.ed .sep{width:1px;align-self:stretch;margin:4px 2px;background:var(--line)}
+.ed .tb .end{margin-left:auto}
+.ed .body{display:grid;grid-template-columns:minmax(0,1fr)}
+.ed.split .body{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
+@container (width < 560px){.ed.split .body{grid-template-columns:minmax(0,1fr)}}
+.edwrap{container-type:inline-size}
+.ed .pv{padding:8px 12px;border-left:1px solid var(--line);overflow:auto;max-height:420px}
+.ed.toggle .pv{border-left:0}
+.ed .pv .empty{color:var(--fg-3)}
+.area{position:relative;min-height:calc(6 * 1.6em + 16px);max-height:420px;overflow:auto;font-size:var(--fs-md);line-height:1.6}
+.area pre,.area textarea{margin:0;padding:8px 12px;font:inherit;font-family:var(--font-mono);font-size:var(--fs-sm);line-height:1.6;white-space:pre-wrap;overflow-wrap:anywhere;border:0;min-height:inherit}
+.fB .area pre,.fB .area textarea{font-family:var(--font-sans);font-size:var(--fs-md)}
+.area pre{pointer-events:none;color:var(--fg)}
+.area textarea{position:absolute;inset:0;width:100%;height:100%;resize:none;background:transparent;color:transparent;caret-color:var(--fg);outline:none;overflow:hidden}
+.area textarea::selection{background:color-mix(in srgb,var(--accent) 25%,transparent);color:transparent}
+.area .ph{color:var(--fg-3)}
+/* Coloration : tokens */
+.t-mark{color:var(--fg-3)}.t-h{font-weight:600}.t-b{font-weight:700}.t-i{font-style:italic}
+.t-code{color:var(--fg);background:var(--field);border-radius:3px}.t-link{color:var(--accent-text)}.t-url{color:var(--fg-3);text-decoration:underline}.t-q{color:var(--fg-2)}
+.fhelp{display:flex;gap:8px;font-size:var(--fs-sm);color:var(--fg-3)}
+.fhelp .cnt{margin-left:auto;font-variant-numeric:tabular-nums}
+.fhelp .err{color:var(--danger);display:none}
+/* États */
+.s-error .ed{border-color:var(--danger)}
+.s-error .fhelp .err{display:block}.s-error .fhelp .desc{display:none}
+.s-disabled .fld{opacity:.4}.s-disabled .ed:hover{border-color:var(--line-strong)}
+.s-readonly .ed{border-color:var(--line);background:var(--surface-side)}
+.s-readonly .ed .tb{display:none}
+.s-readonly .lock{display:inline-grid}
+.lock{display:none;position:absolute;top:6px;right:8px;color:var(--fg-3)}
+.kbd{font-family:var(--font-mono);font-size:12px;background:var(--pg-card);border:1px solid var(--pg-line);border-radius:4px;padding:0 4px}
+.tip{position:fixed;z-index:200;background:#1f1f1f;color:#f2f2f2;font-size:12px;padding:3px 7px;border-radius:8px;pointer-events:none;display:none;white-space:nowrap}
+.tip b{font-weight:400;color:#a8a8a8;margin-left:6px}
+</style>
+</head>
+<body>
+<div class="pg">
+<h1>Markdown et MarkdownEditor <span class="badge">VALIDÉ le 2026-11-23 — par délégation de l'utilisateur</span></h1>
+<p class="intro">Rendu de Markdown en lecture (GFM) avec la typographie de Socle, et éditeur de Markdown (CodeMirror 6) au format des champs du lot 1. Deux sous-entrées : <code>socle-ui/markdown</code> et <code>socle-ui/markdown-editor</code>, avec des dépendances facultatives. Version mineure : tout est nouveau.</p>
+
+<div class="boxes">
+  <div class="box">
+    <h2>Déjà décidé</h2>
+    <ul>
+      <li>Liens : <code>Link</code>, toujours souligné, flèche si externe (D-167).</li>
+      <li>Code en ligne et en bloc : <code>Code</code> (D-168). Trait : <code>Divider</code>.</li>
+      <li>Champ : libellé au-dessus, aide ou erreur en dessous (D-022, D-130) ; lecture seule grise avec cadenas (D-131) ; compteur « n / max » (TextArea).</li>
+      <li>Boutons-icônes et info-bulle avec raccourci (D-032, D-035) ; raccourcis « Mod » (D-006).</li>
+      <li>Libellés internes dans le dictionnaire <code>messages</code> (D-089).</li>
+      <li>Désactivé : opacité 40 %.</li>
+    </ul>
+  </div>
+  <div class="box">
+    <h2>À décider — réponses retenues</h2>
+    <ol>
+      <li>Dépendances : <b>A</b> sous-entrées et peer dependencies facultatives <span class="reco">retenu</span> (D-300).</li>
+      <li>Citation : <b>A</b> trait à gauche <span class="reco">retenu</span> (D-301).</li>
+      <li>Tableaux : <b>A</b> tableau statique au style de <code>Table</code>, pas le composant <code>Table</code> <span class="reco">retenu</span> (D-304).</li>
+      <li>Police de l'éditeur : <b>A</b> chasse fixe <span class="reco">retenu</span> (D-306).</li>
+      <li>Aperçu : facultatif, <b>bascule</b> ou <b>côte à côte</b> ; rien par défaut <span class="reco">retenu</span> (D-309).</li>
+      <li>Compteur de modifications non enregistrées, Mod+S, plugins remark : retirés (test du générique) — solution locale dans Alfred (D-309).</li>
+    </ol>
+  </div>
+</div>
+
+<div class="toolbar" role="toolbar" aria-label="Bascules">
+  <span><span class="tlabel">Mode</span><span class="seg" data-k="theme"><button aria-pressed="true" data-v="light">Clair</button><button data-v="dark">Sombre</button></span></span>
+  <span><span class="tlabel">Densité</span><span class="seg" data-k="dens"><button aria-pressed="true" data-v="web">Web</button><button data-v="desktop">Desktop</button></span></span>
+  <span><span class="tlabel">État de l'éditeur</span><span class="seg" data-k="state"><button aria-pressed="true" data-v="normal">Normal</button><button data-v="disabled">Désactivé</button><button data-v="readonly">Lecture seule</button><button data-v="error">Erreur</button></span></span>
+  <span><span class="tlabel">Aperçu</span><span class="seg" data-k="pv"><button aria-pressed="true" data-v="none">Aucun</button><button data-v="toggle">Bascule</button><button data-v="split">Côte à côte</button></span></span>
+  <span><span class="tlabel">Citation</span><span class="seg" data-k="q"><button aria-pressed="true" data-v="A">A</button><button data-v="B">B</button></span></span>
+  <span><span class="tlabel">Police</span><span class="seg" data-k="font"><button aria-pressed="true" data-v="A">A mono</button><button data-v="B">B sans</button></span></span>
+</div>
+
+<h2 class="sec">Dans un écran : note en lecture et note en édition</h2>
+<div id="tk" class="tk qA fA">
+<div class="app">
+  <nav class="side">
+    <div class="nav"><svg class="ic" viewBox="0 0 24 24"><path d="M3 12h18M3 6h18M3 18h18"/></svg>Projets</div>
+    <div class="nav on"><svg class="ic" viewBox="0 0 24 24"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6"/></svg>Notes</div>
+    <div class="nav"><svg class="ic" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/></svg>Équipe</div>
+  </nav>
+  <div class="bar">Compte rendu de réunion</div>
+  <div class="main">
+    <section class="col">
+      <p class="colh">Markdown — lecture</p>
+      <div class="md" id="read"></div>
+    </section>
+    <section class="col">
+      <p class="colh">MarkdownEditor — formulaire</p>
+      <div id="state" class="s-normal">
+        <div class="fld">
+          <label class="flbl" for="ta">Contenu <span>(facultatif)</span></label>
+          <div class="edwrap"><div class="ed" id="ed">
+            <div class="tb" role="toolbar" aria-label="Mise en forme" id="tb"></div>
+            <div class="body">
+              <div class="area" id="area"><pre id="hl" aria-hidden="true"></pre><textarea id="ta" spellcheck="false" maxlength="2000"></textarea><span class="lock" title="Lecture seule"><svg class="ic" viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></span></div>
+              <div class="pv md" id="pv" hidden></div>
+            </div>
+          </div></div>
+          <div class="fhelp"><span class="desc">Markdown : **gras**, _italique_, `code`, listes, tableaux.</span><span class="err">Le contenu ne peut pas dépasser 2 000 caractères.</span><span class="cnt" id="cnt"></span></div>
+        </div>
+      </div>
+      <p class="colh" style="margin-top:16px">Clavier : <span class="kbd">Mod+B</span> gras, <span class="kbd">Mod+I</span> italique, <span class="kbd">Mod+E</span> code, <span class="kbd">Mod+K</span> lien, <span class="kbd">Mod+Alt+1…3</span> titres, <span class="kbd">Mod+Maj+8</span> puces, <span class="kbd">Mod+Maj+7</span> numéros, <span class="kbd">Mod+Maj+9</span> citation. Entrée continue une liste. Tab quitte l'éditeur. Flèches gauche et droite dans la barre.</p>
+    </section>
+  </div>
+</div>
+</div>
+
+<h2 class="sec">Options comparées</h2>
+<div class="cmp">
+  <div class="opt"><h3>1. Dépendances — A <span class="reco">retenu</span></h3><p>Deux sous-entrées ; react-markdown, remark-gfm et CodeMirror en peer dependencies facultatives. Une app sans Markdown n'installe rien.</p>
+<pre>import { Markdown } from "socle-ui/markdown";
+import { MarkdownEditor } from "socle-ui/markdown-editor";</pre></div>
+  <div class="opt"><h3>1. Dépendances — B</h3><p>Dépendances directes, export depuis <code>socle-ui</code>. Simple, mais chaque app installe CodeMirror et react-markdown.</p></div>
+  <div class="opt"><h3>1. Dépendances — C</h3><p>Export depuis <code>socle-ui</code> et <code>import()</code> dynamique. Écarté : le bundler de l'app échoue si le paquet manque.</p></div>
+  <div class="opt"><h3>2. Citation — A <span class="reco">retenu</span></h3><p>Trait de 3 px <code>--line-strong</code> à gauche, texte <code>--fg-2</code>. Ne se confond pas avec un bloc de code.</p></div>
+  <div class="opt"><h3>2. Citation — B</h3><p>Fond <code>--field</code> (Alfred). Trop proche du bloc de code.</p></div>
+  <div class="opt"><h3>3. Tableaux — A <span class="reco">retenu</span></h3><p>Tableau HTML statique au style de <code>Table</code> (en-tête <code>--fs-sm</code> <code>--fg-2</code>, traits <code>--line</code>), qui défile seul. <code>Table</code> est une grille interactive (sélection, tri, clavier en grille) : mauvais rôle pour du texte.</p></div>
+  <div class="opt"><h3>4. Police — A <span class="reco">retenu</span></h3><p>Chasse fixe <code>--font-mono</code> en <code>--fs-sm</code> : listes, tableaux et indentation restent alignés.</p></div>
+  <div class="opt"><h3>4. Police — B</h3><p>Police du texte. Plus proche du rendu, mais tableaux désalignés.</p></div>
+  <div class="opt"><h3>5. Retiré (test du générique)</h3><p>Compte des modifications non enregistrées, Mod+S, <code>remarkPlugins</code>, <code>renderLink</code> : propres à Alfred. La page ou FormPage suit les modifications.</p></div>
+</div>
+</div>
+<div class="tip" id="tip"></div>
+
+<script>
+const $=s=>document.querySelector(s);
+const tk=$("#tk"),st=$("#state"),ed=$("#ed"),ta=$("#ta"),hl=$("#hl"),pv=$("#pv"),cnt=$("#cnt"),tip=$("#tip");
+const SVG={
+ h:'<path d="M4 12h8M4 18V6M12 18V6M17 12l3-2v8"/>',b:'<path d="M6 12h9a4 4 0 0 1 0 8H6zM6 4h7a4 4 0 0 1 0 8H6z"/>',i:'<path d="M19 4h-9M14 20H5M15 4 9 20"/>',
+ code:'<path d="m16 18 6-6-6-6M8 6l-6 6 6 6"/>',link:'<path d="M10 13a5 5 0 0 0 7.5.5l3-3a5 5 0 0 0-7-7l-1.7 1.7"/><path d="M14 11a5 5 0 0 0-7.5-.5l-3 3a5 5 0 0 0 7 7l1.7-1.7"/>',
+ ul:'<path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/>',ol:'<path d="M10 6h11M10 12h11M10 18h11M4 6h1v4M4 10h2M6 18H4c0-1 2-2 2-3s-1-1.5-2-1"/>',
+ q:'<path d="M3 21c3 0 7-1 7-8V5c0-1.2-.8-2-2-2H4c-1.2 0-2 .8-2 2v6c0 1.2.8 2 2 2h3"/><path d="M15 21c3 0 7-1 7-8V5c0-1.2-.8-2-2-2h-4c-1.2 0-2 .8-2 2v6c0 1.2.8 2 2 2h3"/>',
+ eye:'<path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>',copy:'<rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v1"/>',check:'<path d="M20 6 9 17l-5-5"/>'};
+const ic=n=>`<svg class="ic" viewBox="0 0 24 24">${SVG[n]}</svg>`;
+const TOOLS=[["h1","h","Titre 1","Mod+Alt+1"],["h2","h","Titre 2","Mod+Alt+2"],["h3","h","Titre 3","Mod+Alt+3"],"|",["bold","b","Gras","Mod+B"],["italic","i","Italique","Mod+I"],["code","code","Code","Mod+E"],["link","link","Lien","Mod+K"],"|",["ul","ul","Liste à puces","Mod+Maj+8"],["ol","ol","Liste numérotée","Mod+Maj+7"],["quote","q","Citation","Mod+Maj+9"]];
+const tb=$("#tb");
+tb.innerHTML=TOOLS.map(t=>t==="|"?'<span class="sep" aria-hidden="true"></span>':`<button class="ibtn" data-cmd="${t[0]}" data-tip="${t[2]}" data-key="${t[3]}" aria-label="${t[2]}" tabindex="-1">${ic(t[1])}</button>`).join("")+`<button class="ibtn end" id="pvbtn" data-tip="Aperçu" aria-label="Aperçu" aria-pressed="false" tabindex="-1" hidden>${ic("eye")}</button>`;
+tb.querySelector("button").tabIndex=0;
+const DOC=`# Compte rendu du 12 mars
+
+Présents : **Lina**, _Marc_ et l'équipe support. Voir la [procédure](https://example.com/procedure).
+
+## Décisions
+- Mise en ligne le \`lundi\`
+- Gel des changements la veille
+  - sauf correctifs
+
+## Suivi
+- [x] Prévenir les clients
+- [ ] Mettre à jour la FAQ
+
+> Garder une marge d'une journée en cas de retour.
+
+| Tâche | Responsable | Jours |
+|---|---|---:|
+| Tests | Lina | 2 |
+| Documentation | Marc | 1 |
+
+\`\`\`
+npm run build && npm run deploy
+\`\`\`
+`;
+ta.value=DOC;
+const esc=s=>s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+function inline(s){return esc(s).replace(/`([^`]+)`/g,"<code>$1</code>").replace(/\*\*([^*]+)\*\*/g,"<strong>$1</strong>").replace(/_([^_]+)_/g,"<em>$1</em>").replace(/\[([^\]]+)\]\(([^)]+)\)/g,(m,t,u)=>`<a href="${u}" target="_blank" rel="noopener">${t}<svg class="ic" viewBox="0 0 24 24" style="width:12px;height:12px;vertical-align:-1px;margin-left:2px"><path d="M7 17 17 7M7 7h10v10"/></svg></a>`)}
+function render(src){
+ const L=src.split("\n");let o="",i=0;
+ while(i<L.length){const l=L[i];
+  if(/^```/.test(l)){let c=[];i++;while(i<L.length&&!/^```/.test(L[i]))c.push(L[i++]);i++;o+=`<div class="cb"><pre tabindex="0"><code>${esc(c.join("\n"))}</code></pre><button class="ibtn copy" data-tip="Copier le bloc" aria-label="Copier le bloc">${ic("copy")}</button></div>`;continue}
+  let m=/^(#{1,3})\s+(.*)/.exec(l);if(m){const n=m[1].length;o+=`<h${n+1} class="h h${n}">${inline(m[2])}</h${n+1}>`;i++;continue}
+  if(/^---+$/.test(l)){o+="<hr>";i++;continue}
+  if(/^>/.test(l)){let q=[];while(i<L.length&&/^>/.test(L[i]))q.push(L[i++].replace(/^>\s?/,""));o+=`<blockquote><p>${inline(q.join(" "))}</p></blockquote>`;continue}
+  if(/^\|/.test(l)){let r=[];while(i<L.length&&/^\|/.test(L[i]))r.push(L[i++]);const cells=x=>x.replace(/^\||\|$/g,"").split("|").map(s=>s.trim());const al=cells(r[1]||"").map(a=>/:$/.test(a));
+   o+=`<div class="tw" tabindex="0" role="region" aria-label="Tableau"><table><thead><tr>${cells(r[0]).map((c,k)=>`<th class="${al[k]?"num":""}">${inline(c)}</th>`).join("")}</tr></thead><tbody>${r.slice(2).map(x=>`<tr>${cells(x).map((c,k)=>`<td class="${al[k]?"num":""}">${inline(c)}</td>`).join("")}</tr>`).join("")}</tbody></table></div>`;continue}
+  if(/^\s*([-*]|\d+\.)\s/.test(l)){let items=[];while(i<L.length&&/^\s*([-*]|\d+\.)\s/.test(L[i]))items.push(L[i++]);const ord=/^\d/.test(items[0].trim());const task=items.every(x=>/\[[ x]\]/.test(x));
+   if(task){o+=`<ul class="tasks">${items.map(x=>{const d=/\[x\]/.test(x);return `<li class="task ${d?"done":""}"><span class="tbox ${d?"on":""}" role="img" aria-label="${d?"Fait":"À faire"}">${d?ic("check"):""}</span><span>${inline(x.replace(/^\s*[-*]\s\[[ x]\]\s/,""))}</span></li>`}).join("")}</ul>`;continue}
+   let h="",depth=0;items.forEach(x=>{const d=/^\s{2,}/.test(x)?1:0;if(d>depth)h=h.replace(/<\/li>$/,"")+(ord?"<ol>":"<ul>");if(d<depth)h+=(ord?"</ol>":"</ul>")+"</li>";depth=d;h+=`<li>${inline(x.replace(/^\s*([-*]|\d+\.)\s/,""))}</li>`});if(depth)h+=(ord?"</ol>":"</ul>")+"</li>";o+=ord?`<ol>${h}</ol>`:`<ul>${h}</ul>`;continue}
+  if(!l.trim()){i++;continue}
+  let p=[];while(i<L.length&&L[i].trim()&&!/^(#|>|\||```|\s*[-*]\s|\d+\.\s)/.test(L[i]))p.push(L[i++]);o+=`<p>${inline(p.join(" "))}</p>`}
+ return o}
+function hilite(src){if(!src)return '<span class="ph">Écrivez en Markdown…</span>';
+ let inCode=false;return src.split("\n").map(l=>{if(/^```/.test(l)){inCode=!inCode;return `<span class="t-mark">${esc(l)}</span>`}if(inCode)return `<span class="t-code">${esc(l)}</span>`;
+  let m=/^(#{1,6}\s)(.*)/.exec(l);if(m)return `<span class="t-mark">${m[1]}</span><span class="t-h">${esc(m[2])}</span>`;
+  if(/^>/.test(l))return `<span class="t-mark">&gt;</span><span class="t-q">${esc(l.slice(1))}</span>`;
+  let e=esc(l).replace(/^(\s*)([-*]|\d+\.)(\s)(\[[ x]\])?/,(a,s,b,c,d)=>`${s}<span class="t-mark">${b}</span>${c}${d?`<span class="t-mark">${d}</span>`:""}`)
+   .replace(/`([^`]+)`/g,'<span class="t-mark">`</span><span class="t-code">$1</span><span class="t-mark">`</span>')
+   .replace(/\*\*([^*]+)\*\*/g,'<span class="t-mark">**</span><span class="t-b">$1</span><span class="t-mark">**</span>')
+   .replace(/(^|[^\w])_([^_]+)_/g,'$1<span class="t-mark">_</span><span class="t-i">$2</span><span class="t-mark">_</span>')
+   .replace(/\[([^\]]+)\]\(([^)]+)\)/g,'<span class="t-mark">[</span><span class="t-link">$1</span><span class="t-mark">](</span><span class="t-url">$2</span><span class="t-mark">)</span>')
+   .replace(/^(\|.*)$/,(a)=>a.replace(/\|/g,'<span class="t-mark">|</span>'));return e}).join("\n")+"\n"}
+function sync(){hl.innerHTML=hilite(ta.value);cnt.textContent=`${ta.value.length} / 2000`;pv.innerHTML=ta.value.trim()?render(ta.value):'<p class="empty">Rien à afficher</p>';const a=$("#area");a.style.height="auto";a.style.height=Math.min(420,Math.max(hl.scrollHeight,6*22))+"px"}
+$("#read").innerHTML=render(DOC);sync();ta.addEventListener("input",sync);
+/* Commandes de mise en forme */
+function wrap(m){const s=ta.selectionStart,e=ta.selectionEnd,v=ta.value,t=v.slice(s,e);if(v.slice(s-m.length,s)===m&&v.slice(e,e+m.length)===m){ta.value=v.slice(0,s-m.length)+t+v.slice(e+m.length);ta.setSelectionRange(s-m.length,e-m.length)}else{ta.value=v.slice(0,s)+m+t+m+v.slice(e);ta.setSelectionRange(s+m.length,e+m.length)}}
+function lines(fn){const v=ta.value,s=v.lastIndexOf("\n",ta.selectionStart-1)+1;let e=v.indexOf("\n",ta.selectionEnd);if(e<0)e=v.length;const out=v.slice(s,e).split("\n").map(fn).join("\n");ta.value=v.slice(0,s)+out+v.slice(e);ta.setSelectionRange(s,s+out.length)}
+const CMD={bold:()=>wrap("**"),italic:()=>wrap("_"),code:()=>wrap("`"),
+ link:()=>{const s=ta.selectionStart,e=ta.selectionEnd,v=ta.value,t=v.slice(s,e)||"texte";ta.value=v.slice(0,s)+`[${t}](adresse)`+v.slice(e);const u=s+t.length+3;ta.setSelectionRange(u,u+7)},
+ h1:()=>lines(l=>/^# /.test(l)?l.slice(2):"# "+l.replace(/^#+\s/,"")),h2:()=>lines(l=>/^## /.test(l)?l.slice(3):"## "+l.replace(/^#+\s/,"")),h3:()=>lines(l=>/^### /.test(l)?l.slice(4):"### "+l.replace(/^#+\s/,"")),
+ ul:()=>lines(l=>/^- /.test(l)?l.slice(2):"- "+l),ol:()=>{let n=0;lines(l=>/^\d+\. /.test(l)?l.replace(/^\d+\. /,""):`${++n}. `+l)},quote:()=>lines(l=>/^> /.test(l)?l.slice(2):"> "+l)};
+function run(c){if(st.className!=="s-normal"&&st.className!=="s-error")return;CMD[c]();ta.focus();sync()}
+tb.addEventListener("mousedown",e=>e.preventDefault());
+tb.addEventListener("click",e=>{const b=e.target.closest("[data-cmd]");if(b)run(b.dataset.cmd)});
+/* Barre : une seule tabulation, flèches gauche et droite */
+tb.addEventListener("keydown",e=>{if(e.key!=="ArrowLeft"&&e.key!=="ArrowRight")return;const bs=[...tb.querySelectorAll("button:not([hidden])")];let k=bs.indexOf(document.activeElement);k=(k+(e.key==="ArrowRight"?1:-1)+bs.length)%bs.length;bs.forEach(b=>b.tabIndex=-1);bs[k].tabIndex=0;bs[k].focus();e.preventDefault()});
+const KEYS={b:"bold",i:"italic",e:"code",k:"link"};
+ta.addEventListener("keydown",e=>{const mod=e.metaKey||e.ctrlKey;if(!mod){if(e.key==="Enter"){const v=ta.value,s=ta.selectionStart,ls=v.lastIndexOf("\n",s-1)+1,line=v.slice(ls,s),m=/^(\s*)([-*]|\d+\.)\s(\[[ x]\]\s)?/.exec(line);if(m){e.preventDefault();if(line===m[0]){ta.value=v.slice(0,ls)+v.slice(s);ta.setSelectionRange(ls,ls)}else{const nx=/\d/.test(m[2])?(parseInt(m[2])+1)+".":m[2];const ins="\n"+m[1]+nx+" "+(m[3]?"[ ] ":"");ta.value=v.slice(0,s)+ins+v.slice(s);ta.setSelectionRange(s+ins.length,s+ins.length)}sync()}}return}
+ let c=null;if(e.altKey&&/^Digit[123]$/.test(e.code))c="h"+e.code.slice(5);else if(e.shiftKey&&e.code==="Digit8")c="ul";else if(e.shiftKey&&e.code==="Digit7")c="ol";else if(e.shiftKey&&e.code==="Digit9")c="quote";else if(!e.shiftKey&&!e.altKey)c=KEYS[e.key.toLowerCase()];
+ if(c){e.preventDefault();run(c)}});
+/* Info-bulles */
+document.addEventListener("mouseover",e=>{const b=e.target.closest("[data-tip]");if(!b){tip.style.display="none";return}const r=b.getBoundingClientRect();tip.innerHTML=b.dataset.tip+(b.dataset.key?`<b>${b.dataset.key}</b>`:"");tip.style.display="block";tip.style.left=r.left+"px";tip.style.top=(r.top-28)+"px"});
+/* Copier le bloc */
+document.addEventListener("click",e=>{const b=e.target.closest(".copy");if(!b)return;const t=b.parentElement.querySelector("code").textContent;navigator.clipboard?.writeText(t).catch(()=>{});b.innerHTML=ic("check");b.dataset.tip="Bloc copié";b.setAttribute("aria-label","Bloc copié");setTimeout(()=>{b.innerHTML=ic("copy");b.dataset.tip="Copier le bloc";b.setAttribute("aria-label","Copier le bloc")},2000)});
+/* Aperçu en bascule */
+const pvbtn=$("#pvbtn");pvbtn.addEventListener("click",()=>{const on=pvbtn.getAttribute("aria-pressed")!=="true";pvbtn.setAttribute("aria-pressed",on);$("#area").hidden=on;pv.hidden=!on;tb.querySelectorAll("[data-cmd]").forEach(b=>b.disabled=on)});
+/* Bascules de la page */
+const S={theme:"light",dens:"web",state:"normal",pv:"none",q:"A",font:"A"};
+function apply(){tk.className=`tk ${S.theme==="dark"?"dark":""} ${S.dens} q${S.q} f${S.font}`;document.documentElement.dataset.theme=S.theme;st.className="s-"+S.state;
+ const dis=S.state==="disabled",ro=S.state==="readonly";ta.disabled=dis;ta.readOnly=ro;tb.querySelectorAll("button").forEach(b=>b.disabled=dis);
+ ed.className="ed "+S.pv;pvbtn.hidden=S.pv!=="toggle";pvbtn.setAttribute("aria-pressed","false");$("#area").hidden=false;pv.hidden=S.pv!=="split"}
+document.querySelectorAll(".seg").forEach(g=>g.addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;g.querySelectorAll("button").forEach(x=>x.setAttribute("aria-pressed",x===b));S[g.dataset.k]=b.dataset.v;apply()}));
+apply();
+</script>
+</body>
+</html>

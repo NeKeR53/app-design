@@ -5,7 +5,7 @@
  * au fur et à mesure qu'ils sont spécifiés (mode `define`) puis codés.
  * Styles : importer `socle-ui/styles.css` une fois dans l'app.
  */
-export const SOCLE_VERSION = "0.1.0";
+export const SOCLE_VERSION = "0.3.0";
 
 export { SocleProvider, useSocle } from "./provider/SocleProvider";
 export { frenchMessages } from "./i18n/messages";
@@ -22,16 +22,17 @@ export { Dialog } from "./components/Dialog/Dialog";
 export type { DialogProps, DialogSize } from "./components/Dialog/Dialog";
 export { useConfirm } from "./components/Dialog/useConfirm";
 export type { ConfirmOptions, ConfirmFunction } from "./components/Dialog/useConfirm";
-export { Menu } from "./components/Menu/Menu";
-export type { MenuProps, MenuItemProps, MenuSectionProps, MenuSubmenuProps } from "./components/Menu/Menu";
+export { Menu, useContextMenu } from "./components/Menu/Menu";
+export type { MenuProps, MenuItemProps, MenuSectionProps, MenuSubmenuProps, MenuPoint, ContextMenuState, ContextMenuTargetProps } from "./components/Menu/Menu";
 export { Tabs } from "./components/Tabs/Tabs";
 export type { TabsProps, TabItem } from "./components/Tabs/Tabs";
-export { Sidebar } from "./patterns/Sidebar/Sidebar";
-export type { SidebarProps, SidebarItemProps, SidebarTreeItemProps, SidebarSectionProps, SidebarAccountProps, SidebarAction } from "./patterns/Sidebar/Sidebar";
+export { Sidebar, workspaceInitial } from "./patterns/Sidebar/Sidebar";
+export type { SidebarProps, SidebarItemProps, SidebarTreeItemProps, SidebarSectionProps, SidebarAccountProps, SidebarAction, SidebarWorkspaceProps, SidebarWorkspaceEntry } from "./patterns/Sidebar/Sidebar";
 export { AppShell } from "./patterns/AppShell/AppShell";
-export type { AppShellProps, TabbarEntry } from "./patterns/AppShell/AppShell";
+export type { AppShellProps, TabbarEntry, PageStatus } from "./patterns/AppShell/AppShell";
 export { DetailPanel, PropertyRow } from "./patterns/DetailPanel/DetailPanel";
 export type { DetailPanelProps, DetailPanelSectionProps, PropertyRowProps, PropertyAction } from "./patterns/DetailPanel/DetailPanel";
+export type { DetailPanelComposedProps, DetailPanelDeclarativeProps, DetailHeader, DetailSection, DetailField, SectionSummary } from "./patterns/DetailPanel/DetailPanel";
 export { Table } from "./components/Table/Table";
 export type { TableProps, TableColumn, TableRowAction } from "./components/Table/Table";
 export { List } from "./components/List/List";
@@ -55,7 +56,7 @@ export type { CodeProps } from "./components/Code/Code";
 export { Divider } from "./components/Divider/Divider";
 export type { DividerProps } from "./components/Divider/Divider";
 export { ActionBar, arrangeActions } from "./patterns/ActionBar/ActionBar";
-export type { Action, ActionZone, ActionBarProps, ArrangedActions } from "./patterns/ActionBar/ActionBar";
+export type { Action, ActionZone, ActionBarProps, ArrangedActions, ActionFit } from "./patterns/ActionBar/ActionBar";
 export { createNotifications } from "./components/Toast/notifications";
 export type { Notifications, NotificationsOptions, NotifyOptions, NotificationRecord, NotificationTone, NotificationAction } from "./components/Toast/notifications";
 export { useNotify, useNotifications } from "./provider/SocleProvider";
@@ -77,3 +78,73 @@ export { Fieldset } from "./components/Fieldset/Fieldset";
 export type { FieldsetProps } from "./components/Fieldset/Fieldset";
 export { ComboBox } from "./components/ComboBox/ComboBox";
 export type { ComboBoxProps, ComboBoxSingleProps, ComboBoxMultipleProps, ComboBoxItem } from "./components/ComboBox/ComboBox";
+export { FormattedValue, useFormatValue, valueSortKey, valueLayout } from "./components/FormattedValue/FormattedValue";
+export type { FormattedValueProps, ValueFormat, ValueType, StatusMap } from "./components/FormattedValue/FormattedValue";
+export { ListPage } from "./templates/ListPage/ListPage";
+export type { ListPageProps, ListPageColumn, ListPageFilter, ListPageSort, ListPageState } from "./templates/ListPage/ListPage";
+export { FormPage } from "./templates/FormPage/FormPage";
+export type { FormPageProps, FormSection } from "./templates/FormPage/FormPage";
+export { useOpenForm } from "./templates/FormDialog/FormDialog";
+export type { OpenFormOptions, OpenFormFunction } from "./templates/FormDialog/FormDialog";
+export type {
+  FormField,
+  FormInputField,
+  FieldsetFormField,
+  TextFormField,
+  NumberFormField,
+  TextAreaFormField,
+  SelectFormField,
+  ComboBoxFormField,
+  RadioFormField,
+  CheckboxFormField,
+  CheckboxGroupFormField,
+  FormChoice,
+  FormCheck,
+  FormValue,
+  FormValues,
+  FormSubmit,
+  FormSubmitResult,
+} from "./lib/form";
+export { SettingsPage } from "./templates/SettingsPage/SettingsPage";
+export type {
+  SettingsPageProps,
+  SettingsGroup,
+  SettingsCategory,
+  SettingsSection,
+  Setting,
+  SwitchSetting,
+  SelectSetting,
+  TextSetting,
+  ActionSetting,
+  ItemSetting,
+  InfoSetting,
+  SettingTag,
+} from "./templates/SettingsPage/SettingsPage";
+export { Page, PageSection } from "./templates/Page/Page";
+export type { PageProps, PageSectionProps, PageEmpty, PageWidth } from "./templates/Page/Page";
+export { DetailPage } from "./templates/DetailPage/DetailPage";
+export type { DetailPageProps, DetailPageBack } from "./templates/DetailPage/DetailPage";
+export { TreeView } from "./components/TreeView/TreeView";
+export type { TreeViewProps, TreeNode, TreeMoveTarget } from "./components/TreeView/TreeView";
+export { Terminal } from "./components/Terminal/Terminal";
+export type { TerminalProps, TerminalHandle, TerminalConnection, TerminalState } from "./components/Terminal/Terminal";
+export type { TerminalEngine, TerminalEngineSource } from "./components/Terminal/terminalEngine";
+export { LogViewer } from "./components/LogViewer/LogViewer";
+export type { LogViewerProps, LogViewerHandle, LogViewerView, LogLevelFilter, LogLine, LogLevel } from "./components/LogViewer/LogViewer";
+export { DiffView, DiffStat } from "./components/DiffView/DiffView";
+export type { DiffViewProps, DiffViewMode, DiffStatProps } from "./components/DiffView/DiffView";
+export { DocumentViewer, ZOOM_STEPS } from "./components/DocumentViewer/DocumentViewer";
+export type { DocumentViewerProps } from "./components/DocumentViewer/DocumentViewer";
+export { detectFormat } from "./components/DocumentViewer/documentSource";
+export type { DocumentData, DocumentFormat } from "./components/DocumentViewer/documentSource";
+export type { PdfEngine, PdfDocumentHandle, PdfPageHandle } from "./components/DocumentViewer/pdf";
+export { HtmlContent } from "./components/HtmlContent/HtmlContent";
+export type { HtmlContentProps } from "./components/HtmlContent/HtmlContent";
+export { Disclosure } from "./components/Disclosure/Disclosure";
+export type { DisclosureProps } from "./components/Disclosure/Disclosure";
+export { InlineEdit } from "./components/InlineEdit/InlineEdit";
+export type { InlineEditProps } from "./components/InlineEdit/InlineEdit";
+export { StepList } from "./components/StepList/StepList";
+export type { StepListProps, StepItem, StepStatus } from "./components/StepList/StepList";
+export { Popover } from "./components/Popover/Popover";
+export type { PopoverProps, PopoverWidth, PopoverPlacement } from "./components/Popover/Popover";

@@ -1,8 +1,8 @@
 /*
- * Modèle Action et ActionBar. Spec : ActionBar.spec.md (D-110 à D-118).
+ * Modèle Action et ActionBar. Spec : ActionBar.spec.md (D-110 à D-118, D-220 à D-222).
  * L'app décrit ses actions par des données ; la zone décide de leur forme.
  */
-import { useRef, useState, type ReactNode } from "react";
+import { useLayoutEffect, useRef, useState, type ReactNode, type RefObject } from "react";
 import { Button } from "../../components/Button/Button";
 import { IconButton } from "../../components/IconButton/IconButton";
 import { Menu } from "../../components/Menu/Menu";
@@ -38,7 +38,7 @@ export interface Action {
 export type ActionZone = "topbar" | "header" | "toolbar" | "section" | "row" | "empty";
 
 export interface ArrangedActions {
-  /** Action principale à texte (absente en `topbar` et en `row`). */
+  /** Action principale à texte (absente en `row` ; en `topbar`, seulement sans icône, D-220). */
   primary: Action | undefined;
   /** Actions en bouton-icône, dans l'ordre. */
   icons: Action[];
@@ -51,8 +51,16 @@ export interface ArrangedActions {
 const maxIcons: Record<ActionZone, number> = { topbar: 3, header: 3, toolbar: 3, section: 2, row: 1, empty: 0 };
 const collapsesWhenNarrow = new Set<ActionZone>(["topbar", "header", "toolbar"]);
 
-/** La règle seule, sans rendu (D-111 à D-114, D-117). */
-export function arrangeActions(actions: ReadonlyArray<Action>, zone: ActionZone, options: { narrow?: boolean } = {}): ArrangedActions {
+/** Repli selon la place, en zone `topbar` (D-221) : ce qui tient encore dans la barre. */
+export interface ActionFit {
+  /** Icônes visibles au plus ; les suivantes passent dans « … », avant les autres entrées. */
+  icons: number;
+  /** Faux : l'action principale à texte passe en tête de « … ». */
+  primary: boolean;
+}
+
+/** La règle seule, sans rendu (D-111 à D-114, D-117, D-220, D-221). */
+export function arrangeActions(actions: ReadonlyArray<Action>, zone: ActionZone, options: { narrow?: boolean; fit?: ActionFit } = {}): ArrangedActions {
   const shown = actions.filter((a) => !a.isHidden);
   const main = zone === "row" ? undefined : shown.find((a) => a.primary && !a.danger);
   if (zone === "empty") return { primary: main, icons: [], menu: [], danger: [] };
@@ -65,12 +73,20 @@ export function arrangeActions(actions: ReadonlyArray<Action>, zone: ActionZone,
   let lead: Action[] = [];
 
   if (zone === "topbar") {
-    // D-112 : l'action principale reste une icône, en premier ; sans icône, en tête de « … ».
-    primary = undefined;
-    if (main && !main.icon) lead = [main];
+    // D-112 : l'action principale à icône reste une icône, en premier.
+    // D-220 : sans icône, elle devient un bouton à texte, tout à droite.
+    if (main?.icon) primary = undefined;
     const max = options.narrow ? 0 : maxIcons.topbar;
     const rest = safe.filter((a) => a.icon).slice(0, main?.icon ? Math.max(0, max - 1) : max);
-    icons = main?.icon ? [main, ...rest] : rest;
+    const all = main?.icon ? [main, ...rest] : rest;
+    // D-221 : quand la place manque, les icônes partent depuis la fin, puis le bouton à texte.
+    const fit = options.fit;
+    icons = fit ? all.slice(0, Math.max(0, fit.icons)) : all;
+    const folded = all.filter((a) => !icons.includes(a));
+    if (primary && fit && !fit.primary) {
+      lead = [primary, ...folded];
+      primary = undefined;
+    } else lead = folded;
   } else if (zone === "row") {
     // D-114 : deux contrôles au plus ; deux icônes seulement si la ligne n'a rien d'autre.
     const allIcons = danger.length === 0 && safe.length <= 2 && safe.every((a) => a.icon);
@@ -83,7 +99,7 @@ export function arrangeActions(actions: ReadonlyArray<Action>, zone: ActionZone,
   return { primary, icons, menu, danger };
 }
 
-function confirmRequest(action: Action, question: (label: string) => string): ConfirmRequest | null {
+export function confirmRequest(action: Action, question: (label: string) => string): ConfirmRequest | null {
   if (!action.danger && !action.confirm) return null;
   const c = typeof action.confirm === "string" ? { title: action.confirm } : action.confirm;
   return {
@@ -111,15 +127,15 @@ export interface ActionBarProps {
   onDone?: (action: Action) => void;
 }
 
-/** Barre d'actions dessinée d'après des `Action` : icônes, « … », action principale à droite. */
-export function ActionBar({ actions, zone, subject, onError, onDone }: ActionBarProps) {
+/**
+ * Lance une action selon D-115 et D-116 : confirmation, attente pendant la promesse, `onDone` ou `onError`.
+ * Usage interne (ActionBar, actions de ligne des gabarits).
+ */
+export function useActionRunner({ onError, onDone }: { onError?: ActionBarProps["onError"] | undefined; onDone?: ActionBarProps["onDone"] | undefined } = {}) {
   const m = useMessages();
   const confirm = useConfirmFn();
-  const narrow = useMedia("(max-width: 640px)");
   const [pending, setPending] = useState<ReadonlySet<string>>(new Set());
   const running = useRef(new Set<string>());
-  const { primary, icons, menu, danger } = arrangeActions(actions, zone, { narrow });
-
   const run = async (action: Action) => {
     if (action.isDisabled || running.current.has(action.id)) return;
     const request = confirmRequest(action, m.confirmQuestion);
@@ -147,6 +163,19 @@ export function ActionBar({ actions, zone, subject, onError, onDone }: ActionBar
       setPending(new Set(running.current));
     }
   };
+  return { run, pending };
+}
+
+/** Barre d'actions dessinée d'après des `Action` : icônes, « … », action principale à droite. */
+export function ActionBar({ actions, zone, subject, onError, onDone }: ActionBarProps) {
+  const m = useMessages();
+  const narrow = useMedia("(max-width: 640px)");
+  const { run, pending } = useActionRunner({ onError, onDone });
+  const group = useRef<HTMLDivElement>(null);
+  const measure = useRef<HTMLSpanElement>(null);
+  const full = arrangeActions(actions, zone, { narrow });
+  const fit = useTopbarFit(zone === "topbar", group, measure, full);
+  const { primary, icons, menu, danger } = fit ? arrangeActions(actions, zone, { narrow, fit }) : full;
 
   if (zone === "empty") {
     return primary ? (
@@ -171,7 +200,18 @@ export function ActionBar({ actions, zone, subject, onError, onDone }: ActionBar
   );
 
   return (
-    <div role="group" aria-label={subject ? m.actionsOn(subject) : m.rowActions} className="flex shrink-0 items-center gap-0.5" data-zone={zone}>
+    <div ref={group} role="group" aria-label={subject ? m.actionsOn(subject) : m.rowActions} className="relative flex shrink-0 items-center gap-0.5" data-zone={zone}>
+      {zone === "topbar" && (
+        // Gabarit invisible : largeur d'un bouton-icône et du bouton à texte, pour le repli (D-221).
+        <span ref={measure} aria-hidden inert className="pointer-events-none invisible absolute top-0 right-0 flex items-center">
+          <IconButton icon={<MoreHorizontal />} label="" />
+          {full.primary && (
+            <Button variant="primary" isDisabled={Boolean(full.primary.isDisabled)} isPending={pending.has(full.primary.id)}>
+              {full.primary.label}
+            </Button>
+          )}
+        </span>
+      )}
       {icons.map((a) => (
         <IconButton
           key={a.id}
@@ -191,7 +231,7 @@ export function ActionBar({ actions, zone, subject, onError, onDone }: ActionBar
         </Menu>
       )}
       {primary && (
-        <span className="ml-2 inline-flex">
+        <span className={zone === "topbar" ? "ml-1.5 inline-flex" : "ml-2 inline-flex"}>
           <Button
             variant={zone === "section" ? "secondary" : "primary"}
             size={zone === "section" ? "sm" : "md"}
@@ -205,4 +245,67 @@ export function ActionBar({ actions, zone, subject, onError, onDone }: ActionBar
       )}
     </div>
   );
+}
+
+/** Écart entre deux boutons de la barre (gap-0.5) et avant le bouton à texte en `topbar` (ml-1.5). */
+const GAP = 2;
+const TEXT_GAP = 6;
+
+/**
+ * Repli selon la place (D-221) : seulement dans la barre du haut d'AppShell, qui marque le slot
+ * `data-socle-fit`. La largeur disponible est celle du slot, moins ses autres enfants (la cloche…).
+ * Le slot a une largeur qui ne dépend pas de son contenu : le calcul ne boucle pas.
+ */
+function useTopbarFit(
+  enabled: boolean,
+  group: RefObject<HTMLDivElement | null>,
+  measure: RefObject<HTMLSpanElement | null>,
+  full: ArrangedActions,
+): ActionFit | undefined {
+  const [fit, setFit] = useState<ActionFit | undefined>(undefined);
+  const iconCount = full.icons.length;
+  const restCount = full.menu.length + full.danger.length;
+  const hasText = Boolean(full.primary);
+  useLayoutEffect(() => {
+    const el = group.current;
+    const slot = el?.parentElement;
+    if (!enabled || !el || !slot || !slot.hasAttribute("data-socle-fit")) {
+      setFit(undefined);
+      return;
+    }
+    const compute = () => {
+      const parts = measure.current?.children;
+      const iconW = (parts?.[0] as HTMLElement | undefined)?.offsetWidth ?? 0;
+      const textW = hasText ? ((parts?.[1] as HTMLElement | undefined)?.offsetWidth ?? 0) : 0;
+      if (!iconW) return;
+      const style = getComputedStyle(slot);
+      const slotGap = parseFloat(style.columnGap) || 0;
+      let avail = slot.clientWidth - (parseFloat(style.paddingLeft) || 0) - (parseFloat(style.paddingRight) || 0);
+      for (const child of Array.from(slot.children)) if (child !== el) avail -= (child as HTMLElement).offsetWidth + slotGap;
+      const need = (icons: number, text: boolean) => {
+        const inMenu = restCount + (iconCount - icons) + (hasText && !text ? 1 : 0);
+        const buttons = icons + (inMenu > 0 ? 1 : 0);
+        return buttons * iconW + Math.max(0, buttons - 1) * GAP + (text ? textW + (buttons ? TEXT_GAP : 0) : 0);
+      };
+      // Largeur minimale du slot : ses autres enfants et « … », tout replié.
+      const others = slot.clientWidth - avail;
+      const folded = iconCount + restCount + (hasText ? 1 : 0) > 0 ? iconW : 0;
+      slot.style.setProperty("--socle-fit-min", `${Math.ceil(others + folded)}px`);
+      let icons = iconCount;
+      let text = hasText;
+      while (icons > 0 && need(icons, text) > avail) icons--;
+      if (text && need(0, true) > avail) text = false;
+      setFit((prev) => (prev && prev.icons === icons && prev.primary === text ? prev : { icons, primary: text }));
+    };
+    compute();
+    const ro = new ResizeObserver(compute);
+    ro.observe(slot);
+    if (measure.current) ro.observe(measure.current);
+    for (const child of Array.from(slot.children)) if (child !== el) ro.observe(child);
+    return () => {
+      ro.disconnect();
+      slot.style.removeProperty("--socle-fit-min");
+    };
+  }, [enabled, group, measure, iconCount, restCount, hasText]);
+  return enabled ? fit : undefined;
 }

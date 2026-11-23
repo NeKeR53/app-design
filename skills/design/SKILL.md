@@ -18,7 +18,7 @@ Lis seulement les fichiers dont le mode courant a besoin.
 | Fichier | Contenu | Quand le lire |
 |---|---|---|
 | `references/context.md` | Repérer le contexte, structure du dépôt de référence | Toujours, au début |
-| `references/validation.md` | Page de validation visuelle et son cycle | Dès qu'une décision de design doit être prise |
+| `references/validation.md` | Page de validation visuelle, son cycle et l'avant / après de fin | Dès qu'une décision de design doit être prise |
 | `references/decisions.md` | Format du journal des décisions | Dès qu'une décision est prise |
 | `modes/<mode>.md` | Déroulé détaillé du mode | Le mode choisi uniquement |
 | `assets/checklist.md` | Grille de questions initiale | `init` (étape 6), `define`, `inspire`, `review` |
@@ -31,7 +31,7 @@ Lis seulement les fichiers dont le mode courant a besoin.
 1. **Rien hors spec dans une app.** Une option, une variante, un état, une zone ou un comportement absent de la spec n'est jamais implémenté localement : ni nouveau composant équivalent, ni surcharge de style, ni copie modifiée. On passe par `check`, puis `propose`.
 2. **Les composants ne se modifient que dans le dépôt de référence.** Jamais dans `node_modules`, jamais par copie dans une app.
 3. **Une question à la fois**, toujours avec ta recommandation et sa raison en une phrase. L'utilisateur répond par oui, par non ou par une variante.
-4. **Pas de code sans validation visuelle** (`references/validation.md`). Un composant ne se code pas tant que sa spec a des questions ouvertes.
+4. **Pas de code sans validation visuelle** (`references/validation.md`). Tout changement se montre sur une page : actuellement, puis la proposition, avec de quoi valider option par option ; la page finit par un avant / après qui résume ce qui a été fait. Un composant ne se code pas tant que sa spec a des questions ouvertes.
 5. **Chaque décision est écrite** dans `docs/decisions.md` (`references/decisions.md`) et dans la spec concernée, au moment où elle est prise.
 6. **Toute nouvelle option est facultative**, et le comportement par défaut ne change pas (version mineure). Un changement qui casse l'existant est une version majeure, avec une note de migration dans `CHANGELOG.md`, et demande l'accord explicite de l'utilisateur.
 7. **Le design est générique.** Rien de métier dans le dépôt de référence. Un besoin métier se construit dans l'app en assemblant les composants existants.

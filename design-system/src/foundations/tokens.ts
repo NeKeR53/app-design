@@ -19,6 +19,22 @@ export const COLOR_TOKENS = [
   ["--info", "Information"],
   ["--tip-bg", "Fond des info-bulles (sombre dans les deux modes)"],
   ["--tip-fg", "Texte des info-bulles"],
+  ["--ansi-0", "ANSI 0 : noir (D-281)"],
+  ["--ansi-1", "ANSI 1 : rouge (D-281)"],
+  ["--ansi-2", "ANSI 2 : vert (D-281)"],
+  ["--ansi-3", "ANSI 3 : jaune (D-281)"],
+  ["--ansi-4", "ANSI 4 : bleu (D-281)"],
+  ["--ansi-5", "ANSI 5 : magenta (D-281)"],
+  ["--ansi-6", "ANSI 6 : cyan (D-281)"],
+  ["--ansi-7", "ANSI 7 : blanc (D-281)"],
+  ["--ansi-8", "ANSI 8 : noir vif (D-281)"],
+  ["--ansi-9", "ANSI 9 : rouge vif (D-281)"],
+  ["--ansi-10", "ANSI 10 : vert vif (D-281)"],
+  ["--ansi-11", "ANSI 11 : jaune vif (D-281)"],
+  ["--ansi-12", "ANSI 12 : bleu vif (D-281)"],
+  ["--ansi-13", "ANSI 13 : magenta vif (D-281)"],
+  ["--ansi-14", "ANSI 14 : cyan vif (D-281)"],
+  ["--ansi-15", "ANSI 15 : blanc vif (D-281)"],
 ] as const;
 
 export const TEXT_TOKENS = ["--fs-xs", "--fs-sm", "--fs-md", "--fs-lg", "--fs-xl", "--fs-2xl"] as const;

@@ -1,0 +1,318 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TreeView — validation v1</title>
+<style>
+/* ---------- Page de validation ---------- */
+:root{--pg-bg:#f6f6f6;--pg-fg:#1a1a1a;--pg-muted:#5c5c5c;--pg-line:#e2e2e2;--pg-card:#fff;--pg-badge:#e3f5e8;--pg-badge-fg:#14632f;--pg-reco:#e7f0ff;--pg-reco-fg:#1d4ed8}
+:root[data-theme="dark"]{--pg-bg:#121212;--pg-fg:#ececec;--pg-muted:#9a9a9a;--pg-line:#2c2c2c;--pg-card:#1b1b1b;--pg-badge:#123321;--pg-badge-fg:#8ee0a9;--pg-reco:#16233d;--pg-reco-fg:#9cc0ff}
+*{box-sizing:border-box}html,body{margin:0}
+body{background:var(--pg-bg);color:var(--pg-fg);font:15px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif}
+.pg{max-width:1180px;margin:0 auto;padding:24px 16px 64px}
+h1{font-size:22px;font-weight:600;margin:0 0 4px;display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+h2.sec{font-size:16px;margin:28px 0 8px}
+.lead{color:var(--pg-muted);margin:0 0 20px}
+.badge{font-size:12px;font-weight:600;letter-spacing:.04em;padding:3px 8px;border-radius:6px;background:var(--pg-badge);color:var(--pg-badge-fg)}
+.boxes{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px}
+@media (max-width:760px){.boxes{grid-template-columns:1fr}}
+.box{background:var(--pg-card);border:1px solid var(--pg-line);border-radius:10px;padding:14px 16px;font-size:14px}
+.box h2{font-size:14px;margin:0 0 8px;font-weight:600}.box ul,.box ol{margin:0;padding-left:20px}.box li{margin:5px 0}
+.reco{font-size:11.5px;font-weight:600;padding:1px 6px;border-radius:5px;background:var(--pg-reco);color:var(--pg-reco-fg);margin-left:4px}
+.toolbar{position:sticky;top:0;z-index:100;background:var(--pg-bg);padding:10px 0;border-bottom:1px solid var(--pg-line);margin-bottom:16px;display:flex;flex-wrap:wrap;gap:10px 16px;align-items:center}
+.seg{display:inline-flex;border:1px solid var(--pg-line);border-radius:8px;overflow:hidden;background:var(--pg-card)}
+.seg button{border:0;background:transparent;color:var(--pg-fg);padding:5px 10px;font:inherit;font-size:13px;cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--pg-fg);color:var(--pg-bg)}
+.tlabel{font-size:12px;color:var(--pg-muted);margin-right:6px}
+.hint{margin:8px 0 0;color:var(--pg-muted);font-size:13px}
+table.cmp{border-collapse:collapse;width:100%;font-size:14px;background:var(--pg-card);border:1px solid var(--pg-line);border-radius:10px;overflow:hidden}
+table.cmp th,table.cmp td{border-bottom:1px solid var(--pg-line);padding:8px 10px;text-align:left;vertical-align:top}
+table.cmp th{font-weight:600}
+
+/* ---------- Tokens (copie de src/tokens) ---------- */
+.tk{--surface:#fff;--surface-side:#f3f3f3;--field:#f2f2f2;--hover:#e9e9e9;--selected:#dedede;--line:#e4e4e4;--line-strong:#cfcfcf;--tree-line:#cfcfcf;--fg:#1a1a1a;--fg-2:#5c5c5c;--fg-3:#6b6b6b;
+  --accent:#1d4ed8;--accent-fg:#fff;--danger:#b91c1c;--warning:#b45309;--font-sans:-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;
+  --radius-sm:4px;--radius-md:8px;--icon:16px;--icon-stroke:1.6;--fs-xs:11.5px;--fs-sm:12.5px;--fs-md:14px;--lh:1.45;--row-h:34px;--bar-h:44px;--side-w:220px}
+.tk.dark{--surface:#181818;--surface-side:#222;--field:#2a2a2a;--hover:#303030;--selected:#3d3d3d;--line:#333;--line-strong:#4a4a4a;--tree-line:#4a4a4a;--fg:#ececec;--fg-2:#ababab;--fg-3:#8f8f8f;
+  --accent:#5b8def;--accent-fg:#0b1630;--danger:#f87171;--warning:#e0a24a}
+.tk.desktop{--fs-xs:10.5px;--fs-sm:11.5px;--fs-md:13px;--lh:1.4;--row-h:28px;--bar-h:38px}
+
+/* ---------- Mini AppShell ---------- */
+.app{position:relative;height:560px;border:1px solid var(--pg-line);border-radius:12px;overflow:hidden;background:var(--surface);color:var(--fg);font-family:var(--font-sans);font-size:var(--fs-md);line-height:var(--lh);display:grid;grid-template-columns:var(--side-w) 300px minmax(0,1fr);grid-template-rows:var(--bar-h) 1fr}
+@media (max-width:760px){.app{grid-template-columns:0 minmax(0,1fr) 0}.side,.bar-side,.detail,.bar-d{display:none}}
+.app *{box-sizing:border-box}.app button{font:inherit;color:inherit}
+.ic{width:var(--icon);height:var(--icon);flex:none;stroke:currentColor;fill:none;stroke-width:var(--icon-stroke);stroke-linecap:round;stroke-linejoin:round}
+.bar-side{background:var(--surface-side);border-right:1px solid var(--line)}
+.bar{display:flex;align-items:center;padding:0 12px;border-bottom:1px solid var(--line);font-weight:600;border-right:1px solid var(--line)}
+.bar-d{border-bottom:1px solid var(--line);display:flex;align-items:center;padding:0 16px;color:var(--fg-2)}
+.side{background:var(--surface-side);border-right:1px solid var(--line);padding:6px}
+.nav{display:flex;align-items:center;gap:8px;height:var(--row-h);padding:0 8px;border-radius:var(--radius-md);color:var(--fg-2)}
+.nav.on{background:var(--selected);color:var(--fg)}
+.pane{overflow:auto;border-right:1px solid var(--line);padding:4px}
+.detail{padding:16px;color:var(--fg-2);overflow:auto}
+.detail h3{margin:0 0 6px;color:var(--fg);font-size:var(--fs-md)}
+.log{font-size:var(--fs-sm);color:var(--fg-3);margin-top:12px;white-space:pre-line}
+
+/* ---------- Arbre ---------- */
+.tree{outline:none}
+.row{position:relative;display:flex;align-items:center;gap:4px;height:var(--row-h);padding-right:4px;border-radius:var(--radius-md);color:var(--fg);cursor:default;user-select:none;outline:none}
+.row:hover{background:var(--hover)}
+.row[aria-selected="true"]{background:var(--selected)}
+.row:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
+.row[aria-disabled="true"]{opacity:.4}
+.guides{position:absolute;inset:0 auto 0 0;pointer-events:none}
+.guide{position:absolute;top:0;bottom:0;border-left:1px solid var(--tree-line)}
+.tk.lines-none .guide,.tk.lines-elbow .guide{display:none}
+.elbow{position:absolute;top:0;height:50%;width:8px;border-left:1px solid var(--tree-line);border-bottom:1px solid var(--tree-line);border-bottom-left-radius:8px;display:none}
+.tk.lines-elbow .elbow{display:block}
+.chev{width:16px;height:16px;flex:none;display:grid;place-items:center;color:var(--fg-3);border:0;background:none;padding:0;border-radius:var(--radius-sm)}
+.chev:hover{color:var(--fg)}
+.nicon{color:var(--fg-2);display:grid}
+.lbl{flex:1;min-width:0;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.meta{font-size:var(--fs-sm);color:var(--fg-3);flex:none;font-variant-numeric:tabular-nums}
+.row[aria-selected="true"] .meta{color:var(--fg-2)}
+.acts{display:none;gap:2px;flex:none}
+.row:hover .acts,.row:focus-within .acts,.row[aria-selected="true"] .acts{display:flex}
+.row:hover .meta,.row:focus-within .meta,.row[aria-selected="true"] .meta{display:none}
+.ib{width:22px;height:22px;border:0;background:none;border-radius:var(--radius-sm);display:grid;place-items:center;color:var(--fg-2);cursor:default}
+.ib:hover{background:var(--selected);color:var(--fg)}
+.status{display:flex;align-items:center;gap:8px;height:var(--row-h);font-size:var(--fs-sm);color:var(--fg-3);padding-right:8px}
+.status.err{color:var(--fg-2)}
+.status a{color:var(--accent);text-decoration:none;cursor:pointer}
+.spin{width:14px;height:14px;border:2px solid currentColor;border-right-color:transparent;border-radius:50%;animation:sp .8s linear infinite;flex:none}
+@keyframes sp{to{transform:rotate(360deg)}}
+@media (prefers-reduced-motion:reduce){.spin{animation-duration:2.4s}}
+/* glisser-déposer */
+.row.drop-inside{background:var(--selected);box-shadow:inset 0 0 0 2px var(--accent)}
+.row.drop-before::after,.row.drop-after::after{content:"";position:absolute;left:var(--ind,0);right:4px;height:2px;background:var(--accent);border-radius:1px}
+.row.drop-before::after{top:-1px}.row.drop-after::after{bottom:-1px}
+.row.dragging{opacity:.5}
+/* menu */
+.menu{position:absolute;z-index:50;min-width:200px;background:var(--surface);border:1px solid var(--line);border-radius:var(--radius-md);box-shadow:0 8px 24px rgba(0,0,0,.16);padding:4px;display:none}
+.menu.open{display:block}
+.mi{display:flex;align-items:center;gap:8px;height:var(--row-h);padding:0 8px;border-radius:var(--radius-sm);cursor:default}
+.mi:hover,.mi:focus{background:var(--hover);outline:none}
+.mi.danger{color:var(--danger)}
+.msep{height:1px;background:var(--line);margin:4px 0}
+.modal{position:absolute;inset:0;background:rgba(0,0,0,.35);display:none;place-items:center;z-index:60}
+.modal.open{display:grid}
+.dlg{background:var(--surface);border-radius:12px;padding:18px;width:360px;max-width:90%;box-shadow:0 12px 40px rgba(0,0,0,.25)}
+.dlg h4{margin:0 0 6px;font-size:var(--fs-md)}.dlg p{margin:0 0 14px;color:var(--fg-2);font-size:var(--fs-sm)}
+.dlg .btns{display:flex;justify-content:flex-end;gap:8px}
+.btn{height:30px;padding:0 12px;border-radius:var(--radius-md);border:1px solid var(--line);background:var(--surface)}
+.btn.red{background:var(--danger);border-color:var(--danger);color:#fff}
+.empty{padding:20px 12px;text-align:center;color:var(--fg-2)}.empty b{display:block;color:var(--fg);font-weight:500}
+/* comparaison A / B / C */
+.opts{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+@media (max-width:760px){.opts{grid-template-columns:1fr}}
+.opt{background:var(--pg-card);border:1px solid var(--pg-line);border-radius:10px;padding:10px}
+.opt h3{font-size:14px;margin:0 0 2px}.opt p{margin:0 0 8px;font-size:13px;color:var(--pg-muted)}
+.opt .tk{background:var(--surface);border-radius:8px;padding:4px;font-family:var(--font-sans);font-size:var(--fs-md);color:var(--fg)}
+</style>
+</head>
+<body>
+<div class="pg">
+  <h1>TreeView <span class="badge" id="badge">VALIDÉ le 2026-11-23</span></h1>
+  <p class="lead">Arbre de nœuds dépliables, dans le contenu d'une page : fichiers et dossiers, chemins, hiérarchies. Une ligne par nœud, autant de niveaux que nécessaire. Validation par délégation de l'utilisateur, 2026-11-23 : chaque question est tranchée selon la recommandation.</p>
+
+  <div class="boxes">
+    <div class="box">
+      <h2>Déjà décidé</h2>
+      <ul>
+        <li>Trait de niveau en <code>--tree-line</code> (D-042).</li>
+        <li>Sélection : fond <code>--selected</code>, fixe au survol (D-039).</li>
+        <li>Aucune animation au repli et au dépli (D-026).</li>
+        <li>Actions de ligne : modèle <code>Action</code>, zone <code>row</code> : une icône puis « … » (D-110, D-114). Visibles au survol, au focus, sur la ligne sélectionnée ; clic droit ou Maj+F10 : « … » (D-066).</li>
+        <li>Action <code>danger</code> : en dernier dans « … », en rouge, toujours confirmée (D-115, D-127).</li>
+        <li>Libellés internes dans le dictionnaire <code>messages</code> (D-089).</li>
+        <li><code>Sidebar.TreeItem</code> reste la navigation sur deux lignes, sur un niveau (D-042, D-043, D-056).</li>
+      </ul>
+    </div>
+    <div class="box">
+      <h2>Décisions de cette page (tranchées)</h2>
+      <ol>
+        <li>TreeView ou <code>Sidebar.TreeItem</code> : choisir par la zone et la profondeur (tableau plus bas). <span class="reco">D-260</span></li>
+        <li>Une ligne de <code>--row-h</code> : chevron, icône facultative, libellé, méta ; retrait de 16 px par niveau. <span class="reco">D-261</span></li>
+        <li>Traits de niveau : <b>A</b>, un trait vertical par niveau, sans coude. <span class="reco">D-262</span></li>
+        <li>Clic : sélectionne. Double-clic ou Entrée : ouvre ; sans ouverture prévue, plie ou déplie. Choix multiple par Mod et Maj, sans case. <span class="reco">D-263</span></li>
+        <li>Clavier : motif <code>tree</code> de l'ARIA, et recherche par frappe. <span class="reco">D-264</span></li>
+        <li>Actions de nœud par <code>ActionBar</code> zone <code>row</code>. <span class="reco">D-265</span></li>
+        <li>Chargement paresseux : ligne « Chargement… », puis « Impossible de charger · Réessayer ». <span class="reco">D-266</span></li>
+        <li>Glisser-déposer facultatif : avant, après, dans. <span class="reco">D-267</span></li>
+        <li>Arbre vide : <code>EmptyState</code> compact. <span class="reco">D-268</span></li>
+      </ol>
+    </div>
+  </div>
+
+  <div class="toolbar">
+    <span><span class="tlabel">Thème</span><span class="seg" data-k="mode"><button aria-pressed="true" data-v="light">Clair</button><button aria-pressed="false" data-v="dark">Sombre</button></span></span>
+    <span><span class="tlabel">Densité</span><span class="seg" data-k="density"><button aria-pressed="true" data-v="web">Web</button><button aria-pressed="false" data-v="desktop">Desktop</button></span></span>
+    <span><span class="tlabel">Traits</span><span class="seg" data-k="lines"><button aria-pressed="true" data-v="guide">A · trait</button><button aria-pressed="false" data-v="elbow">B · coude</button><button aria-pressed="false" data-v="none">C · aucun</button></span></span>
+    <span><span class="tlabel">Contenu</span><span class="seg" data-k="content"><button aria-pressed="true" data-v="full">Plein</button><button aria-pressed="false" data-v="empty">Vide</button></span></span>
+    <span><span class="tlabel">Chargement</span><span class="seg" data-k="load"><button aria-pressed="true" data-v="ok">Réussi</button><button aria-pressed="false" data-v="fail">Échoue</button></span></span>
+  </div>
+
+  <h2 class="sec">1. Dans un écran : explorateur de documents</h2>
+  <div class="app tk lines-guide" id="app">
+    <div class="bar-side"></div>
+    <div class="bar">Documents</div>
+    <div class="bar-d">Détail</div>
+    <div class="side">
+      <div class="nav"><svg class="ic" viewBox="0 0 24 24"><path d="M3 11l9-7 9 7v9H3z"/></svg>Accueil</div>
+      <div class="nav on"><svg class="ic" viewBox="0 0 24 24"><path d="M3 6h7l2 2h9v11H3z"/></svg>Documents</div>
+      <div class="nav"><svg class="ic" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c1-4 4-6 8-6s7 2 8 6"/></svg>Équipe</div>
+    </div>
+    <div class="pane"><div class="tree" id="tree" role="tree" aria-label="Documents"></div></div>
+    <div class="detail" id="detail"><h3>Aucun élément choisi</h3>Choisissez un élément dans l'arbre.<div class="log" id="log"></div></div>
+    <div class="menu" id="menu" role="menu"></div>
+    <div class="modal" id="modal"><div class="dlg" role="dialog" aria-modal="true"><h4 id="qt"></h4><p>Cette action est définitive.</p><div class="btns"><button class="btn" id="no">Annuler</button><button class="btn red" id="yes">Supprimer</button></div></div></div>
+  </div>
+  <p class="hint">À jouer : clic (sélection), Mod+clic et Maj+clic (choix multiple), double-clic (ouvrir ou déplier), chevron (déplier sans sélectionner). Clavier : flèches, Droite et Gauche, Origine et Fin, Entrée, une lettre (recherche par frappe), Maj+F10 (menu). Clic droit sur une ligne : menu « … ». « Archives » charge ses enfants à l'ouverture (bascule « Chargement » pour l'erreur). Glissez une ligne sur une autre : haut de la ligne = avant, milieu = dans (dossier seulement), bas = après.</p>
+
+  <h2 class="sec">2. Traits de niveau : A, B, C</h2>
+  <div class="opts" id="opts"></div>
+
+  <h2 class="sec">3. TreeView ou Sidebar.TreeItem (D-260)</h2>
+  <table class="cmp">
+    <tr><th></th><th>TreeView</th><th>Sidebar.TreeItem</th></tr>
+    <tr><td>Rôle</td><td>Contenu de travail : on explore, on choisit, on agit sur des nœuds.</td><td>Navigation : on choisit la page.</td></tr>
+    <tr><td>Où</td><td>Zone de contenu : colonne d'une page, zone <code>list</code> de ListPage, section de DetailPanel, modale.</td><td>Seulement dans la Sidebar d'AppShell.</td></tr>
+    <tr><td>Profondeur</td><td>Autant de niveaux que nécessaire.</td><td>Un seul niveau d'enfants (D-056).</td></tr>
+    <tr><td>Ligne</td><td>Une ligne : icône, libellé, méta.</td><td>Deux lignes : titre, sous-titre, étiquette, non-lu.</td></tr>
+    <tr><td>Repli</td><td>Chevron ; rien sous un nœud replié.</td><td>Ligne résumé « 4 éléments · 2 non lus » (D-043).</td></tr>
+    <tr><td>Sélection</td><td>Aucune, simple ou multiple.</td><td>Simple : la page courante.</td></tr>
+    <tr><td>Actions</td><td><code>Action</code>, zone <code>row</code> (D-114).</td><td>Menu « … » de l'élément.</td></tr>
+    <tr><td>Enfants chargés à la demande, glisser-déposer</td><td>Oui, en option.</td><td>Non.</td></tr>
+  </table>
+  <p class="hint">Règle : la navigation de l'app va dans la Sidebar, même si elle est hiérarchique. Un arbre de données va dans une TreeView, jamais dans la Sidebar. Les deux ne partagent aucun code de rendu ; ils partagent les tokens et React Aria <code>Tree</code>.</p>
+
+  <h2 class="sec">4. Ce qui ne se joue pas ici</h2>
+  <ul class="hint">
+    <li>Lecteur d'écran : rôle <code>tree</code>, <code>aria-level</code>, <code>aria-expanded</code>, <code>aria-selected</code>, <code>aria-busy</code> pendant le chargement (React Aria).</li>
+    <li>Glisser-déposer au clavier : un bouton « Déplacer » invisible, atteint au lecteur d'écran (React Aria).</li>
+    <li>Écran tactile : appui long sur la ligne pour le menu « … ».</li>
+  </ul>
+</div>
+
+<script>
+(function(){
+  var P = {
+    folder:'<path d="M3 6h7l2 2h9v11H3z"/>', open:'<path d="M3 6h7l2 2h9v3H6l-3 8z"/><path d="M6 11h15l-3 8H3"/>',
+    file:'<path d="M6 3h8l4 4v14H6z"/><path d="M14 3v4h4"/>', right:'<path d="M9 6l6 6-6 6"/>', down:'<path d="M6 9l6 6 6-6"/>',
+    plus:'<path d="M12 5v14M5 12h14"/>', more:'<circle cx="5" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/>'
+  };
+  function ic(n){ return '<svg class="ic" viewBox="0 0 24 24" aria-hidden="true">'+P[n]+'</svg>'; }
+  var app = document.getElementById('app'), tree = document.getElementById('tree'), menu = document.getElementById('menu');
+  var state = {mode:'light',density:'web',lines:'guide',content:'full',load:'ok'};
+  var DATA = [
+    {id:'p',l:'Projets',c:[
+      {id:'p1',l:'Refonte du site',c:[{id:'p1a',l:'Cahier des charges.pdf',m:'240 Ko'},{id:'p1b',l:'Maquettes',c:[{id:'p1b1',l:'Accueil.png',m:'1,2 Mo'},{id:'p1b2',l:'Contact.png',m:'860 Ko'}]},{id:'p1c',l:'Planning.xlsx',m:'48 Ko'}]},
+      {id:'p2',l:'Migration des données',c:[{id:'p2a',l:'Notes.md',m:'4 Ko'}]}
+    ]},
+    {id:'r',l:'Ressources humaines',c:[{id:'r1',l:'Contrats',c:[]},{id:'r2',l:'Règlement intérieur.pdf',m:'310 Ko'}]},
+    {id:'a',l:'Archives',lazy:true},
+    {id:'n',l:'Lisez-moi.txt',m:'1 Ko'},
+    {id:'x',l:'Ancien export.zip',m:'12 Mo',dis:true}
+  ];
+  var open = {p:true,p1:true}, sel = {p1a:true}, focusId = 'p1a', anchor = 'p1a', load = {}, typed = '', typedAt = 0;
+  function isFolder(n){ return !!(n.c || n.lazy); }
+  function find(id, list, parent){ list = list || DATA; for (var i=0;i<list.length;i++){ var n=list[i]; if(n.id===id) return {n:n,list:list,parent:parent||null}; if(n.c){ var r=find(id,n.c,n); if(r) return r; } } return null; }
+  function flat(){ var out=[]; (function walk(list,lv,par){ list.forEach(function(n){ out.push({n:n,lv:lv,par:par}); if(isFolder(n)&&open[n.id]){ if(n.lazy&&!n.c){ out.push({st:load[n.id]||'loading',id:n.id,lv:lv+1}); } else walk(n.c,lv+1,n.id); } }); })(DATA,1,null); return out; }
+  function guides(lv){ var h=''; for(var i=1;i<lv;i++) h+='<span class="guide" style="left:'+(4+(i-1)*16+7)+'px"></span>'; if(lv>1) h+='<span class="elbow" style="left:'+(4+(lv-2)*16+7)+'px"></span>'; return '<span class="guides">'+h+'</span>'; }
+  function render(focus){
+    if (state.content==='empty'){ tree.innerHTML='<div class="empty"><b>Aucun document</b>Les documents ajoutés s\'afficheront ici.</div>'; return; }
+    var h='';
+    flat().forEach(function(r){
+      var pad = 4+(r.lv-1)*16;
+      if (r.st){
+        h += r.st==='error'
+          ? '<div class="status err" role="none" style="padding-left:'+(pad+20)+'px">'+guides(r.lv)+'Impossible de charger · <a data-retry="'+r.id+'">Réessayer</a></div>'
+          : '<div class="status" role="none" style="padding-left:'+(pad+20)+'px">'+guides(r.lv)+'<span class="spin"></span>Chargement…</div>';
+        return;
+      }
+      var n=r.n, f=isFolder(n), o=f&&open[n.id];
+      h += '<div class="row" role="treeitem" draggable="'+(!n.dis)+'" data-id="'+n.id+'" aria-level="'+r.lv+'" '+(f?'aria-expanded="'+!!o+'" ':'')+'aria-selected="'+!!sel[n.id]+'"'+(n.dis?' aria-disabled="true"':'')+' tabindex="'+(n.id===focusId?0:-1)+'" style="padding-left:'+pad+'px;--ind:'+pad+'px">'
+        + guides(r.lv)
+        + (f?'<button class="chev" tabindex="-1" data-chev aria-label="'+(o?'Replier':'Déplier')+'">'+ic(o?'down':'right')+'</button>':'<span class="chev"></span>')
+        + '<span class="nicon">'+ic(f?(o?'open':'folder'):'file')+'</span><span class="lbl">'+n.l+'</span>'
+        + (n.m?'<span class="meta">'+n.m+'</span>':(f&&n.c?'<span class="meta">'+n.c.length+'</span>':''))
+        + (n.dis?'':'<span class="acts">'+(f?'<button class="ib" tabindex="-1" title="Nouveau document" data-act="new">'+ic('plus')+'</button>':'')+'<button class="ib" tabindex="-1" title="Plus d\'actions" data-more>'+ic('more')+'</button></span>')
+        + '</div>';
+    });
+    tree.innerHTML = h;
+    if (focus){ var el = tree.querySelector('[data-id="'+focusId+'"]'); if (el) el.focus(); }
+  }
+  function log(t){ var l=document.getElementById('log'); l.textContent = t+'\n'+l.textContent.split('\n').slice(0,4).join('\n'); }
+  function showDetail(){ var ids=Object.keys(sel).filter(function(k){return sel[k];}); var d=document.getElementById('detail'), l=document.getElementById('log').outerHTML;
+    d.innerHTML = (ids.length===1?'<h3>'+find(ids[0]).n.l+'</h3>Propriétés de l\'élément.':ids.length?'<h3>'+ids.length+' éléments choisis</h3>Actions groupées dans la barre d\'outils.':'<h3>Aucun élément choisi</h3>')+l; }
+  function toggle(id){ var f=find(id).n; open[id]=!open[id]; if(open[id]&&f.lazy&&!f.c){ load[id]='loading'; setTimeout(function(){ if(state.load==='fail'){ load[id]='error'; } else { f.c=[{id:'a1',l:'2024',c:[{id:'a1a',l:'Bilan 2024.pdf',m:'2 Mo'}]},{id:'a2',l:'2023',c:[]}]; } render(false); }, 900); } render(true); }
+  function select(id, e){ var vis=flat().filter(function(r){return r.n&&!r.n.dis;}).map(function(r){return r.n.id;});
+    if (e&&e.shiftKey){ var a=vis.indexOf(anchor), b=vis.indexOf(id); sel={}; vis.slice(Math.min(a,b),Math.max(a,b)+1).forEach(function(k){sel[k]=true;}); }
+    else if (e&&(e.metaKey||e.ctrlKey)){ sel[id]=!sel[id]; anchor=id; }
+    else { sel={}; sel[id]=true; anchor=id; }
+    focusId=id; render(true); showDetail(); }
+  function activate(id){ var n=find(id).n; if(isFolder(n)) toggle(id); else log('Ouvrir « '+n.l+' »'); }
+  function openMenu(id, x, y){ var n=find(id).n; focusId=id;
+    menu.innerHTML = '<div class="mi" tabindex="-1" data-m="rename">Renommer</div><div class="mi" tabindex="-1" data-m="move">Déplacer…</div><div class="mi" tabindex="-1" data-m="dl">Télécharger</div><div class="msep"></div><div class="mi danger" tabindex="-1" data-m="del">Supprimer</div>';
+    var b = app.getBoundingClientRect(); menu.style.left=Math.min(x-b.left, b.width-210)+'px'; menu.style.top=(y-b.top)+'px'; menu.classList.add('open'); menu.dataset.id=id; menu.querySelector('.mi').focus(); }
+  function closeMenu(){ menu.classList.remove('open'); }
+  tree.addEventListener('click', function(e){
+    var retry = e.target.closest('[data-retry]'); if (retry){ var id=retry.dataset.retry; open[id]=false; delete load[id]; toggle(id); return; }
+    var row = e.target.closest('.row'); if(!row||row.getAttribute('aria-disabled')) return; var id=row.dataset.id;
+    if (e.target.closest('[data-chev]')){ focusId=id; toggle(id); return; }
+    if (e.target.closest('[data-more]')){ var r=e.target.closest('[data-more]').getBoundingClientRect(); openMenu(id, r.left, r.bottom+4); return; }
+    if (e.target.closest('[data-act]')){ log('Nouveau document dans « '+find(id).n.l+' »'); return; }
+    select(id, e);
+  });
+  tree.addEventListener('dblclick', function(e){ var row=e.target.closest('.row'); if(row&&!e.target.closest('button')&&!row.getAttribute('aria-disabled')) activate(row.dataset.id); });
+  tree.addEventListener('contextmenu', function(e){ var row=e.target.closest('.row'); if(!row||row.getAttribute('aria-disabled')) return; e.preventDefault(); openMenu(row.dataset.id, e.clientX, e.clientY); });
+  tree.addEventListener('keydown', function(e){
+    var rows = flat().filter(function(r){return r.n&&!r.n.dis;}), ids = rows.map(function(r){return r.n.id;}), i = ids.indexOf(focusId), r = rows[i]; if(!r) return;
+    var f = isFolder(r.n), k = e.key, go = function(j){ focusId = ids[Math.max(0,Math.min(ids.length-1,j))]; if(e.shiftKey) select(focusId,{shiftKey:true}); else render(true); };
+    if (k==='ArrowDown') go(i+1); else if (k==='ArrowUp') go(i-1); else if (k==='Home') go(0); else if (k==='End') go(ids.length-1);
+    else if (k==='ArrowRight'){ if(f&&!open[r.n.id]) toggle(r.n.id); else if(f&&ids[i+1]&&rows[i+1].par===r.n.id) go(i+1); }
+    else if (k==='ArrowLeft'){ if(f&&open[r.n.id]) toggle(r.n.id); else if(r.par){ focusId=r.par; render(true); } }
+    else if (k==='Enter') activate(r.n.id);
+    else if (k===' ') select(r.n.id, e);
+    else if (k==='F10'&&e.shiftKey){ var b=document.activeElement.getBoundingClientRect(); openMenu(r.n.id, b.right-200, b.bottom); }
+    else if (k.length===1&&!e.metaKey&&!e.ctrlKey){ var now=Date.now(); typed = now-typedAt<1000 ? typed+k : k; typedAt=now; var q=typed.toLowerCase();
+      var order = ids.slice(i+(typed.length===1?1:0)).concat(ids.slice(0,i+(typed.length===1?1:0))); var hit = order.filter(function(id){ return find(id).n.l.toLowerCase().indexOf(q)===0; })[0]; if(hit){ focusId=hit; render(true); } }
+    else return;
+    e.preventDefault();
+  });
+  menu.addEventListener('click', function(e){ var it=e.target.closest('.mi'); if(!it) return; var id=menu.dataset.id, n=find(id).n; closeMenu();
+    if (it.dataset.m==='del'){ document.getElementById('qt').textContent='Supprimer « '+n.l+' » ?'; document.getElementById('modal').classList.add('open'); document.getElementById('yes').focus(); }
+    else { log(it.textContent+' « '+n.l+' »'); render(true); } });
+  menu.addEventListener('keydown', function(e){ var items=[].slice.call(menu.querySelectorAll('.mi')), i=items.indexOf(document.activeElement);
+    if(e.key==='ArrowDown'){ items[(i+1)%items.length].focus(); e.preventDefault(); } else if(e.key==='ArrowUp'){ items[(i-1+items.length)%items.length].focus(); e.preventDefault(); }
+    else if(e.key==='Enter'){ document.activeElement.click(); } else if(e.key==='Escape'){ closeMenu(); render(true); } });
+  document.addEventListener('click', function(e){ if(!e.target.closest('#menu')&&!e.target.closest('[data-more]')) closeMenu(); });
+  document.getElementById('no').onclick = function(){ document.getElementById('modal').classList.remove('open'); log('Suppression annulée'); render(true); };
+  document.getElementById('yes').onclick = function(){ var id=menu.dataset.id, f=find(id); f.list.splice(f.list.indexOf(f.n),1); delete sel[id]; document.getElementById('modal').classList.remove('open'); log('Supprimé « '+f.n.l+' »'); focusId=flat().filter(function(r){return r.n;})[0].n.id; render(true); showDetail(); };
+  /* glisser-déposer */
+  var dragId=null, drop=null;
+  function isDesc(a,b){ var f=find(a); if(!f||!f.n.c) return false; return !!find(b, f.n.c); }
+  tree.addEventListener('dragstart', function(e){ var row=e.target.closest('.row'); if(!row) return; dragId=row.dataset.id; row.classList.add('dragging'); e.dataTransfer.effectAllowed='move'; e.dataTransfer.setData('text/plain', dragId); });
+  tree.addEventListener('dragover', function(e){ var row=e.target.closest('.row'); tree.querySelectorAll('.drop-before,.drop-after,.drop-inside').forEach(function(x){x.classList.remove('drop-before','drop-after','drop-inside');}); drop=null;
+    if(!row||!dragId||row.dataset.id===dragId||isDesc(dragId,row.dataset.id)) return; e.preventDefault();
+    var b=row.getBoundingClientRect(), y=(e.clientY-b.top)/b.height, n=find(row.dataset.id).n, pos = isFolder(n) ? (y<.25?'before':y>.75?'after':'inside') : (y<.5?'before':'after');
+    row.classList.add('drop-'+pos); drop={id:row.dataset.id,pos:pos}; });
+  tree.addEventListener('drop', function(e){ e.preventDefault(); if(!drop) return; var s=find(dragId), t=find(drop.id); s.list.splice(s.list.indexOf(s.n),1);
+    if(drop.pos==='inside'){ t.n.c=t.n.c||[]; t.n.c.push(s.n); open[t.n.id]=true; } else { var tl=find(drop.id).list; tl.splice(tl.indexOf(t.n)+(drop.pos==='after'?1:0),0,s.n); }
+    log('Déplacé « '+s.n.l+' » '+({before:'avant',after:'après',inside:'dans'})[drop.pos]+' « '+t.n.l+' »'); dragId=null; drop=null; render(false); });
+  tree.addEventListener('dragend', function(){ dragId=null; render(false); });
+  /* comparaison */
+  var mini = [{l:'Projets',lv:1,f:1,o:1},{l:'Refonte du site',lv:2,f:1,o:1},{l:'Cahier des charges.pdf',lv:3},{l:'Maquettes',lv:3,f:1,o:1},{l:'Accueil.png',lv:4},{l:'Contact.png',lv:4},{l:'Planning.xlsx',lv:3},{l:'Migration des données',lv:2,f:1}];
+  var O = [['guide','A · Un trait vertical par niveau','Repère la profondeur sans bruit, même à 5 niveaux. Recommandé.'],['elbow','B · Coude de D-042','Comme la Sidebar ; chargé au-delà de deux niveaux.'],['none','C · Aucun trait','Le plus calme ; on perd le parent dans un long dossier.']];
+  document.getElementById('opts').innerHTML = O.map(function(o){ return '<div class="opt"><h3>'+o[1]+(o[0]==='guide'?' <span class="reco">retenu</span>':'')+'</h3><p>'+o[2]+'</p><div class="tk mini lines-'+o[0]+'">'+mini.map(function(r){ var pad=4+(r.lv-1)*16; return '<div class="row" style="padding-left:'+pad+'px">'+guides(r.lv)+(r.f?'<span class="chev">'+ic(r.o?'down':'right')+'</span>':'<span class="chev"></span>')+'<span class="nicon">'+ic(r.f?(r.o?'open':'folder'):'file')+'</span><span class="lbl">'+r.l+'</span></div>'; }).join('')+'</div></div>'; }).join('');
+  function apply(){ document.querySelectorAll('.tk').forEach(function(n){ n.classList.toggle('dark', state.mode==='dark'); n.classList.toggle('desktop', state.density==='desktop'); });
+    app.classList.remove('lines-guide','lines-elbow','lines-none'); app.classList.add('lines-'+state.lines);
+    document.documentElement.dataset.theme = state.mode; render(false); }
+  document.querySelectorAll('.seg').forEach(function(seg){ seg.addEventListener('click', function(e){ var b=e.target.closest('button'); if(!b) return;
+    seg.querySelectorAll('button').forEach(function(x){ x.setAttribute('aria-pressed', String(x===b)); }); state[seg.dataset.k]=b.dataset.v; apply(); }); });
+  apply();
+})();
+</script>
+</body>
+</html>

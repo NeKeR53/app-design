@@ -2,7 +2,21 @@
  * Adapté du starter Tailwind de React Aria (adobe/react-spectrum, starters/tailwind),
  * licence Apache 2.0. Spec : Menu.spec.md.
  */
-import { Children, createContext, isValidElement, useContext, type ReactElement, type ReactNode } from "react";
+import {
+  Children,
+  createContext,
+  isValidElement,
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+  type KeyboardEvent,
+  type MouseEvent,
+  type ReactElement,
+  type ReactNode,
+  type RefObject,
+} from "react";
+import { createPortal } from "react-dom";
 import type { Key } from "react-aria-components";
 import {
   Header,
@@ -42,30 +56,157 @@ export const itemClass = cx(
 );
 
 /* ---------- Menu ---------- */
+/** Point d'ouverture d'un menu contextuel, en coordonnées de la fenêtre. */
+export interface MenuPoint {
+  x: number;
+  y: number;
+}
+
 export interface MenuProps {
-  /** Bouton qui ouvre le menu, le plus souvent un `IconButton`. */
-  trigger: ReactElement;
+  /** Bouton qui ouvre le menu, le plus souvent un `IconButton`. Inutile avec `anchor`. */
+  trigger?: ReactElement;
   /** Nom accessible du menu. */
   label: string;
+  /** Titre en tête du menu : l'objet visé (D-327). */
+  title?: string;
   /** Côté préféré ; il change si la place manque. */
   placement?: "bottom start" | "bottom end" | "top start" | "top end";
+  /** Ancre sans bouton : un point (clic droit) ou un élément (D-327). Avec `isOpen` et `onOpenChange`. */
+  anchor?: MenuPoint | RefObject<Element | null>;
+  /** Ouverture pilotée par l'app. */
+  isOpen?: boolean;
+  onOpenChange?: (isOpen: boolean) => void;
   /** `Menu.Item`, `Menu.Section`, `Menu.Separator`, `Menu.Submenu`. */
   children: ReactNode;
 }
 
-export function Menu({ trigger, label, placement = "bottom start", children }: MenuProps) {
+function isPoint(anchor: MenuProps["anchor"]): anchor is MenuPoint {
+  return Boolean(anchor) && typeof (anchor as MenuPoint).x === "number";
+}
+
+function MenuBody({ label, title, children, onClose }: { label: string; title?: string | undefined; children: ReactNode; onClose?: () => void }) {
   return (
-    <MenuTrigger>
+    <IconColumn.Provider value={hasIcon(children)}>
+      {title && <div className="truncate px-2.5 pt-1.5 pb-0.5 text-sm text-fg-3">{title}</div>}
+      <RACMenu aria-label={label} className="outline-none" {...(onClose ? { onClose, autoFocus: "first" as const } : {})}>
+        {children}
+      </RACMenu>
+    </IconColumn.Provider>
+  );
+}
+
+export function Menu({ trigger, label, title, placement = "bottom start", anchor, isOpen, onOpenChange, children }: MenuProps) {
+  if (anchor) {
+    return (
+      <AnchoredMenu label={label} title={title} placement={placement} anchor={anchor} isOpen={isOpen ?? false} onOpenChange={onOpenChange}>
+        {children}
+      </AnchoredMenu>
+    );
+  }
+  return (
+    <MenuTrigger {...(isOpen !== undefined ? { isOpen } : {})} {...(onOpenChange ? { onOpenChange } : {})}>
       {trigger}
       <Popover placement={placement} offset={4} containerPadding={8} className={popoverClass}>
-        <IconColumn.Provider value={hasIcon(children)}>
-          <RACMenu aria-label={label} className="outline-none">
-            {children}
-          </RACMenu>
-        </IconColumn.Provider>
+        <MenuBody label={label} title={title}>
+          {children}
+        </MenuBody>
       </Popover>
     </MenuTrigger>
   );
+}
+
+/** Menu ouvert sans bouton, à un point ou contre un élément (D-327). */
+function AnchoredMenu({
+  label,
+  title,
+  placement,
+  anchor,
+  isOpen,
+  onOpenChange,
+  children,
+}: Required<Pick<MenuProps, "label" | "placement" | "anchor" | "isOpen">> & Pick<MenuProps, "children"> & { title: string | undefined; onOpenChange: MenuProps["onOpenChange"] }) {
+  const pointRef = useRef<HTMLSpanElement>(null);
+  const point = isPoint(anchor) ? anchor : null;
+  const close = useRef(onOpenChange);
+  close.current = onOpenChange;
+
+  // Ouvert à un point : un défilement ou un redimensionnement lui fait perdre son sens ; il se ferme (D-327).
+  useEffect(() => {
+    if (!isOpen || !point) return;
+    const shut = (e: Event) => {
+      if (e.type === "scroll" && e.target instanceof Element && e.target.closest("[role=menu]")) return;
+      close.current?.(false);
+    };
+    window.addEventListener("scroll", shut, true);
+    window.addEventListener("resize", shut);
+    return () => {
+      window.removeEventListener("scroll", shut, true);
+      window.removeEventListener("resize", shut);
+    };
+  }, [isOpen, point]);
+
+  const triggerRef = (point ? pointRef : anchor) as RefObject<Element | null>;
+  return (
+    <>
+      {point &&
+        isOpen &&
+        createPortal(<span ref={pointRef} aria-hidden className="pointer-events-none fixed size-0" style={{ left: point.x, top: point.y }} />, document.body)}
+      {(!point || isOpen) && (
+        <Popover
+          triggerRef={triggerRef}
+          isOpen={isOpen}
+          onOpenChange={(open) => onOpenChange?.(open)}
+          placement={placement}
+          offset={point ? 0 : 4}
+          containerPadding={8}
+          className={popoverClass}
+        >
+          <MenuBody label={label} title={title} onClose={() => onOpenChange?.(false)}>
+            {children}
+          </MenuBody>
+        </Popover>
+      )}
+    </>
+  );
+}
+
+/* ---------- Menu contextuel : clic droit, Maj+F10, touche Menu (D-327) ---------- */
+export interface ContextMenuTargetProps {
+  onContextMenu: (e: MouseEvent<Element>) => void;
+  onKeyDown: (e: KeyboardEvent<Element>) => void;
+}
+
+export interface ContextMenuState {
+  /** À poser sur la zone : clic droit, Maj+F10 et touche Menu ouvrent le menu. */
+  targetProps: ContextMenuTargetProps;
+  /** À poser sur `Menu` : `anchor`, `isOpen`, `onOpenChange`. */
+  menuProps: { anchor: MenuPoint; isOpen: boolean; onOpenChange: (isOpen: boolean) => void };
+  /** Vrai quand le menu est ouvert. */
+  isOpen: boolean;
+}
+
+/**
+ * Branche un menu contextuel sur une zone : le menu s'ouvre au point du clic droit,
+ * ou sous la zone avec Maj+F10 ou la touche Menu (D-327).
+ */
+export function useContextMenu(): ContextMenuState {
+  const [point, setPoint] = useState<MenuPoint | null>(null);
+  return {
+    targetProps: {
+      onContextMenu: (e) => {
+        e.preventDefault();
+        setPoint({ x: e.clientX, y: e.clientY });
+      },
+      onKeyDown: (e) => {
+        if (!((e.key === "F10" && e.shiftKey) || e.key === "ContextMenu")) return;
+        e.preventDefault();
+        const r = e.currentTarget.getBoundingClientRect();
+        setPoint({ x: r.left + 8, y: r.bottom });
+      },
+    },
+    menuProps: { anchor: point ?? { x: 0, y: 0 }, isOpen: point !== null, onOpenChange: (open) => !open && setPoint(null) },
+    isOpen: point !== null,
+  };
 }
 
 /* ---------- Élément ---------- */

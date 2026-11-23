@@ -6,10 +6,12 @@ Ces règles s'appliquent à toutes les apps. Si aucune règle ne couvre un cas, 
 
 | Zone | Ce qui y va | Ce qui n'y va pas |
 |---|---|---|
-| `topbar` | Bouton de repli de la sidebar, précédent/suivant, **nom de la page**, **onglets des vues de la page** (D-021), actions de la page en boutons-icônes, cloche du centre de notifications (D-157), état durable de la page en indicateur compact (D-159), bouton du panneau de détail (icône liste), commandes (Mod+K). En Tauri, la place des boutons de fenêtre (D-020). | Les filtres, la recherche dans une liste, les actions sur un élément précis. Aucun bandeau pleine largeur dessous (D-159). |
+| `topbar` | Bouton de repli de la sidebar, précédent/suivant, **nom de la page**, **onglets des vues de la page** (D-021), actions de la page (`ActionBar` `topbar` : icônes, « … », action principale à texte, D-220), cloche du centre de notifications (D-157), état durable de la page en indicateur compact, juste après le titre (D-159, D-251), résumé court après le titre (D-250), bouton du panneau de détail (icône liste), commandes (Mod+K). En Tauri, la place des boutons de fenêtre (D-020). | Les filtres, la recherche dans une liste, les actions sur un élément précis. Aucun bandeau pleine largeur dessous (D-159). |
 | `sidebar` → navigation | Les pages principales : une icône, puis un libellé. Une action facultative peut apparaître au survol (D-002). | Les vues d'une page : elles sont dans les onglets (D-021). |
 | `sidebar` → sections | Des sections repliables, qui contiennent soit des éléments de navigation, soit des éléments sur deux lignes avec enfants (D-002). | Des réglages, ou du contenu de travail. |
-| `sidebar` → `account` | L'avatar, le nom et le plan ; le bouton Réglages (roue dentée). | Toute autre action. |
+| `sidebar` → `footer` | Trois pages fixes au plus (assistant, aide, corbeille), toujours visibles (D-230). | Des sections, du contenu qui s'allonge. |
+| `sidebar` → `workspace` | L'espace de travail ouvert et le menu pour en changer (D-231). | Le compte de la personne. |
+| `sidebar` → `account` | L'avatar, le nom et le plan ; le bouton Réglages (roue dentée). Tout en bas, sous les entrées fixes et l'espace de travail (D-232). | Toute autre action. |
 | `main` | Le gabarit de la page (ListPage, DetailPage, FormPage…). | La navigation globale. |
 | `detail` | Les propriétés de l'élément courant, modifiables sur place ; l'aide contextuelle ; les pièces jointes. Ce panneau est facultatif (D-018). | Le contenu principal, et les actions destructrices sans confirmation. |
 | `tabbar` (mobile) | Quatre entrées principales au plus, puis « Plus » (D-003). | Les vues d'une page. |
@@ -17,12 +19,12 @@ Ces règles s'appliquent à toutes les apps. Si aucune règle ne couvre un cas, 
 ## Comportements globaux
 
 - **Sidebar** : dépliée à l'ouverture, état mémorisé (D-016). Une fois repliée, elle revient en overlay au survol du bouton ; un clic la redéplie (D-017).
-- **Panneau de détail** : colonne sur bureau, état mémorisé ; overlay à droite sur tablette ; plein écran sur mobile (D-018).
+- **Panneau de détail** : colonne sur bureau, état mémorisé ; overlay à droite sur tablette ; plein écran sur mobile (D-018). La page choisit sa largeur de départ : `default` pour des sections, `form` pour un formulaire (D-240). Agrandir, facultatif, l'ouvre en grand : 960 px au plus, le contenu garde 360 px (D-241).
 - **Onglets de vues** : chaque page déclare ses vues, et retient la dernière vue ouverte. Ouvrir un élément ajoute une vue fermable (D-021).
 - **Mobile** : barre d'onglets en bas. « Plus » ouvre une feuille sans les entrées déjà présentes dans les onglets (D-003, D-019).
 - **Réglages** : modale sur bureau et tablette, plein écran sur mobile (D-015).
 - **Points de rupture** : 640 et 1024 px (D-013).
-- **Messages** (D-159) : le résultat d'une action va dans un toast (D-154), avec « Annuler » si l'action se défait (D-007) ; un événement passé va dans le centre de notifications (D-156) ; un état durable de la page ou de l'app (hors ligne, lecture seule) va dans la barre du haut ; un message local reste un encart dans la zone concernée (D-085). Jamais de bandeau pleine largeur.
+- **Messages** (D-159) : le résultat d'une action va dans un toast (D-154), avec « Annuler » si l'action se défait (D-007) ; un événement passé va dans le centre de notifications (D-156) ; un état durable de la page ou de l'app (hors ligne, lecture seule) va dans la barre du haut, après le titre, par `pageStatus` : un seul à la fois (D-251, D-252) ; un message local reste un encart dans la zone concernée (D-085). Jamais de bandeau pleine largeur.
 - **Échap** ferme ce qui flotte (overlay, feuille, détail en overlay, modale, menu).
 - **Fenêtre secondaire** : `Dialog`, au-dessus de l'AppShell. Pied calé à droite : « Annuler », puis l'action (D-124). Sur mobile, `sm` et `md` centrées, `lg` et `xl` en plein écran (D-121).
 - **Confirmation** : seulement avant une action irréversible (D-007), par `useConfirm` : titre en question, phrase de conséquence, bouton au verbe de l'action (D-126 à D-128).
@@ -33,7 +35,7 @@ Une app décrit ses actions par des données (`Action`) et les passe à `ActionB
 
 | Zone | Où | Action principale | Icônes visibles | Reste |
 |---|---|---|---|---|
-| `topbar` | `actions` d'AppShell | Première icône (D-112) | 3 | « … » |
+| `topbar` | `actions` d'AppShell | Première icône (D-112) ; sans icône, bouton à texte (D-220) | 3, puis selon la place (D-221) | « … » |
 | `header` | En-tête de ListPage, DetailPage | Bouton à texte, à droite | 3 | « … » |
 | `toolbar` | Barre d'outils (sélection) | Bouton à texte, à droite | 3 | « … » |
 | `section` | Titre de section | Bouton secondaire `sm` (D-113) | 2 | « … » |
@@ -43,30 +45,46 @@ Une app décrit ses actions par des données (`Action`) et les passe à `ActionB
 - Ordre : icônes, « … », action principale à droite.
 - Action `danger` : dans « … », en dernier, après un trait, confirmée (D-115).
 - Sous 640 px : les icônes de `topbar`, `header` et `toolbar` passent dans « … » (D-117).
+- Barre du haut : quand la place manque, les icônes passent dans « … » depuis la dernière, puis le bouton à texte ; ensuite seulement les vues défilent (D-221).
+- Un seul bouton plein par écran : une action principale à texte dans la barre du haut exclut celle de l'en-tête du gabarit (D-220).
 
 ## Gabarits
 
 ### ListPage
 - `header` : titre et description courte.
 - `actions` : une action principale au plus, les autres en secondaire.
-- `toolbar` : recherche et filtres.
+- `toolbar` : recherche et filtres (D-174). Lignes cochées : barre de sélection à la place (D-178).
 - `list` : lignes. On sélectionne au clic ou aux flèches, on ouvre au double-clic ou avec Entrée. L'ouverture ajoute une vue fermable.
-- `footer` : compteur et « Afficher plus ».
-- `empty` : icône, titre, phrase d'explication et action principale.
+- `footer` : compteur et « Afficher plus » ; pagination en option (D-175).
+- `empty` : icône, titre, phrase d'explication et action principale (D-176).
+- Les cellules suivent le type de leur colonne (D-170 à D-172).
 
-### DetailPage
-- `header` : lien de retour vers la vue principale, titre, statut, méta, actions.
-- `content` : sections titrées, séparées par des traits.
+### DetailPage (D-210 à D-216)
+- `header` : lien de retour vers la vue principale, titre, statut, méta, actions (zone `header`). Il reste fixe ; seul le contenu défile.
+- `content` : sections titrées, séparées par des traits. Colonne de lecture de 760 px par défaut.
 - Les propriétés vont dans le panneau de détail.
+- États : chargement, erreur et introuvable sont rendus par le gabarit ; le lien de retour reste visible.
+
+### Page composée (D-217, D-218)
+- Seulement quand aucun gabarit ne convient : tableau de bord, éditeur, graphique.
+- `toolbar` : une ligne fixe ; contenu libre à gauche, actions (zone `toolbar`) à droite.
+- `content` : blocs (`PageSection` ou composants du socle) espacés de 24 px ; seule zone qui défile.
+- `footer` : pied fixe, contenu libre (total, sélection).
+- Pas d'en-tête : le nom de la page est dans la barre du haut. Aucun HTML stylé côté app.
 
 ### FormPage (D-022)
 - `header` : titre et phrase d'intention.
 - `sections` : sections titrées. Sur bureau, le titre et l'aide sont à gauche ; ailleurs, ils passent au-dessus. Chaque champ a son libellé au-dessus et son aide ou son erreur en dessous.
 - `footer` : barre d'actions collée en bas, avec l'état d'enregistrement, « Annuler » et l'action principale.
+- Les champs se décrivent par des données (`FormField`) ; le gabarit les dessine, l'un sous l'autre (D-190, D-191). Sections sur deux colonnes à partir de 800 px de conteneur (D-193). « Annuler » après une saisie est confirmé (D-195).
+- Saisie courte (six champs au plus) : `useOpenForm`, en modale, avec le même modèle de champ (D-197, D-198).
 
 ### SettingsPage (D-015)
 - `nav` : recherche, groupes séparés par un trait, éléments de navigation (icône et libellé), lien externe en pied.
 - `content` : titre de section, puis lignes de réglage pleine largeur. Le libellé et la description sont à gauche, le contrôle calé à droite. Les changements s'appliquent immédiatement (D-007).
+- L'app décrit ses réglages par des données ; le gabarit choisit le contrôle (D-200). Un texte s'applique à Entrée ou en quittant le champ (D-204).
+- Une liste gérée dans les réglages (environnements, clés) : lignes `item`, actions de ligne par `Action` (D-206).
+- Conteneur : `Dialog` `xl` sans pied, ou zone `main` ; sous 640 px de large, liste puis rubrique (D-208).
 
 ## Petites règles
 

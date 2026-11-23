@@ -174,3 +174,112 @@ export const Compte: Story = {
     await expect(sel(canvasElement)).toBe("settings");
   },
 };
+
+/* ---------- Pied : entrées fixes et espace de travail (D-230 à D-232) ---------- */
+const Chat = () => (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" aria-hidden>
+    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+  </svg>
+);
+
+const WORKSPACES = [
+  { id: "atelier", name: "Atelier" },
+  { id: "perso", name: "Perso" },
+  { id: "asso", name: "Association des parents d'élèves du quartier" },
+];
+
+function FooterDemo({ single = false }: { single?: boolean }) {
+  const [sel, setSel] = useState("home");
+  const [ws, setWs] = useState("atelier");
+  const list = single ? WORKSPACES.slice(0, 1) : WORKSPACES;
+  return (
+    <div className="flex h-[480px]">
+      <div className="w-(--side-w) border-r border-line" data-selected-id={sel} data-workspace={ws}>
+        <Sidebar
+          selectedId={sel}
+          onSelectionChange={setSel}
+          footer={<Sidebar.Item id="assistant" icon={<Chat />} label="Assistant" indicator="activity" />}
+          workspace={
+            <Sidebar.Workspace
+              workspaces={list}
+              currentId={ws}
+              onChange={setWs}
+              {...(single
+                ? {}
+                : {
+                    actions: (
+                      <>
+                        <Menu.Item label="Créer un espace de travail…" icon={<Plus />} />
+                        <Menu.Item label="Ouvrir un autre dossier…" icon={<Doc />} />
+                      </>
+                    ),
+                  })}
+            />
+          }
+          account={<Sidebar.Account name="Camille Martin" detail="Admin" onSettings={() => {}} />}
+        >
+          <Sidebar.Item id="home" icon={<Doc />} label="Accueil" />
+          {Array.from({ length: 14 }, (_, i) => (
+            <Sidebar.Item key={i} id={`p${i}`} icon={<Doc />} label={`Page ${i + 1}`} />
+          ))}
+        </Sidebar>
+      </div>
+    </div>
+  );
+}
+
+/** Entrées fixes du bas : hors du défilement, même sélection que la navigation (D-230, D-232). */
+export const PiedFixe: Story = {
+  render: () => <FooterDemo />,
+  play: async ({ canvasElement }) => {
+    const c = within(canvasElement);
+    const bottom = c.getByRole("treegrid", { name: "Navigation du bas" });
+    const main = c.getByRole("treegrid", { name: "Navigation principale" });
+    // L'entrée fixe est sous la navigation, au-dessus de l'espace de travail et du compte.
+    const assistant = within(bottom).getByRole("row", { name: /Assistant/ });
+    await expect(assistant.getBoundingClientRect().top).toBeGreaterThan(main.getBoundingClientRect().bottom - 1);
+    await expect(c.getByRole("button", { name: /Espace de travail/ }).getBoundingClientRect().top).toBeGreaterThan(assistant.getBoundingClientRect().top);
+    // La navigation défile ; le pied reste visible.
+    main.scrollTop = main.scrollHeight;
+    await expect(assistant).toBeVisible();
+    await userEvent.click(assistant);
+    await waitFor(() => expect(canvasElement.querySelector("[data-selected-id]")).toHaveAttribute("data-selected-id", "assistant"));
+    await expect(assistant).toHaveAttribute("aria-selected", "true");
+    await userEvent.click(c.getByRole("row", { name: /Accueil/ }));
+    await expect(assistant).toHaveAttribute("aria-selected", "false");
+  },
+};
+
+/** Sélecteur d'espace de travail : menu au-dessus, espace courant coché, actions de l'app après un trait (D-231). */
+export const EspaceDeTravail: Story = {
+  render: () => <FooterDemo />,
+  play: async ({ canvasElement }) => {
+    const c = within(canvasElement);
+    const trigger = c.getByRole("button", { name: "Espace de travail : Atelier. Changer d'espace" });
+    await userEvent.click(trigger);
+    const menu = await waitFor(() => body().getByRole("menu"));
+    await expect(within(menu).getByRole("menuitemradio", { name: "Atelier" })).toHaveAttribute("aria-checked", "true");
+    await expect(within(menu).getByRole("menuitem", { name: "Créer un espace de travail…" })).toBeVisible();
+    // Le menu s'ouvre au-dessus du bouton.
+    await expect(menu.getBoundingClientRect().bottom).toBeLessThanOrEqual(trigger.getBoundingClientRect().top + 1);
+    await userEvent.click(within(menu).getByRole("menuitemradio", { name: "Perso" }));
+    await waitFor(() => expect(canvasElement.querySelector("[data-workspace]")).toHaveAttribute("data-workspace", "perso"));
+    await expect(c.getByRole("button", { name: /Espace de travail : Perso/ })).toBeVisible();
+    // Au clavier : flèche bas ouvre, Échap ferme et rend le focus.
+    c.getByRole("button", { name: /Espace de travail : Perso/ }).focus();
+    await userEvent.keyboard("{ArrowDown}");
+    await waitFor(() => expect(body().getByRole("menu")).toBeVisible());
+    await userEvent.keyboard("{Escape}");
+    await waitFor(() => expect(c.getByRole("button", { name: /Espace de travail : Perso/ })).toHaveFocus());
+  },
+};
+
+/** Un seul espace, sans action : simple étiquette, sans menu (D-231). */
+export const EspaceUnique: Story = {
+  render: () => <FooterDemo single />,
+  play: async ({ canvasElement }) => {
+    const c = within(canvasElement);
+    await expect(c.queryByRole("button", { name: /Espace de travail/ })).toBeNull();
+    await expect(c.getByText("Atelier")).toBeVisible();
+  },
+};

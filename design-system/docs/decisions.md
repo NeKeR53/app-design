@@ -922,7 +922,7 @@
 ## D-112 — Modèle Action : action principale en icône dans la barre du haut
 - Date : 2026-11-23
 - Portée : ActionBar (zone `topbar`)
-- Décision : dans la zone `topbar`, l'action principale reste un bouton-icône, placé en premier. Sans icône, elle va en tête du menu « … ». La spec AppShell (boutons-icônes uniquement) ne change pas.
+- Décision : dans la zone `topbar`, l'action principale reste un bouton-icône, placé en premier. Sans icône, elle va en tête du menu « … » (partie remplacée par D-220 : sans icône, elle est à texte). La spec AppShell (boutons-icônes uniquement) ne change pas.
 - Raison : respecter AppShell aujourd'hui ; P13 pourra ajouter le texte en option, sans casser cette règle.
 - Options écartées : bouton à texte dans la barre du haut dès maintenant.
 - Validation : docs/validation/components/ActionBar-v1.html
@@ -1050,7 +1050,7 @@
 ## D-159 — Pas de bandeau pleine largeur ; avenir de FeedbackBanner
 - Date : 2026-11-23
 - Portée : global (layout-rules)
-- Décision : aucune app n'affiche de bandeau pleine largeur sous la barre du haut. Un état durable de la page ou de l'app (hors ligne, lecture seule) se signale dans la barre du haut, par un indicateur compact. Un message local reste un encart dans le contenu (comme D-085). Le résultat d'une action va dans un toast. L'indicateur de barre du haut et l'encart feront chacun une proposition à part ; l'apparence `bar` de `FeedbackBanner` (Alfred) n'a pas d'équivalent.
+- Décision : aucune app n'affiche de bandeau pleine largeur sous la barre du haut. Un état durable de la page ou de l'app (hors ligne, lecture seule) se signale dans la barre du haut, par un indicateur compact. Un message local reste un encart dans le contenu (comme D-085). Le résultat d'une action va dans un toast. L'indicateur de barre du haut et l'encart feront chacun une proposition à part ; l'apparence `bar` de `FeedbackBanner` (Alfred) n'a pas d'équivalent. L'indicateur de barre du haut est défini par D-251.
 - Raison : choix de l'utilisateur ; un bandeau décale tout le contenu et se confond avec la barre.
 - Options écartées : bandeau pleine largeur.
 - Validation : par délégation de l'utilisateur, 2026-11-23 — docs/validation/components/Notifications-v1.html
@@ -1273,3 +1273,1031 @@
 - Raison : comportements montrés dans la page de validation v1 et repris de la barre de recherche (D-071) et du Menu, pour un seul clavier dans le design system.
 - Options écartées : liste ouverte au focus (Alfred) ; champ sans chevron (Combobox d'Alfred).
 - Validation : docs/validation/components/ComboBox-v1.html
+
+## D-330 — Garde-fous pour Biome : config partagée `socle-ui/biome`
+- Date : 2026-11-23
+- Portée : global (apps qui lintent avec Biome)
+- Décision : socle-ui livre une config Biome dans `biome/` (export `socle-ui/biome`). L'app l'étend par le nom du package : `"extends": ["socle-ui/biome"]` dans son `biome.json`. Elle reprend les règles de `socle-ui/eslint-config` : imports interdits par `noRestrictedImports` (`react-aria-components`, `react-aria`, `@react-aria/*`, `@react-stately/*`, et tout chemin `socle-ui/…` sauf `styles.css`, `theme.css`, `eslint-config` et `biome`), puis deux règles en plugins GritQL (D-331, D-332). Les plugins se résolvent depuis le dossier de la config partagée (`resolutionKind: "config"`) : Biome 2.6 ou plus récent est requis. La config ne touche ni au formateur ni aux autres règles de l'app.
+- Raison : Alfred lint avec Biome, pas ESLint ; une app ne doit pas recopier les garde-fous à la main, ni les voir dériver d'une version à l'autre.
+- Options écartées : plugin Biome publié par manifeste (`biome-manifest.json`) : l'app devrait lister chaque règle en plus de l'`extends` ; ESLint en plus de Biome dans l'app : deux linters pour un seul besoin.
+- Validation : par délégation de l'utilisateur, 2026-11-23
+
+## D-331 — Biome : `style` et `className` interdits sur un composant Socle, reconnu par son nom
+- Date : 2026-11-23
+- Portée : global (config `socle-ui/biome`)
+- Décision : le plugin `no-socle-override.grit` signale `style` et `className` posés directement sur une balise JSX dont le nom est un composant exporté par socle-ui (`Button`, `Sidebar.Item`…). La liste des noms est générée par `scripts/build-biome.js` à chaque build, depuis `src/index.ts` ; le fichier généré n'est pas suivi par git. Limites, connues et acceptées : un import renommé (`import { Button as B }`) échappe à la règle ; un composant d'une autre librairie qui porte le même nom qu'un composant Socle est signalé, et l'app écrit alors `// biome-ignore lint/plugin: <raison>`. Un attribut posé sur un élément passé en option (`icon={<span className="…" />}`) n'est pas signalé.
+- Raison : un plugin GritQL de Biome ne voit pas le module entier : il ne relie pas une balise à son import, contrairement à la règle ESLint. La liste des exports est le meilleur substitut, et elle suit les versions toute seule.
+- Options écartées : signaler tout composant en PascalCase (faux positifs sur les composants de l'app) ; plugin JavaScript de Biome (encore en préversion) ; script à part `socle-check-ts` : Biome couvre le besoin, un second outil serait oublié.
+- Validation : par délégation de l'utilisateur, 2026-11-23
+
+## D-332 — Biome : couleurs en dur dans le code et dans le CSS
+- Date : 2026-11-23
+- Portée : global (config `socle-ui/biome`)
+- Décision : deux plugins reprennent le motif de `socle/no-hardcoded-color` et de `socle-check-css` (hex, `rgb()`, `rgba()`, `hsl()`, `hsla()`, `oklch()`, `oklab()`) : `no-hardcoded-color.grit` sur les chaînes, les attributs JSX et les gabarits du code ; `no-hardcoded-color-css.grit` sur les déclarations CSS. Une app sous Biome n'a donc pas besoin de `socle-check-css` ; les apps sous ESLint le gardent.
+- Raison : Biome lit aussi le CSS ; un seul outil, une seule commande (`biome check`) dans l'app.
+- Options écartées : garder `socle-check-css` à côté de Biome.
+- Validation : par délégation de l'utilisateur, 2026-11-23
+
+## D-333 — La config Biome est testée par `npm run check`
+- Date : 2026-11-23
+- Portée : dépôt de référence
+- Décision : `scripts/check-biome.js` crée une app de test temporaire, y relie socle-ui dans `node_modules`, étend `socle-ui/biome` par le nom du package et lance `biome lint` sur `scripts/biome-fixtures/`. Chaque garde-fou doit se déclencher à la ligne attendue dans `bad.tsx` et `bad.css`, et rien ne doit être signalé dans `good.tsx` et `good.css`. Biome devient une dépendance de développement du dépôt.
+- Raison : les noms de nœuds GritQL peuvent changer d'une version de Biome à l'autre ; une règle qui ne se déclenche plus doit faire échouer le check, pas passer en silence.
+- Options écartées : test à la main dans Alfred.
+- Validation : par délégation de l'utilisateur, 2026-11-23
+
+## D-334 — Installation locale par yalc ; le `package.json` de l'app pointe sur `.yalc`
+- Date : 2026-11-23
+- Portée : global (installation)
+- Décision : tant que le package n'est pas publié, une app l'installe par yalc : `npm run publish:local` ici, puis `npx yalc add socle-ui` dans l'app. `.yalc` et `yalc.lock` restent hors git ; le `package.json` de l'app se commite avec `"socle-ui": "file:.yalc/socle-ui"`. Un clone neuf de l'app refait d'abord `npm run publish:local` dans ce dépôt, puis `npx yalc add socle-ui` dans l'app. La marche à suivre est dans le README.
+- Raison : yalc copie le package au lieu de le lier : une seule copie de React. Sans `.yalc` dans git, l'app ne commite pas de build.
+- Options écartées : `.yalc` commité dans l'app (build dans l'historique, conflits) ; `yalc link` (lien symbolique, mêmes défauts que `npm link`) ; dépendance git par tag, gardée pour quand une CI devra installer l'app.
+- Validation : par délégation de l'utilisateur, 2026-11-23
+
+## D-335 — `npm run check` vérifie que les versions concordent
+- Date : 2026-11-23
+- Portée : dépôt de référence
+- Décision : `scripts/check.js` échoue si la version de `package.json` diffère de celle de la dernière entrée datée de `CHANGELOG.md` (`## [x.y.z] — AAAA-MM-JJ`, la section `[Non publié]` n'est pas datée), ou de la constante `SOCLE_VERSION` de `src/index.ts`. Chaque version publiée a son tag `v<version>` sur `main`.
+- Raison : la version de l'app se lit dans `package.json`, l'IA la lit dans `AI.md`, l'humain dans le CHANGELOG : elles doivent dire la même chose. Le contrôle a trouvé `SOCLE_VERSION` restée à 0.1.0.
+- Options écartées : contrôle du tag git dans le check (un clone sans tags échouerait).
+- Validation : par délégation de l'utilisateur, 2026-11-23
+
+## D-170 — Valeurs typées : un type par donnée, format fixé par Socle
+- Date : 2026-11-23
+- Portée : FormattedValue, ListPage, DetailPanel
+- Décision : une donnée s'affiche par son type : `text`, `longtext`, `number`, `money`, `percent`, `bytes`, `date`, `datetime`, `relative`, `duration`, `boolean`, `status`, `email`, `url`, `code`, `tags`. Socle fixe le format de la langue (« 1 234,50 € », « 20 nov. 2026 », « il y a 3 jours », « 1 h 5 min », « Oui »). Le statut devient un `StatusBadge` d'après une table clé → libellé et ton ; `email` et `url` deviennent des `Link` ; `code` un `Code` ; `tags` un texte « a, b, c ».
+- Raison : l'app déclare ce qu'est la donnée, jamais comment l'écrire ; toutes les apps affichent alors les mêmes formats.
+- Options écartées : fonction de rendu libre par colonne ; pastilles pour `tags` (aucun composant d'étiquette en lecture seule, et un texte suffit en liste).
+- Validation : par délégation de l'utilisateur, 2026-11-23 — docs/validation/components/ListPage-v1.html
+
+## D-171 — Valeurs typées : vide « — », illisible en texte brut
+- Date : 2026-11-23
+- Portée : FormattedValue
+- Décision : une valeur vide (`null`, `undefined`, `""`, liste vide) s'affiche « — » en `--fg-3`, lu « vide ». Une valeur illisible pour son type (date invalide, nombre en texte libre) s'affiche telle quelle, sans erreur.
+- Raison : une donnée imparfaite ne doit jamais casser une liste ni cacher l'information.
+- Options écartées : cellule vide ; message d'erreur dans la cellule.
+- Validation : par délégation de l'utilisateur, 2026-11-23 — docs/validation/components/ListPage-v1.html
+
+## D-172 — Valeurs typées : le type fixe l'alignement, la largeur et le tri
+- Date : 2026-11-23
+- Portée : FormattedValue, ListPage
+- Décision : nombres, montants, pourcentages, tailles, dates et durées sont alignés à droite en chiffres de largeur égale ; le reste à gauche. Chaque type a une largeur de colonne par défaut (de 80 à 160 px) ; texte, liens et étiquettes prennent la place restante. Le tri se fait sur la valeur (nombre, horodatage), jamais sur le texte affiché ; une valeur vide va toujours en dernier.
+- Raison : l'app n'a plus à régler de largeur ni d'alignement, et « 9 » ne passe pas après « 10 ».
+- Options écartées : largeur fixée par l'app à chaque colonne.
+- Validation : par délégation de l'utilisateur, 2026-11-23 — docs/validation/components/ListPage-v1.html
+
+## D-173 — ListPage : gabarit déclaratif qui dessine tous les états
+- Date : 2026-11-23
+- Portée : ListPage
+- Décision : l'app passe des données (titre, lignes, colonnes typées, filtres, recherche, `Action`) ; le gabarit dessine l'en-tête, la barre, la liste (`Table` ou `List`), le pied, et les états chargement, vide, aucun résultat et erreur. Les lignes `undefined` signifient « premier chargement ».
+- Raison : une page de liste se décrit en quelques lignes, et toutes les listes de toutes les apps se ressemblent.
+- Options écartées : gabarit à zones libres (`header`, `toolbar`… en `ReactNode`), qui laisse chaque app réinventer les états ; chargement par une fonction `load` dans le gabarit, qui lie le gabarit à une façon de charger.
+- Validation : par délégation de l'utilisateur, 2026-11-23 — docs/validation/components/ListPage-v1.html
+
+## D-174 — ListPage : recherche et filtres dans la barre ; local par défaut, distant en option
+- Date : 2026-11-23
+- Portée : ListPage
+- Décision : la barre porte la recherche (`SearchField`), puis trois filtres au plus en `Select`, première entrée « Tous les … ». Par défaut, le gabarit cherche, filtre, trie et découpe lui-même les lignes reçues. Avec `remote`, il ne touche à rien et signale `{ query, filters, sort, page }` à `onStateChange` ; l'app recharge.
+- Raison : la plupart des listes tiennent en mémoire ; une grosse liste garde la même page en passant par son API.
+- Options écartées : recherche dans la barre du haut (layout-rules : la recherche d'une liste n'y va pas) ; filtres en étiquettes dans la recherche.
+- Validation : par délégation de l'utilisateur, 2026-11-23 — docs/validation/components/ListPage-v1.html
+
+## D-175 — ListPage : pied à compteur, « Afficher plus » par défaut, pagination en option
+- Date : 2026-11-23
+- Portée : ListPage
+- Décision : le pied montre le compteur à gauche. Par défaut (`more`), 50 lignes, « 50 sur 312 » et « Afficher plus » qui ajoute 50 lignes. En `pages`, « 1–50 sur 312 » et les boutons page précédente et suivante. Si tout tient, seulement « 12 éléments ». Une recherche ou un filtre ramène au début.
+- Raison : c'est la règle `footer` de layout-rules ; « Afficher plus » garde la sélection et la position, la pagination sert aux très longues listes.
+- Options écartées : défilement infini (pas de pied joignable, compteur caché) ; numéros de page.
+- Validation : par délégation de l'utilisateur, 2026-11-23 — docs/validation/components/ListPage-v1.html
+
+## D-176 — ListPage : vide sans barre ; aucun résultat avec « Effacer la recherche »
+- Date : 2026-11-23
+- Portée : ListPage
+- Décision : sans aucune ligne ni critère, le gabarit montre l'en-tête puis un `EmptyState` (icône, titre, phrase, action `primary` de la page), sans barre ni pied. Avec des critères et aucun résultat, la barre reste et le message de `Table` ou `List` propose « Effacer la recherche », qui vide aussi les filtres.
+- Raison : une barre de recherche sur une liste vide n'a rien à chercher ; un résultat vide doit se défaire en un clic.
+- Options écartées : compteurs à zéro dans le pied ; bouton « Effacer les filtres » séparé.
+- Validation : par délégation de l'utilisateur, 2026-11-23 — docs/validation/components/ListPage-v1.html
+
+## D-177 — ListPage : filtres et tri mémorisés, recherche oubliée
+- Date : 2026-11-23
+- Portée : ListPage
+- Décision : les filtres et le tri sont mémorisés par page (`storageId`, défaut : le titre), comme les largeurs de `Table` (D-067). La recherche repart vide à chaque ouverture.
+- Raison : un filtre traduit une habitude de travail ; une recherche répond à un besoin du moment, et une recherche oubliée cacherait des lignes sans qu'on le voie.
+- Options écartées : tout mémoriser ; ne rien mémoriser.
+- Validation : par délégation de l'utilisateur, 2026-11-23 — docs/validation/components/ListPage-v1.html
+
+## D-178 — ListPage : barre de sélection à la place de la barre d'outils
+- Date : 2026-11-23
+- Portée : ListPage
+- Décision : en `selectionMode="multiple"`, dès qu'une ligne est cochée, la barre d'outils devient la barre de sélection : « 3 sélectionnés », bouton « Tout désélectionner », puis les actions de `selectionActions(rows)` en `ActionBar` zone `toolbar`, à droite. Décocher tout rend la barre d'outils.
+- Raison : c'est la barre de sélection prévue par `Table` (anatomie, pièce 6), au même endroit que les outils, sans décaler la liste.
+- Options écartées : barre flottante en bas de l'écran ; actions groupées dans l'en-tête.
+- Validation : par délégation de l'utilisateur, 2026-11-23 — docs/validation/components/ListPage-v1.html
+
+## D-180 — DetailPanel : forme déclarative, à côté de la forme à composants
+- Date : 2026-11-23
+- Portée : DetailPanel
+- Décision : `DetailPanel` accepte, en option, des données au lieu d'enfants : `header` (en-tête de l'objet) et `sections` (sections et champs typés), plus les états `isLoading`, `hasError`, `onRetry`, `isNotFound` et `emptyMessage`. Le panneau dessine tout avec les pièces existantes (`DetailPanel.Section`, `PropertyRow`, `ActionBar`, `StatusBadge`, `Skeleton`, `EmptyState`). La forme à composants reste. Les deux formes s'excluent : avec `header` ou `sections`, les enfants ne sont pas acceptés (types TypeScript). Le panneau ne charge rien : l'app lit la sélection, charge l'objet et passe les états.
+- Raison : une app « liste + détail » décrit son objet sans recomposer le panneau ; le chargement reste à l'app, qui seule connaît sa source. Validation : par délégation de l'utilisateur, 2026-11-23.
+- Options écartées : nouveau composant `DetailView` (deux noms pour un seul panneau) ; fonction qui renvoie des éléments ; option `load(id)` dans le panneau (lié au transport de l'app).
+- Validation : docs/validation/components/DetailPanel-v2.html
+
+## D-181 — DetailPanel : en-tête de l'objet
+- Date : 2026-11-23
+- Portée : DetailPanel
+- Décision : `header` = `{ title, subtitle?, status?, actions? }`. En haut du panneau, collé en haut pendant le défilement, séparé des sections par un trait `--line`. Ligne 1 : titre en `--fs-lg`, gras, sur deux lignes au plus (puis « … » et info-bulle) ; actions à droite, dessinées par `ActionBar` avec la règle de la zone `section` (2 icônes au plus, « … », action principale en `Button` `secondary` `sm`, D-113). Ligne 2 : statut en `StatusBadge`, puis sous-titre en `--fs-sm`, `--fg-2`, sur une ligne avec « … ». Le groupe d'actions est nommé « Actions sur {title} ».
+- Raison : à 320 px, la règle `header` (3 icônes et bouton à texte) écrase le titre ; la zone `section` garde le titre lisible. Validation : par délégation de l'utilisateur, 2026-11-23.
+- Options écartées : règle de la zone `header` ; actions sur une ligne à part sous le titre (plus haut, pour rien) ; actions dans l'en-tête d'AppShell (changerait AppShell).
+- Validation : docs/validation/components/DetailPanel-v2.html
+
+## D-182 — DetailPanel : champ typé
+- Date : 2026-11-23
+- Portée : DetailPanel
+- Décision : un champ = `{ id?, label, value, type?, hideEmpty?, icon?, action?, details? }`, plus les options de format `ValueFormat` (D-170). La valeur est rendue par `FormattedValue`, comme les colonnes de ListPage : un type rend la même chose dans une liste et dans le panneau. Valeur vide : « — » (D-058), ou ligne masquée avec `hideEmpty`. `icon`, `action` (un des trois types de D-059) et `details` (ligne qui s'ouvre, D-060) sont ceux de `PropertyRow`. Le champ devient une `PropertyRow`.
+- Raison : une seule définition des types pour tout le design system ; aucune mise en forme dans l'app. Validation : par délégation de l'utilisateur, 2026-11-23.
+- Options écartées : formateur propre au panneau ; valeur `ReactNode` seule (l'app formate elle-même).
+- Validation : docs/validation/components/DetailPanel-v2.html
+
+## D-183 — DetailPanel : section déclarative ; résumé et section repliée par défaut
+- Date : 2026-11-23
+- Portée : DetailPanel
+- Décision : une section = `{ id, title, fields?, content?, empty?, actions?, summary?, defaultCollapsed? }`. Elle montre ses champs, puis son contenu libre (un texte devient un paragraphe en `--fg`). Sans champ visible ni contenu, elle affiche `empty` en `--fg-3` (défaut : « Aucune information »). `actions` va à droite de la ligne du titre, hors du bouton qui replie, par `ActionBar` zone `section` (D-113). `summary` (`string` ou `{ label, tone }`) est un état court après le chevron, lisible même section repliée, en `StatusBadge`. `defaultCollapsed` replie la section tant que l'utilisateur ne l'a pas ouverte ; le choix de l'utilisateur est mémorisé (D-061). `summary`, `actions` et `defaultCollapsed` sont aussi ajoutés à `DetailPanel.Section`.
+- Raison : les mêmes sections dans les deux formes ; le résumé évite d'ouvrir une section pour lire son état. Validation : par délégation de l'utilisateur, 2026-11-23.
+- Options écartées : actions en pied de section (le pied garde le bouton à texte de la forme à composants, D-059) ; résumé en couleur seule.
+- Validation : docs/validation/components/DetailPanel-v2.html
+
+## D-184 — DetailPanel : chargement, erreur, introuvable, vide
+- Date : 2026-11-23
+- Portée : DetailPanel
+- Décision : priorité, de haut en bas. (1) `hasError` sans données : message centré « Impossible de charger le détail », phrase, bouton « Réessayer » (`onRetry`) (comme D-085). (2) `isLoading` sans données : squelettes d'un titre et de six lignes à deux colonnes (`SkeletonGroup`, après 200 ms, D-165). (3) `isNotFound` : `EmptyState` compact « Élément introuvable », « Il a peut-être été supprimé. ». (4) Ni `header` ni `sections` : la phrase vide existante, ou `emptyMessage`. Avec des données : `isLoading` ajoute la barre fine de 2 px en haut (D-084) ; `hasError` ajoute sous l'en-tête le bandeau « Le détail n'a pas pu être mis à jour » avec « Réessayer » (D-085). « Données » = `header` ou `sections` fournis.
+- Raison : les mêmes états que Table et List ; l'ancien détail reste lisible pendant un rechargement. Validation : par délégation de l'utilisateur, 2026-11-23.
+- Options écartées : bandeau `danger` en rouge (Alfred) ; état introuvable laissé à l'app.
+- Validation : docs/validation/components/DetailPanel-v2.html
+
+## D-185 — DetailPanel : pas de déplacement des sections
+- Date : 2026-11-23
+- Portée : DetailPanel
+- Décision : l'utilisateur replie les sections, mais ne les déplace pas (ni poignée, ni Alt+↑/↓). L'ordre est celui que donne l'app.
+- Raison : besoin rare, coût élevé (glisser, clavier, mémoire de l'ordre) ; à revoir si une deuxième app le demande. Validation : par délégation de l'utilisateur, 2026-11-23.
+- Options écartées : sections déplaçables comme dans Alfred (`PanelSections`).
+- Validation : docs/validation/components/DetailPanel-v2.html
+
+## D-190 — Formulaire déclaratif : l'app décrit les champs, Socle les dessine
+- Date : 2026-11-23
+- Portée : FormPage, formulaire en modale (`useOpenForm`)
+- Décision : `FormPage` et `openForm` reçoivent les champs sous forme de données (`FormField`) : `type`, `name`, `label`, `description`, `isRequired`, `validate`, `defaultValue`, et les options propres au type. Types : `text`, `email`, `url`, `tel`, `password`, `number`, `textarea` (→ `TextField`, `TextArea`), `select` (→ `Select`), `combobox` (→ `ComboBox`), `radio` (→ `RadioGroup`), `checkbox` (→ `Checkbox`), `checkboxGroup` (→ `CheckboxGroup`), et le groupe `fieldset` (→ `Fieldset`, qui contient d'autres champs). Pas de type `switch` (D-137). Pas de date ni d'heure tant que Socle n'a pas de sélecteur. Pas de champ dessiné par l'app.
+- Raison : deux apps qui décrivent le même formulaire obtiennent le même écran ; les règles de D-022 et D-130 à D-138 s'appliquent sans effort.
+- Options écartées : composants enfants libres dans le gabarit ; type `custom` avec une fonction de rendu.
+- Validation : docs/validation/components/FormPage-v1.html — par délégation de l'utilisateur, 2026-11-23.
+
+## D-191 — Formulaire déclaratif : valeurs, largeurs et disposition
+- Date : 2026-11-23
+- Portée : FormPage, formulaire en modale
+- Décision :
+  - Valeur rendue par type : texte (`string`, sans espaces autour, sauf `password` ; `""` si vide) ; `number` (`number` ou `null`, virgule acceptée) ; `select`, `radio`, `combobox` simple (`string` ou `null`) ; `combobox` multiple et `checkboxGroup` (`string[]`) ; `checkbox` (`boolean`).
+  - Valeur de départ : `initialValues[name]` (l'objet lu en base convient), sinon `defaultValue` du champ, sinon vide.
+  - Largeur : celle du champ (`width`, D-133) ; par défaut `sm` pour `number`, toute la colonne pour les autres.
+  - Chaque champ est sur sa ligne, l'un sous l'autre, avec 16 px d'écart. Des champs qui vont ensemble passent par `fieldset`.
+- Raison : des valeurs typées évitent les conversions dans chaque app ; une colonne unique se lit et se parcourt au clavier sans surprise.
+- Options écartées : valeurs toujours en texte (« 1 » / « 0 ») ; deux champs courts consécutifs sur une ligne (Alfred).
+- Validation : docs/validation/components/FormPage-v1.html — par délégation de l'utilisateur, 2026-11-23.
+
+## D-192 — Formulaire déclaratif : vérification et erreurs de l'envoi
+- Date : 2026-11-23
+- Portée : FormPage, formulaire en modale
+- Décision : chaque champ vérifie seul, au moment fixé par D-132 (`isRequired`, format, puis `validate(valeur, valeurs)`, qui reçoit aussi les autres valeurs pour une règle croisée). L'envoi est bloqué tant qu'un champ est en erreur ; le focus va au premier. `onSubmit` peut rendre `{ errors: { champ: "phrase" }, message? }` : les phrases s'affichent sous les champs (D-132, option `error`) et disparaissent dès que le champ change. Une exception levée par `onSubmit` affiche son message sur place.
+- Raison : l'erreur du serveur reste à côté de ce qu'il faut corriger (D-159).
+- Options écartées : notification de l'échec par un toast.
+- Validation : docs/validation/components/FormPage-v1.html — par délégation de l'utilisateur, 2026-11-23.
+
+## D-193 — FormPage : mise en page
+- Date : 2026-11-23
+- Portée : FormPage
+- Décision : en-tête (titre en `--fs-xl` semibold, phrase d'intention en `--fg-2`), puis les sections séparées par un trait. Quand le gabarit a au moins 800 px de large (requête de conteneur, donc juste même à côté d'une sidebar ou d'un panneau), la section a deux colonnes : titre et aide sur 240 px à gauche, champs sur 560 px au plus à droite, 32 px d'écart ; en dessous, le titre passe au-dessus des champs. Contenu sur 880 px au plus, calé à gauche, marges `--pad`. Pied collé en bas de la zone qui défile (`sticky`), fond `--surface`, trait au-dessus. Sur mobile, les boutons du pied prennent toute la largeur et l'état passe au-dessus. Pendant le chargement (`isLoading`), des `Skeleton` remplacent les champs.
+- Raison : D-022 ; la requête de conteneur suit la place réelle, pas la fenêtre.
+- Options écartées : points de rupture de la fenêtre (640 / 1024 px) ; contenu centré.
+- Validation : docs/validation/components/FormPage-v1.html — par délégation de l'utilisateur, 2026-11-23.
+
+## D-194 — FormPage : état d'enregistrement dans le pied
+- Date : 2026-11-23
+- Portée : FormPage
+- Décision : à gauche du pied, une phrase en `--fs-sm` : rien tant que rien ne change ; « Modifications non enregistrées » après une saisie ; « Enregistrement… » pendant l'envoi (l'action principale en chargement, D-105) ; « Enregistré » après la réussite ; en `--danger`, la phrase d'erreur après un échec (annoncée, `role="alert"`). La phrase est annoncée poliment aux lecteurs d'écran. Après la réussite, les valeurs envoyées deviennent la référence.
+- Raison : l'utilisateur sait toujours si son travail est en sûreté, sans icône d'ornement.
+- Options écartées : pastille seule ; aucun état.
+- Validation : docs/validation/components/FormPage-v1.html — par délégation de l'utilisateur, 2026-11-23.
+
+## D-195 — FormPage : « Annuler » après une saisie
+- Date : 2026-11-23
+- Portée : FormPage
+- Décision : « Annuler » appelle `onCancel` tout de suite si rien n'a changé. Après une saisie, il demande d'abord « Abandonner les modifications ? » par `useConfirm` (« Les modifications non enregistrées seront perdues. », bouton « Abandonner », ton `danger`). L'option `onDirtyChange` prévient l'app pour qu'elle protège aussi la navigation. Sans `onCancel`, pas de bouton « Annuler ». Le formulaire en modale garde D-122 (saisie courte, Échap ferme).
+- Raison : un long formulaire perdu coûte cher ; D-007 réserve la confirmation à l'irréversible, et l'abandon d'une saisie l'est.
+- Options écartées : quitter sans demander.
+- Validation : docs/validation/components/FormPage-v1.html — par délégation de l'utilisateur, 2026-11-23.
+
+## D-196 — Formulaire déclaratif : action principale toujours active ; Mod+Entrée envoie
+- Date : 2026-11-23
+- Portée : FormPage, formulaire en modale
+- Décision : l'action principale n'est jamais grisée ; un envoi incomplet montre les erreurs. Entrée dans un champ d'une ligne envoie (comportement natif) ; Mod+Entrée envoie de partout, zone de texte comprise. Pendant l'envoi, l'action est en chargement et « Annuler » désactivé.
+- Raison : un bouton grisé n'explique pas ce qui manque.
+- Options écartées : bouton grisé tant que rien ne change ou qu'un champ obligatoire est vide.
+- Validation : docs/validation/components/FormPage-v1.html — par délégation de l'utilisateur, 2026-11-23.
+
+## D-197 — Formulaire en modale : `useOpenForm`, une promesse des valeurs
+- Date : 2026-11-23
+- Portée : formulaire en modale
+- Décision : `const openForm = useOpenForm();` puis `const values = await openForm({ title, description?, fields, initialValues?, submitLabel, cancelLabel?, onSubmit? })`. La promesse rend les valeurs (D-191) une fois le formulaire envoyé, ou `null` si l'utilisateur ferme. Avec `onSubmit`, la modale reste ouverte et attend la promesse ; elle se ferme à la réussite seulement. L'hôte est dans `SocleProvider`, comme la confirmation (D-127) ; une nouvelle demande ferme la précédente (qui rend `null`).
+- Raison : rien à poser dans la page ; même forme que `useConfirm`.
+- Options écartées : `true` / `false` (Alfred) ; composant `FormDialog` piloté par l'app.
+- Validation : docs/validation/components/FormPage-v1.html — par délégation de l'utilisateur, 2026-11-23.
+
+## D-198 — Formulaire en modale : taille, attente et erreur
+- Date : 2026-11-23
+- Portée : formulaire en modale
+- Décision : la modale prend `sm` (400 px) jusqu'à quatre champs sans zone de texte ni groupe, sinon `md` (560 px). Six champs au plus : au-delà, une FormPage. Pied : « Annuler », puis l'action (D-124), qui envoie le formulaire. Pendant `onSubmit`, la modale est occupée (`isBusy`, D-122) et l'action en chargement. Une erreur s'affiche en `--danger` à la fin du corps, juste au-dessus du pied (D-128) ; les erreurs de champ vont sous les champs (D-192).
+- Raison : une saisie courte tient dans une petite fenêtre ; l'erreur reste dans la modale.
+- Options écartées : toujours `md` ; taille au choix de l'app.
+- Validation : docs/validation/components/FormPage-v1.html — par délégation de l'utilisateur, 2026-11-23.
+
+## D-200 — SettingsPage : API déclarative, réglages typés
+- Date : 2026-11-23
+- Portée : SettingsPage
+- Décision : l'app décrit ses réglages par des données : des groupes de rubriques (`groups`), chaque rubrique avec ses sections, chaque section avec ses réglages typés. Sept types : `switch` (interrupteur), `select` (liste, toujours un `Select`, même pour deux ou trois choix), `text` (champ d'une ligne), `action` (bouton), `item` (élément d'une liste), `info` (valeur en lecture seule) ; une section peut aussi recevoir un contenu libre (`content`, par exemple une `Table`). Le gabarit choisit le contrôle, sa place et son comportement.
+- Raison : toutes les apps ont des réglages ; décrits par des données, ils gardent partout le même rendu, sans ligne recomposée à la main.
+- Options écartées : composants à assembler (`SettingsPage.Nav`, `SettingRow`) ; contrôle segmenté pour un choix court (nouveau composant, à proposer à part).
+- Validation : docs/validation/components/SettingsPage-v1.html — par délégation de l'utilisateur, 2026-11-23.
+
+## D-201 — SettingsPage : navigation
+- Date : 2026-11-23
+- Portée : SettingsPage
+- Décision : à gauche, sur `--surface-side`, 220 px en web et 200 px en desktop : la recherche en tête, puis les groupes séparés par un trait, chacun avec un titre facultatif (`--fs-sm`, `--fg-3`) ; chaque rubrique est une ligne de `--row-h` avec une icône (obligatoire) et un libellé, au style d'un élément de Sidebar (survol `--hover`, rubrique courante `--selected`, `aria-current="page"`). Un lien externe facultatif se cale en pied, avec la flèche externe. Sans `selectedId` fourni par l'app, la dernière rubrique ouverte est mémorisée (D-007).
+- Raison : la même navigation que la Sidebar, pour un espace à part (D-015).
+- Options écartées : onglets en haut ; arbre à plusieurs niveaux.
+- Validation : docs/validation/components/SettingsPage-v1.html — par délégation de l'utilisateur, 2026-11-23.
+
+## D-202 — SettingsPage : recherche
+- Date : 2026-11-23
+- Portée : SettingsPage
+- Décision : la recherche est le `SearchField` de Socle, à son rythme (2 caractères, 300 ms, D-080 ; Mod+F y place le focus, D-083), sur toute la largeur de la navigation (et non 320 px, D-078). Elle filtre les rubriques sans casse ni accents (D-074). Une rubrique reste si son libellé, ses mots-clés (`keywords`), le titre d'une de ses sections ou le libellé d'un de ses réglages contient le texte. Un groupe sans rubrique restante disparaît avec son trait. Entrée ouvre la première rubrique trouvée. Sans résultat : « Aucune rubrique trouvée. » en `--fg-3`.
+- Raison : on cherche un réglage par son nom, pas seulement par sa rubrique.
+- Options écartées : filtre des lignes dans le contenu ; recherche sur le libellé de rubrique seul (Alfred) ; champ de recherche propre au gabarit, filtré à chaque lettre.
+- Validation : docs/validation/components/SettingsPage-v1.html — par délégation de l'utilisateur, 2026-11-23.
+
+## D-203 — SettingsPage : ligne de réglage
+- Date : 2026-11-23
+- Portée : SettingsPage
+- Décision : une ligne prend toute la largeur. À gauche : le libellé (`--fs-md`, `--fg`), puis la description (`--fs-sm`, `--fg-2`, 72 caractères par ligne au plus) ; à droite : le contrôle, centré en hauteur. Marge verticale de 12 px en web, 10 px en desktop ; un trait `--line` sous chaque ligne. Le libellé passe à la ligne ; il n'est jamais coupé. Le contrôle porte le libellé de la ligne comme nom accessible (D-136). `select` et `text` prennent la largeur `md` (240 px) par défaut, réglable par `width` (D-133).
+- Raison : le rendu de l'inspiration et des Réglages d'Alfred ; une ligne lisible d'un coup d'œil.
+- Options écartées : libellé au-dessus du contrôle (formulaire, D-022).
+- Validation : docs/validation/components/SettingsPage-v1.html — par délégation de l'utilisateur, 2026-11-23.
+
+## D-204 — SettingsPage : application immédiate et échec
+- Date : 2026-11-23
+- Portée : SettingsPage
+- Décision : `switch` et `select` s'appliquent dès qu'ils changent : la nouvelle valeur s'affiche tout de suite et `onChange` est appelé. `text` s'applique à Entrée ou en quittant le champ, si la valeur a changé et passe la vérification (`isRequired`, `validate`, format `email` ou `url`) ; sinon l'erreur s'affiche sous le champ (D-132) ; Échap rétablit la valeur enregistrée. Si `onChange` rejette sa promesse, la valeur précédente revient et un toast `danger` dit « Le réglage n'a pas été enregistré. », avec le message de l'erreur en description. Pas de toast de réussite. Pas de bouton « Enregistrer ».
+- Raison : D-007 ; une saisie validée à Entrée ou à la sortie du champ évite deux clics et une ligne qui bouge.
+- Options écartées : boutons « Annuler » et « Enregistrer » qui apparaissent à la modification (Alfred) ; toast « Réglage enregistré ».
+- Validation : docs/validation/components/SettingsPage-v1.html — par délégation de l'utilisateur, 2026-11-23.
+
+## D-205 — SettingsPage : réglage « action »
+- Date : 2026-11-23
+- Portée : SettingsPage
+- Décision : un réglage `action` reçoit une `Action` (D-110) et l'affiche en `Button` secondaire, à droite de la ligne. Une action `danger` ou avec `confirm` est confirmée par `useConfirm`, et le bouton rouge n'apparaît que dans la confirmation (D-104, D-115). Pendant sa promesse, le bouton est en chargement (D-116) ; un échec ouvre un toast `danger`.
+- Raison : une seule façon d'exécuter une action dans Socle ; le rouge reste réservé au geste qui détruit.
+- Options écartées : bouton `primary` ou `danger` directement dans la ligne.
+- Validation : docs/validation/components/SettingsPage-v1.html — par délégation de l'utilisateur, 2026-11-23.
+
+## D-206 — SettingsPage : listes dans une section
+- Date : 2026-11-23
+- Portée : SettingsPage
+- Décision : un réglage `item` est un élément d'une liste gérée dans les réglages (un environnement, une clé). Il a un libellé, un `Code` court facultatif à côté, une description facultative et des étiquettes d'état facultatives (`StatusBadge`) sous la description. Ses actions passent par `ActionBar` en zone `row` (D-114) : une icône, puis « … » ; une action `danger` va dans « … », en dernier, confirmée (D-115). Les actions de la section (« Nouvel environnement ») passent par `ActionBar` en zone `section` (D-113), à droite du titre. Une section sans ligne affiche `emptyMessage` en `--fg-3`, à la place des lignes.
+- Raison : Alfred et d'autres apps gèrent des listes courtes dans leurs réglages ; le modèle Action garde la règle des lignes.
+- Options écartées : corbeille rouge visible sur la ligne (Alfred) ; `EmptyState` centré dans une section.
+- Validation : docs/validation/components/SettingsPage-v1.html — par délégation de l'utilisateur, 2026-11-23.
+
+## D-207 — SettingsPage : contenu d'une rubrique
+- Date : 2026-11-23
+- Portée : SettingsPage
+- Décision : le contenu défile seul, avec une marge de 28 px sur les côtés en web, 24 px en desktop. En tête : le libellé de la rubrique (`h2`, `--fs-lg`, `--fw-semibold`). Puis les sections, à 28 px l'une de l'autre : titre facultatif (`h3`, `--fs-md`, `--fw-semibold`), description facultative (`--fs-sm`, `--fg-2`), actions à droite, un trait dessous, puis les lignes. Le contenu libre d'une section (`content`) prend toute la largeur, sous le titre. Changer de rubrique remonte le contenu en haut.
+- Raison : une hiérarchie simple : rubrique, section, ligne.
+- Options écartées : titre de rubrique absent (le titre de section seul) ; sections en cartes.
+- Validation : docs/validation/components/SettingsPage-v1.html — par délégation de l'utilisateur, 2026-11-23.
+
+## D-208 — SettingsPage : conteneur et petite largeur
+- Date : 2026-11-23
+- Portée : SettingsPage, Dialog
+- Décision : le gabarit remplit son parent : le corps d'un `Dialog` `xl` (sans marge, D-120) ou la zone `main` d'AppShell. Il n'a pas de titre propre : celui du `Dialog` ou de la barre du haut suffit. Sous 640 px de large (requête de conteneur sur le gabarit, pas sur l'écran), il montre la navigation en liste, avec un chevron à droite de chaque rubrique ; choisir une rubrique montre son contenu, avec une flèche « Retour aux rubriques » devant son titre (D-015). Dans un `Dialog`, un réglage changé ne compte pas comme une saisie commencée : le clic hors ferme toujours la modale (D-122), car tout est déjà appliqué.
+- Raison : D-015 ; la largeur du conteneur décide, car la même modale est plein écran sur mobile (D-121).
+- Options écartées : requête média sur l'écran ; navigation repliée en menu.
+- Validation : docs/validation/components/SettingsPage-v1.html — par délégation de l'utilisateur, 2026-11-23.
+
+## D-209 — SettingsPage : chargement et erreur d'une rubrique
+- Date : 2026-11-23
+- Portée : SettingsPage
+- Décision : une rubrique peut être en chargement (`isLoading`) : des squelettes de lignes prennent la place des sections, après 200 ms (D-165). Elle peut avoir échoué (`hasError`, `onRetry`) : un message centré prend la place des sections, comme pour les résultats (D-085) : « Impossible de charger ces réglages », une phrase, puis « Réessayer ». La navigation reste utilisable.
+- Raison : les réglages viennent souvent d'un serveur ; on reprend les états des résultats déjà décidés.
+- Options écartées : chargement de toutes les rubriques d'un coup ; bandeau d'erreur.
+- Validation : docs/validation/components/SettingsPage-v1.html — par délégation de l'utilisateur, 2026-11-23.
+
+## D-210 — DetailPage : en-tête fixe, contenu qui défile ; propriétés au panneau
+- Date : 2026-11-23
+- Portée : DetailPage
+- Décision : DetailPage remplit la zone `main` d'AppShell. L'en-tête (retour, titre, statut, méta, actions) reste fixe, séparé du contenu par un trait ; seul le contenu défile. Le contenu est une suite de sections. Les propriétés de l'élément vont dans le panneau de détail (D-018), jamais dans la page.
+- Raison : les actions restent à portée quand on lit une longue fiche ; même découpe que les autres gabarits.
+- Options écartées : en-tête qui défile avec le contenu ; propriétés dans une section de la page.
+- Validation : par délégation de l'utilisateur, 2026-11-23 — docs/validation/components/DetailPage-v1.html
+
+## D-211 — DetailPage : lien de retour en texte, au-dessus du titre
+- Date : 2026-11-23
+- Portée : DetailPage
+- Décision : le retour est un lien texte « ‹ Demandes » au-dessus du titre, en `--fs-sm` et `--fg-2`, souligné au survol. Il nomme la vue principale où il mène (`back.label`) ; son nom accessible est « Retour à Demandes ». Il reste visible dans tous les états de la page. Il est facultatif.
+- Raison : il dit où il mène, et le titre reste aligné sur les sections.
+- Options écartées : bouton-icône à gauche du titre (Alfred) ; fil d'Ariane qui répète le titre.
+- Validation : par délégation de l'utilisateur, 2026-11-23 — docs/validation/components/DetailPage-v1.html
+
+## D-212 — DetailPage : titre, statut et méta
+- Date : 2026-11-23
+- Portée : DetailPage
+- Décision : le titre est le `h1` de la page, en `--fs-xl`, semi-gras ; un titre long passe à la ligne, il n'est jamais tronqué. Le statut est un `StatusBadge` juste après le titre. La méta tient sur une ligne sous le titre, en `--fs-sm` et `--fg-2` ; ses éléments sont séparés par « · » et passent à la ligne si la place manque. Les actions (`ActionBar`, zone `header`) sont calées en haut à droite.
+- Raison : le titre est l'identité de l'élément ; la méta le situe sans prendre la place des propriétés.
+- Options écartées : titre tronqué avec info-bulle ; statut sous le titre.
+- Validation : par délégation de l'utilisateur, 2026-11-23 — docs/validation/components/DetailPage-v1.html
+
+## D-213 — Sections de page : titre, description, actions ; séparées par un trait
+- Date : 2026-11-23
+- Portée : PageSection (DetailPage, Page)
+- Décision : `PageSection` a un titre `h2` en `--fs-lg`, semi-gras, une description facultative en `--fs-sm` et `--fg-2`, et des actions facultatives (`ActionBar`, zone `section`) à droite du titre. Dans DetailPage, deux sections sont séparées par un trait `--line`, avec 20 px au-dessus et au-dessous. Dans Page, les blocs sont espacés de 24 px, sans trait. Une section ne se replie pas.
+- Raison : une page se lit en entier ; le repli est réservé au panneau de détail (D-061).
+- Options écartées : sections repliables ; sections en cartes.
+- Validation : par délégation de l'utilisateur, 2026-11-23 — docs/validation/components/DetailPage-v1.html
+
+## D-214 — Largeur : colonne de lecture pour DetailPage, pleine largeur pour Page
+- Date : 2026-11-23
+- Portée : DetailPage, Page
+- Décision : option `width` : `"text"` limite la colonne à 760 px, centrée ; `"full"` prend toute la largeur. Défaut `"text"` pour DetailPage, `"full"` pour Page. L'en-tête suit la même colonne que le contenu.
+- Raison : une fiche se lit ; une page composée porte souvent un tableau ou un graphique.
+- Options écartées : colonne calée à gauche ; même défaut pour les deux gabarits.
+- Validation : par délégation de l'utilisateur, 2026-11-23 — docs/validation/components/DetailPage-v1.html
+
+## D-215 — États de la page : chargement, erreur, introuvable
+- Date : 2026-11-23
+- Portée : DetailPage, Page
+- Décision : option `state` : `"loading"` montre des squelettes après 200 ms (D-165), à la place du titre et de la méta si le titre n'est pas encore connu, et à la place du contenu ; `"error"` montre « Impossible de charger » avec « Réessayer » (`onRetry`) à la place du contenu (D-085) ; `"not-found"` montre l'`EmptyState` décrit par `notFound` (titre, phrase, action en zone `empty`). Dans ces trois états, les actions de l'en-tête sont masquées et le lien de retour reste. Un rechargement garde le contenu : l'attente se voit sur l'action (« Actualiser »), par `ActionBar` (D-116).
+- Raison : le gabarit rend chaque état, et l'utilisateur peut toujours revenir à la liste.
+- Options écartées : spinner plein écran ; squelettes à chaque rechargement.
+- Validation : par délégation de l'utilisateur, 2026-11-23 — docs/validation/components/DetailPage-v1.html
+
+## D-216 — États d'une section : chargement, erreur, vide
+- Date : 2026-11-23
+- Portée : PageSection
+- Décision : une section qui charge ses données à part prend `state="loading"` (deux lignes de squelette), `state="error"` (message compact avec « Réessayer ») ou `empty` (`EmptyState` compact, avec action facultative en zone `empty`). Le titre de la section reste visible ; le reste de la page n'est pas touché.
+- Raison : une partie lente (historique, pièces jointes) ne bloque pas toute la fiche.
+- Options écartées : état géré par l'app avec ses propres composants.
+- Validation : par délégation de l'utilisateur, 2026-11-23 — docs/validation/components/DetailPage-v1.html
+
+## D-217 — Page composée : barre d'outils, contenu, pied
+- Date : 2026-11-23
+- Portée : Page
+- Décision : `Page` sert quand aucun gabarit ne convient. Elle pose trois zones : `toolbar` (fixe, une ligne : contenu libre à gauche, qui défile à l'horizontale si la place manque ; `actions` en zone `toolbar` à droite), le contenu (blocs empilés à 24 px, seule zone qui défile), `footer` (fixe, trait au-dessus, `--fs-sm`, `--fg-3`). Elle n'a pas d'en-tête : le nom de la page est dans la barre du haut ; un élément ouvert prend DetailPage. L'app pose des composants du socle dans les zones, sans HTML stylé.
+- Raison : une page hors gabarit garde les mêmes marges, la même barre et le même pied que les autres.
+- Options écartées : en-tête libre dans Page (Alfred) ; barre d'outils sur plusieurs lignes.
+- Validation : par délégation de l'utilisateur, 2026-11-23 — docs/validation/components/DetailPage-v1.html
+
+## D-218 — Page : contenu qui remplit la hauteur
+- Date : 2026-11-23
+- Portée : Page
+- Décision : option `fill` : le contenu prend la hauteur disponible sans défiler et sans marge basse ; son unique enfant (un éditeur, un grand tableau) gère son propre défilement.
+- Raison : un tableau garde son en-tête visible et un éditeur tient dans la fenêtre.
+- Options écartées : hauteur fixe en pixels.
+- Validation : par délégation de l'utilisateur, 2026-11-23 — docs/validation/components/DetailPage-v1.html
+
+## D-260 — TreeView ou Sidebar.TreeItem : choisir par la zone et la profondeur
+- Date : 2026-11-23
+- Portée : TreeView, Sidebar
+- Décision : `TreeView` sert le contenu de travail (explorer, choisir et agir sur une hiérarchie de données), dans une zone de contenu, sur autant de niveaux que nécessaire, une ligne par nœud. `Sidebar.TreeItem` reste la navigation, dans la Sidebar seulement, sur deux lignes et un niveau d'enfants (D-056). La navigation de l'app va dans la Sidebar, même hiérarchique ; un arbre de données ne va jamais dans la Sidebar. Les deux ne partagent pas de rendu, seulement les tokens et React Aria `Tree`.
+- Raison : validation par délégation de l'utilisateur, 2026-11-23 ; deux rôles nets évitent deux composants pour le même besoin.
+- Options écartées : étendre `Sidebar.TreeItem` à plusieurs niveaux ; un seul composant d'arbre avec une variante « navigation ».
+- Validation : docs/validation/components/TreeView-v1.html
+
+## D-261 — TreeView : un nœud sur une ligne
+- Date : 2026-11-23
+- Portée : TreeView
+- Décision : un nœud tient sur une ligne de `--row-h`, rayon de 8 px : retrait de 16 px par niveau, chevron de 16 px (place gardée sans enfants), icône facultative de 16 px (`openIcon` une fois déplié), libellé coupé, méta courte à droite en `--fs-sm`, `--fg-3`.
+- Raison : validation par délégation de l'utilisateur, 2026-11-23 ; densité d'un explorateur, colonnes d'icônes alignées.
+- Options écartées : deux lignes par nœud ; retrait qui suit la densité.
+- Validation : docs/validation/components/TreeView-v1.html
+
+## D-262 — TreeView : un trait vertical par niveau, sans coude
+- Date : 2026-11-23
+- Portée : TreeView
+- Décision : sous un nœud déplié, chaque niveau parent est marqué par un trait vertical de 1 px en `--tree-line`, aligné sur le chevron du parent, sans coude ni trait horizontal.
+- Raison : validation par délégation de l'utilisateur, 2026-11-23 ; on repère la profondeur sans bruit, même à cinq niveaux ; le coude de D-042 sert un seul niveau.
+- Options écartées : coude de D-042 (B) ; aucun trait (C).
+- Validation : docs/validation/components/TreeView-v1.html
+
+## D-263 — TreeView : sélection et ouverture
+- Date : 2026-11-23
+- Portée : TreeView
+- Décision : un clic sélectionne le nœud (`selectionMode` `single` par défaut, `multiple` ou `none`). En `multiple`, Mod+clic ajoute ou retire, Maj+clic prend la plage ; pas de case à cocher. Le chevron plie ou déplie sans sélectionner. Double-clic ou Entrée appellent `onAction` ; sans `onAction`, ils plient ou déplient le nœud.
+- Raison : validation par délégation de l'utilisateur, 2026-11-23 ; c'est le geste d'un explorateur de fichiers ; une case par nœud appelle la sélection en cascade, hors de ce besoin.
+- Options écartées : case au survol comme la liste (D-065) ; sélection en cascade.
+- Validation : docs/validation/components/TreeView-v1.html
+
+## D-264 — TreeView : clavier du motif tree et recherche par frappe
+- Date : 2026-11-23
+- Portée : TreeView
+- Décision : clavier du motif `tree` de l'ARIA (React Aria `Tree`) : flèches haut et bas, droite (déplie, puis premier enfant), gauche (replie, puis parent), Origine, Fin, Page haut et bas, Entrée, Espace, Maj+flèches en `multiple`. Des lettres tapées vont au nœud visible dont le libellé commence par elles. Maj+F10 ou la touche Menu ouvrent le menu « … ».
+- Raison : validation par délégation de l'utilisateur, 2026-11-23 ; même clavier que la Sidebar et que tout arbre du système.
+- Options écartées : touche `*` (déplier les frères), absente de React Aria.
+- Validation : docs/validation/components/TreeView-v1.html
+
+## D-265 — TreeView : actions de nœud par le modèle Action
+- Date : 2026-11-23
+- Portée : TreeView
+- Décision : `actions(node)` rend des `Action` ; la ligne les dessine avec `ActionBar` zone `row` (D-114) : une icône puis « … », l'action `danger` en dernier dans « … », confirmée (D-115). Les actions apparaissent au survol, au focus et sur la ligne sélectionnée, à la place de la méta ; un clic droit ou Maj+F10 ouvrent « … » (D-066).
+- Raison : validation par délégation de l'utilisateur, 2026-11-23 ; une seule règle d'actions de ligne dans tout le système.
+- Options écartées : boutons-icônes libres en bout de ligne (Alfred).
+- Validation : docs/validation/components/TreeView-v1.html
+
+## D-266 — TreeView : enfants chargés à la demande
+- Date : 2026-11-23
+- Portée : TreeView
+- Décision : un nœud `hasChildren` sans `children` demande ses enfants à `loadChildren(node, signal)` à sa première ouverture. Pendant l'attente, une ligne « Chargement… » avec la roue s'affiche sous lui, et il porte `aria-busy`. En cas d'échec, la ligne devient « Impossible de charger » avec le lien « Réessayer ». Les enfants chargés sont gardés ; replier puis déplier ne relance pas la demande. Replier pendant l'attente abandonne la demande (`signal`).
+- Raison : validation par délégation de l'utilisateur, 2026-11-23 ; un grand arbre reste léger, et l'erreur reste au nœud concerné.
+- Options écartées : squelettes à la place des enfants ; erreur en notification.
+- Validation : docs/validation/components/TreeView-v1.html
+
+## D-267 — TreeView : glisser-déposer facultatif
+- Date : 2026-11-23
+- Portée : TreeView
+- Décision : avec `onMove(ids, target)`, les nœuds se déplacent au glisser-déposer. Cible : avant ou après un nœud (trait d'insertion de 2 px en `--accent`, au retrait de la cible), ou dans un nœud qui peut avoir des enfants (fond `--selected` encadré d'`--accent`). Jamais dans le nœud glissé ni ses descendants. La ligne glissée passe à 50 % d'opacité. Le composant ne change pas `nodes` : l'app applique le déplacement. Au clavier, React Aria fournit le bouton « Déplacer », visible au focus.
+- Raison : validation par délégation de l'utilisateur, 2026-11-23 ; c'est le besoin le plus courant d'un arbre de fichiers, sans imposer de règle métier.
+- Options écartées : réordonner seulement entre frères ; poignée toujours visible.
+- Validation : docs/validation/components/TreeView-v1.html
+
+## D-268 — TreeView : arbre vide
+- Date : 2026-11-23
+- Portée : TreeView
+- Décision : sans nœud, l'arbre affiche `EmptyState` compact, avec le titre et la phrase de `emptyState` (défaut : « Aucun élément »). Un dossier vide se déplie sans ligne sous lui.
+- Raison : validation par délégation de l'utilisateur, 2026-11-23 ; même état vide que le reste du système (D-166).
+- Options écartées : ligne « Dossier vide » sous chaque dossier vide.
+- Validation : docs/validation/components/TreeView-v1.html
+
+## D-270 — Table dense : des options de Table, pas de second composant
+- Date : 2026-11-23
+- Portée : Table
+- Décision : le tableau dense d'Alfred (`DataGrid`, `DataTable`) devient un jeu d'options facultatives de `Table` : `density` (D-271), `groupBy` (D-272), `rowDescription` (D-273). Deux corrections s'y ajoutent : largeur étroite respectée (D-274) et info-bulle d'en-tête (D-275). Les cases de sélection (D-065), les séparateurs d'en-tête (D-067) et l'absence de cadre (D-062) existent déjà. Sans ces options, `Table` ne change pas. L'édition dans la case, les colonnes figées et la virtualisation restent exclues.
+- Raison : un seul tableau à apprendre et à maintenir ; les besoins d'Alfred sont des réglages, pas un autre composant.
+- Options écartées : un composant `DataGrid` séparé ; une variante `appearance="plain"` (c'est déjà le seul rendu).
+- Validation : par délégation de l'utilisateur, 2026-11-23 — docs/validation/components/Table-v2.html
+
+## D-271 — Table : densité compacte
+- Date : 2026-11-23
+- Portée : Table
+- Décision : `density="compact"` donne des lignes de 25 px, un en-tête de 28 px et une marge de case de 8 px, en web comme en desktop. Le texte garde sa taille (`--fs-md`, en-tête `--fs-sm`). Par défaut (`"default"`), la ligne reste à `--row-h` (D-063).
+- Raison : journaux, variables et inventaires montrent beaucoup de lignes ; 25 px reste lisible et cliquable à la souris.
+- Options écartées : réduire aussi le texte ; une densité par plateforme seulement.
+- Validation : par délégation de l'utilisateur, 2026-11-23 — docs/validation/components/Table-v2.html
+
+## D-272 — Table : lignes de groupe en texte, repliables
+- Date : 2026-11-23
+- Portée : Table
+- Décision : `groupBy(row)` range les lignes sous une ligne de groupe, dans l'ordre de leur première apparition ; l'ordre des lignes dans un groupe suit `rows` (l'app trie). La ligne de groupe occupe toute la largeur : chevron de 12 px en `--fg-3`, nom en `--fw-semibold`, puis « · n lignes » en `--fg-3`, sans fond (D-064). Clic, Entrée ou Espace replient ou déplient le groupe, sans animation (D-026). Un groupe replié garde sa ligne de titre. `defaultCollapsedGroups` replie des groupes au départ ; l'état replié est mémorisé par tableau (D-007). La ligne de groupe ne se sélectionne pas et ne s'ouvre pas.
+- Raison : forme A de la page de validation ; le chevron montre qu'on peut replier, sans fond de ligne.
+- Options écartées : B, bande teintée (fond de ligne, contre D-064) ; C, texte sans chevron (Alfred : rien n'indique le repli).
+- Validation : par délégation de l'utilisateur, 2026-11-23 — docs/validation/components/Table-v2.html
+
+## D-273 — Table : lignes doubles
+- Date : 2026-11-23
+- Portée : Table
+- Décision : `rowDescription(row)` ajoute une précision sous le nom, dans la colonne principale, en `--fs-sm` et `--fg-3`, coupée par « … » avec info-bulle. Toutes les lignes passent alors à `--row-h` + 12 px (46 px web, 40 px desktop, 37 px compact). Les autres colonnes restent sur une ligne, centrées en hauteur.
+- Raison : nom et courriel, fichier et chemin : deux informations d'un même élément, sans colonne de plus.
+- Options écartées : deux lignes dans n'importe quelle case (Alfred) ; hauteur double fixe de 44 px.
+- Validation : par délégation de l'utilisateur, 2026-11-23 — docs/validation/components/Table-v2.html
+
+## D-274 — Table : une largeur étroite déclarée est respectée
+- Date : 2026-11-23
+- Portée : Table
+- Décision : une colonne déclarée sous 80 px (une pastille de statut, par exemple) garde sa largeur : sa largeur minimale devient sa largeur déclarée, sans descendre sous 32 px. Les autres règles de largeur ne changent pas (D-067).
+- Raison : une colonne de pastilles à 80 px gaspille la place d'un tableau dense.
+- Options écartées : des largeurs fixes, non redimensionnables.
+- Validation : par délégation de l'utilisateur, 2026-11-23 — docs/validation/components/Table-v2.html
+
+## D-275 — Table : en-tête coupé, libellé en info-bulle
+- Date : 2026-11-23
+- Portée : Table
+- Décision : un libellé d'en-tête trop long se coupe par « … » ; le libellé complet s'affiche en info-bulle au survol (500 ms, D-031) et au focus clavier, seulement s'il est coupé. C'est la règle « Contenu » de la spec, appliquée aussi à l'en-tête.
+- Raison : correction ; sans elle, une colonne étroite cache son nom.
+- Options écartées : libellé sur deux lignes.
+- Validation : par délégation de l'utilisateur, 2026-11-23 — docs/validation/components/Table-v2.html
+
+## D-276 — Table : pas de case teintée
+- Date : 2026-11-23
+- Portée : Table
+- Décision : `Table` ne teinte pas le fond d'une case selon sa ligne. Une case qui signale un état reçoit un `StatusDot` ou un `StatusBadge` par `renderCell` (D-160).
+- Raison : un fond de couleur par case contredit D-064 et la règle « la couleur sert aux pastilles ».
+- Options écartées : `tone` avec `fill` ou `frame` (Alfred).
+- Validation : par délégation de l'utilisateur, 2026-11-23 — docs/validation/components/Table-v2.html
+
+## D-277 — Table : pas de menu propre à une case
+- Date : 2026-11-23
+- Portée : Table
+- Décision : un clic de case n'ouvre pas de menu. Les actions d'un élément passent par le menu « … » de la ligne et le clic droit (D-066). Une matrice d'actions (une case = un objet) est une solution locale de l'app.
+- Raison : échoue au test du générique : propre à la matrice de déploiement d'Alfred ; une ligne a déjà son menu.
+- Options écartées : `column.menu` (Alfred).
+- Validation : par délégation de l'utilisateur, 2026-11-23 — docs/validation/components/Table-v2.html
+
+## D-280 — Terminal : xterm.js reste côté app, peer dependency facultative
+- Date : 2026-11-23
+- Portée : Terminal
+- Décision : Socle n'importe jamais xterm.js. `@xterm/xterm` et `@xterm/addon-fit` sont des peer dependencies facultatives (`peerDependenciesMeta.optional`) : elles fixent les versions prises en charge, sans être installées d'office. L'app qui affiche un terminal installe xterm, importe `@xterm/xterm/css/xterm.css` et passe le moteur par l'option `engine` : `() => Promise<{ Terminal, FitAddon }>` (chargé à l'ouverture) ou l'objet lui-même. Socle décrit les types dont il a besoin, sans dépendre de ceux d'xterm.
+- Raison : une app sans terminal ne télécharge ni ne résout xterm (un `import()` dans Socle casserait sa compilation) ; l'app choisit quand charger les 300 ko d'xterm.
+- Options écartées : dépendance directe (poids pour toutes les apps) ; peer dependency importée par Socle (échec de compilation des apps sans xterm) ; point d'entrée `socle-ui/terminal` (contraire au point d'entrée unique).
+- Validation : docs/validation/components/Terminal-LogViewer-v1.html (par délégation de l'utilisateur, 2026-11-23)
+
+## D-281 — Couleurs ANSI : seize tokens, lisibles en clair et en sombre
+- Date : 2026-11-23
+- Portée : tokens, Terminal, LogViewer
+- Décision : les 16 couleurs ANSI sont des tokens `--ansi-0` à `--ansi-15` (noir, rouge, vert, jaune, bleu, magenta, cyan, blanc, puis leurs versions vives), redéfinis en sombre. Chacun atteint au moins 4,5:1 sur `--surface`. « Noir » et « blanc » deviennent des gris lisibles sur le fond du mode ; « blanc vif » vaut `--fg`. Aucune couleur ANSI n'est écrite en dur dans un composant : le Terminal lit les tokens calculés, le LogViewer les applique par `var(--ansi-n)`. Une couleur 256 ou RVB est ramenée à la plus proche des 16 dans le journal ; xterm garde un contraste minimum de 4,5:1 (`minimumContrastRatio`). Curseur : `--accent` ; sélection : `--accent` à 30 %.
+- Raison : une couleur d'un programme pensé pour un fond noir doit rester lisible sur le fond clair ; un token se recale avec le thème.
+- Options écartées : palette xterm d'origine (illisible en clair) ; terminal toujours sombre (ne suit pas le mode, demande refusée par le besoin).
+- Validation : docs/validation/components/Terminal-LogViewer-v1.html (par délégation de l'utilisateur, 2026-11-23)
+
+## D-282 — Terminal : écran, cadre et barre d'état
+- Date : 2026-11-23
+- Portée : Terminal
+- Décision : l'écran est sur `--surface`, dans un cadre de 1 px `--line` au rayon de 8 px ; police `--font-mono` à 13 px, interligne 1,2, 5 000 lignes d'historique. Une barre d'état de 28 px, sur `--surface-side`, donne l'état (`StatusDot` et texte : « Ouverture du terminal… », « Connecté », « Session terminée », « Connexion interrompue » avec la raison), une aide (« F6 pour sortir », « Lecture seule », « Sélection copiée ») et la taille « 120 × 32 ». Tant que le terminal a le focus, le cadre passe à `--accent`. Hauteur par défaut : entre 280 et 560 px ; `fill` occupe la hauteur restante.
+- Raison : le terminal garde le clavier ; l'utilisateur doit voir quand il est dedans et comment en sortir.
+- Options écartées : sans barre d'état (état et sortie invisibles) ; barre d'outils intégrée (les actions sont celles de la page, par la poignée).
+- Validation : docs/validation/components/Terminal-LogViewer-v1.html (par délégation de l'utilisateur, 2026-11-23)
+
+## D-283 — Terminal : clavier, copier et coller
+- Date : 2026-11-23
+- Portée : Terminal
+- Décision : raccourcis de Windows Terminal. Ctrl+C copie quand du texte est choisi, sinon il part au programme (interruption) ; Ctrl+Maj+C copie toujours ; Ctrl+V et Ctrl+Maj+V collent ; F6 et Maj+F6 sortent du terminal vers le contrôle suivant ou précédent (WCAG 2.1.2). Sur macOS, ⌘C et ⌘V restent ceux du système. Le collage suit le collage encadré quand le programme l'a demandé : un texte sur plusieurs lignes ne s'exécute pas d'office. Mode lecteur d'écran d'xterm actif ; le champ caché porte le nom et une description des raccourcis.
+- Raison : mêmes gestes que le terminal du système ; aucun piège au clavier.
+- Options écartées : Tab pour sortir (Tab sert à la complétion du shell) ; Ctrl+C toujours copie (empêche d'interrompre un programme).
+- Validation : docs/validation/components/Terminal-LogViewer-v1.html (par délégation de l'utilisateur, 2026-11-23)
+
+## D-284 — Terminal : branchement générique et poignée
+- Date : 2026-11-23
+- Portée : Terminal
+- Décision : le terminal ne connaît aucun protocole. L'app branche une `connection` `{ send(data), subscribe(write) }`, reçoit la taille par `onResize` (la première tout de suite, puis une seule à la fin d'un redimensionnement, 120 ms) et donne l'état par `state` (`connecting`, `open`, `closed`, `error`) et `reason`. La poignée (`ref`) offre `write`, `clear`, `text(lignes?)`, `selection`, `paste`, `bracketedPaste` et `focus` ; ses méthodes ne font rien tant que le moteur n'est pas chargé, et `write` met en attente ce qui arrive avant. Les actions « Effacer », « Copier la session », « Coller une commande » sont des actions de la page (ActionBar), qui appellent la poignée.
+- Raison : un canal WebSocket, un processus Tauri ou un faux terminal de démonstration se branchent de la même façon.
+- Options écartées : lecture d'un canal propre à une app (solution locale dans Alfred : un adaptateur vers `connection`) ; boutons intégrés au terminal.
+- Validation : docs/validation/components/Terminal-LogViewer-v1.html (par délégation de l'utilisateur, 2026-11-23)
+
+## D-285 — LogViewer : anatomie
+- Date : 2026-11-23
+- Portée : LogViewer
+- Décision : dans un cadre de 1 px `--line` au rayon de 8 px : une barre d'outils (réglages de l'app `tools`, filtre de niveau, `SearchField`, « n sur N », résultat précédent et suivant, puis à droite : Suivre, Retour à la ligne, Horodatage, Liste des erreurs, Copier, actions de l'app en `IconButton`), la zone des lignes, puis une barre d'état de 28 px sur `--surface-side` (« n lignes », erreurs en `--danger`, alertes en `--warning`, « En direct » pour un journal en direct, « Suivi en pause » avec « Revenir à la fin »). Une ligne : numéro en `--fg-3` dans une gouttière, heure en `--fg-3` (HH:MM:SS.mmm), texte en `--font-mono` 12,5 px. Une erreur a une marque de 3 px `--danger` au bord de la gouttière, une alerte `--warning` (jamais la couleur seule : le niveau est aussi lu par les lecteurs d'écran). La liste est virtualisée : seules les lignes visibles sont dans la page, jusqu'à 500 000 lignes gardées.
+- Raison : reprend le journal d'Alfred, éprouvé sur des journaux de build et de conteneur.
+- Options écartées : lignes en `Table` (trop lourd au-delà de quelques milliers) ; barre d'outils sous le journal.
+- Validation : docs/validation/components/Terminal-LogViewer-v1.html (par délégation de l'utilisateur, 2026-11-23)
+
+## D-286 — LogViewer : filtre de niveau par Menu à choix, avec compteurs
+- Date : 2026-11-23
+- Portée : LogViewer
+- Décision : avec `levels`, un bouton « Niveau : Tous » ouvre un Menu à choix : « Toutes les lignes », « Alertes et erreurs », « Erreurs », chacun avec son compteur. Les compteurs d'erreurs et d'alertes restent visibles dans la barre d'état. Le niveau d'une ligne vient de l'app (`level` de la ligne) ou, à défaut, du texte : `ERROR`, `FATAL`, `WARN`, `level=error`, `[warn]`, une exception, un code de sortie non nul. Une ligne `stderr` sans autre indice n'est pas une erreur.
+- Raison : même geste que les filtres par propriété des listes (D-141), sans composant nouveau ; un contrôle segmenté pourra le remplacer quand Socle en aura un.
+- Options écartées : boutons segmentés (composant absent de Socle) ; compteurs de la barre d'état cliquables (peu découvrables).
+- Validation : docs/validation/components/Terminal-LogViewer-v1.html (par délégation de l'utilisateur, 2026-11-23)
+
+## D-287 — LogViewer : liste des erreurs en panneau à droite
+- Date : 2026-11-23
+- Portée : LogViewer
+- Décision : avec `levels`, le bouton « Liste des erreurs » ouvre un panneau de 260 px à droite des lignes, titré « Erreurs · n ». Chaque erreur montre « Ligne n » et son texte sur une ligne (« … »). Un clic remet le filtre sur « Toutes les lignes », suspend le suivi, centre la ligne et la marque (`--selected`). Les 200 premières erreurs sont listées ; au-delà, une phrase le dit. Sans erreur : `EmptyState` compact. Sous 640 px de large, le panneau passe sous les lignes.
+- Raison : on garde la liste ouverte pendant qu'on lit le contexte de chaque erreur.
+- Options écartées : Menu des erreurs (se ferme à chaque clic) ; saut à l'erreur suivante seul (pas de vue d'ensemble).
+- Validation : docs/validation/components/Terminal-LogViewer-v1.html (par délégation de l'utilisateur, 2026-11-23)
+
+## D-288 — LogViewer : Suivre la fin
+- Date : 2026-11-23
+- Portée : LogViewer
+- Décision : un journal en direct (`live`) suit la fin au départ : chaque nouvelle ligne fait défiler. Le suivi se met en pause dès qu'on remonte (molette, flèche haut, Page haut, Début, recherche, clic dans la liste des erreurs) ; la barre d'état dit « Suivi en pause · n nouvelles lignes » et propose « Revenir à la fin ». Le suivi reprend en arrivant en bas, par la touche Fin, par « Revenir à la fin » ou par la bascule « Suivre » (`IconButton` sélectionnable) de la barre d'outils. Un journal terminé n'a pas de bascule Suivre.
+- Raison : on lit un passage sans que le journal parte ; on sait toujours ce qu'on manque.
+- Options écartées : suivi qu'il faut couper à la main (la lecture saute) ; bouton flottant sur les lignes (cache du texte).
+- Validation : docs/validation/components/Terminal-LogViewer-v1.html (par délégation de l'utilisateur, 2026-11-23)
+
+## D-289 — LogViewer : recherche, retour à la ligne, horodatage et copie
+- Date : 2026-11-23
+- Portée : LogViewer
+- Décision : la recherche passe par `SearchField` (à partir de 2 caractères, 300 ms, D-080) et garde les lignes : celles qui contiennent le texte (sans casse) sont teintées `--field`, le texte trouvé est surligné, la ligne courante est en `--selected` et centrée. « n sur N » ou « Aucune ligne » à côté. Entrée et F3 vont au résultat suivant, Maj+Entrée et Maj+F3 au précédent ; une nouvelle recherche mène au plus récent résultat si le journal suivait la fin, sinon au premier sous la lecture. Retour à la ligne : coupé au départ (`wrap`), les longues lignes défilent à l'horizontale. Horodatage : affiché au départ (`timestamps`), bascule présente seulement si des lignes ont une heure ; une heure ISO en tête de ligne passe dans la colonne. Copier : la sélection faite dans le journal, sinon toutes les lignes affichées (filtre compris), sans séquences ANSI ; l'icône devient une coche et l'info-bulle « Copié » 1,6 s, annoncé aux lecteurs d'écran. Les séquences ANSI sont lues sans jamais produire de HTML.
+- Raison : on cherche dans un journal pour voir le contexte, pas pour le réduire ; la copie colle du texte propre.
+- Options écartées : recherche qui filtre les lignes ; copie qui garde les couleurs.
+- Validation : docs/validation/components/Terminal-LogViewer-v1.html (par délégation de l'utilisateur, 2026-11-23)
+
+## D-290 — DiffView : un composant, deux sources, et DiffStat
+- Date : 2026-11-23
+- Portée : DiffView, DiffStat
+- Décision : `DiffView` montre les différences entre deux textes (`before`, `after`, avec `fileName` facultatif), ou lit un diff unifié (`patch`, un ou plusieurs fichiers, format de `git diff` et de `diff -u`). `DiffStat` montre seul les compteurs « +12 −3 », par exemple dans une ligne de liste de fichiers. Le composant compare et affiche ; il ne colore pas la syntaxe et ne modifie rien (pas d'acceptation ni de rejet de changement).
+- Raison : test du générique réussi (code, Markdown, configuration, réglages versionnés) ; Alfred écrit aujourd'hui ses compteurs en hexadécimal dans `agent.css`.
+- Options écartées : deux composants (texte et patch) ; coloration syntaxique ; fusion à trois voies.
+- Validation : docs/validation/components/DiffView-v1.html (par délégation de l'utilisateur, 2026-11-23)
+
+## D-291 — DiffView : côte à côte par défaut, bascule par bouton-icône
+- Date : 2026-11-23
+- Portée : DiffView
+- Décision : la vue côte à côte est celle par défaut ; l'unifiée est au choix (`mode`, `defaultMode`, `onModeChange`). La bascule est un `IconButton` à bascule « Côte à côte » dans l'en-tête (D-034). Sous 641 px (D-013), la vue unifiée s'impose et la bascule disparaît.
+- Raison : option A de la page de validation ; rien de nouveau à créer, et la bascule tient dans une barre étroite.
+- Options écartées : contrôle segmenté (absent de Socle, spec RadioGroup) ; Menu « Affichage » (un clic de plus).
+- Validation : docs/validation/components/DiffView-v1.html (par délégation de l'utilisateur, 2026-11-23)
+
+## D-292 — DiffView : couleurs tirées de --success et --danger
+- Date : 2026-11-23
+- Portée : DiffView, DiffStat
+- Décision : une ligne ajoutée a un fond `--success` à 12 % sur `--surface` ; une ligne retirée, `--danger` à 10 %. Les mots changés et la colonne des numéros de ces lignes ont le même ton à 32 % et 30 %. Signes et compteurs sont écrits en `--success` et `--danger`. Les mélanges sont calculés dans le composant (`color-mix`) : pas de nouveau token global, aucune couleur en dur. Le changement courant a un trait de 3 px `--accent` à gauche. La demi-ligne vide d'un côté est hachurée `--surface-side`.
+- Raison : les tons suivent le mode sombre et un thème d'app sans réglage de plus ; le texte reste `--fg` sur ces fonds (AA).
+- Options écartées : tokens `--diff-*` globaux (aucun autre composant n'en a l'usage) ; texte coloré au lieu de fonds.
+- Validation : docs/validation/components/DiffView-v1.html (par délégation de l'utilisateur, 2026-11-23)
+
+## D-293 — DiffView : le sens ne passe pas par la couleur seule
+- Date : 2026-11-23
+- Portée : DiffView, DiffStat
+- Décision : chaque ligne a son signe visible (« + », « − », espace) et un texte caché au début (« Ajoutée : », « Retirée : »). Les mots changés sont dans `<ins>` et `<del>`. Les compteurs ont un texte caché (« 12 lignes ajoutées, 3 retirées »). En contraste élevé (`forced-colors`), les mots retirés sont barrés, les ajoutés soulignés, et les signes en gras.
+- Raison : principe « jamais une couleur seule » (D-160) et WCAG 1.4.1.
+- Options écartées : couleur seule, comme les compteurs actuels d'Alfred.
+- Validation : docs/validation/components/DiffView-v1.html (par délégation de l'utilisateur, 2026-11-23)
+
+## D-294 — DiffView : mots changés dans une ligne
+- Date : 2026-11-23
+- Portée : DiffView
+- Décision : une ligne retirée et la ligne ajoutée qui la remplace (appariées dans l'ordre) sont comparées par mots, espaces et signes. Les parties changées sont surlignées. Si les deux lignes ont moins de 40 % de texte commun, ou plus de 2 000 caractères, rien n'est surligné : toute la ligne a changé.
+- Raison : surligner presque toute une ligne n'aide pas à la lecture ; la règle vient d'Alfred, éprouvée.
+- Options écartées : comparaison caractère par caractère (trop de fragments).
+- Validation : docs/validation/components/DiffView-v1.html (par délégation de l'utilisateur, 2026-11-23)
+
+## D-295 — DiffView : lignes inchangées repliées
+- Date : 2026-11-23
+- Portée : DiffView
+- Décision : seules `context` lignes inchangées (3 par défaut) restent visibles autour d'un changement. Au-delà, une suite d'au moins 4 lignes devient une rangée « N lignes inchangées » avec un `Button` `subtle` `sm` « Afficher N lignes ». Un `IconButton` à bascule de l'en-tête, « Afficher les lignes inchangées », ouvre ou referme tous les replis. Dans un patch, les lignes absentes du diff sont dites (« N lignes inchangées, à partir de la ligne X ») sans bouton. Un nouveau contenu repart replié.
+- Raison : le changement reste au centre ; une suite de moins de 4 lignes coûte plus à replier qu'à montrer.
+- Options écartées : tout montrer par défaut ; replis sans bouton global.
+- Validation : docs/validation/components/DiffView-v1.html (par délégation de l'utilisateur, 2026-11-23)
+
+## D-296 — DiffView : en-tête et fichiers
+- Date : 2026-11-23
+- Portée : DiffView
+- Décision : l'en-tête (fond `--surface-side`, hauteur `--bar-h`) montre le nom du fichier en chasse fixe (`fileName`, si fourni), le résumé (« 3 changements », « Aucune différence », « Fichier binaire ») et `DiffStat`, puis à droite les boutons-icônes : vue, lignes inchangées, changement précédent, changement suivant. Dans un patch à plusieurs fichiers, chaque fichier a sa rangée de titre (nom, statut « Ajouté », « Supprimé » ou « Renommé », `DiffStat`), et l'en-tête montre le total. Deux textes identiques montrent un `EmptyState` compact « Aucune différence ».
+- Raison : le nom et l'ampleur du changement se lisent avant le contenu ; le reste réutilise des composants existants.
+- Options écartées : compteurs en bas ; bouton à texte pour la vue.
+- Validation : docs/validation/components/DiffView-v1.html (par délégation de l'utilisateur, 2026-11-23)
+
+## D-297 — DiffView : navigation de changement en changement
+- Date : 2026-11-23
+- Portée : DiffView
+- Décision : la zone du diff est joignable au clavier (une tabulation) et défile aux flèches. F7 ou Alt+↓ va au changement suivant, Maj+F7 ou Alt+↑ au précédent, en boucle ; les boutons de l'en-tête font de même. Le changement courant est marqué (D-292), placé au tiers haut de la zone et annoncé : « Changement 2 sur 3 : avant, ligne 7 ; après, lignes 7 à 8 ». Le focus de la zone se voit sur le cadre du diff (anneau `--accent`).
+- Raison : un long diff se parcourt sans souris ; F7 suit l'usage des éditeurs de code.
+- Options écartées : touches N et P (prises par la frappe d'un lecteur d'écran).
+- Validation : docs/validation/components/DiffView-v1.html (par délégation de l'utilisateur, 2026-11-23)
+
+## D-298 — DiffView : rangées de hauteur fixe, seules les visibles dessinées
+- Date : 2026-11-23
+- Portée : DiffView
+- Décision : une rangée de code fait 20 px, en `--font-mono` à `--fs-sm`, dans les deux densités ; repli et titre de fichier, 32 px. Seules les rangées visibles sont dessinées. La hauteur du diff suit son contenu jusqu'à 720 px puis défile ; avec `fill`, il prend la hauteur de son conteneur. Les lignes longues ne passent pas à la ligne : le diff défile à l'horizontale, d'un seul bloc.
+- Raison : un fichier de dizaines de milliers de lignes reste fluide ; le code se lit mieux sans retour à la ligne.
+- Options écartées : retour à la ligne (hauteurs variables, alignement côte à côte perdu).
+- Validation : docs/validation/components/DiffView-v1.html (par délégation de l'utilisateur, 2026-11-23)
+
+## D-299 — DiffView : avis sur le contenu
+- Date : 2026-11-23
+- Portée : DiffView
+- Décision : une rangée d'avis, en `--fg-2`, dit ce qui ne se compare pas ligne à ligne : « Fichier binaire : contenu non comparé » (octet nul dans les 8 000 premiers caractères, ou patch binaire), « Fins de ligne converties : CRLF → LF » (une fois pour le fichier), « Diff coupé : la suite n'est pas affichée » (`truncated`). Une ligne dont seule la fin de ligne change, ou sans fin de ligne finale, porte une petite étiquette « LF », « CRLF » ou « sans fin de ligne ».
+- Raison : un diff vide ou étrange s'explique au lieu de tromper.
+- Options écartées : avis en `Toast` (perdu au défilement).
+- Validation : docs/validation/components/DiffView-v1.html (par délégation de l'utilisateur, 2026-11-23)
+
+## D-310 — DocumentViewer : rôle, sources et formats
+- Date : 2026-11-23
+- Portée : DocumentViewer
+- Décision : `DocumentViewer` affiche l'aperçu d'un document dans une page : PDF (dessiné par pdf.js) et image. La source est une adresse (`src` : `data:`, `blob:` ou `https:`) ou des octets (`data` : `Blob`, `File`, `Uint8Array`, `ArrayBuffer`). Le format vient du type MIME (`type`, ou celui du `Blob`), puis de l'extension de `name`. Tout autre format montre « Format non pris en charge » avec « Télécharger » si l'app le permet. Le texte brut et le Markdown ne sont pas pris en charge : l'app compose `Code` ou `Markdown`.
+- Raison : PDF et image couvrent l'aperçu de pièces jointes dans toute app ; le texte a déjà ses composants.
+- Options écartées : source « fichier du module » (propre à Alfred) ; rendu du texte et du Markdown dans la visionneuse.
+- Validation : docs/validation/components/Documents-v1.html (par délégation de l'utilisateur, 2026-11-23)
+
+## D-311 — DocumentViewer : pdf.js en peer dependency facultative, chargée par l'app
+- Date : 2026-11-23
+- Portée : DocumentViewer
+- Décision : Socle n'importe jamais pdf.js. `pdfjs-dist` (>= 5) est une peer dependency facultative. L'app passe `loadPdf={() => import("pdfjs-dist")}` et règle elle-même le worker (`GlobalWorkerOptions.workerSrc`, ou faux worker quand le cadre interdit les workers). Sans `loadPdf`, un PDF montre l'erreur « Aperçu PDF indisponible ».
+- Raison : une app sans PDF n'installe rien et son bundler n'a rien à résoudre ; le réglage du worker dépend de l'hôte (CSP), donc de l'app.
+- Options écartées : import dynamique de `pdfjs-dist` dans Socle ; dépendance directe (~1,7 Mo pour toutes les apps).
+- Validation : docs/validation/components/Documents-v1.html (par délégation de l'utilisateur, 2026-11-23)
+
+## D-312 — DocumentViewer : barre d'outils
+- Date : 2026-11-23
+- Portée : DocumentViewer
+- Décision : une barre de `--bar-h` au-dessus du document, `role="toolbar"`. À gauche : « Page n / N » pour un PDF, sinon le nom du fichier, coupé par « … ». À droite, en `IconButton` : page précédente et suivante (PDF) ; zoom arrière, pourcentage, zoom avant, « Ajuster à la largeur » (bascule) ; « Télécharger » si `onDownload` ; puis les `actions` de l'app, rangées par `ActionBar` en zone `toolbar`. Un trait vertical sépare les groupes. Télécharger reste à l'app : Socle ne crée aucun fichier.
+- Raison : les commandes d'une visionneuse courante, en boutons-icônes avec info-bulle comme toute barre d'outils de Socle (D-035).
+- Options écartées : champ de saisie du numéro de page ; menu de zoom ; impression.
+- Validation : docs/validation/components/Documents-v1.html (par délégation de l'utilisateur, 2026-11-23)
+
+## D-313 — DocumentViewer : zoom
+- Date : 2026-11-23
+- Portée : DocumentViewer
+- Décision : à l'ouverture, le document est ajusté à la largeur de la zone ; une image n'est jamais agrandie au-delà de 100 % en mode ajusté. Paliers : 25, 50, 75, 100, 125, 150, 200, 300, 400 %. Ctrl ou ⌘ + molette zoome en continu autour du pointeur. Ctrl/⌘ + « + » et « − » passent au palier suivant, Ctrl/⌘ + « 0 » ajuste à la largeur, quand le focus est dans la visionneuse. Un zoom par bouton garde en haut la page qui y était.
+- Raison : comportement repris d'Alfred, éprouvé ; les raccourcis sont ceux des navigateurs.
+- Options écartées : ajuster à la page entière ; zoom par pincement géré à part (le navigateur l'envoie comme Ctrl + molette).
+- Validation : docs/validation/components/Documents-v1.html (par délégation de l'utilisateur, 2026-11-23)
+
+## D-314 — DocumentViewer : pages d'un PDF
+- Date : 2026-11-23
+- Portée : DocumentViewer
+- Décision : les pages sont l'une sous l'autre, centrées, espacées de 12 px, sur le fond `--surface-side`. Chaque page garde sa place dès l'ouverture et n'est dessinée qu'à moins de 600 px de la zone visible ; pendant un zoom, le dessin précédent reste jusqu'au nouveau. La page courante est celle qui occupe le tiers haut de la zone. La zone de défilement est focusable : flèches et Page préc./suiv. défilent.
+- Raison : un long document reste fluide et la barre dit toujours où l'on est.
+- Options écartées : une page à la fois ; vignettes dans une colonne.
+- Validation : docs/validation/components/Documents-v1.html (par délégation de l'utilisateur, 2026-11-23)
+
+## D-315 — Tokens « papier » : le rendu d'un document reste blanc
+- Date : 2026-11-23
+- Portée : tokens
+- Décision : trois tokens, identiques en clair et en sombre : `--paper` (#ffffff, fond d'une page de document), `--paper-fg` (#1a1a1a, texte sur papier), `--paper-link` (#1d4ed8, lien sur papier). La page d'un PDF et la surface papier de `HtmlContent` les utilisent. Tout le reste de la visionneuse suit les tokens du thème.
+- Raison : une page de PDF ou un courriel est un rendu du document, pas de l'interface ; il garde ses couleurs dans les deux thèmes, sans couleur en dur dans les composants.
+- Options écartées : couleurs `#fff` et repli `rgba(...)` en dur dans le composant (Alfred) ; page inversée en sombre.
+- Validation : docs/validation/components/Documents-v1.html (par délégation de l'utilisateur, 2026-11-23)
+
+## D-316 — DocumentViewer : chargement et erreurs
+- Date : 2026-11-23
+- Portée : DocumentViewer
+- Décision : pendant la lecture, la zone montre un `SkeletonGroup` en forme de page, nommé « Lecture du document… » (après 200 ms, D-165). Une erreur remplace la zone par un `EmptyState` compact « Document illisible » avec la cause (PDF protégé par mot de passe, PDF invalide ou abîmé, aperçu PDF indisponible, lecture impossible) et « Réessayer ». La barre reste affichée, avec le nom et « Télécharger ».
+- Raison : mêmes états que le reste de Socle ; le téléchargement reste possible quand l'aperçu échoue.
+- Options écartées : notification d'erreur (Alfred `PdfPreview`) ; barre masquée en erreur.
+- Validation : docs/validation/components/Documents-v1.html (par délégation de l'utilisateur, 2026-11-23)
+
+## D-317 — HtmlContent : HTML nettoyé dans une racine fantôme
+- Date : 2026-11-23
+- Portée : HtmlContent
+- Décision : le HTML est lu dans un document inerte (`DOMParser`), puis recopié par liste blanche de balises et d'attributs. Sont retirés : scripts, gestionnaires `on…`, formulaires, cadres, SVG, MathML, médias, `<base>`, `<meta>`, `<link>`, liens autres que http, https, mailto. Dans les styles : `url()`, `@import`, `expression()`, `behavior`, `-moz-binding` et les règles `:host`. Le résultat vit dans une racine fantôme (shadow DOM) : ses styles ne débordent pas sur l'app. L'hôte a `contain: content` : un élément `position: fixed` reste dans la zone. La zone prend la hauteur de son contenu ; un contenu trop large défile dans la zone.
+- Raison : sûr sans iframe, donc utilisable dans un hôte qui interdit les cadres, avec une hauteur naturelle.
+- Options écartées : iframe `sandbox` (hauteur à mesurer, interdite par certaines CSP) ; DOMPurify (dépendance de plus pour le même résultat).
+- Validation : docs/validation/components/Documents-v1.html (par délégation de l'utilisateur, 2026-11-23)
+
+## D-318 — HtmlContent : images distantes bloquées par défaut
+- Date : 2026-11-23
+- Portée : HtmlContent
+- Décision : une image distante (http, https) n'est pas chargée par défaut : un cadre vide de même taille la remplace, et un bandeau au-dessus du contenu dit « N images masquées. » avec le bouton « Afficher les images ». Une image intégrée (`data:image/...`) s'affiche toujours. Une autre source (`cid:` d'une pièce jointe) passe par `resolveImage`, qui rend une adresse affichable ou `null`. Le choix est contrôlable : `imagesAllowed`, `defaultImagesAllowed`, `onImagesAllowedChange` (l'app peut retenir un expéditeur de confiance). Images permises : l'adresse passe aussi par `resolveImage` si elle est fournie (l'app peut passer par un proxy).
+- Raison : une image distante trace l'ouverture d'un courriel ; l'utilisateur décide.
+- Options écartées : images toujours chargées ; images bloquées sans moyen de les afficher (Alfred).
+- Validation : docs/validation/components/Documents-v1.html (par délégation de l'utilisateur, 2026-11-23)
+
+## D-319 — HtmlContent : liens interceptés et surface papier
+- Date : 2026-11-23
+- Portée : HtmlContent
+- Décision : un lien http, https ou mailto reste un lien : souligné, focusable, l'adresse en info-bulle native (`title`). Un clic ou Entrée appelle `onLink(url)` ; rien ne navigue dans l'app. Sans `onLink`, le lien devient du texte simple. Surface : `paper` par défaut (fond `--paper`, texte `--paper-fg`, liens `--paper-link`, rayon `--radius-md`, marge 16 px) ; `theme` pour un HTML simple produit par l'app (fond transparent, texte `--fg`, liens `--accent-text`).
+- Raison : un courriel porte ses propres couleurs ; sur papier, il reste lisible en sombre. L'adresse visible protège de l'hameçonnage.
+- Options écartées : surface du thème par défaut (texte noir en dur illisible en sombre) ; inversion automatique des couleurs.
+- Validation : docs/validation/components/Documents-v1.html (par délégation de l'utilisateur, 2026-11-23)
+
+## D-320 — Disclosure : même titre que les sections, contenu créé à l'ouverture
+- Date : 2026-11-23
+- Portée : Disclosure
+- Décision : `Disclosure` est un bloc repliable avec un titre : texte `--fs-sm` en `--fg-3`, puis chevron vers le bas, tourné vers la droite une fois replié ; même forme que les sections de `Sidebar` et de `DetailPanel` (D-061). Un clic, Entrée ou Espace sur le titre replie ou déplie ; replié par défaut ; aucune animation (D-026). Le contenu n'est créé qu'à l'ouverture. Avec un `id`, l'état est mémorisé (comme D-061).
+- Raison : choix par délégation de l'utilisateur ; une seule forme de repli dans le design system.
+- Options écartées : chevron devant et titre plein (forme d'Alfred) ; bloc encadré ; apparence `subtle` ; élément natif `<details>`.
+- Validation : docs/validation/components/Divers-v1.html (par délégation de l'utilisateur, 2026-11-23)
+
+## D-321 — Disclosure : un bloc dans un contenu, pas une section
+- Date : 2026-11-23
+- Portée : Disclosure, Sidebar, DetailPanel
+- Décision : `Sidebar.Section` et `DetailPanel.Section` restent les sections repliables de leur zone. `Disclosure` sert un bloc secondaire dans une section ou dans un contenu : « Options avancées » d'un formulaire, détails d'une erreur, éléments repliés d'un panneau. Pas de Disclosure à la place d'une section, ni de Disclosure dans un Disclosure.
+- Raison : éviter deux façons de découper le même panneau.
+- Options écartées : remplacer les sections par Disclosure.
+- Validation : docs/validation/components/Divers-v1.html (par délégation de l'utilisateur, 2026-11-23)
+
+## D-322 — InlineEdit : fin contour au survol, sans icône
+- Date : 2026-11-23
+- Portée : InlineEdit
+- Décision : une valeur modifiable sur place garde son texte et sa taille. Au survol, un bord de 1 px `--line-strong` l'entoure (rayon 8 px, D-040) ; au focus clavier, l'anneau accent. Ni fond, ni icône, ni curseur changé. À l'ouverture, le cadre du champ (D-130) prend la même place : le texte ne bouge pas. Valeur vide : texte d'invite en `--fg-3`.
+- Raison : choix par délégation de l'utilisateur ; un panneau de propriétés reste calme au repos.
+- Options écartées : fond et crayon au survol ; souligné pointillé permanent.
+- Validation : docs/validation/components/Divers-v1.html (par délégation de l'utilisateur, 2026-11-23)
+
+## D-323 — InlineEdit : ouvrir, enregistrer, annuler
+- Date : 2026-11-23
+- Portée : InlineEdit
+- Décision : un clic, Entrée ou F2 ouvre la saisie (un bouton caché « Modifier « libellé » » porte le clavier). Entrée enregistre (Mod+Entrée en plusieurs lignes, où Entrée passe à la ligne). Un clic à côté ou Tab enregistre aussi. Échap annule. Une valeur inchangée ferme sans appeler `onSave`. Pendant la promesse de `onSave`, le champ passe en lecture seule. Une promesse rejetée laisse la saisie ouverte, avec sa valeur et le message `actionFailed` sous le champ. La vérification (`isRequired`, `validate`) bloque l'enregistrement et s'affiche sous le champ (D-132). Après Entrée ou Échap, le focus revient à la valeur.
+- Raison : même clavier que les champs et les tableurs ; on ne perd jamais une saisie.
+- Options écartées : bouton « Enregistrer » et « Annuler » à côté du champ ; clic à côté qui annule.
+- Validation : docs/validation/components/Divers-v1.html (par délégation de l'utilisateur, 2026-11-23)
+
+## D-324 — InlineEdit : du texte seulement ; place dans le panneau de détail
+- Date : 2026-11-23
+- Portée : InlineEdit, DetailPanel
+- Décision : InlineEdit modifie un texte, sur une ligne (`mode="line"`) ou plusieurs (`mode="multiline"`, de 2 à 10 lignes). Un choix dans une liste reste une action de ligne avec menu (D-059). Dans `DetailPanel`, la valeur d'une `PropertyRow` peut être un `InlineEdit` : c'est la seule saisie permise dans une ligne.
+- Raison : test du générique ; un éditeur libre (`renderEditor` d'Alfred, zone de mentions) n'a pas de forme commune à toutes les apps.
+- Options écartées : éditeur libre fourni par l'app (solution locale dans Alfred).
+- Validation : docs/validation/components/Divers-v1.html (par délégation de l'utilisateur, 2026-11-23)
+
+## D-325 — StepList : pastilles rondes reliées par un trait ; quatre états
+- Date : 2026-11-23
+- Portée : StepList
+- Décision : chaque étape est une pastille ronde de 22 px, puis un titre et une aide facultative (`--fs-sm`, `--fg-3`). Un trait de 1 px `--line-strong` relie les étapes. États : à faire (bord `--line-strong`, numéro `--fg-3`, titre `--fg-2`) ; en cours (pastille pleine `--fg`, numéro `--surface`, titre `--fg`, comme le bouton principal D-102) ; fait (bord et coche `--success`) ; erreur (pastille pleine `--danger`, « ! », titre `--danger`). Les états viennent de `current`, sauf un `status` donné par étape. Deux orientations : `horizontal` (défaut) et `vertical`.
+- Raison : choix par délégation de l'utilisateur ; sobre, et l'état reste lisible sans couleur grâce à la coche et au « ! ».
+- Options écartées : cartes encadrées (forme d'Alfred) ; texte seul.
+- Validation : docs/validation/components/Divers-v1.html (par délégation de l'utilisateur, 2026-11-23)
+
+## D-326 — StepList : on revient en arrière, on n'avance pas ; largeur étroite
+- Date : 2026-11-23
+- Portée : StepList
+- Décision : avec `onSelect`, une étape faite ou en erreur devient un bouton pour y revenir. Une étape à faire n'est jamais cliquable : on avance par les boutons du parcours. Sans `onSelect`, la liste n'est qu'un repère. En horizontal, l'aide disparaît sous 560 px de large ; sous 380 px, seul le titre de l'étape en cours reste, les autres gardent leur pastille.
+- Raison : un parcours vérifie chaque étape avant la suivante ; la règle remplace l'option `isAvailable` d'Alfred.
+- Options écartées : `isAvailable` par étape ; saut vers une étape à faire.
+- Validation : docs/validation/components/Divers-v1.html (par délégation de l'utilisateur, 2026-11-23)
+
+## D-327 — Menu : ouverture à un point ou au clic droit, titre facultatif
+- Date : 2026-11-23
+- Portée : Menu
+- Décision : pas de nouveau composant de menu. `Menu` reçoit des options facultatives : `title` (l'objet visé, en tête du menu, `--fs-sm`, `--fg-3`), `isOpen` et `onOpenChange` (ouverture pilotée), `anchor` (un point `{ x, y }` ou un élément) ; avec `anchor`, `trigger` n'est plus utile. Le crochet `useContextMenu()` branche le clic droit et Maj+F10 (ou la touche Menu) sur une zone : le menu s'ouvre au point du clic, ou sous l'élément au clavier. Un menu ouvert à un point se ferme au défilement et au redimensionnement. Le reste suit la spec du Menu (D-047 à D-051).
+- Raison : choix par délégation de l'utilisateur ; un seul menu dans le design system ; React Aria place, focalise et ferme déjà.
+- Options écartées : composant `ContextMenu` à part ; reprise d'`AnchoredMenu` et de son placement maison (largeur fixe de 252 px, `data-menu-anchor`).
+- Validation : docs/validation/components/Divers-v1.html (par délégation de l'utilisateur, 2026-11-23)
+
+## D-328 — Popover : volet flottant ancré, sans voile
+- Date : 2026-11-23
+- Portée : Popover
+- Décision : `Popover` est un volet flottant ouvert depuis un bouton : la page reste visible autour ; un clic à côté ferme d'abord le volet (D-329). Surface `--surface-raised`, bord `--line`, ombre `--shadow-md`, rayon 12 px (D-040). Titre facultatif, avec × quand il est là. Trois largeurs : `sm` 280 px, `md` 360 px (défaut), `lg` 440 px ; jamais plus large que la fenêtre moins 16 px. Placement : sous le bouton, aligné au début ou à la fin, au-dessus si la place manque, ou à droite (`right start`) pour un bouton de la sidebar. Ouverture et fermeture sans animation (D-026).
+- Raison : choix par délégation de l'utilisateur ; les specs de Menu, Tooltip et Dialog citent déjà un Popover pour le contenu riche.
+- Options écartées : reprise d'`AnchoredPanel` (placement maison) ; voile sur la page.
+- Validation : docs/validation/components/Divers-v1.html (par délégation de l'utilisateur, 2026-11-23)
+
+## D-329 — Popover : fermeture et focus de la modale
+- Date : 2026-11-23
+- Portée : Popover
+- Décision : Échap, le × et un clic à côté ferment le Popover. Après une saisie, un clic à côté est refusé : le volet rebondit (D-122). Échap ferme toujours. `isBusy` refuse toute fermeture. À l'ouverture, le focus va au premier champ, sinon au volet ; à la fermeture, il revient au bouton.
+- Raison : une seule règle de fermeture pour les surfaces qui contiennent une saisie.
+- Options écartées : clic à côté qui ferme toujours.
+- Validation : docs/validation/components/Divers-v1.html (par délégation de l'utilisateur, 2026-11-23)
+
+## D-300 — Markdown : sous-entrées et dépendances facultatives
+- Date : 2026-11-23
+- Portée : global, Markdown, MarkdownEditor
+- Décision : `Markdown` et `MarkdownEditor` ne sont pas exportés par `socle-ui`. Ils ont chacun leur sous-entrée : `socle-ui/markdown` et `socle-ui/markdown-editor`. Leurs librairies sont des peer dependencies facultatives (`peerDependenciesMeta.optional`) : `react-markdown` et `remark-gfm` pour les deux ; `@codemirror/state`, `@codemirror/view`, `@codemirror/commands`, `@codemirror/language`, `@codemirror/lang-markdown` et `@lezer/highlight` pour l'éditeur. Une app installe seulement ce qu'elle utilise. CodeMirror se charge à la première ouverture d'un éditeur (`import()`). Le reste du design system garde son entrée unique `socle-ui` ; `scripts/check.js` et `socle-ui/eslint-config` autorisent ces deux sous-entrées, et seulement elles.
+- Raison : une app sans Markdown ne doit ni installer ni livrer ces librairies ; un `import()` seul ne suffit pas, car le bundler de l'app échoue si le paquet manque.
+- Options écartées : dépendances directes exportées par `socle-ui` ; export par `socle-ui` avec `import()` dynamique.
+- Validation : docs/validation/components/Markdown-v1.html — par délégation de l'utilisateur, 2026-11-23.
+
+## D-301 — Markdown : typographie de lecture
+- Date : 2026-11-23
+- Portée : Markdown
+- Décision : le texte est en `--fs-md`, interligne 1,6. Paragraphes et blocs : 12 px d'écart. Titres en semi-gras, 20 px au-dessus et 8 px en dessous : `#` à 1,25 em, `##` à 1,125 em, `###` et plus à 1 em. Listes : retrait de 24 px, 2 px entre deux éléments. Citation : trait de 3 px `--line-strong` à gauche, texte `--fg-2`. Trait horizontal : `Divider`. Code en ligne : `Code`. Le premier et le dernier bloc n'ont pas de marge extérieure.
+- Raison : un texte Markdown vit dans un panneau, une modale ou une page : sa hiérarchie ne doit pas concurrencer le titre de la page ; le trait distingue la citation d'un bloc de code.
+- Options écartées : citation sur fond `--field` (Alfred) ; titres à la taille des titres de page.
+- Validation : docs/validation/components/Markdown-v1.html — par délégation de l'utilisateur, 2026-11-23.
+
+## D-302 — Markdown : niveau des titres
+- Date : 2026-11-23
+- Portée : Markdown
+- Décision : l'option `headingLevel` (défaut 2) donne le niveau HTML de `#` ; `##` vaut le niveau suivant, jusqu'à 6. La taille affichée ne dépend que du nombre de `#` (D-301).
+- Raison : la page porte déjà son `h1` ; l'app règle la structure sans changer l'aspect.
+- Options écartées : `shiftHeadings` booléen (Alfred).
+- Validation : docs/validation/components/Markdown-v1.html — par délégation de l'utilisateur, 2026-11-23.
+
+## D-303 — Markdown : liens et images
+- Date : 2026-11-23
+- Portée : Markdown
+- Décision : un lien est un `Link` (D-167) : souligné, flèche et texte caché s'il est externe. L'option `onLinkPress(href)` reçoit chaque lien ; elle annule alors la navigation du navigateur (app desktop, routeur de l'app). Les adresses dangereuses (`javascript:`…) sont retirées. Une image ne se charge jamais d'elle-même : sans `renderImage(src, alt)`, elle devient un lien vers son adresse, avec son texte alternatif (ou « Image »). Le HTML écrit dans le texte est ignoré.
+- Raison : un texte vient souvent d'ailleurs (message, agent, fichier) ; charger une image distante ou interpréter du HTML ouvre une fuite ou une faille.
+- Options écartées : images distantes affichées ; HTML brut interprété ; `renderLink` (Alfred).
+- Validation : docs/validation/components/Markdown-v1.html — par délégation de l'utilisateur, 2026-11-23.
+
+## D-304 — Markdown : blocs de code, tableaux, cases
+- Date : 2026-11-23
+- Portée : Markdown
+- Décision : un bloc de code est un `Code block` avec un bouton-icône « Copier le bloc » en haut à droite, visible au survol, au focus, et toujours sur un écran tactile ; après la copie, l'icône devient une coche et le libellé « Bloc copié » pendant 2 s ; un échec affiche « Copie impossible ». L'option `renderCode(language, text)` remplace le rendu d'un bloc d'un langage donné (un schéma) ; `undefined` garde le bloc. Pas de coloration syntaxique. Un tableau est un tableau HTML statique au style de `Table` : en-tête en `--fs-sm`, `--fg-2`, medium ; traits `--line` sous chaque ligne ; 6 × 10 px de marge ; alignement de colonne de GFM ; il défile seul à l'horizontale, dans une région « Tableau » joignable au clavier. Une case de liste de tâches est une case statique (pleine et cochée si faite), avec le texte caché « Fait » ou « À faire » ; un élément fait passe en `--fg-2`.
+- Raison : `Table` est une grille interactive (sélection, tri, clavier en grille) : un mauvais rôle pour un tableau de texte ; une case cliquable laisserait croire que le texte change.
+- Options écartées : composant `Table` ; `Checkbox` en lecture seule (un arrêt de tabulation par case).
+- Validation : docs/validation/components/Markdown-v1.html — par délégation de l'utilisateur, 2026-11-23.
+
+## D-305 — MarkdownEditor : un champ de formulaire
+- Date : 2026-11-23
+- Portée : MarkdownEditor
+- Décision : `MarkdownEditor` a l'anatomie de `Field` : libellé au-dessus, cadre de champ (D-130), aide ou erreur en dessous, compteur « n / max » si `maxLength` (comme `TextArea`). Dans le cadre : la barre de mise en forme, un trait `--line`, puis le texte. Le texte grandit de `minRows` (6) à `maxRows` (20) lignes, puis défile ; `fill` occupe la hauteur du conteneur. Options communes : `label`, `hideLabel`, `description`, `error`, `isRequired`, `isDisabled`, `isReadOnly`, `width`, `name` (champ caché pour un formulaire), `placeholder`, `value`, `defaultValue`, `onChange`, `onBlur`. Désactivé : opacité 40 %, rien n'est joignable. Lecture seule : cadre gris et cadenas (D-131), barre masquée, texte sélectionnable. Erreur : bord `--danger`, message sous le champ (D-132).
+- Raison : un éditeur Markdown est un champ de formulaire comme `TextArea` : mêmes états et même place (FormPage, modale, réglage).
+- Options écartées : éditeur sans libellé ni aide, à part des champs (Alfred).
+- Validation : docs/validation/components/Markdown-v1.html — par délégation de l'utilisateur, 2026-11-23.
+
+## D-306 — MarkdownEditor : police et coloration
+- Date : 2026-11-23
+- Portée : MarkdownEditor
+- Décision : le texte est en `--font-mono`, `--fs-sm`, interligne 1,6, 12 × 8 px de marge, retour à la ligne automatique. La coloration suit les tokens, donc le mode clair et le mode sombre : marques (`#`, `*`, `>`, `-`, `[`, `](`) en `--fg-3` ; titres en semi-gras ; gras, italique et barré en style ; texte de lien en `--accent-text` ; adresse en `--fg-3` soulignée ; code sur fond `--field` ; citation en `--fg-2`. Sélection : `--accent` à 25 %. Curseur : `--fg`.
+- Raison : la chasse fixe garde listes, tableaux et retraits alignés ; les couleurs viennent des tokens, sans thème à part.
+- Options écartées : police du texte ; thème CodeMirror fourni par une librairie.
+- Validation : docs/validation/components/Markdown-v1.html — par délégation de l'utilisateur, 2026-11-23.
+
+## D-307 — MarkdownEditor : barre et raccourcis de mise en forme
+- Date : 2026-11-23
+- Portée : MarkdownEditor
+- Décision : la barre est un `role="toolbar"` « Mise en forme », un seul arrêt de tabulation, parcouru aux flèches gauche et droite. Elle contient des `IconButton` avec leur raccourci dans l'info-bulle (D-032), en trois groupes séparés par un `Divider` vertical : Titre 1, 2, 3 (Mod+Alt+1, 2, 3) ; Gras (Mod+B), Italique (Mod+I), Code (Mod+E), Lien (Mod+K) ; Liste à puces (Mod+Maj+8), Liste numérotée (Mod+Maj+7), Citation (Mod+Maj+9). Chaque commande pose la marque, ou la retire si elle est déjà là. Lien : `[texte](adresse)`, avec « adresse » sélectionnée ; une adresse sélectionnée devient la cible. Un clic sur la barre garde la sélection du texte. Entrée continue une liste ; sur un élément vide, un premier appui espace la liste, un second la quitte. Mod+Z annule, Mod+Maj+Z rétablit. Tab n'est pas capturée : elle quitte l'éditeur.
+- Raison : mêmes raccourcis que les éditeurs courants ; Tab libre pour ne pas piéger le clavier (WCAG 2.1.2).
+- Options écartées : Tab qui indente ; barre à onglets multiples.
+- Validation : docs/validation/components/Markdown-v1.html — par délégation de l'utilisateur, 2026-11-23.
+
+## D-308 — MarkdownEditor : images collées ou déposées
+- Date : 2026-11-23
+- Portée : MarkdownEditor
+- Décision : l'option facultative `onPasteImage(file)` reçoit chaque image collée ou déposée. L'éditeur insère `![Envoi de nom…]()`, puis le remplace par `![alt](adresse)` quand la promesse rend l'adresse (ou `{ src, alt }`). Un échec retire le texte d'attente et affiche « Image non ajoutée : nom » sous le champ, jusqu'à la saisie suivante. Sans l'option, coller une image ne fait rien.
+- Raison : ranger un fichier est le métier de l'app ; l'éditeur ne garde que l'insertion.
+- Options écartées : `onPasteImageError` (le message sous le champ suffit).
+- Validation : docs/validation/components/Markdown-v1.html — par délégation de l'utilisateur, 2026-11-23.
+
+## D-309 — MarkdownEditor : aperçu facultatif et périmètre
+- Date : 2026-11-23
+- Portée : MarkdownEditor
+- Décision : l'option `preview` ajoute l'aperçu rendu par `Markdown` : `"toggle"` ajoute un bouton-icône « Aperçu » (bascule) en fin de barre, qui remplace le texte par l'aperçu et désactive la mise en forme ; `"split"` met l'aperçu à droite du texte, ou en dessous sous 560 px de large. Sans l'option, pas d'aperçu. Un aperçu vide affiche « Rien à afficher ». Retirés (test du générique, solution locale dans Alfred) : compte des modifications non enregistrées (`savedValue`, `onUnsavedChange`), Mod+S (`onSave`), extensions `remarkPlugins`, onglets Écrire / Aperçu.
+- Raison : la coloration rend le texte lisible sans aperçu ; le suivi des modifications et l'enregistrement appartiennent à la page (FormPage).
+- Options écartées : aperçu côte à côte par défaut (Alfred) ; onglets avec `Tabs` (réservé aux vues d'une page).
+- Validation : docs/validation/components/Markdown-v1.html — par délégation de l'utilisateur, 2026-11-23.
+
+## D-220 — Barre du haut : action principale à texte quand elle n'a pas d'icône
+- Date : 2026-11-23
+- Portée : ActionBar (zone `topbar`), AppShell
+- Décision : dans la zone `topbar`, une action `primary` sans icône est un `Button` `primary` de taille `md`, tout à droite du groupe, après « … », à 6 px du dernier bouton-icône. Une action `primary` avec icône reste un bouton-icône, en premier (D-112, inchangé). Un écran n'a qu'un bouton plein : si la barre du haut a une action principale à texte, l'en-tête du gabarit n'en a pas.
+- Raison : l'action attendue de la page reste visible et lisible ; l'app choisit la forme par la présence de l'icône, sans nouvelle option, comme D-112 le prévoyait.
+- Options écartées : toujours du texte (changerait D-112 pour toutes les apps) ; icône seulement (actuel : l'action attendue reste peu visible) ; nouvelle option `text` sur l'action (la page ne choisit pas la forme, D-111).
+- Validation : par délégation de l'utilisateur, 2026-11-23 — docs/validation/components/AppShell-actions-v1.html
+
+## D-221 — Barre du haut : repli selon la place
+- Date : 2026-11-23
+- Portée : ActionBar (zone `topbar`), AppShell
+- Décision : dans la barre du haut d'AppShell, `ActionBar` mesure la place libre en continu. Quand elle manque, les boutons-icônes passent dans « … » un à un, depuis le dernier ; ils y entrent avant les entrées déjà présentes, dans leur ordre. Puis le bouton à texte passe en tête de « … ». Les actions se replient avant les onglets de vues, qui ne rétrécissent qu'une fois tout replié (D-027). Les autres enfants du slot (la cloche, D-157) et le bouton du panneau de détail ne se replient jamais. Sous 640 px, D-117 s'applique toujours. Aucune animation (D-026). `arrangeActions` reçoit l'option `fit: { icons, primary }` pour la règle seule.
+- Raison : un seuil fixe de largeur de fenêtre (Alfred : 1100 px) replie trop tôt ou trop tard selon le titre et les vues ; la mesure garde tout ce qui tient.
+- Options écartées : seuil de largeur de fenêtre ; tout replier d'un coup ; replier les onglets de vues d'abord.
+- Validation : par délégation de l'utilisateur, 2026-11-23 — docs/validation/components/AppShell-actions-v1.html
+
+## D-222 — Barre du haut : contenu du slot `actions`
+- Date : 2026-11-23
+- Portée : AppShell
+- Décision : le slot `actions` d'AppShell reçoit une `ActionBar` `zone="topbar"` pour les actions de la page, et des boutons-icônes propres à l'app (cloche du centre de notifications, D-157), placés avant elle. Le slot prend la place libre de la barre ; sa largeur ne dépend pas de son contenu. Une bascule de vue (boutons accolés, `group` et `selected` dans Alfred) n'y va pas : les vues passent par l'option `views` (Tabs, D-021).
+- Raison : une seule forme d'action dans la barre ; les vues ont déjà leur place.
+- Options écartées : bascule de vue à deux boutons dans la barre (D-110 l'exclut déjà) ; deuxième slot pour le bouton à texte.
+- Validation : par délégation de l'utilisateur, 2026-11-23 — docs/validation/components/AppShell-actions-v1.html
+
+## D-230 — Sidebar : entrées fixes du bas
+- Date : 2026-11-23
+- Portée : Sidebar, AppShell
+- Décision : l'option `footer` de Sidebar reçoit des `Sidebar.Item` (3 au plus) : des pages que l'app veut toujours à portée, par exemple un assistant, l'aide ou la corbeille. Elles sont collées en bas, au-dessus de l'espace de travail et du compte, hors de la zone qui défile. Même dessin, mêmes états, mêmes options (compteur, indicateur, actions) et même sélection (`selectedId`) que la navigation. Elles forment un second arbre, nommé « Navigation du bas ». Sur mobile, elles vont dans la feuille « Plus », ou dans la barre d'onglets avec `tabbar` (D-003, D-019).
+- Raison : générique (aide de Linear, corbeille de Notion, assistant d'Alfred) ; une page fixe ne doit pas disparaître quand la navigation défile.
+- Options écartées : un composant d'entrée propre au pied ; une section « épinglée » dans la zone qui défile ; plus de 3 entrées (le pied mangerait la navigation).
+- Validation : par délégation de l'utilisateur, 2026-11-23 — docs/validation/components/Sidebar-footer-v1.html
+
+## D-231 — Sidebar : sélecteur d'espace de travail
+- Date : 2026-11-23
+- Portée : Sidebar
+- Décision : `Sidebar.Workspace`, passé par l'option `workspace` de Sidebar, montre l'espace ouvert : un repère carré de 24 px (rayon 4 px, fond `--selected`, initiale en `--fs-xs` semi-gras), le nom (coupé, info-bulle), puis un chevron haut-bas en `--fg-3`. Un clic, Entrée, Espace ou flèche bas ouvre un `Menu` au-dessus : la section « Espaces de travail » en choix unique, l'espace ouvert coché (D-050), puis un trait et les actions de l'app (`actions`, des `Menu.Item`). Choisir l'espace ouvert ne fait rien ; choisir un autre appelle `onChange(id)`. Avec un seul espace et aucune action, c'est une simple étiquette, sans menu. `isDisabled` le désactive (pendant une ouverture, par exemple).
+- Raison : Slack, Notion, Linear et Alfred ont un sélecteur d'espace ; le repère carré le distingue de l'avatar rond d'une personne (D-163).
+- Options écartées : sélecteur en haut de la sidebar (la zone au-dessus porte déjà le repli et l'historique, D-020) ; fusion avec le compte (le menu de D-046 mêlerait deux sujets) ; description de chaque espace dans le menu (le chemin d'un dossier est propre à Alfred).
+- Validation : par délégation de l'utilisateur, 2026-11-23 — docs/validation/components/Sidebar-footer-v1.html
+
+## D-232 — Sidebar : ordre du pied et ce qui reste dans l'app
+- Date : 2026-11-23
+- Portée : Sidebar, layout-rules
+- Décision : le pied de la sidebar contient, dans cet ordre : les entrées fixes (`footer`), l'espace de travail (`workspace`), le compte (`account`). Un seul trait le sépare de la navigation ; 2 px entre ses lignes. Restent des solutions locales de l'app : une zone de conversations sous une entrée fixe (elle se construit avec `Sidebar.Section` et `Sidebar.TreeItem`), les pastilles d'état d'agent à trois tons (prendre `count` ou `indicator="activity"`), le raccourci d'ouverture du sélecteur, renommer et réordonner les entrées.
+- Raison : « où je suis » et « qui je suis » restent ensemble, au même endroit dans toutes les apps ; ce qui ne passe pas le test du générique reste hors du design system.
+- Options écartées : un trait entre chaque groupe du pied ; un raccourci global d'ouverture du sélecteur dans Socle.
+- Validation : par délégation de l'utilisateur, 2026-11-23 — docs/validation/components/Sidebar-footer-v1.html
+
+## D-240 — Panneau de détail : largeur de départ choisie par la page
+- Date : 2026-11-23
+- Portée : AppShell, tokens
+- Décision : l'option `detailWidth` d'AppShell vaut `"default"` (des sections de propriétés : `--detail-w`, 300 px web, 272 px desktop) ou `"form"` (un formulaire : nouveau token `--detail-w-form`, 460 px web, 420 px desktop). Elle fixe la largeur de départ, en colonne sur bureau comme en overlay sur tablette. La poignée garde sa plage de 240 à 480 px (D-025). La largeur réglée est mémorisée à part pour chacune (`shell:detail-width` et `shell:detail-width:form`) ; le double-clic revient au défaut de la page.
+- Raison : un formulaire à l'étroit coupe ses champs ; la page sait ce qu'elle montre, pas l'utilisateur au premier affichage.
+- Options écartées : largeur en pixels libre par page (pas de cohérence entre apps) ; une seule largeur mémorisée pour tout (un réglage pour un formulaire élargirait toutes les sections).
+- Validation : par délégation de l'utilisateur, 2026-11-23 — docs/validation/components/DetailPanel-width-v1.html
+
+## D-241 — Panneau de détail : bouton Agrandir facultatif
+- Date : 2026-11-23
+- Portée : AppShell
+- Décision : avec l'option `detailExpandable`, un bouton bascule « Agrandir le panneau de détail » (`aria-pressed`) se place dans la barre du haut, juste avant le bouton du panneau. Icône : flèches vers l'extérieur, puis vers l'intérieur une fois large. Il n'existe que sur bureau, quand le panneau est ouvert. Large, le panneau mesure 960 px au plus et rétrécit pour laisser au moins 360 px au contenu ; il n'a pas de poignée. Réduire rend la largeur d'avant. L'état large est mémorisé (`shell:detail-wide`). Aucune animation (D-026).
+- Raison : un contenu riche (aperçu, conversation) a parfois besoin de place sans quitter la page ; le bouton se place au-dessus du panneau, sans ajouter d'en-tête sur bureau.
+- Options écartées : en-tête dans le panneau, comme Alfred (une ligne de plus sur bureau, D-018 n'en a pas) ; double-clic sur la poignée (déjà pris par D-025, introuvable).
+- Validation : par délégation de l'utilisateur, 2026-11-23 — docs/validation/components/DetailPanel-width-v1.html
+
+## D-242 — Panneau de détail : deux états, pas de cycle
+- Date : 2026-11-23
+- Portée : AppShell
+- Décision : Agrandir bascule entre deux états, la largeur de la page et la largeur large. Il ne fait pas passer par trois largeurs à la suite. Les trois largeurs d'Alfred (340, 460, large) deviennent `default`, `form` et l'état large.
+- Raison : un bouton à deux états se comprend d'un coup d'œil ; un cycle oblige à compter les clics.
+- Options écartées : cycle sections, formulaire, large (Alfred, OneApp).
+- Validation : par délégation de l'utilisateur, 2026-11-23 — docs/validation/components/DetailPanel-width-v1.html
+
+## D-250 — Barre du haut : résumé après le titre
+- Date : 2026-11-23
+- Portée : AppShell
+- Décision : l'option `pageSummary` d'AppShell est un texte court qui suit le nom de la page (et l'état, D-251), après un trait vertical de 16 px en `--line` : « 3 personnes · 2 en écart · 6 environnements ». Texte seul, en `--fs-sm` et `--fg-2`, sur une ligne, 320 px ou 30 % de la barre au plus ; coupé avec une ellipse, texte complet en info-bulle s'il est coupé. Il se coupe avant le titre et avant les vues. Il est masqué sur mobile.
+- Raison : un chiffre clé de la page se lit sans ouvrir de panneau (OneApp, Alfred) ; une seule ligne de texte reste calme.
+- Options écartées : étiquettes ou pastilles dans le résumé (trop de couleur dans la barre, D-160) ; résumé dans l'en-tête du gabarit (la barre du haut est la seule à rester visible quand la page défile).
+- Validation : par délégation de l'utilisateur, 2026-11-23 — docs/validation/components/AppShell-summary-v1.html
+
+## D-251 — Barre du haut : indicateur d'état durable de la page
+- Date : 2026-11-23
+- Portée : AppShell, layout-rules (suite de D-159)
+- Décision : l'option `pageStatus` d'AppShell, `{ label, tone?, description?, menu? }`, montre un état durable de la page ou de l'app (« Lecture seule », « Hors ligne », « Exemple ») juste après le titre. Cadre de 24 px de haut, bord `--line`, rayon 8 px, fond `--surface` ; dedans, le `StatusBadge` du ton (point et libellé, D-160). Largeur de 160 px au plus (120 px sur mobile), libellé coupé au-delà. Avec `menu`, c'est un bouton qui ouvre un `Menu` sous lui (« Quitter les données d'exemple ») ; son nom est « {label} : {description} ». Sans menu et avec `description`, il prend le focus et l'info-bulle donne la phrase. Sans `description` ni `menu`, il n'est pas focusable.
+- Raison : D-159 renvoie l'état durable dans la barre du haut ; placé après le titre, il qualifie la page et reste visible quand les actions se replient (D-221).
+- Options écartées : pastille teintée parmi les actions, à droite (Alfred : plus de couleur, mêlée aux actions) ; bandeau sous la barre (exclu par D-159).
+- Validation : par délégation de l'utilisateur, 2026-11-23 — docs/validation/components/AppShell-summary-v1.html
+
+## D-252 — État de la page : un seul, annoncé
+- Date : 2026-11-23
+- Portée : AppShell
+- Décision : une page montre un seul état à la fois : l'app choisit le plus important. Quand l'état apparaît ou change, une zone `role="status"` cachée l'annonce au lecteur d'écran (« Hors ligne : … »). Ordre dans la barre : titre, état, trait, résumé, trait, vues, puis les actions.
+- Raison : deux pastilles côte à côte se lisent mal ; un état qui change sans annonce passe inaperçu sans la vue.
+- Options écartées : liste d'états ; annonce par un toast (le toast est réservé au résultat d'une action, D-159).
+- Validation : par délégation de l'utilisateur, 2026-11-23 — docs/validation/components/AppShell-summary-v1.html

@@ -29,6 +29,9 @@ const pageActions = (): Action[] => [
   },
 ];
 
+/** Mêmes actions, l'action principale sans icône : à texte dans la barre du haut (D-220). */
+const textPrimary = (): Action[] => pageActions().map((a) => (a.primary ? { id: a.id, label: a.label, primary: true, onPress: a.onPress } : a));
+
 const rowActions = (name: string): Action[] => [
   { id: "edit", label: "Modifier", icon: <ListDetail />, onPress: fn() },
   { id: "done", label: "Terminer", icon: <Check />, onPress: fn() },
@@ -48,7 +51,8 @@ const Row = ({ zone, label, actions, subject }: { zone: ActionZone; label: strin
 export const Zones: Story = {
   render: () => (
     <div className="max-w-3xl">
-      <Row zone="topbar" label="Barre du haut : l'action principale reste une icône" actions={pageActions()} />
+      <Row zone="topbar" label="Barre du haut : l'action principale à icône reste une icône" actions={pageActions()} />
+      <Row zone="topbar" label="Barre du haut : l'action principale sans icône est à texte" actions={textPrimary()} />
       <Row zone="header" label="En-tête : 3 icônes, « … », bouton principal" actions={pageActions()} />
       <Row zone="toolbar" label="Barre d'outils : 2 sélectionnés" actions={pageActions()} />
       <Row zone="section" label="Section : 2 icônes, bouton secondaire" actions={pageActions()} />
@@ -61,10 +65,14 @@ export const Zones: Story = {
   ),
   play: async ({ canvasElement }) => {
     const c = within(canvasElement);
-    const [topbar, header, toolbar, section, row] = c.getAllByRole("group");
+    const [topbar, topbarText, header, toolbar, section, row] = c.getAllByRole("group");
     // Barre du haut : aucune action à texte, l'action principale est la première icône (D-112).
     const topButtons = within(topbar!).getAllByRole("button");
     await expect(topButtons.map((b) => b.getAttribute("aria-label"))).toEqual(["Nouveau document", "Exporter en CSV", "Rechercher", "Plus d'actions"]);
+    // Barre du haut, principale sans icône : bouton à texte tout à droite (D-220).
+    const textButtons = within(topbarText!).getAllByRole("button");
+    await expect(textButtons.at(-1)).toHaveTextContent("Nouveau document");
+    await expect(textButtons.at(-2)).toHaveAccessibleName("Plus d'actions");
     // En-tête : icônes, « … », puis le bouton principal à droite (D-111).
     const headerButtons = within(header!).getAllByRole("button");
     await expect(headerButtons.at(-1)).toHaveTextContent("Nouveau document");
@@ -77,7 +85,7 @@ export const Zones: Story = {
     await expect(row).toHaveAccessibleName("Actions sur Rapport trimestriel des ventes");
     await expect(within(row!).getAllByRole("button").map((b) => b.getAttribute("aria-label"))).toEqual(["Modifier", "Plus d'actions"]);
     // État vide : le bouton principal seul.
-    await expect(c.getAllByRole("button", { name: "Nouveau document" })).toHaveLength(5);
+    await expect(c.getAllByRole("button", { name: "Nouveau document" })).toHaveLength(6);
   },
 };
 
@@ -105,9 +113,26 @@ export const Regle: Story = {
     await expect(ids(narrow.menu)).toEqual(["b", "t"]);
     // Barre du haut étroite : la principale reste une icône.
     await expect(ids(arrangeActions(actions, "topbar", { narrow: true }).icons)).toEqual(["a"]);
-    // Principale sans icône en barre du haut : en tête de « … » (D-112).
-    const noIcon = arrangeActions([{ id: "p", label: "P", primary: true, onPress: fn() }, ...actions.slice(4)], "topbar");
-    await expect(ids(noIcon.menu)).toEqual(["p", "t"]);
+    // Principale sans icône en barre du haut : bouton à texte (D-220).
+    const noIcon = arrangeActions([{ id: "p", label: "P", primary: true, onPress: fn() }, ...actions.slice(1)], "topbar");
+    await expect(noIcon.primary?.id).toBe("p");
+    await expect(ids(noIcon.icons)).toEqual(["b"]);
+    await expect(ids(noIcon.menu)).toEqual(["t"]);
+    // Place qui manque (D-221) : les icônes partent depuis la fin, avant les autres entrées de « … » ;
+    // puis le bouton à texte passe en tête de « … ».
+    const many: Action[] = [
+      { id: "p", label: "P", primary: true, onPress: fn() },
+      { id: "i1", label: "I1", icon: <Plus />, onPress: fn() },
+      { id: "i2", label: "I2", icon: <Plus />, onPress: fn() },
+      { id: "t", label: "T", onPress: fn() },
+    ];
+    const one = arrangeActions(many, "topbar", { fit: { icons: 1, primary: true } });
+    await expect(ids(one.icons)).toEqual(["i1"]);
+    await expect(ids(one.menu)).toEqual(["i2", "t"]);
+    await expect(one.primary?.id).toBe("p");
+    const none = arrangeActions(many, "topbar", { fit: { icons: 0, primary: false } });
+    await expect(none.primary).toBeUndefined();
+    await expect(ids(none.menu)).toEqual(["p", "i1", "i2", "t"]);
     // Ligne avec deux actions à icône seulement : deux icônes, sans « … » (D-114).
     const two = arrangeActions(actions.slice(0, 2), "row");
     await expect(two.primary).toBeUndefined();

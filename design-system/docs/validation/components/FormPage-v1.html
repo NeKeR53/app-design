@@ -1,0 +1,300 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>FormPage et formulaire en modale — validation v1</title>
+<style>
+/* ---------- Page de validation ---------- */
+:root{--pg-bg:#f6f6f6;--pg-fg:#1a1a1a;--pg-muted:#5c5c5c;--pg-line:#e2e2e2;--pg-card:#fff;--pg-badge:#fff4d6;--pg-badge-fg:#7a5a00;--pg-reco:#e7f0ff;--pg-reco-fg:#1d4ed8;--pg-ok:#e3f5e9;--pg-ok-fg:#15803d}
+:root[data-theme="dark"]{--pg-bg:#121212;--pg-fg:#ececec;--pg-muted:#9a9a9a;--pg-line:#2c2c2c;--pg-card:#1b1b1b;--pg-badge:#3a2f10;--pg-badge-fg:#f3d27a;--pg-reco:#16233d;--pg-reco-fg:#9cc0ff;--pg-ok:#12301d;--pg-ok-fg:#7fd99c}
+*{box-sizing:border-box}html,body{margin:0}
+body{background:var(--pg-bg);color:var(--pg-fg);font:15px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif}
+.pg{max-width:1180px;margin:0 auto;padding:24px 16px 64px}
+h1{font-size:22px;font-weight:600;margin:0 0 4px;display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.intro{color:var(--pg-muted);margin:0 0 20px}
+.badge{font-size:12px;font-weight:600;letter-spacing:.04em;padding:3px 8px;border-radius:6px;background:var(--pg-badge);color:var(--pg-badge-fg)}
+.badge.ok{background:var(--pg-ok);color:var(--pg-ok-fg)}
+.boxes{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px}
+@media (max-width:760px){.boxes{grid-template-columns:1fr}}
+.box{background:var(--pg-card);border:1px solid var(--pg-line);border-radius:10px;padding:14px 16px;font-size:14px}
+.box h2{font-size:14px;margin:0 0 8px;font-weight:600}.box ul,.box ol{margin:0;padding-left:20px}.box li{margin:5px 0}
+.reco{font-size:11.5px;font-weight:600;padding:1px 6px;border-radius:5px;background:var(--pg-reco);color:var(--pg-reco-fg);margin-left:4px;white-space:nowrap}
+.toolbar{position:sticky;top:0;z-index:100;background:var(--pg-bg);padding:10px 0;border-bottom:1px solid var(--pg-line);margin-bottom:16px;display:flex;flex-wrap:wrap;gap:10px 16px;align-items:center}
+.seg{display:inline-flex;border:1px solid var(--pg-line);border-radius:8px;overflow:hidden;background:var(--pg-card)}
+.seg button{border:0;background:transparent;color:var(--pg-fg);padding:5px 10px;font:inherit;font-size:13px;cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--pg-fg);color:var(--pg-bg)}
+.tlabel{font-size:12px;color:var(--pg-muted);margin-right:6px}
+.hint{margin:8px 0 0;color:var(--pg-muted);font-size:13px}
+code{font:12.5px ui-monospace,"SF Mono",Consolas,monospace}
+pre{background:var(--pg-card);border:1px solid var(--pg-line);border-radius:10px;padding:12px 14px;overflow:auto;font:12.5px/1.5 ui-monospace,"SF Mono",Consolas,monospace}
+h2.sec-t{font-size:16px;margin:28px 0 8px}
+
+/* ---------- Tokens (copie de src/tokens) ---------- */
+.tk{--surface:#fff;--surface-side:#f3f3f3;--surface-raised:#fff;--field:#f2f2f2;--hover:#e9e9e9;--selected:#dedede;--line:#e4e4e4;--line-strong:#cfcfcf;--fg:#1a1a1a;--fg-2:#5c5c5c;--fg-3:#6b6b6b;--scrim:rgb(0 0 0/.32);
+  --accent:#1d4ed8;--accent-fg:#fff;--primary:#1a1a1a;--primary-fg:#fff;--danger:#c62828;--success:#15803d;--font-sans:-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;
+  --radius-sm:4px;--radius-md:8px;--radius-lg:12px;--shadow-lg:0 16px 48px rgb(0 0 0/.18);--icon:16px;--icon-stroke:1.6;--fs-xs:11.5px;--fs-sm:12.5px;--fs-md:14px;--fs-lg:16px;--fs-xl:20px;--lh:1.45;--row-h:34px;--pad:16px;--dlg-pad:20px}
+.tk.dark{--surface:#181818;--surface-side:#222;--surface-raised:#262626;--field:#2a2a2a;--hover:#303030;--selected:#3d3d3d;--line:#333;--line-strong:#4a4a4a;--fg:#ececec;--fg-2:#ababab;--fg-3:#8f8f8f;--accent:#5b8def;--primary:#ececec;--primary-fg:#181818;--danger:#ef5350;--success:#4caf50}
+.tk.desktop{--fs-xs:10.5px;--fs-sm:11.5px;--fs-md:13px;--fs-lg:15px;--fs-xl:18px;--lh:1.4;--row-h:28px;--pad:12px;--dlg-pad:16px}
+
+/* ---------- Scène : AppShell, sidebar et main ---------- */
+.stage{border:1px solid var(--pg-line);border-radius:12px;overflow:hidden;background:var(--surface);color:var(--fg);font-family:var(--font-sans);font-size:var(--fs-md);line-height:var(--lh);position:relative;display:flex;height:640px}
+.stage *{box-sizing:border-box}.stage button,.stage input,.stage textarea,.stage select{font:inherit;color:inherit}
+.stage.mobile{max-width:390px;margin:0 auto;height:720px}
+.side{width:220px;flex:none;background:var(--surface-side);border-right:1px solid var(--line);padding:10px 8px;display:flex;flex-direction:column;gap:2px}
+.stage.mobile .side{display:none}
+.nav{height:var(--row-h);display:flex;align-items:center;gap:8px;padding:0 10px;border-radius:var(--radius-md);color:var(--fg-2)}
+.nav.on{background:var(--selected);color:var(--fg)}
+.main{flex:1;min-width:0;display:flex;flex-direction:column}
+.top{height:44px;flex:none;display:flex;align-items:center;gap:8px;padding:0 var(--pad);border-bottom:1px solid var(--line);font-weight:600}
+.scroll{flex:1;min-height:0;overflow:auto;display:flex;flex-direction:column}
+
+/* ---------- FormPage ---------- */
+.fp{flex:1;padding:24px var(--pad) 0;width:100%;max-width:880px}
+.fp h2{font-size:var(--fs-xl);margin:0 0 4px;font-weight:600}.fp .intent{color:var(--fg-2);margin:0 0 8px}
+.sec{display:grid;grid-template-columns:240px minmax(0,560px);gap:32px;padding:24px 0;border-top:1px solid var(--line)}
+.sec:first-of-type{border-top:0}
+.sec .st{font-weight:600}.sec .sh{color:var(--fg-3);font-size:var(--fs-sm);margin-top:2px}
+.stage.mobile .sec,.stage.tablet .sec{grid-template-columns:1fr;gap:12px}
+.fields{display:flex;flex-direction:column;gap:16px;min-width:0}
+.foot{position:sticky;bottom:0;flex:none;display:flex;align-items:center;gap:8px;padding:10px var(--pad);border-top:1px solid var(--line);background:var(--surface);flex-wrap:wrap}
+.state{font-size:var(--fs-sm);color:var(--fg-3);margin-right:auto;display:flex;align-items:center;gap:6px;min-height:var(--row-h)}
+.state.err{color:var(--danger)}
+.state.ok{color:var(--fg-3)}
+.stage.mobile .foot .btn{flex:1}
+.stage.mobile .state{flex-basis:100%;min-height:0}
+.btn{height:var(--row-h);padding:0 12px;border:0;border-radius:var(--radius-md);background:var(--field);font-size:var(--fs-md);cursor:default;display:inline-flex;align-items:center;justify-content:center;gap:6px}
+.btn:hover{background:var(--hover)}
+.btn.pri{background:var(--primary);color:var(--primary-fg)}
+.btn.pri:hover{opacity:.9}
+.btn.danger{background:var(--danger);color:#fff}
+.btn[disabled]{opacity:.4}
+.spin{width:14px;height:14px;border:2px solid currentColor;border-right-color:transparent;border-radius:50%;animation:sp .7s linear infinite}
+@keyframes sp{to{transform:rotate(360deg)}}
+
+/* ---------- Champs (D-130) ---------- */
+.f{display:flex;flex-direction:column;gap:4px;min-width:0;max-width:100%}
+.f.w-sm{width:160px}.f.w-md{width:240px}.f.w-full{width:100%}
+.stage.mobile .f{width:100%}
+.lab{color:var(--fg);font-size:var(--fs-sm);font-weight:500}
+.lab .opt{color:var(--fg-3);font-weight:400}
+.desc{font-size:var(--fs-sm);color:var(--fg-3)}
+.err-t{font-size:var(--fs-sm);color:var(--danger);display:none}
+.f.invalid .err-t{display:block}.f.invalid .desc{display:none}
+.inp{height:var(--row-h);width:100%;border:1px solid var(--line-strong);background:var(--surface);border-radius:var(--radius-md);padding:0 10px;outline:none}
+textarea.inp{height:auto;padding:6px 10px;resize:none;line-height:var(--lh)}
+.inp:hover{border-color:var(--fg-3)}
+.inp:focus{outline:2px solid var(--accent);outline-offset:1px}
+.f.invalid .inp{border-color:var(--danger)}
+.chk{display:flex;gap:8px;align-items:flex-start}
+.chk input{accent-color:var(--accent);margin:3px 0 0}
+.chk small{display:block;color:var(--fg-3);font-size:var(--fs-sm)}
+.radios{display:flex;flex-direction:column;gap:4px}
+
+/* ---------- Dialog ---------- */
+.scrim{position:absolute;inset:0;background:var(--scrim);display:none;align-items:center;justify-content:center;padding:32px;z-index:20}
+.scrim.open{display:flex}
+.dlg{background:var(--surface-raised);border:1px solid var(--line);border-radius:var(--radius-lg);box-shadow:var(--shadow-lg);width:400px;max-width:100%;max-height:100%;display:flex;flex-direction:column}
+.dlg.md{width:560px}
+.stage.mobile .scrim{padding:16px}
+.dlg header{padding:var(--dlg-pad) var(--dlg-pad) 8px;display:flex;gap:8px}
+.dlg header h3{margin:0;font-size:var(--fs-lg);font-weight:600;flex:1}
+.dlg header p{margin:4px 0 0;color:var(--fg-2)}
+.dlg .body{padding:8px var(--dlg-pad) var(--dlg-pad);display:flex;flex-direction:column;gap:12px;overflow:auto}
+.dlg .derr{margin:0 var(--dlg-pad);color:var(--danger);font-size:var(--fs-sm);display:none}
+.dlg .derr.on{display:block}
+.dlg footer{display:flex;justify-content:flex-end;gap:8px;padding:12px var(--dlg-pad)}
+.stage.mobile .dlg footer .btn{flex:1}
+.x{width:28px;height:28px;border:0;background:transparent;border-radius:var(--radius-md);color:var(--fg-2)}
+.x:hover{background:var(--hover)}
+
+/* ---------- Comparatifs ---------- */
+.cmp{display:grid;grid-template-columns:repeat(2,1fr);gap:16px;margin-top:12px}
+@media (max-width:760px){.cmp{grid-template-columns:1fr}}
+.cmp .card{background:var(--pg-card);border:1px solid var(--pg-line);border-radius:10px;padding:14px}
+.cmp h3{margin:0 0 6px;font-size:14px}
+.cmp p{margin:0;font-size:13px;color:var(--pg-muted)}
+.mini{margin-top:10px;border:1px solid var(--line);border-radius:8px;background:var(--surface);color:var(--fg);font-family:var(--font-sans);font-size:var(--fs-md)}
+.mini .foot{position:static}
+</style>
+</head>
+<body>
+<div class="pg">
+  <h1>FormPage et formulaire en modale <span class="badge ok">VALIDÉ le 2026-11-23 — par délégation de l'utilisateur</span></h1>
+  <p class="intro">Deux éléments, une même description des champs : le gabarit <code>FormPage</code> (D-022) pour un long formulaire, et <code>useOpenForm()</code> → <code>openForm(spec)</code> pour une saisie courte en modale. L'app décrit ses champs par des données ; Socle les dessine avec les champs du lot 1 et <code>Dialog</code>. Remplissez, enregistrez, annulez : la scène est jouable.</p>
+
+  <div class="boxes">
+    <div class="box">
+      <h2>Déjà décidé</h2>
+      <ul>
+        <li>FormPage : en-tête (titre, phrase d'intention), sections titrées, pied collé en bas avec l'état d'enregistrement, « Annuler » et l'action principale (D-022).</li>
+        <li>Sur bureau, titre et aide de la section à gauche ; ailleurs, au-dessus (D-022). Points de rupture 640 et 1024 px (D-013).</li>
+        <li>Libellé au-dessus, aide ou erreur en dessous, « (facultatif) » (D-022, D-130). Le champ vérifie seul ; erreur en quittant un champ modifié ou à l'envoi (D-132). Largeurs <code>xs</code> à <code>full</code> (D-133).</li>
+        <li>Pas d'interrupteur pour une valeur qui attend l'envoi : une case (D-137).</li>
+        <li>Modale : « Annuler » puis l'action (D-124) ; Échap ferme, clic hors refusé après une saisie (D-122) ; focus sur le premier champ (D-125) ; attente et erreur sur place (D-128).</li>
+        <li>Messages : pas de bandeau ; un message local reste dans sa zone (D-159).</li>
+      </ul>
+    </div>
+    <div class="box">
+      <h2>Tranché le 2026-11-23 (recommandations retenues)</h2>
+      <ol>
+        <li><b>Forme de l'API</b> : A descripteurs de champs (données) ; B composants enfants libres. <span class="reco">retenu A (D-190)</span> — deux apps qui décrivent le même formulaire obtiennent le même écran.</li>
+        <li><b>Types de champs</b> : <code>text</code>, <code>email</code>, <code>url</code>, <code>tel</code>, <code>password</code>, <code>number</code>, <code>textarea</code>, <code>select</code>, <code>combobox</code>, <code>radio</code>, <code>checkbox</code>, <code>checkboxGroup</code>, et le groupe <code>fieldset</code>. Pas de <code>switch</code> (D-137), pas de date tant que Socle n'a pas de sélecteur, pas de champ libre. <span class="reco">retenu (D-190)</span></li>
+        <li><b>Champs courts</b> : A chacun sur sa ligne, à sa largeur ; B deux champs courts consécutifs partagent une ligne. <span class="reco">retenu A (D-191)</span> — ordre de lecture et de tabulation sans surprise ; un groupe qui va ensemble passe par <code>fieldset</code>.</li>
+        <li><b>État d'enregistrement</b> : A une phrase à gauche du pied (« Modifications non enregistrées », « Enregistrement… », « Enregistré », l'erreur en rouge) ; B une pastille seule ; C rien. <span class="reco">retenu A (D-194)</span></li>
+        <li><b>« Annuler » après une saisie (FormPage)</b> : A confirmation « Abandonner les modifications ? » ; B quitter tout de suite. <span class="reco">retenu A (D-195)</span> — un long formulaire perdu coûte cher. La modale garde D-122 (saisie courte).</li>
+        <li><b>Action principale</b> : A toujours active ; B grisée tant que rien ne change. <span class="reco">retenu A (D-196)</span> — un bouton grisé n'explique rien ; l'envoi montre les erreurs. <kbd>Mod+Entrée</kbd> envoie, même depuis une zone de texte.</li>
+        <li><b>Échec de l'envoi</b> : A erreurs sous les champs et phrase sur place (pied de la page, au-dessus du pied de la modale) ; B toast. <span class="reco">retenu A (D-192, D-198)</span> — l'erreur reste à côté de ce qu'il faut corriger (D-159).</li>
+        <li><b>Résultat de <code>openForm</code></b> : A promesse des valeurs, ou <code>null</code> si annulé ; avec <code>onSubmit</code>, la modale attend et reste ouverte en cas d'échec ; B <code>true</code>/<code>false</code> (Alfred). <span class="reco">retenu A (D-197)</span></li>
+        <li><b>Taille de la modale</b> : A automatique, <code>sm</code> jusqu'à quatre champs sans zone de texte, sinon <code>md</code> ; B toujours <code>md</code>. <span class="reco">retenu A (D-198)</span> ; six champs au plus, au-delà une FormPage.</li>
+      </ol>
+    </div>
+  </div>
+
+  <div class="toolbar">
+    <span><span class="tlabel">Mode</span><span class="seg" data-k="mode"><button aria-pressed="true" data-v="light">Clair</button><button aria-pressed="false" data-v="dark">Sombre</button></span></span>
+    <span><span class="tlabel">Densité</span><span class="seg" data-k="density"><button aria-pressed="true" data-v="web">Web</button><button aria-pressed="false" data-v="desktop">Desktop</button></span></span>
+    <span><span class="tlabel">Largeur</span><span class="seg" data-k="width"><button aria-pressed="true" data-v="desk">Bureau</button><button aria-pressed="false" data-v="tablet">Tablette</button><button aria-pressed="false" data-v="mobile">Mobile</button></span></span>
+    <span><span class="tlabel">Envoi</span><span class="seg" data-k="send"><button aria-pressed="true" data-v="ok">Réussit</button><button aria-pressed="false" data-v="fail">Échoue</button></span></span>
+    <span><span class="tlabel">État</span><span class="seg" data-k="st"><button aria-pressed="true" data-v="live">Réel</button><button aria-pressed="false" data-v="err">Erreurs</button></span></span>
+  </div>
+
+  <div class="stage tk" id="app">
+    <aside class="side"><div class="nav">Accueil</div><div class="nav on">Projets</div><div class="nav">Contacts</div><div class="nav">Réglages</div></aside>
+    <div class="main">
+      <div class="top">Projets<span style="flex:1"></span><button class="btn" id="open-dlg">Nouveau contact</button></div>
+      <div class="scroll">
+        <form class="fp" id="form" novalidate>
+          <h2>Nouveau projet</h2>
+          <p class="intent">Décrivez le projet ; l'équipe le verra dès sa création.</p>
+          <div class="sec">
+            <div><div class="st">Général</div><div class="sh">Ce qui identifie le projet dans les listes.</div></div>
+            <div class="fields">
+              <div class="f w-full" data-req><label class="lab" for="p-name">Nom</label><input class="inp" id="p-name" placeholder="Atelier d'automne"><div class="desc">Visible par toute l'équipe.</div><div class="err-t">Ce champ est obligatoire.</div></div>
+              <div class="f w-md"><label class="lab" for="p-state">État</label><select class="inp" id="p-state"><option>À faire</option><option>En cours</option><option>Terminé</option></select></div>
+              <div class="f w-sm" data-num><label class="lab" for="p-budget">Budget <span class="opt">(facultatif)</span></label><input class="inp" id="p-budget" placeholder="1200"><div class="desc">En euros.</div><div class="err-t">Saisissez un nombre.</div></div>
+            </div>
+          </div>
+          <div class="sec">
+            <div><div class="st">Détails</div><div class="sh">Pour bien démarrer.</div></div>
+            <div class="fields">
+              <div class="f w-full"><label class="lab" for="p-desc">Description <span class="opt">(facultatif)</span></label><textarea class="inp" id="p-desc" rows="3"></textarea></div>
+              <div class="f"><span class="lab">Visibilité</span><div class="radios"><label class="chk"><input type="radio" name="vis" checked> Équipe</label><label class="chk"><input type="radio" name="vis"> Privé</label></div></div>
+              <div class="f"><label class="chk"><input type="checkbox" id="p-notify"><span>Prévenir l'équipe<small>Un message part à la création.</small></span></label></div>
+            </div>
+          </div>
+        </form>
+        <div class="foot">
+          <span class="state" id="state" aria-live="polite"></span>
+          <button class="btn" type="button" id="cancel">Annuler</button>
+          <button class="btn pri" type="button" id="save">Créer</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Formulaire en modale (openForm) -->
+    <div class="scrim" id="scrim-form">
+      <div class="dlg" role="dialog" aria-labelledby="dt">
+        <header><div style="flex:1"><h3 id="dt">Nouveau contact</h3><p>Il rejoint la liste des contacts.</p></div><button class="x" id="dlg-x" aria-label="Fermer">✕</button></header>
+        <form class="body" id="dform" novalidate>
+          <div class="f w-full" data-req><label class="lab" for="c-name">Nom</label><input class="inp" id="c-name"><div class="err-t">Ce champ est obligatoire.</div></div>
+          <div class="f w-full" data-req data-mail><label class="lab" for="c-mail">Adresse e-mail</label><input class="inp" id="c-mail" type="email"><div class="err-t">Saisissez une adresse de la forme nom@domaine.fr.</div></div>
+          <div class="f w-md"><label class="lab" for="c-role">Rôle</label><select class="inp" id="c-role"><option>Membre</option><option>Lecteur</option><option>Administrateur</option></select></div>
+          <div class="f"><label class="chk"><input type="checkbox"> Envoyer une invitation</label></div>
+        </form>
+        <div class="derr" id="derr" role="alert">Le serveur ne répond pas. Réessayez.</div>
+        <footer><button class="btn" id="dlg-cancel">Annuler</button><button class="btn pri" id="dlg-ok">Ajouter</button></footer>
+      </div>
+    </div>
+
+    <!-- Confirmation d'abandon (D-195) -->
+    <div class="scrim" id="scrim-confirm">
+      <div class="dlg" role="alertdialog" aria-labelledby="ct">
+        <header><div><h3 id="ct">Abandonner les modifications ?</h3><p>Les modifications non enregistrées seront perdues.</p></div></header>
+        <footer><button class="btn" id="c-no">Annuler</button><button class="btn danger" id="c-yes">Abandonner</button></footer>
+      </div>
+    </div>
+  </div>
+  <p class="hint">Bureau : sections sur deux colonnes (240 px, puis les champs sur 560 px au plus). Tablette et mobile : titre au-dessus. Modifiez un champ : le pied dit « Modifications non enregistrées ». « Créer » vérifie tout, met le focus sur le premier champ en erreur, puis enregistre. <kbd>Ctrl/⌘+Entrée</kbd> envoie aussi.</p>
+
+  <h2 class="sec-t">Q4 — État d'enregistrement</h2>
+  <div class="cmp">
+    <div class="card"><h3>A — phrase à gauche <span class="reco">retenu</span></h3><p>Dit ce qui se passe, sans icône d'ornement.</p>
+      <div class="mini tk"><div class="foot"><span class="state">Modifications non enregistrées</span><button class="btn">Annuler</button><button class="btn pri">Enregistrer</button></div></div>
+      <div class="mini tk"><div class="foot"><span class="state err">L'enregistrement a échoué : le serveur ne répond pas.</span><button class="btn">Annuler</button><button class="btn pri">Enregistrer</button></div></div></div>
+    <div class="card"><h3>B — pastille seule</h3><p>Compacte, mais il faut deviner son sens.</p>
+      <div class="mini tk"><div class="foot"><span class="state"><span style="width:8px;height:8px;border-radius:50%;background:#d97706;display:inline-block"></span></span><button class="btn">Annuler</button><button class="btn pri">Enregistrer</button></div></div></div>
+  </div>
+
+  <h2 class="sec-t">Exemple d'usage</h2>
+<pre>import { FormPage, useOpenForm, type FormSection, type FormField } from "socle-ui";
+
+const sections: FormSection[] = [
+  { title: "Général", description: "Ce qui identifie le projet dans les listes.", fields: [
+    { type: "text", name: "name", label: "Nom", isRequired: true, description: "Visible par toute l'équipe." },
+    { type: "select", name: "state", label: "État", isRequired: true, width: "md",
+      options: [{ id: "todo", label: "À faire" }, { id: "doing", label: "En cours" }] },
+    { type: "number", name: "budget", label: "Budget", description: "En euros." },
+  ]},
+  { title: "Détails", fields: [
+    { type: "textarea", name: "description", label: "Description" },
+    { type: "checkbox", name: "notify", label: "Prévenir l'équipe" },
+  ]},
+];
+
+&lt;FormPage title="Nouveau projet" description="Décrivez le projet."
+  sections={sections} submitLabel="Créer"
+  onSubmit={async (values) =&gt; { await api.create(values); navigate("/projets"); }}
+  onCancel={() =&gt; navigate("/projets")} /&gt;
+
+const openForm = useOpenForm();
+const values = await openForm({
+  title: "Nouveau contact", submitLabel: "Ajouter",
+  fields: [{ type: "text", name: "name", label: "Nom", isRequired: true },
+           { type: "email", name: "email", label: "Adresse e-mail", isRequired: true }],
+  onSubmit: (v) =&gt; api.addContact(v),   // facultatif : attente et erreur sur place
+});
+if (values) notify({ title: "Contact ajouté", tone: "success" });</pre>
+</div>
+
+<script>
+const app=document.getElementById('app');
+const set=(k,v)=>{
+  if(k==='mode'){app.classList.toggle('dark',v==='dark');document.documentElement.dataset.theme=v}
+  if(k==='density')app.classList.toggle('desktop',v==='desktop');
+  if(k==='width'){app.classList.toggle('mobile',v==='mobile');app.classList.toggle('tablet',v==='tablet')}
+  if(k==='st')document.querySelectorAll('#form .f[data-req]').forEach(f=>f.classList.toggle('invalid',v==='err'));
+};
+const opts={send:'ok'};
+document.querySelectorAll('.seg').forEach(s=>s.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;s.querySelectorAll('button').forEach(x=>x.setAttribute('aria-pressed',x===b));opts[s.dataset.k]=b.dataset.v;set(s.dataset.k,b.dataset.v)}));
+const state=document.getElementById('state');let dirty=false;
+const show=(t,c)=>{state.className='state'+(c?' '+c:'');state.innerHTML=t};
+const check=(root)=>{let first=null;root.querySelectorAll('.f').forEach(f=>{const i=f.querySelector('input,textarea');if(!i)return;let bad=false;
+  if(f.hasAttribute('data-req')&&!i.value.trim())bad=true;
+  if(f.hasAttribute('data-num')&&i.value.trim()&&isNaN(Number(i.value.replace(',','.'))))bad=true;
+  if(f.hasAttribute('data-mail')&&i.value.trim()&&!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(i.value))bad=true;
+  f.classList.toggle('invalid',bad);if(bad&&!first)first=i});return first};
+const form=document.getElementById('form');
+form.addEventListener('input',()=>{dirty=true;show('Modifications non enregistrées')});
+form.addEventListener('focusout',e=>{const f=e.target.closest('.f');if(f&&dirty&&f.classList.contains('invalid'))check(form)});
+const save=document.getElementById('save');
+const submit=()=>{const bad=check(form);if(bad){bad.focus();show('Corrigez les champs signalés.','err');return}
+  save.innerHTML='<span class="spin"></span>Créer';save.disabled=true;show('Enregistrement…');
+  setTimeout(()=>{save.innerHTML='Créer';save.disabled=false;
+    if(opts.send==='fail')show("L'enregistrement a échoué : le serveur ne répond pas.",'err');else{dirty=false;show('Enregistré','ok')}},900)};
+save.onclick=submit;
+form.addEventListener('keydown',e=>{if(e.key==='Enter'&&(e.metaKey||e.ctrlKey)){e.preventDefault();submit()}});
+const sc=document.getElementById('scrim-confirm');
+document.getElementById('cancel').onclick=()=>{if(dirty){sc.classList.add('open');document.getElementById('c-no').focus()}else show('Retour à la liste (onCancel).')};
+document.getElementById('c-no').onclick=()=>sc.classList.remove('open');
+document.getElementById('c-yes').onclick=()=>{sc.classList.remove('open');form.reset();dirty=false;form.querySelectorAll('.f').forEach(f=>f.classList.remove('invalid'));show('Modifications abandonnées (onCancel).')};
+const sf=document.getElementById('scrim-form'),dform=document.getElementById('dform'),derr=document.getElementById('derr'),ok=document.getElementById('dlg-ok');
+const closeDlg=()=>{sf.classList.remove('open');dform.reset();derr.classList.remove('on');dform.querySelectorAll('.f').forEach(f=>f.classList.remove('invalid'))};
+document.getElementById('open-dlg').onclick=()=>{sf.classList.add('open');document.getElementById('c-name').focus()};
+document.getElementById('dlg-x').onclick=closeDlg;document.getElementById('dlg-cancel').onclick=closeDlg;
+ok.onclick=()=>{const bad=check(dform);if(bad){bad.focus();return}derr.classList.remove('on');ok.innerHTML='<span class="spin"></span>Ajouter';ok.disabled=true;
+  setTimeout(()=>{ok.innerHTML='Ajouter';ok.disabled=false;if(opts.send==='fail')derr.classList.add('on');else{closeDlg();show('openForm a rendu les valeurs ; l’app affiche « Contact ajouté ».')}},900)};
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){if(sc.classList.contains('open'))sc.classList.remove('open');else if(sf.classList.contains('open')&&!ok.disabled)closeDlg()}});
+</script>
+</body>
+</html>

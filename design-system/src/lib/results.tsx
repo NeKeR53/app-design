@@ -74,14 +74,14 @@ export function RetryButton({ onRetry, children }: { onRetry?: (() => void) | un
 }
 
 /** Bandeau au-dessus des anciens résultats quand une nouvelle recherche échoue (D-085). */
-export function ErrorBanner({ onRetry }: { onRetry?: (() => void) | undefined }) {
+export function ErrorBanner({ onRetry, message }: { onRetry?: (() => void) | undefined; message?: string }) {
   const m = useMessages();
   return (
     <div role="alert" className="my-2 flex items-center gap-2 rounded-md bg-field px-3 py-2 text-sm text-fg-2">
       <span className="text-warning">
         <AlertTriangle size={14} />
       </span>
-      {m.notUpdated}
+      {message ?? m.notUpdated}
       <Button {...(onRetry ? { onPress: onRetry } : {})} className={cx(buttonReset, "ml-auto rounded-sm px-1.5 py-0.5 text-sm text-accent-text data-hovered:underline", focusRing)}>
         {m.retry}
       </Button>

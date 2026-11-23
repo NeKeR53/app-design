@@ -63,6 +63,8 @@ export const PanelLeft = icon(
   "PanelLeft",
 );
 /** Icône du panneau de détail (liste). */
+export const Maximize = icon(<path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7" />, "Maximize");
+export const Minimize = icon(<path d="M4 14h6v6M20 10h-6V4M14 10l7-7M3 21l7-7" />, "Minimize");
 export const ListDetail = icon(<path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01" />, "ListDetail");
 export const Settings = icon(
   <>
@@ -116,4 +118,78 @@ export const CircleAlert = icon(
     <path d="M12 8v4M12 16h.01" />
   </>,
   "CircleAlert",
+);
+
+/* Terminal et LogViewer (D-285) */
+export const ChevronUp = icon(<path d="m18 15-6-6-6 6" />, "ChevronUp");
+export const Copy = icon(
+  <>
+    <rect width="14" height="14" x="8" y="8" rx="2" ry="2" />
+    <path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2" />
+  </>,
+  "Copy",
+);
+export const WrapText = icon(<path d="M3 6h18M3 12h15a3 3 0 1 1 0 6h-4M16 16l-2 2 2 2M3 18h7" />, "WrapText");
+export const Clock = icon(
+  <>
+    <circle cx="12" cy="12" r="10" />
+    <path d="M12 6v6l4 2" />
+  </>,
+  "Clock",
+);
+export const ListX = icon(<path d="M11 12H3M16 6H3M16 18H3M19 10l-4 4M15 10l4 4" />, "ListX");
+export const ArrowDownToLine = icon(<path d="M12 17V3M6 11l6 6 6-6M19 21H5" />, "ArrowDownToLine");
+/** Deux colonnes : vue côte à côte (DiffView, D-291). */
+export const Columns = icon(
+  <>
+    <rect x="3" y="4" width="18" height="16" rx="2" />
+    <path d="M12 4v16" />
+  </>,
+  "Columns",
+);
+/** Lignes inchangées dépliées (DiffView, D-295). Lucide « unfold-vertical ». */
+export const UnfoldVertical = icon(
+  <path d="M12 22v-6M12 8V2M4 12H2M10 12H8M16 12h-2M22 12h-2M15 19l-3 3-3-3M15 5l-3-3-3 3" />,
+  "UnfoldVertical",
+);
+/* DocumentViewer (D-312) */
+export const ZoomIn = icon(
+  <>
+    <circle cx="11" cy="11" r="7" />
+    <path d="m21 21-4.3-4.3M8 11h6M11 8v6" />
+  </>,
+  "ZoomIn",
+);
+export const ZoomOut = icon(
+  <>
+    <circle cx="11" cy="11" r="7" />
+    <path d="m21 21-4.3-4.3M8 11h6" />
+  </>,
+  "ZoomOut",
+);
+export const FitWidth = icon(<path d="M3 12h18M7 8l-4 4 4 4M17 8l4 4-4 4" />, "FitWidth");
+export const Download = icon(<path d="M12 4v11M7 10l5 5 5-5M5 20h14" />, "Download");
+
+/* Markdown et MarkdownEditor (D-304, D-307) */
+export const Heading1 = icon(<path d="M4 12h8M4 18V6M12 18V6M17 12l3-2v8" />, "Heading1");
+export const Heading2 = icon(<path d="M4 12h8M4 18V6M12 18V6M21 18h-4c0-4 4-3 4-6 0-1.5-2-2.5-4-1" />, "Heading2");
+export const Heading3 = icon(
+  <path d="M4 12h8M4 18V6M12 18V6M17.5 10.5c1.7-1 3.5 0 3.5 1.5a2 2 0 0 1-2 2M17 17.5c2 1.5 4 .3 4-1.5a2 2 0 0 0-2-2" />,
+  "Heading3",
+);
+export const Bold = icon(<path d="M6 12h9a4 4 0 0 1 0 8H7a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1h7a4 4 0 0 1 0 8" />, "Bold");
+export const Italic = icon(<path d="M19 4h-9M14 20H5M15 4 9 20" />, "Italic");
+export const CodeIcon = icon(<path d="m16 18 6-6-6-6M8 6l-6 6 6 6" />, "CodeIcon");
+export const LinkIcon = icon(
+  <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />,
+  "LinkIcon",
+);
+export const ListOrdered = icon(<path d="M10 12h11M10 18h11M10 6h11M4 10h2M4 6h1v4M6 18H4c0-1 2-2 2-3s-1-1.5-2-1" />, "ListOrdered");
+export const TextQuote = icon(<path d="M17 6H3M21 12H8M21 18H8M3 12v6" />, "TextQuote");
+export const Eye = icon(
+  <>
+    <path d="M2.06 12.35a1 1 0 0 1 0-.7 10.75 10.75 0 0 1 19.88 0 1 1 0 0 1 0 .7 10.75 10.75 0 0 1-19.88 0" />
+    <circle cx="12" cy="12" r="3" />
+  </>,
+  "Eye",
 );

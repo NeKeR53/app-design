@@ -1,6 +1,6 @@
 /*
  * Adapté du starter Tailwind de React Aria (adobe/react-spectrum, starters/tailwind),
- * licence Apache 2.0. Spec : Sidebar.spec.md (v1 et v2).
+ * licence Apache 2.0. Spec : Sidebar.spec.md (v1 et v2 ; pied : D-230 à D-232).
  */
 import { Children, createContext, isValidElement, useContext, useMemo, type ReactElement, type ReactNode } from "react";
 import type { Key, Selection } from "react-aria-components";
@@ -75,12 +75,33 @@ export interface SidebarAccountProps {
   menu?: ReactNode;
 }
 
+export interface SidebarWorkspaceEntry {
+  id: string;
+  name: string;
+}
+
+export interface SidebarWorkspaceProps {
+  /** Les espaces proposés, dans l'ordre voulu (les plus récents d'abord, par exemple). */
+  workspaces: SidebarWorkspaceEntry[];
+  /** Espace ouvert. */
+  currentId: string;
+  /** Appelé quand l'utilisateur choisit un autre espace. */
+  onChange: (id: string) => void;
+  /** Entrées `Menu.Item` après un trait : « Créer un espace… », « Ouvrir un autre dossier… » (D-231). */
+  actions?: ReactNode;
+  isDisabled?: boolean;
+}
+
 export interface SidebarProps {
   /** Page courante. */
   selectedId: string;
   onSelectionChange: (id: string) => void;
   /** Pied : compte et réglages. */
   account: ReactElement<SidebarAccountProps>;
+  /** Entrées fixes du bas, au-dessus du compte : des `Sidebar.Item`, 3 au plus (D-230). */
+  footer?: ReactNode;
+  /** Sélecteur d'espace de travail, entre les entrées fixes et le compte (D-231, D-232). */
+  workspace?: ReactElement<SidebarWorkspaceProps>;
   /** `Sidebar.Item` et `Sidebar.Section`. */
   children: ReactNode;
 }
@@ -115,7 +136,7 @@ function walk(children: ReactNode, fn: (el: ReactElement<AnyProps>, parents: str
 const SECTION_MARK = Symbol("SidebarSection");
 
 /* ---------- Sidebar ---------- */
-export function Sidebar({ selectedId, onSelectionChange, account, children }: SidebarProps) {
+export function Sidebar({ selectedId, onSelectionChange, account, footer, workspace, children }: SidebarProps) {
   const m = useMessages();
   // Ce que l'utilisateur a déplié ou replié est mémorisé (D-007, D-043, D-056) ;
   // les sections sont dépliées par défaut, les éléments repliés.
@@ -126,7 +147,7 @@ export function Sidebar({ selectedId, onSelectionChange, account, children }: Si
     const sections = new Set<string>();
     const expandable = new Set<string>();
     let ancestors: string[] = [];
-    walk(children, (el, parents) => {
+    walk([children, footer], (el, parents) => {
       const id = el.props.id;
       if (!id) return;
       if ((el.type as { [SECTION_MARK]?: boolean })[SECTION_MARK]) sections.add(id);
@@ -134,7 +155,7 @@ export function Sidebar({ selectedId, onSelectionChange, account, children }: Si
       if (id === selectedId) ancestors = parents;
     });
     return { sections, ancestors, expandable };
-  }, [children, selectedId]);
+  }, [children, footer, selectedId]);
 
   const isExpanded = (id: string) => open[id] ?? (sections.has(id) || ancestors.includes(id));
   const expandedKeys = useMemo(
@@ -170,29 +191,44 @@ export function Sidebar({ selectedId, onSelectionChange, account, children }: Si
     if (id !== selectedId) onSelectionChange(id);
   };
 
+  const treeProps = {
+    selectionMode: "single",
+    selectionBehavior: "replace",
+    selectedKeys: [selectedId],
+    onSelectionChange: onSelect,
+    expandedKeys,
+    onExpandedChange: (keys: Set<Key>) => {
+      const next = { ...open };
+      for (const id of [...sections, ...expandable]) {
+        const now = keys.has(id);
+        if (now !== isExpanded(id)) next[id] = now;
+      }
+      setOpen(next);
+    },
+  } as const;
+  // Les entrées fixes masquées (déjà dans la barre d'onglets mobile, D-019) ne laissent pas d'arbre vide.
+  const hidden = useContext(HiddenNavIds);
+  let hasFooter = false;
+  Children.forEach(footer, (c) => {
+    if (isValidElement<AnyProps>(c) && !(c.props.id && hidden.has(c.props.id))) hasFooter = true;
+  });
+
   return (
     <SidebarCtx.Provider value={ctx}>
       <nav aria-label={m.mainNavigation} className="flex h-full min-h-0 flex-col bg-surface-side font-sans text-md text-fg">
-        <Tree
-          aria-label={m.mainNavigation}
-          selectionMode="single"
-          selectionBehavior="replace"
-          selectedKeys={[selectedId]}
-          onSelectionChange={onSelect}
-          expandedKeys={expandedKeys}
-          onExpandedChange={(keys) => {
-            const next = { ...open };
-            for (const id of [...sections, ...expandable]) {
-              const now = keys.has(id);
-              if (now !== isExpanded(id)) next[id] = now;
-            }
-            setOpen(next);
-          }}
-          className="min-h-0 flex-1 overflow-auto p-1.5 outline-none"
-        >
+        <Tree {...treeProps} aria-label={m.mainNavigation} className="min-h-0 flex-1 overflow-auto p-1.5 outline-none">
           {children}
         </Tree>
-        <div className="border-t border-line p-2">{account}</div>
+        {/* Pied (D-232) : entrées fixes, espace de travail, compte ; un seul trait au-dessus. */}
+        <div className="flex flex-col gap-0.5 border-t border-line p-2">
+          {hasFooter && (
+            <Tree {...treeProps} aria-label={m.footerNavigation} className="outline-none">
+              {footer}
+            </Tree>
+          )}
+          {workspace}
+          {account}
+        </div>
       </nav>
     </SidebarCtx.Provider>
   );
@@ -455,8 +491,76 @@ function Account({ name, detail, avatar, onSettings, menu }: SidebarAccountProps
   );
 }
 
+/* ---------- Sidebar.Workspace (D-231) ---------- */
+/** Lettre du repère d'un espace : la première lettre ou le premier chiffre de son nom. */
+export function workspaceInitial(name: string): string {
+  const ch = Array.from(name).find((c) => /[\p{L}\p{N}]/u.test(c));
+  return (ch ?? "·").toLocaleUpperCase();
+}
+
+function Workspace({ workspaces, currentId, onChange, actions, isDisabled }: SidebarWorkspaceProps) {
+  const m = useMessages();
+  const current = workspaces.find((w) => w.id === currentId) ?? workspaces[0];
+  if (!current) return null;
+  const who = (
+    <>
+      <span aria-hidden className="inline-grid size-6 shrink-0 place-items-center rounded-sm bg-selected text-xs font-semibold text-fg">
+        {workspaceInitial(current.name)}
+      </span>
+      <OverflowTooltip text={current.name} />
+    </>
+  );
+  // Un seul espace et aucune action : simple étiquette (comme le compte, D-046).
+  if (workspaces.length < 2 && !actions) {
+    return (
+      <span className="flex h-(--row-h) min-w-0 items-center gap-2 px-1.5 text-fg">
+        <span className="sr-only">{m.workspaceLabel}</span>
+        {who}
+      </span>
+    );
+  }
+  return (
+    <Menu
+      label={m.workspaces}
+      placement="top start"
+      trigger={
+        <Button
+          aria-label={m.workspaceSwitch(current.name)}
+          {...(isDisabled ? { isDisabled } : {})}
+          className={cx(
+            buttonReset,
+            "flex h-(--row-h) w-full min-w-0 cursor-default items-center gap-2 rounded-md px-1.5 text-left text-fg data-disabled:opacity-40 data-hovered:bg-hover data-pressed:bg-hover",
+            focusRing,
+          )}
+        >
+          {who}
+          <span className="flex-1" />
+          <ChevronsUpDown size={12} className="shrink-0 text-fg-3" />
+        </Button>
+      }
+    >
+      <Menu.Section
+        title={m.workspaces}
+        selectionMode="single"
+        selectedKeys={[current.id]}
+        onSelectionChange={(keys) => {
+          const id = [...keys][0];
+          if (id !== undefined && String(id) !== current.id) onChange(String(id));
+        }}
+      >
+        {workspaces.map((w) => (
+          <Menu.Item key={w.id} id={w.id} label={w.name} />
+        ))}
+      </Menu.Section>
+      {actions && <Menu.Separator />}
+      {actions}
+    </Menu>
+  );
+}
+
 Sidebar.Item = Item;
 Sidebar.TreeItem = TwoLine;
 Sidebar.Section = Section;
 Sidebar.Account = Account;
+Sidebar.Workspace = Workspace;
 

@@ -1,6 +1,6 @@
 /*
  * Cadre commun de toutes les apps. Spec : AppShell.spec.md.
- * Décisions : D-003, D-016 à D-021, D-025 à D-027.
+ * Décisions : D-003, D-016 à D-021, D-025 à D-027, D-220 à D-222, D-240 à D-242, D-250 à D-252.
  */
 import { Children, isValidElement, useEffect, useRef, useState, type PointerEvent as ReactPointerEvent, type ReactElement, type ReactNode } from "react";
 import { Button } from "react-aria-components/Button";
@@ -8,9 +8,14 @@ import { Dialog } from "react-aria-components/Dialog";
 import { Modal, ModalOverlay } from "react-aria-components/Modal";
 import { useMessages, useSocle, useStoredState } from "../../provider/SocleProvider";
 import { buttonReset, cx, focusRing } from "../../lib/cx";
-import { ChevronLeft, ChevronRight, ListDetail, MoreHorizontal, PanelLeft, X } from "../../icons";
+import { ChevronLeft, ChevronRight, ListDetail, Maximize, Minimize, MoreHorizontal, PanelLeft, X } from "../../icons";
 import { IconButton } from "../../components/IconButton/IconButton";
 import { Tabs, type TabItem } from "../../components/Tabs/Tabs";
+import { Menu } from "../../components/Menu/Menu";
+import { Tooltip } from "../../components/Tooltip/Tooltip";
+import { OverflowTooltip } from "../../components/Tooltip/OverflowTooltip";
+import { StatusBadge, type StatusTone } from "../../components/StatusBadge/StatusBadge";
+import { Focusable } from "react-aria-components/Focusable";
 import { HiddenNavIds, Sidebar, type SidebarItemProps, type SidebarProps } from "../Sidebar/Sidebar";
 
 export interface TabbarEntry {
@@ -19,20 +24,40 @@ export interface TabbarEntry {
   icon: ReactNode;
 }
 
+/** État durable de la page ou de l'app, en indicateur compact après le titre (D-159, D-251). */
+export interface PageStatus {
+  /** Libellé court : « Lecture seule », « Hors ligne », « Exemple ». */
+  label: string;
+  /** Ton du point (D-161). */
+  tone?: StatusTone;
+  /** Phrase d'explication, dans l'info-bulle ou le nom du bouton. */
+  description?: string;
+  /** Entrées `Menu.Item` : l'indicateur devient un bouton qui ouvre ce menu (« Quitter les données d'exemple »). */
+  menu?: ReactNode;
+}
+
 export interface AppShellProps {
   /** Nom de la page, dans la barre supérieure. */
   pageTitle: string;
+  /** Court résumé après le titre, texte seul : « 3 personnes · 2 en écart » (D-250). */
+  pageSummary?: string;
+  /** État durable de la page, un seul à la fois (D-251, D-252). */
+  pageStatus?: PageStatus;
   /** Vues de la page en onglets (D-021). */
   views?: TabItem[];
   activeView?: string;
   onViewChange?: (id: string) => void;
   onViewClose?: (id: string) => void;
-  /** Actions de la page : boutons-icônes `IconButton` uniquement. */
+  /** Actions de la page : `ActionBar zone="topbar"` et boutons-icônes `IconButton` (cloche…) (D-222). */
   actions?: ReactNode;
   /** La sidebar de l'app (`Sidebar`). */
   sidebar: ReactElement<SidebarProps>;
   /** Contenu du panneau de détail ; sans lui, ni colonne ni bouton (D-018). */
   detail?: ReactNode;
+  /** Largeur de départ du panneau : `default` (sections, `--detail-w`) ou `form` (formulaire, `--detail-w-form`) (D-240). */
+  detailWidth?: "default" | "form";
+  /** Bouton Agrandir dans la barre du haut, sur bureau : panneau large (D-241). */
+  detailExpandable?: boolean;
   /** Entrées de la barre d'onglets mobile (4 au plus). Défaut : éléments `tabbar` de la sidebar, sinon les 4 premiers (D-003, D-019). */
   tabbar?: TabbarEntry[];
   /** Affiche précédent/suivant. */
@@ -47,7 +72,8 @@ const OVERLAY_CLOSE_DELAY = 250;
 
 function navItems(sidebar: ReactElement<SidebarProps>): SidebarItemProps[] {
   const out: SidebarItemProps[] = [];
-  Children.forEach(sidebar.props.children, (child) => {
+  // Navigation, puis entrées fixes du bas (D-230) : elles peuvent aussi aller dans la barre d'onglets.
+  Children.forEach([sidebar.props.children, sidebar.props.footer], (child) => {
     if (isValidElement<SidebarItemProps>(child) && child.type === Sidebar.Item) out.push(child.props);
   });
   return out;
@@ -65,7 +91,7 @@ function useMedia(query: string): boolean {
   return match;
 }
 
-export function AppShell({ pageTitle, views, activeView, onViewChange, onViewClose, actions, sidebar, detail, tabbar, history = true, children }: AppShellProps) {
+export function AppShell({ pageTitle, pageSummary, pageStatus, views, activeView, onViewChange, onViewClose, actions, sidebar, detail, detailWidth: detailKind = "default", detailExpandable = false, tabbar, history = true, children }: AppShellProps) {
   const { isMac, platform } = useSocle();
   const m = useMessages();
   const isMobile = useMedia("(max-width: 640px)");
@@ -79,10 +105,13 @@ export function AppShell({ pageTitle, views, activeView, onViewChange, onViewClo
   // Panneau de détail : colonne mémorisée sur bureau (D-018), largeur réglable (D-025).
   const [detailOpen, setDetailOpen] = useStoredState("shell:detail-open", true);
   const [detailFloat, setDetailFloat] = useState(false);
-  const [detailWidth, setDetailWidth] = useStoredState<number | null>("shell:detail-width", null);
+  // Largeur réglée, mémorisée à part pour chaque largeur de départ (D-240) ; panneau large (D-241).
+  const [detailWidth, setDetailWidth] = useStoredState<number | null>(detailKind === "form" ? "shell:detail-width:form" : "shell:detail-width", null);
+  const [wideStored, setWide] = useStoredState("shell:detail-wide", false);
   const [sheet, setSheet] = useState(false);
   const floating = isMobile || isTablet;
   const showDetail = Boolean(detail) && (floating ? detailFloat : detailOpen);
+  const wide = detailExpandable && !floating && wideStored;
 
   const toggleSidebar = () => {
     setOverlay(false);
@@ -160,17 +189,35 @@ export function AppShell({ pageTitle, views, activeView, onViewChange, onViewClo
         </div>
         <div className={cx("flex min-w-0 flex-1 items-center gap-2 pr-2 pl-4 max-tablet:pl-2", winControls && "pr-[138px]")} {...dragRegion}>
           <h1 className="m-0 max-w-[40%] shrink-0 truncate text-md font-semibold">{pageTitle}</h1>
+          {pageStatus && <StatusIndicator status={pageStatus} />}
+          {/* Annonce de l'état quand il apparaît ou change (D-252). */}
+          <span role="status" className="sr-only">
+            {pageStatus ? (pageStatus.description ? `${pageStatus.label} : ${pageStatus.description}` : pageStatus.label) : ""}
+          </span>
+          {pageSummary && (
+            <>
+              <span aria-hidden className="h-4 w-px shrink-0 bg-line max-tablet:hidden" />
+              <span className="flex min-w-0 max-w-[min(320px,30%)] shrink-[2] text-sm text-fg-2 max-tablet:hidden">
+                <OverflowTooltip text={pageSummary} />
+              </span>
+            </>
+          )}
           {views && views.length > 0 && activeView && onViewChange && (
             <>
               <span aria-hidden className="h-4 w-px shrink-0 bg-line max-tablet:hidden" />
               <Tabs pageTitle={pageTitle} items={views} selectedId={activeView} onSelectionChange={onViewChange} {...(onViewClose ? { onClose: onViewClose } : {})} />
             </>
           )}
-          <span className="flex-1" />
-          <span className="flex items-center gap-0.5">
+          {/* Actions de la page (D-222) : le slot prend la place libre, sans dépendre de son contenu ;
+              ActionBar y replie ses actions quand la place manque (D-221), avant les onglets de vues.
+              Sa largeur minimale (--socle-fit-min) est posée par ActionBar : ce qui reste tout replié. */}
+          <div data-socle-fit="" className="flex min-w-[var(--socle-fit-min,min-content)] flex-1 basis-0 items-center justify-end gap-0.5">
             {actions}
+            {detail && detailExpandable && !floating && showDetail && (
+              <IconButton icon={wide ? <Minimize /> : <Maximize />} label={m.expandDetail} isSelected={wide} onChange={setWide} />
+            )}
             {detail && <IconButton icon={<ListDetail />} label={m.detailPanel} shortcut="Mod+." isSelected={showDetail} onChange={toggleDetail} />}
-          </span>
+          </div>
         </div>
       </header>
 
@@ -186,12 +233,15 @@ export function AppShell({ pageTitle, views, activeView, onViewChange, onViewClo
             {sidebar}
           </aside>
         )}
-        <main className="min-w-0 flex-1 overflow-auto">{children}</main>
+        {/* Panneau large : le contenu garde au moins 360 px (D-241). */}
+        <main className={cx("min-w-0 flex-1 overflow-auto", wide && showDetail && "min-w-[360px]")}>{children}</main>
         {detail && showDetail && (
           <DetailColumn
             floating={floating}
             fullscreen={isMobile}
             width={width}
+            form={detailKind === "form"}
+            wide={wide}
             onWidth={setDetailWidth}
             onClose={() => setDetailFloat(false)}
           >
@@ -238,11 +288,45 @@ export function AppShell({ pageTitle, views, activeView, onViewChange, onViewClo
   );
 }
 
+/** Indicateur d'état de la page : cadre de 24 px, point du ton et libellé (D-251). */
+function StatusIndicator({ status }: { status: PageStatus }) {
+  const frame = "inline-flex h-6 max-w-40 min-w-0 shrink-0 items-center rounded-md border border-line bg-surface px-2 max-tablet:max-w-30";
+  const content = <StatusBadge tone={status.tone ?? "neutral"}>{status.label}</StatusBadge>;
+  const name = status.description ? `${status.label} : ${status.description}` : status.label;
+  if (status.menu) {
+    return (
+      <Menu
+        label={status.label}
+        placement="bottom start"
+        trigger={
+          <Button aria-label={name} className={cx(buttonReset, frame, "cursor-default data-hovered:bg-hover data-pressed:bg-hover", focusRing)}>
+            {content}
+          </Button>
+        }
+      >
+        {status.menu}
+      </Menu>
+    );
+  }
+  if (!status.description) return <span className={frame}>{content}</span>;
+  return (
+    <Tooltip content={status.description} placement="bottom">
+      <Focusable>
+        <span tabIndex={0} aria-label={name} role="img" className={cx(frame, "cursor-default outline-none focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-accent focus-visible:outline-solid")}>
+          {content}
+        </span>
+      </Focusable>
+    </Tooltip>
+  );
+}
+
 /** Panneau de détail : colonne réglable sur bureau, overlay sur tablette, plein écran sur mobile (D-018, D-025). */
-function DetailColumn({ floating, fullscreen, width, onWidth, onClose, children }: {
+function DetailColumn({ floating, fullscreen, width, form, wide, onWidth, onClose, children }: {
   floating: boolean;
   fullscreen: boolean;
   width: number | undefined;
+  form: boolean;
+  wide: boolean;
   onWidth: (w: number | null) => void;
   onClose: () => void;
   children: ReactNode;
@@ -267,15 +351,18 @@ function DetailColumn({ floating, fullscreen, width, onWidth, onClose, children 
     <aside
       ref={ref}
       aria-label={m.detail}
-      style={!floating && width ? { width } : undefined}
+      style={!floating && !wide && width ? { width } : undefined}
+      data-width={wide ? "wide" : form ? "form" : "default"}
       className={cx(
         "box-border flex min-h-0 flex-col border-l border-line bg-surface",
-        !floating && "relative w-(--detail-w) shrink-0",
-        floating && !fullscreen && "absolute top-0 right-0 bottom-0 z-40 w-(--detail-w) shadow-lg",
+        !floating && !wide && cx("relative shrink-0", form ? "w-(--detail-w-form)" : "w-(--detail-w)"),
+        // Large : 960 px au plus ; il rétrécit pour laisser 360 px au contenu (D-241).
+        !floating && wide && "relative w-[960px] min-w-(--detail-w) shrink",
+        floating && !fullscreen && cx("absolute top-0 right-0 bottom-0 z-40 max-w-full shadow-lg", form ? "w-(--detail-w-form)" : "w-(--detail-w)"),
         fullscreen && "absolute inset-0 z-40 border-l-0",
       )}
     >
-      {!floating && (
+      {!floating && !wide && (
         <div
           role="separator"
           aria-orientation="vertical"

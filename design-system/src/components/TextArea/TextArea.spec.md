@@ -6,7 +6,7 @@ Validation : docs/validation/components/FormFields-v1.html
 Champ de saisie d'un texte libre sur plusieurs lignes : une note, une description, un commentaire.
 Ne pas l'utiliser pour :
 - une seule ligne : prendre `TextField` ;
-- un texte mis en forme (titres, listes, liens) : prendre `MarkdownEditor` (à spécifier).
+- un texte mis en forme (titres, listes, liens) : prendre `MarkdownEditor`.
 
 ## Anatomie
 Celle de `Field` (Field.spec.md), plus :

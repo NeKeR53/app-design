@@ -1,0 +1,33 @@
+{
+  "$schema": "https://biomejs.dev/schemas/2.6.6/schema.json",
+  "plugins": [
+    { "path": "./no-socle-override.grit", "resolutionKind": "config" },
+    { "path": "./no-hardcoded-color.grit", "resolutionKind": "config" },
+    { "path": "./no-hardcoded-color-css.grit", "resolutionKind": "config" }
+  ],
+  "linter": {
+    "rules": {
+      "style": {
+        "noRestrictedImports": {
+          "level": "error",
+          "options": {
+            "paths": {
+              "react-aria-components": "Utilisez les composants de socle-ui.",
+              "react-aria": "Utilisez les composants de socle-ui."
+            },
+            "patterns": [
+              {
+                "group": ["socle-ui/**", "!socle-ui/styles.css", "!socle-ui/theme.css", "!socle-ui/eslint-config", "!socle-ui/biome", "!socle-ui/markdown", "!socle-ui/markdown-editor"],
+                "message": "N'importez que « socle-ui » (point d'entrée unique)."
+              },
+              {
+                "group": ["@react-aria/**", "@react-stately/**"],
+                "message": "Utilisez les composants de socle-ui."
+              }
+            ]
+          }
+        }
+      }
+    }
+  }
+}
