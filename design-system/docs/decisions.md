@@ -1273,3 +1273,27 @@
 - Raison : comportements montrés dans la page de validation v1 et repris de la barre de recherche (D-071) et du Menu, pour un seul clavier dans le design system.
 - Options écartées : liste ouverte au focus (Alfred) ; champ sans chevron (Combobox d'Alfred).
 - Validation : docs/validation/components/ComboBox-v1.html
+
+## D-170 — Valeurs typées : un type par donnée, format fixé par Socle
+- Date : 2026-11-23
+- Portée : FormattedValue, ListPage, DetailPanel
+- Décision : une donnée s'affiche par son type : `text`, `longtext`, `number`, `money`, `percent`, `bytes`, `date`, `datetime`, `relative`, `duration`, `boolean`, `status`, `email`, `url`, `code`, `tags`. Socle fixe le format de la langue (« 1 234,50 € », « 20 nov. 2026 », « il y a 3 jours », « 1 h 5 min », « Oui »). Le statut devient un `StatusBadge` d'après une table clé → libellé et ton ; `email` et `url` deviennent des `Link` ; `code` un `Code` ; `tags` un texte « a, b, c ».
+- Raison : l'app déclare ce qu'est la donnée, jamais comment l'écrire ; toutes les apps affichent alors les mêmes formats.
+- Options écartées : fonction de rendu libre par colonne ; pastilles pour `tags` (aucun composant d'étiquette en lecture seule, et un texte suffit en liste).
+- Validation : par délégation de l'utilisateur, 2026-11-23 — docs/validation/components/ListPage-v1.html
+
+## D-171 — Valeurs typées : vide « — », illisible en texte brut
+- Date : 2026-11-23
+- Portée : FormattedValue
+- Décision : une valeur vide (`null`, `undefined`, `""`, liste vide) s'affiche « — » en `--fg-3`, lu « vide ». Une valeur illisible pour son type (date invalide, nombre en texte libre) s'affiche telle quelle, sans erreur.
+- Raison : une donnée imparfaite ne doit jamais casser une liste ni cacher l'information.
+- Options écartées : cellule vide ; message d'erreur dans la cellule.
+- Validation : par délégation de l'utilisateur, 2026-11-23 — docs/validation/components/ListPage-v1.html
+
+## D-172 — Valeurs typées : le type fixe l'alignement, la largeur et le tri
+- Date : 2026-11-23
+- Portée : FormattedValue, ListPage
+- Décision : nombres, montants, pourcentages, tailles, dates et durées sont alignés à droite en chiffres de largeur égale ; le reste à gauche. Chaque type a une largeur de colonne par défaut (de 80 à 160 px) ; texte, liens et étiquettes prennent la place restante. Le tri se fait sur la valeur (nombre, horodatage), jamais sur le texte affiché ; une valeur vide va toujours en dernier.
+- Raison : l'app n'a plus à régler de largeur ni d'alignement, et « 9 » ne passe pas après « 10 ».
+- Options écartées : largeur fixée par l'app à chaque colonne.
+- Validation : par délégation de l'utilisateur, 2026-11-23 — docs/validation/components/ListPage-v1.html
