@@ -1,0 +1,213 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DocumentViewer et HtmlContent — validation v1</title>
+<style>
+/* ---------- Page de validation ---------- */
+:root{--pg-bg:#f6f6f6;--pg-fg:#1a1a1a;--pg-muted:#5c5c5c;--pg-line:#e2e2e2;--pg-card:#fff;--pg-badge:#dff5e6;--pg-badge-fg:#13612f;--pg-reco:#e7f0ff;--pg-reco-fg:#1d4ed8}
+:root[data-theme="dark"]{--pg-bg:#121212;--pg-fg:#ececec;--pg-muted:#9a9a9a;--pg-line:#2c2c2c;--pg-card:#1b1b1b;--pg-badge:#11331d;--pg-badge-fg:#8be0a8;--pg-reco:#16233d;--pg-reco-fg:#9cc0ff}
+*{box-sizing:border-box}html,body{margin:0}
+body{background:var(--pg-bg);color:var(--pg-fg);font:15px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif}
+.pg{max-width:1180px;margin:0 auto;padding:24px 16px 64px}
+h1{font-size:22px;font-weight:600;margin:0 0 4px;display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+h2.sec{font-size:16px;margin:28px 0 8px}
+.intro{color:var(--pg-muted);margin:0 0 20px}
+.badge{font-size:12px;font-weight:600;letter-spacing:.04em;padding:3px 8px;border-radius:6px;background:var(--pg-badge);color:var(--pg-badge-fg)}
+.boxes{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px}
+@media (max-width:760px){.boxes{grid-template-columns:1fr}}
+.box{background:var(--pg-card);border:1px solid var(--pg-line);border-radius:10px;padding:14px 16px;font-size:14px}
+.box h2{font-size:14px;margin:0 0 8px;font-weight:600}.box ul,.box ol{margin:0;padding-left:20px}.box li{margin:5px 0}
+.reco{font-size:11.5px;font-weight:600;padding:1px 6px;border-radius:5px;background:var(--pg-reco);color:var(--pg-reco-fg);margin-left:4px}
+.toolbar{position:sticky;top:0;z-index:100;background:var(--pg-bg);padding:10px 0;border-bottom:1px solid var(--pg-line);margin-bottom:16px;display:flex;flex-wrap:wrap;gap:10px 16px;align-items:center}
+.seg{display:inline-flex;border:1px solid var(--pg-line);border-radius:8px;overflow:hidden;background:var(--pg-card)}
+.seg button{border:0;background:transparent;color:var(--pg-fg);padding:5px 10px;font:inherit;font-size:13px;cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--pg-fg);color:var(--pg-bg)}
+.tlabel{font-size:12px;color:var(--pg-muted);margin-right:6px}
+.cmp{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+@media (max-width:760px){.cmp{grid-template-columns:1fr}}
+.opt{background:var(--pg-card);border:1px solid var(--pg-line);border-radius:10px;padding:12px 14px;font-size:13px}
+.opt h3{margin:0 0 2px;font-size:13px}.opt p{margin:0;color:var(--pg-muted)}
+.opt.chosen{outline:2px solid var(--pg-reco-fg)}
+
+/* ---------- Tokens T2 (copie de src/tokens) + tokens ajoutés --paper* (D-315) ---------- */
+.tk{--surface:#fff;--surface-side:#f3f3f3;--field:#f2f2f2;--hover:#e9e9e9;--selected:#dedede;--line:#e4e4e4;--line-strong:#cfcfcf;--fg:#1a1a1a;--fg-2:#5c5c5c;--fg-3:#6b6b6b;
+  --accent:#1d4ed8;--accent-text:#1d4ed8;--danger:#c62828;
+  --paper:#ffffff;--paper-fg:#1a1a1a;--paper-link:#1d4ed8;--shadow-sm:0 1px 2px rgb(0 0 0 / .12);
+  --font-sans:-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;
+  --radius-md:8px;--radius-lg:12px;--icon:16px;--icon-stroke:1.6;--fs-xs:11.5px;--fs-sm:12.5px;--fs-md:14px;--lh:1.45;--row-h:34px;--bar-h:44px;--icon-btn:30px;--btn-h-sm:26px;--side-w:220px;
+  background:var(--surface);color:var(--fg);font-family:var(--font-sans);font-size:var(--fs-md);line-height:var(--lh)}
+.tk.dark{--surface:#181818;--surface-side:#222;--field:#2a2a2a;--hover:#303030;--selected:#3d3d3d;--line:#333;--line-strong:#4a4a4a;--fg:#ececec;--fg-2:#ababab;--fg-3:#8f8f8f;
+  --accent:#5b8def;--accent-text:#7da4f2;--danger:#f07167;--shadow-sm:0 1px 2px rgb(0 0 0 / .5)}
+.tk.desktop{--fs-xs:10.5px;--fs-sm:11.5px;--fs-md:13px;--lh:1.4;--row-h:28px;--bar-h:38px;--icon-btn:26px;--btn-h-sm:24px;--side-w:200px}
+
+/* ---------- Mini AppShell ---------- */
+.app{height:640px;border:1px solid var(--pg-line);border-radius:12px;overflow:hidden;display:grid;grid-template-columns:var(--side-w) 260px minmax(0,1fr);grid-template-rows:var(--bar-h) minmax(0,1fr)}
+@media (max-width:900px){.app{grid-template-columns:minmax(0,1fr);grid-template-rows:var(--bar-h) auto minmax(480px,1fr);height:auto}.side,.bar-side,.list{display:none}}
+.app *{box-sizing:border-box}.app button{font:inherit;color:inherit}
+.ic{width:var(--icon);height:var(--icon);flex:none;stroke:currentColor;fill:none;stroke-width:var(--icon-stroke);stroke-linecap:round;stroke-linejoin:round}
+.bar-side{background:var(--surface-side);border-right:1px solid var(--line)}
+.bar{display:flex;align-items:center;gap:10px;padding:0 16px;border-bottom:1px solid var(--line);font-weight:600;grid-column:2 / span 2}
+@media (max-width:900px){.bar{grid-column:1}}
+.side{background:var(--surface-side);border-right:1px solid var(--line);padding:6px}
+.nav{display:flex;align-items:center;gap:8px;height:var(--row-h);padding:0 8px;border-radius:var(--radius-md);color:var(--fg-2)}
+.nav.on{background:var(--selected);color:var(--fg)}
+.list{border-right:1px solid var(--line);overflow:auto;padding:6px}
+.row{display:flex;flex-direction:column;justify-content:center;padding:6px 10px;border-radius:var(--radius-md);cursor:default}
+.row.on{background:var(--selected)}.row small{color:var(--fg-3);font-size:var(--fs-sm)}
+.main{min-width:0;min-height:0;padding:12px;display:flex;flex-direction:column}
+
+/* ---------- DocumentViewer ---------- */
+.dv{flex:1;min-height:0;display:flex;flex-direction:column;border:1px solid var(--line);border-radius:var(--radius-lg);overflow:hidden;background:var(--surface)}
+.dv-bar{display:flex;align-items:center;gap:2px;height:var(--bar-h);padding:0 6px 0 12px;border-bottom:1px solid var(--line);font-size:var(--fs-sm)}
+.dv-pos{margin-right:auto;color:var(--fg-2);font-variant-numeric:tabular-nums;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+.dv-pct{min-width:48px;text-align:center;font-variant-numeric:tabular-nums}
+.ib{display:inline-grid;place-items:center;width:var(--icon-btn);height:var(--icon-btn);border:0;background:none;border-radius:var(--radius-md);color:var(--fg-2);cursor:default}
+.ib:hover{background:var(--hover);color:var(--fg)}.ib[aria-pressed="true"]{background:var(--hover);color:var(--fg)}
+.ib:disabled{opacity:.4;background:none}
+.ib:focus-visible,.dv-body:focus-visible,.btn:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+.sep{width:1px;height:16px;background:var(--line);margin:0 4px}
+.dv-body{flex:1;min-height:0;overflow:auto;background:var(--surface-side);padding:16px;display:flex;flex-direction:column;align-items:safe center;gap:12px}
+.page{flex:none;background:var(--paper);color:var(--paper-fg);box-shadow:var(--shadow-sm);padding:7% 8%;font:11px/1.5 Georgia,serif;transform-origin:top center}
+.page h3{font:600 15px/1.3 Georgia,serif;margin:0 0 10px}.page p{margin:0 0 8px}
+.page .ln{height:7px;background:color-mix(in srgb,var(--paper-fg) 14%,transparent);margin:7px 0;border-radius:2px}
+.state{flex:1;display:grid;place-items:center;background:var(--surface)}
+.empty{text-align:center;max-width:340px;color:var(--fg-2);padding:20px 12px}.empty b{display:block;color:var(--fg);font-weight:500}
+.empty p{margin:4px 0 10px;font-size:var(--fs-sm)}
+.btn{height:var(--btn-h-sm);padding:0 10px;border:0;border-radius:var(--radius-md);background:var(--field);color:var(--fg);font-size:var(--fs-sm)}
+.sk{width:min(420px,80%);aspect-ratio:1/1.3;background:var(--field);border-radius:4px}
+
+/* ---------- HtmlContent ---------- */
+.mail{flex:1;overflow:auto}
+.mail-head{padding:4px 4px 12px;border-bottom:1px solid var(--line);margin-bottom:12px}
+.mail-head b{font-size:16px}.mail-head div{color:var(--fg-2);font-size:var(--fs-sm)}
+.notice{display:flex;align-items:center;gap:10px;padding:6px 6px 6px 10px;margin-bottom:8px;border:1px solid var(--line);border-radius:var(--radius-md);color:var(--fg-2);font-size:var(--fs-sm)}
+.notice span{margin-right:auto}
+.hc{border-radius:var(--radius-md);padding:16px;font-size:14px}
+.hc.paper{background:var(--paper);color:var(--paper-fg)}.hc.paper a{color:var(--paper-link)}
+.hc.theme{background:transparent;color:var(--fg)}.hc.theme a{color:var(--accent-text)}
+.hc a{text-decoration:underline;cursor:pointer}
+.hc .hero{height:120px;border-radius:6px;background:linear-gradient(135deg,#ffd29d,#f48c6b);display:grid;place-items:center;color:#5a1d0a;font-weight:700}
+.hc .hero.off{background:color-mix(in srgb,currentColor 8%,transparent);color:transparent}
+.hc .brand{color:#0b0b0b}
+.toastx{margin-top:8px;font-size:12px;color:var(--fg-3)}
+</style>
+</head>
+<body>
+<div class="pg">
+<h1>DocumentViewer et HtmlContent <span class="badge" id="badge">VALIDÉ le 2026-11-23</span></h1>
+<p class="intro">Deux composants d'affichage de contenu reçu : l'aperçu d'un document (PDF par pdf.js, image) et le HTML venu de l'extérieur (courriel, page). Validation par délégation de l'utilisateur, 2026-11-23. Décisions D-310 à D-319.</p>
+
+<div class="boxes">
+  <div class="box"><h2>Déjà décidé</h2><ul>
+    <li>Icônes en <code>IconButton</code> avec info-bulle (D-035, D-037) ; une bascule a <code>aria-pressed</code> (D-034).</li>
+    <li>Chargement par <code>SkeletonGroup</code>, affiché après 200 ms (D-165).</li>
+    <li>Erreur et format inconnu par <code>EmptyState</code> compact (D-166).</li>
+    <li>Libellés internes traduisibles par <code>messages</code> (D-089).</li>
+    <li>Actions de l'app par le modèle <code>Action</code>, zone <code>toolbar</code> (D-110, D-111).</li>
+    <li>Pas de couleur en dur hors tokens (D-009).</li>
+  </ul></div>
+  <div class="box"><h2>Tranché (par délégation, recommandations retenues)</h2><ol>
+    <li>pdf.js : <b>peer dependency facultative, chargée par l'app</b> (<code>loadPdf</code>) — option A ci-dessous (D-311).</li>
+    <li>Formats : PDF et image ; tout autre format → « Format non pris en charge » avec « Télécharger » (D-310).</li>
+    <li>Barre : position ou nom, page précédente/suivante, zoom −/%/+, « Ajuster à la largeur », « Télécharger » (D-312).</li>
+    <li>Page du document sur un fond « papier » blanc dans les deux thèmes : tokens <code>--paper</code>, <code>--paper-fg</code>, <code>--paper-link</code> (D-315).</li>
+    <li>HtmlContent : racine fantôme + liste blanche, pas d'iframe — option A (D-317).</li>
+    <li>HtmlContent sur papier par défaut ; <code>surface="theme"</code> pour un HTML simple produit par l'app — option A (D-319).</li>
+  </ol></div>
+</div>
+
+<div class="toolbar">
+  <span><span class="tlabel">Mode</span><span class="seg" data-k="theme"><button aria-pressed="true" data-v="light">Clair</button><button aria-pressed="false" data-v="dark">Sombre</button></span></span>
+  <span><span class="tlabel">Densité</span><span class="seg" data-k="density"><button aria-pressed="true" data-v="web">Web</button><button aria-pressed="false" data-v="desktop">Desktop</button></span></span>
+  <span><span class="tlabel">Écran</span><span class="seg" data-k="screen"><button aria-pressed="true" data-v="doc">Document</button><button aria-pressed="false" data-v="mail">Courriel</button></span></span>
+  <span id="stateSeg"><span class="tlabel">État</span><span class="seg" data-k="state"><button aria-pressed="true" data-v="ready">Prêt</button><button aria-pressed="false" data-v="loading">Chargement</button><button aria-pressed="false" data-v="error">Erreur</button><button aria-pressed="false" data-v="unsupported">Format inconnu</button></span></span>
+  <span id="surfSeg" hidden><span class="tlabel">Surface</span><span class="seg" data-k="surface"><button aria-pressed="true" data-v="paper">Papier (défaut)</button><button aria-pressed="false" data-v="theme">Thème</button></span></span>
+</div>
+
+<div class="tk" id="tk">
+<div class="app">
+  <div class="bar-side"></div>
+  <div class="bar" id="title">Pièces jointes</div>
+  <nav class="side"><div class="nav">Accueil</div><div class="nav on">Documents</div><div class="nav">Messages</div><div class="nav">Réglages</div></nav>
+  <div class="list" id="list"></div>
+  <main class="main" id="main"></main>
+</div>
+</div>
+
+<h2 class="sec">Options comparées</h2>
+<div class="cmp">
+  <div class="opt chosen"><h3>pdf.js — A. Chargé par l'app <span class="reco">retenu</span></h3><p>Socle n'importe jamais pdf.js. L'app passe <code>loadPdf={() =&gt; import("pdfjs-dist")}</code> et règle elle-même le worker (faux worker si le cadre l'interdit). Peer dependency facultative : une app sans PDF n'installe rien.</p></div>
+  <div class="opt"><h3>pdf.js — B. Import dynamique dans Socle</h3><p>Plus simple à l'usage, mais le bundler de chaque app doit résoudre <code>pdfjs-dist</code> même sans PDF ; le réglage du worker devient le problème de Socle.</p></div>
+  <div class="opt"><h3>pdf.js — C. Dépendance directe</h3><p>~1,7 Mo pour toutes les apps ; version imposée. Écartée.</p></div>
+  <div class="opt chosen"><h3>Isolation — A. Racine fantôme + liste blanche <span class="reco">retenu</span></h3><p>Hauteur naturelle, marche dans un cadre qui interdit les iframes. <code>contain: content</code> garde un élément « fixed » dans la zone.</p></div>
+  <div class="opt"><h3>Isolation — B. iframe sandbox</h3><p>Isolation la plus forte, mais hauteur à mesurer, focus et liens plus lourds, interdite par la CSP de certains hôtes (Alfred). Écartée.</p></div>
+  <div class="opt chosen"><h3>Surface HTML — A. Papier par défaut <span class="reco">retenu</span></h3><p>Un courriel a ses propres couleurs (texte noir en dur) : sur papier, il reste lisible en sombre. <code>surface="theme"</code> pour un HTML simple.</p></div>
+</div>
+
+<h2 class="sec">Comportements (jouables ci-dessus, détaillés dans les specs)</h2>
+<div class="boxes">
+  <div class="box"><h2>DocumentViewer</h2><ul>
+    <li>Ouverture : ajusté à la largeur. Une image n'est jamais agrandie au-delà de 100 % en mode ajusté.</li>
+    <li>Zoom par paliers 25 à 400 % ; Ctrl ou ⌘ + molette autour du pointeur ; Ctrl/⌘ + « + », « − », « 0 » (ajuster) quand le focus est dans la visionneuse.</li>
+    <li>Pages dessinées à l'approche de la zone visible ; le dessin précédent reste pendant un zoom.</li>
+    <li>« Page n / N » suit la page en haut de la zone ; précédente/suivante y font défiler.</li>
+    <li>Zone de défilement focusable : flèches, Page préc./suiv. défilent.</li>
+  </ul></div>
+  <div class="box"><h2>HtmlContent</h2><ul>
+    <li>Aucun script, formulaire, cadre, SVG, <code>on…</code>, <code>javascript:</code> ; styles sans <code>url()</code>, <code>@import</code>, <code>:host</code>.</li>
+    <li>Images distantes masquées : bandeau « N images masquées » + « Afficher les images ». Images intégrées (<code>data:</code>) affichées ; <code>cid:</code> via <code>resolveImage</code>.</li>
+    <li>Liens http, https, mailto : clic ou Entrée → <code>onLink(url)</code> ; l'adresse s'affiche au survol. Sans <code>onLink</code> : texte simple.</li>
+  </ul></div>
+</div>
+</div>
+
+<script>
+const st={theme:"light",density:"web",screen:"doc",state:"ready",surface:"paper",zoom:"fit",page:1,images:false,docIdx:0};
+const docs=[{n:"Facture F-2026-114.pdf",k:"pdf",p:3,s:"PDF · 3 pages"},{n:"Plan du bureau.png",k:"img",s:"Image · 1600 × 1000"},{n:"Export.xlsx",k:"other",s:"Tableur"}];
+const I={prev:'<path d="m15 18-6-6 6-6"/>',next:'<path d="m9 18 6-6-6-6"/>',out:'<circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3M8 11h6"/>',in:'<circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3M8 11h6M11 8v6"/>',fit:'<path d="M3 12h18M7 8l-4 4 4 4M17 8l4 4-4 4"/>',dl:'<path d="M12 4v11M7 10l5 5 5-5M5 20h14"/>',more:'<circle cx="5" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/>'};
+const ic=k=>`<svg class="ic" viewBox="0 0 24 24">${I[k]}</svg>`;
+const steps=[.25,.5,.75,1,1.25,1.5,2,3,4];
+function seg(){document.querySelectorAll(".seg").forEach(s=>s.querySelectorAll("button").forEach(b=>b.setAttribute("aria-pressed",String(st[s.dataset.k]===b.dataset.v))))}
+function scale(){return st.zoom==="fit"?1:st.zoom}
+function bar(d){const pdf=d.k==="pdf"&&st.state==="ready",zoomable=st.state==="ready"&&d.k!=="other";
+ let h=`<span class="dv-pos" aria-live="polite">${pdf?`Page ${st.page} / ${d.p}`:d.n}</span>`;
+ if(pdf)h+=`<button class="ib" title="Page précédente" aria-label="Page précédente" data-a="prev" ${st.page<=1?"disabled":""}>${ic("prev")}</button><button class="ib" title="Page suivante" aria-label="Page suivante" data-a="next" ${st.page>=d.p?"disabled":""}>${ic("next")}</button><span class="sep"></span>`;
+ if(zoomable)h+=`<button class="ib" title="Zoom arrière (Ctrl+−)" aria-label="Zoom arrière" data-a="out">${ic("out")}</button><span class="dv-pct">${Math.round(scale()*100)} %</span><button class="ib" title="Zoom avant (Ctrl++)" aria-label="Zoom avant" data-a="in">${ic("in")}</button><button class="ib" title="Ajuster à la largeur (Ctrl+0)" aria-label="Ajuster à la largeur" aria-pressed="${st.zoom==="fit"}" data-a="fit">${ic("fit")}</button><span class="sep"></span>`;
+ h+=`<button class="ib" title="Télécharger" aria-label="Télécharger" data-a="dl">${ic("dl")}</button><button class="ib" title="Plus d'actions" aria-label="Plus d'actions">${ic("more")}</button>`;
+ return `<div class="dv-bar" role="toolbar" aria-label="Affichage du document">${h}</div>`}
+function body(d){
+ if(st.state==="loading")return `<div class="dv-body" aria-busy="true"><div class="sk" role="status" aria-label="Lecture du document…"></div></div>`;
+ if(st.state==="error")return `<div class="state"><div class="empty"><b>Document illisible</b><p>Ce fichier n'est pas un PDF valide, ou il est abîmé.</p><button class="btn">Réessayer</button></div></div>`;
+ if(d.k==="other"||st.state==="unsupported")return `<div class="state"><div class="empty"><b>Format non pris en charge</b><p>Ce type de fichier (.xlsx) ne s'affiche pas ici.</p><button class="btn">Télécharger</button></div></div>`;
+ const w=Math.round(480*scale());
+ if(d.k==="img")return `<div class="dv-body" tabindex="0" role="document" aria-label="${d.n}"><div style="flex:none;width:${w}px;aspect-ratio:1.6;border-radius:2px;background:repeating-linear-gradient(0deg,var(--line) 0 1px,transparent 1px 24px),repeating-linear-gradient(90deg,var(--line) 0 1px,transparent 1px 24px),var(--surface)"></div></div>`;
+ let p="";for(let i=1;i<=d.p;i++)p+=`<div class="page" role="img" aria-label="Page ${i}" style="width:${w}px;aspect-ratio:1/1.414;font-size:${11*scale()}px"><h3 style="font-size:${15*scale()}px">${i===1?"Facture F-2026-114":"Conditions — page "+i}</h3><p>Client : Société Exemple · 12 rue des Lilas, 69000 Lyon</p>${'<div class="ln"></div>'.repeat(9)}<p>Total TTC : 1 280,00 €</p>${'<div class="ln"></div>'.repeat(6)}</div>`;
+ return `<div class="dv-body" tabindex="0" role="document" aria-label="${d.n}, ${d.p} pages" id="scroller">${p}</div>`}
+function mail(){const n=st.images?0:2;
+ return `<div class="mail"><div class="mail-head"><b>Votre commande est en route</b><div>Boutique Exemple · aujourd'hui, 09:12</div></div>
+ ${n?`<div class="notice" role="status"><span>${n} images masquées.</span><button class="btn" data-a="img">Afficher les images</button></div>`:""}
+ <div class="hc ${st.surface}" role="document" aria-label="Message de Boutique Exemple"><div class="hero ${st.images?"":"off"}">${st.images?"PROMO −20 %":""}</div>
+ <p class="brand"><b>Bonjour Camille,</b></p><p class="brand">Votre colis n° 4821 a quitté l'entrepôt. Le texte de ce courriel est noir « en dur » : sur la surface Thème en sombre, il devient illisible.</p>
+ <p><a title="https://suivi.exemple.com/4821" data-a="link">Suivre le colis</a> · <a title="mailto:aide@exemple.com" data-a="link">Nous écrire</a></p>
+ <div class="hero ${st.images?"":"off"}" style="height:60px">${st.images?"logo":""}</div></div><div class="toastx" id="out"></div></div>`}
+function render(){const tk=document.getElementById("tk");tk.className="tk"+(st.theme==="dark"?" dark":"")+(st.density==="desktop"?" desktop":"");
+ document.documentElement.dataset.theme=st.theme;document.getElementById("stateSeg").hidden=st.screen!=="doc";document.getElementById("surfSeg").hidden=st.screen!=="mail";
+ document.getElementById("title").textContent=st.screen==="doc"?"Pièces jointes":"Messages";
+ document.getElementById("list").innerHTML=st.screen==="doc"?docs.map((d,i)=>`<div class="row ${i===st.docIdx?"on":""}" data-i="${i}">${d.n}<small>${d.s}</small></div>`).join(""):`<div class="row on">Boutique Exemple<small>Votre commande est en route</small></div><div class="row">Équipe<small>Compte rendu</small></div>`;
+ const d=docs[st.docIdx];document.getElementById("main").innerHTML=st.screen==="doc"?`<section class="dv" aria-label="${d.n}">${bar(d)}${body(d)}</section>`:mail();
+ const sc=document.getElementById("scroller");if(sc){sc.addEventListener("scroll",()=>{const pages=[...sc.children],lim=sc.getBoundingClientRect().top+sc.clientHeight/3;let p=1;pages.forEach((c,i)=>{if(c.getBoundingClientRect().top<=lim)p=i+1});if(p!==st.page){st.page=p;document.querySelector(".dv-bar").outerHTML=bar(d);}})}
+ seg()}
+document.querySelector(".toolbar").addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;st[b.parentElement.dataset.k]=b.dataset.v;render()});
+document.getElementById("main").addEventListener("click",e=>{const b=e.target.closest("[data-a]");if(!b)return;const a=b.dataset.a,s=scale();
+ if(a==="in"){const n=steps.find(x=>x>s+.01);if(n)st.zoom=n}else if(a==="out"){const n=[...steps].reverse().find(x=>x<s-.01);if(n)st.zoom=n}else if(a==="fit")st.zoom="fit";
+ else if(a==="prev"||a==="next"){st.page+=a==="next"?1:-1;render();const p=document.getElementById("scroller").children[st.page-1];p&&p.scrollIntoView({block:"start"});return}
+ else if(a==="img")st.images=true;else if(a==="link"){document.getElementById("out").textContent="onLink(« "+b.title+" ») — l'app ouvre le lien dans le navigateur.";return}else return;render()});
+document.getElementById("list").addEventListener("click",e=>{const r=e.target.closest(".row");if(r&&r.dataset.i){st.docIdx=+r.dataset.i;st.page=1;st.zoom="fit";render()}});
+document.addEventListener("keydown",e=>{if(!(e.ctrlKey||e.metaKey)||!document.querySelector(".dv")?.contains(document.activeElement))return;const s=scale();
+ if(e.key==="+"||e.key==="="){e.preventDefault();const n=steps.find(x=>x>s+.01);if(n)st.zoom=n}else if(e.key==="-"){e.preventDefault();const n=[...steps].reverse().find(x=>x<s-.01);if(n)st.zoom=n}else if(e.key==="0"){e.preventDefault();st.zoom="fit"}else return;render();document.querySelector(".dv-body")?.focus()});
+render();
+</script>
+</body>
+</html>

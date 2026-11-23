@@ -117,3 +117,21 @@ export const CircleAlert = icon(
   </>,
   "CircleAlert",
 );
+
+/* DocumentViewer (D-312) */
+export const ZoomIn = icon(
+  <>
+    <circle cx="11" cy="11" r="7" />
+    <path d="m21 21-4.3-4.3M8 11h6M11 8v6" />
+  </>,
+  "ZoomIn",
+);
+export const ZoomOut = icon(
+  <>
+    <circle cx="11" cy="11" r="7" />
+    <path d="m21 21-4.3-4.3M8 11h6" />
+  </>,
+  "ZoomOut",
+);
+export const FitWidth = icon(<path d="M3 12h18M7 8l-4 4 4 4M17 8l4 4-4 4" />, "FitWidth");
+export const Download = icon(<path d="M12 4v11M7 10l5 5 5-5M5 20h14" />, "Download");

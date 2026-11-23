@@ -41,6 +41,9 @@
   --color-tip-fg: var(--tip-fg);
   --color-tip-fg-2: var(--tip-fg-2);
   --color-tip-line: var(--tip-line);
+  --color-paper: var(--paper);
+  --color-paper-fg: var(--paper-fg);
+  --color-paper-link: var(--paper-link);
   --color-transparent: transparent;
   --color-current: currentColor;
 

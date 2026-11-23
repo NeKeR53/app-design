@@ -1273,3 +1273,83 @@
 - Raison : comportements montrés dans la page de validation v1 et repris de la barre de recherche (D-071) et du Menu, pour un seul clavier dans le design system.
 - Options écartées : liste ouverte au focus (Alfred) ; champ sans chevron (Combobox d'Alfred).
 - Validation : docs/validation/components/ComboBox-v1.html
+
+## D-310 — DocumentViewer : rôle, sources et formats
+- Date : 2026-11-23
+- Portée : DocumentViewer
+- Décision : `DocumentViewer` affiche l'aperçu d'un document dans une page : PDF (dessiné par pdf.js) et image. La source est une adresse (`src` : `data:`, `blob:` ou `https:`) ou des octets (`data` : `Blob`, `File`, `Uint8Array`, `ArrayBuffer`). Le format vient du type MIME (`type`, ou celui du `Blob`), puis de l'extension de `name`. Tout autre format montre « Format non pris en charge » avec « Télécharger » si l'app le permet. Le texte brut et le Markdown ne sont pas pris en charge : l'app compose `Code` ou `Markdown`.
+- Raison : PDF et image couvrent l'aperçu de pièces jointes dans toute app ; le texte a déjà ses composants.
+- Options écartées : source « fichier du module » (propre à Alfred) ; rendu du texte et du Markdown dans la visionneuse.
+- Validation : docs/validation/components/Documents-v1.html (par délégation de l'utilisateur, 2026-11-23)
+
+## D-311 — DocumentViewer : pdf.js en peer dependency facultative, chargée par l'app
+- Date : 2026-11-23
+- Portée : DocumentViewer
+- Décision : Socle n'importe jamais pdf.js. `pdfjs-dist` (>= 5) est une peer dependency facultative. L'app passe `loadPdf={() => import("pdfjs-dist")}` et règle elle-même le worker (`GlobalWorkerOptions.workerSrc`, ou faux worker quand le cadre interdit les workers). Sans `loadPdf`, un PDF montre l'erreur « Aperçu PDF indisponible ».
+- Raison : une app sans PDF n'installe rien et son bundler n'a rien à résoudre ; le réglage du worker dépend de l'hôte (CSP), donc de l'app.
+- Options écartées : import dynamique de `pdfjs-dist` dans Socle ; dépendance directe (~1,7 Mo pour toutes les apps).
+- Validation : docs/validation/components/Documents-v1.html (par délégation de l'utilisateur, 2026-11-23)
+
+## D-312 — DocumentViewer : barre d'outils
+- Date : 2026-11-23
+- Portée : DocumentViewer
+- Décision : une barre de `--bar-h` au-dessus du document, `role="toolbar"`. À gauche : « Page n / N » pour un PDF, sinon le nom du fichier, coupé par « … ». À droite, en `IconButton` : page précédente et suivante (PDF) ; zoom arrière, pourcentage, zoom avant, « Ajuster à la largeur » (bascule) ; « Télécharger » si `onDownload` ; puis les `actions` de l'app, rangées par `ActionBar` en zone `toolbar`. Un trait vertical sépare les groupes. Télécharger reste à l'app : Socle ne crée aucun fichier.
+- Raison : les commandes d'une visionneuse courante, en boutons-icônes avec info-bulle comme toute barre d'outils de Socle (D-035).
+- Options écartées : champ de saisie du numéro de page ; menu de zoom ; impression.
+- Validation : docs/validation/components/Documents-v1.html (par délégation de l'utilisateur, 2026-11-23)
+
+## D-313 — DocumentViewer : zoom
+- Date : 2026-11-23
+- Portée : DocumentViewer
+- Décision : à l'ouverture, le document est ajusté à la largeur de la zone ; une image n'est jamais agrandie au-delà de 100 % en mode ajusté. Paliers : 25, 50, 75, 100, 125, 150, 200, 300, 400 %. Ctrl ou ⌘ + molette zoome en continu autour du pointeur. Ctrl/⌘ + « + » et « − » passent au palier suivant, Ctrl/⌘ + « 0 » ajuste à la largeur, quand le focus est dans la visionneuse. Un zoom par bouton garde en haut la page qui y était.
+- Raison : comportement repris d'Alfred, éprouvé ; les raccourcis sont ceux des navigateurs.
+- Options écartées : ajuster à la page entière ; zoom par pincement géré à part (le navigateur l'envoie comme Ctrl + molette).
+- Validation : docs/validation/components/Documents-v1.html (par délégation de l'utilisateur, 2026-11-23)
+
+## D-314 — DocumentViewer : pages d'un PDF
+- Date : 2026-11-23
+- Portée : DocumentViewer
+- Décision : les pages sont l'une sous l'autre, centrées, espacées de 12 px, sur le fond `--surface-side`. Chaque page garde sa place dès l'ouverture et n'est dessinée qu'à moins de 600 px de la zone visible ; pendant un zoom, le dessin précédent reste jusqu'au nouveau. La page courante est celle qui occupe le tiers haut de la zone. La zone de défilement est focusable : flèches et Page préc./suiv. défilent.
+- Raison : un long document reste fluide et la barre dit toujours où l'on est.
+- Options écartées : une page à la fois ; vignettes dans une colonne.
+- Validation : docs/validation/components/Documents-v1.html (par délégation de l'utilisateur, 2026-11-23)
+
+## D-315 — Tokens « papier » : le rendu d'un document reste blanc
+- Date : 2026-11-23
+- Portée : tokens
+- Décision : trois tokens, identiques en clair et en sombre : `--paper` (#ffffff, fond d'une page de document), `--paper-fg` (#1a1a1a, texte sur papier), `--paper-link` (#1d4ed8, lien sur papier). La page d'un PDF et la surface papier de `HtmlContent` les utilisent. Tout le reste de la visionneuse suit les tokens du thème.
+- Raison : une page de PDF ou un courriel est un rendu du document, pas de l'interface ; il garde ses couleurs dans les deux thèmes, sans couleur en dur dans les composants.
+- Options écartées : couleurs `#fff` et repli `rgba(...)` en dur dans le composant (Alfred) ; page inversée en sombre.
+- Validation : docs/validation/components/Documents-v1.html (par délégation de l'utilisateur, 2026-11-23)
+
+## D-316 — DocumentViewer : chargement et erreurs
+- Date : 2026-11-23
+- Portée : DocumentViewer
+- Décision : pendant la lecture, la zone montre un `SkeletonGroup` en forme de page, nommé « Lecture du document… » (après 200 ms, D-165). Une erreur remplace la zone par un `EmptyState` compact « Document illisible » avec la cause (PDF protégé par mot de passe, PDF invalide ou abîmé, aperçu PDF indisponible, lecture impossible) et « Réessayer ». La barre reste affichée, avec le nom et « Télécharger ».
+- Raison : mêmes états que le reste de Socle ; le téléchargement reste possible quand l'aperçu échoue.
+- Options écartées : notification d'erreur (Alfred `PdfPreview`) ; barre masquée en erreur.
+- Validation : docs/validation/components/Documents-v1.html (par délégation de l'utilisateur, 2026-11-23)
+
+## D-317 — HtmlContent : HTML nettoyé dans une racine fantôme
+- Date : 2026-11-23
+- Portée : HtmlContent
+- Décision : le HTML est lu dans un document inerte (`DOMParser`), puis recopié par liste blanche de balises et d'attributs. Sont retirés : scripts, gestionnaires `on…`, formulaires, cadres, SVG, MathML, médias, `<base>`, `<meta>`, `<link>`, liens autres que http, https, mailto. Dans les styles : `url()`, `@import`, `expression()`, `behavior`, `-moz-binding` et les règles `:host`. Le résultat vit dans une racine fantôme (shadow DOM) : ses styles ne débordent pas sur l'app. L'hôte a `contain: content` : un élément `position: fixed` reste dans la zone. La zone prend la hauteur de son contenu ; un contenu trop large défile dans la zone.
+- Raison : sûr sans iframe, donc utilisable dans un hôte qui interdit les cadres, avec une hauteur naturelle.
+- Options écartées : iframe `sandbox` (hauteur à mesurer, interdite par certaines CSP) ; DOMPurify (dépendance de plus pour le même résultat).
+- Validation : docs/validation/components/Documents-v1.html (par délégation de l'utilisateur, 2026-11-23)
+
+## D-318 — HtmlContent : images distantes bloquées par défaut
+- Date : 2026-11-23
+- Portée : HtmlContent
+- Décision : une image distante (http, https) n'est pas chargée par défaut : un cadre vide de même taille la remplace, et un bandeau au-dessus du contenu dit « N images masquées. » avec le bouton « Afficher les images ». Une image intégrée (`data:image/...`) s'affiche toujours. Une autre source (`cid:` d'une pièce jointe) passe par `resolveImage`, qui rend une adresse affichable ou `null`. Le choix est contrôlable : `imagesAllowed`, `defaultImagesAllowed`, `onImagesAllowedChange` (l'app peut retenir un expéditeur de confiance). Images permises : l'adresse passe aussi par `resolveImage` si elle est fournie (l'app peut passer par un proxy).
+- Raison : une image distante trace l'ouverture d'un courriel ; l'utilisateur décide.
+- Options écartées : images toujours chargées ; images bloquées sans moyen de les afficher (Alfred).
+- Validation : docs/validation/components/Documents-v1.html (par délégation de l'utilisateur, 2026-11-23)
+
+## D-319 — HtmlContent : liens interceptés et surface papier
+- Date : 2026-11-23
+- Portée : HtmlContent
+- Décision : un lien http, https ou mailto reste un lien : souligné, focusable, l'adresse en info-bulle native (`title`). Un clic ou Entrée appelle `onLink(url)` ; rien ne navigue dans l'app. Sans `onLink`, le lien devient du texte simple. Surface : `paper` par défaut (fond `--paper`, texte `--paper-fg`, liens `--paper-link`, rayon `--radius-md`, marge 16 px) ; `theme` pour un HTML simple produit par l'app (fond transparent, texte `--fg`, liens `--accent-text`).
+- Raison : un courriel porte ses propres couleurs ; sur papier, il reste lisible en sombre. L'adresse visible protège de l'hameçonnage.
+- Options écartées : surface du thème par défaut (texte noir en dur illisible en sombre) ; inversion automatique des couleurs.
+- Validation : docs/validation/components/Documents-v1.html (par délégation de l'utilisateur, 2026-11-23)
