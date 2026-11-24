@@ -356,6 +356,36 @@ export const ActionsALaPlaceDeLEtat: Story = {
   },
 };
 
+/** Pied : l'entrée fixe, l'espace de travail et le compte ont leur icône et leur texte sur les mêmes colonnes (D-394). */
+export const PiedAligne: Story = {
+  render: () => (
+    <div className="h-[260px] w-(--side-w)">
+      <Sidebar
+        selectedId="x"
+        onSelectionChange={() => {}}
+        footer={<Sidebar.Item id="agent" icon={<Plus />} label="Agent" />}
+        workspace={<Sidebar.Workspace workspaces={[{ id: "p", name: "Perso" }, { id: "t", name: "taff" }]} currentId="p" onChange={() => {}} />}
+        account={<Sidebar.Account name="Alexandre" onSettings={() => {}} />}
+      >
+        <Sidebar.Item id="x" icon={<Plus />} label="Accueil" />
+      </Sidebar>
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    const c = within(canvasElement);
+    const middle = (el: Element) => { const r = el.getBoundingClientRect(); return r.left + r.width / 2; };
+    const agentIcon = c.getByRole("row", { name: /^Agent/ }).querySelector("svg")!;
+    const agentText = c.getByText("Agent");
+    const folder = c.getByText("Perso").parentElement!.querySelector("svg")!;
+    const avatar = c.getByText("A", { selector: "span" });
+    const left = (el: Element) => el.getBoundingClientRect().left;
+    await expect(Math.abs(middle(folder) - middle(agentIcon))).toBeLessThanOrEqual(1);
+    await expect(Math.abs(middle(avatar) - middle(agentIcon))).toBeLessThanOrEqual(1);
+    await expect(Math.abs(left(c.getByText("Perso")) - left(agentText))).toBeLessThanOrEqual(1);
+    await expect(Math.abs(left(c.getByText("Alexandre")) - left(agentText))).toBeLessThanOrEqual(1);
+  },
+};
+
 /** Maj+F10 et la touche Menu ouvrent le menu « … » de l'élément ; appui long sur tactile (Sidebar.spec.md). */
 export const MenuAuClavierEtAppuiLong: Story = {
   render: () => <Demo />,

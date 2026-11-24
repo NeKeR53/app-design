@@ -2,6 +2,13 @@
 
 Versions selon semver (règle 6 du skill design) : une nouvelle option facultative est une version mineure ; un changement qui casse l'existant est une version majeure, avec une note de migration.
 
+## [1.13.2] — 2026-11-24
+
+Correction.
+
+### Corrigé
+- Sidebar : l'espace de travail et le compte sont alignés sur les entrées : même colonne d'icônes, même début de texte (D-394). Story `PiedAligne`.
+
 ## [1.13.1] — 2026-11-24
 
 Version corrective : aucune API publique ne change ; la hauteur des lignes ne change pas.

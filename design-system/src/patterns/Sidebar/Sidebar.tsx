@@ -561,7 +561,7 @@ function Account({ name, detail, avatar, onSettings, menu }: SidebarAccountProps
           label={m.account}
           placement="top start"
           trigger={
-            <Button className={cx(buttonReset, "flex h-(--row-h) min-w-0 flex-1 cursor-default items-center gap-2 rounded-md px-1.5 text-left data-hovered:bg-hover", focusRing)}>
+            <Button className={cx(buttonReset, "flex h-(--row-h) min-w-0 flex-1 cursor-default items-center gap-1 rounded-md px-1 text-left data-hovered:bg-hover", focusRing)}>
               {who}
               <ChevronsUpDown size={12} className="shrink-0 text-fg-3" />
             </Button>
@@ -570,7 +570,7 @@ function Account({ name, detail, avatar, onSettings, menu }: SidebarAccountProps
           {menu}
         </DropdownMenu>
       ) : (
-        <span className="flex h-(--row-h) min-w-0 flex-1 items-center gap-2 px-1.5">{who}</span>
+        <span className="flex h-(--row-h) min-w-0 flex-1 items-center gap-1 px-1">{who}</span>
       )}
       <IconButton icon={<Settings />} label={m.settings} shortcut="Mod+," onPress={onSettings} tooltipPlacement="top" />
     </div>
@@ -604,7 +604,7 @@ function Workspace({ workspaces, currentId, onChange, actions, isDisabled, icon 
   // Un seul espace et aucune action : simple étiquette (comme le compte, D-046).
   if (workspaces.length < 2 && !actions) {
     return (
-      <span className="flex h-(--row-h) min-w-0 items-center gap-2 px-1.5 text-fg">
+      <span className="flex h-(--row-h) min-w-0 items-center gap-1 px-1 text-fg">
         <span className="sr-only">{m.workspaceLabel}</span>
         {who}
       </span>
@@ -620,7 +620,7 @@ function Workspace({ workspaces, currentId, onChange, actions, isDisabled, icon 
           {...(isDisabled ? { isDisabled } : {})}
           className={cx(
             buttonReset,
-            "flex h-(--row-h) w-full min-w-0 cursor-default items-center gap-2 rounded-md px-1.5 text-left text-fg data-disabled:opacity-40 data-hovered:bg-hover data-pressed:bg-hover",
+            "flex h-(--row-h) w-full min-w-0 cursor-default items-center gap-1 rounded-md px-1 text-left text-fg data-disabled:opacity-40 data-hovered:bg-hover data-pressed:bg-hover",
             focusRing,
           )}
         >

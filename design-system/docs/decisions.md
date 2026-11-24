@@ -2796,3 +2796,10 @@
 - Raison : dans Alfred, une conversation sélectionnée au clavier et la conversation survolée juste dessous se collaient : le fond gris de survol touchait l'anneau bleu, et l'info-bulle du titre couvrait la carte survolée.
 - Options écartées : une marge entre les lignes (la ligne grandirait, contraire à D-368) ; un anneau plus fin.
 - Validation : par délégation de l'utilisateur, 2026-11-24. Story `EcartEntreLignes`.
+
+## D-394 — Sidebar : pied aligné sur la grille des entrées
+- Date : 2026-11-24
+- Portée : Sidebar (correction de D-231, D-232, D-379)
+- Décision : l'espace de travail et le compte prennent la grille de `Sidebar.Item` : marge de 4 px, case de 24 px (icône de dossier ou avatar) centrée sur la colonne des icônes (16 px du bord), 4 px avant le texte, qui commence avec celui des entrées (32 px du bord).
+- Raison : avec une marge de 6 px et un écart de 8 px, la case et le texte du pied étaient décalés de 2 px et 6 px par rapport à l'entrée « Agent » juste au-dessus.
+- Validation : correction d'un défaut signalé par Alexandre, 2026-11-24. Story `PiedAligne`.
