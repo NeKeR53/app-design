@@ -58,6 +58,7 @@ export const ICON_NAMES = [
   "EyeOff",
   "Calendar",
   "FileImage",
+  "ImageOff",
   "FileText",
   "FileArchive",
   "File",
@@ -315,6 +316,18 @@ export const FileImage = icon(
     <path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21" />
   </>,
   "FileImage",
+);
+/* ImageThumbnail : image indisponible (D-383) */
+export const ImageOff = icon(
+  <>
+    <path d="M2 2l20 20" />
+    <path d="M10.41 10.41a2 2 0 1 1-2.83-2.83" />
+    <path d="M13.5 13.5 6 21" />
+    <path d="M18 12l3 3" />
+    <path d="M3.59 3.59A1.99 1.99 0 0 0 3 5v14a2 2 0 0 0 2 2h14c.55 0 1.052-.22 1.41-.59" />
+    <path d="M21 15V5a2 2 0 0 0-2-2H9" />
+  </>,
+  "ImageOff",
 );
 export const FileText = icon(
   <>

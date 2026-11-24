@@ -9,6 +9,10 @@ Versions selon semver (règle 6 du skill design) : une nouvelle option facultati
 - `AgentActivity` : option `attachments` (ReactNode), pièces produites par l'outil sous le texte de la sortie ; une pièce seule rend la ligne ouvrable (D-384). Story `Pieces`.
 - `AgentActivity` : état `status: "stopped"`, « Arrêté » en `--fg-3` ; `ActivityGroup` ajoute « · n arrêté(s) » au résumé (D-384). Story `Arrete`.
 - Messages : `activityStopped`, `activityToggle`, `activityAttachments` ; `activityGroup` reçoit un 4e argument, le nombre d'arrêtés (une fonction à 3 arguments reste acceptée).
+- `ImageThumbnail` : vignette d'image cliquable qui s'agrandit dans une `Modal` `xl` avec `DocumentViewer` ; formes `wide` (360 px, 4:3), `square` (160 px) et `page` (160 px, 16:10, haut de l'image) ; chargement, erreur avec « Réessayer » (`onRetry`), « Télécharger » (`onDownload`) (D-383).
+- `ImageGallery` : vignettes en groupes (`images` ou `groups`), légendes coupées avec info-bulle, les plus anciennes derrière « + N » (`visible`) ; vue agrandie parcourue avec précédente · « n / N » · suivante et ← →, arrêt aux bornes ; `onView` pour une image à lire (D-383).
+- Icône interne `ImageOff` ; libellés `image*` dans `messages`.
+- Specs `AttachmentChip` et `DocumentViewer` : renvoi vers `ImageThumbnail` pour l'aperçu en grand et la vignette (code inchangé).
 
 ## [1.5.0] — 2026-11-24
 

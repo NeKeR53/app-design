@@ -445,6 +445,16 @@ export interface SocleMessages {
   attachmentContent: (label: string) => string;
   attachmentPending: (name: string) => string;
   attachmentError: (name: string) => string;
+  /* ImageThumbnail, ImageGallery (D-383) */
+  imageEnlarge: (alt: string) => string;
+  imageLoading: (alt: string) => string;
+  imageUnavailable: string;
+  imageRetry: (alt: string) => string;
+  imagePrevious: string;
+  imageNext: string;
+  imagePosition: (n: number, total: number) => string;
+  imageMore: (n: number) => string;
+  imageMoreLabel: (n: number, group: string) => string;
   /* ChatTranscript, ChatMessage, MessageActions (D-375) */
   transcriptLabel: string;
   transcriptNewMessages: string;
@@ -890,6 +900,15 @@ export const frenchMessages: SocleMessages = {
   attachmentContent: (l) => `Contenu de ${l}`,
   attachmentPending: (n) => `Préparation de ${n}`,
   attachmentError: (n) => `${n} n'a pas pu être joint.`,
+  imageEnlarge: (a) => `Agrandir ${a}`,
+  imageLoading: (a) => `Chargement de ${a}`,
+  imageUnavailable: "Image indisponible",
+  imageRetry: (a) => `Réessayer ${a}`,
+  imagePrevious: "Image précédente",
+  imageNext: "Image suivante",
+  imagePosition: (n, t) => `${n} / ${t}`,
+  imageMore: (n) => `+ ${n}`,
+  imageMoreLabel: (n, g) => (n > 1 ? `Voir ${n} autres images de ${g}` : `Voir 1 autre image de ${g}`),
   transcriptLabel: "Conversation",
   transcriptNewMessages: "Nouveaux messages",
   transcriptShowEarlier: "Afficher les messages précédents",
