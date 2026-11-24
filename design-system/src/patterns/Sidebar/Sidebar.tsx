@@ -50,6 +50,8 @@ export interface SidebarTreeItemProps {
   status?: "warning";
   /** Point de non-lu (D-044). */
   unread?: boolean;
+  /** Point vert « En cours », le même que `Sidebar.Item` (D-055, D-385). */
+  indicator?: "activity";
   /** Entrées du menu « … » (`DropdownMenu.Item`…). */
   actions?: ReactNode;
   /**
@@ -391,7 +393,7 @@ function Item({ id, icon, label, count, indicator, actions, children }: SidebarI
 }
 
 /* ---------- Sidebar.TreeItem ---------- */
-function TwoLine({ id, title, subtitle, meta, status, unread, actions, quickActions, children }: SidebarTreeItemProps) {
+function TwoLine({ id, title, subtitle, meta, status, unread, indicator, actions, quickActions, children }: SidebarTreeItemProps) {
   const m = useMessages();
   const { depth } = useContext(Depth);
   const ctx = useSidebar();
@@ -416,6 +418,11 @@ function TwoLine({ id, title, subtitle, meta, status, unread, actions, quickActi
                   </Button>
                 )}
                 <span className="flex-1" />
+                {indicator && (
+                  <HintTooltip label={m[INDICATORS[indicator].label]} frameClass="inline-grid place-items-center">
+                    {INDICATORS[indicator].icon}
+                  </HintTooltip>
+                )}
                 {unread && <span role="img" aria-label={m.unread} className="size-1.5 shrink-0 rounded-full bg-highlight" />}
                 {status === "warning" && (
                   <span role="img" aria-label={m.toDo} className="text-warning">

@@ -2710,3 +2710,11 @@
 - Raison : l'app garde tous les outils dans le même groupe au lieu de sortir en ligne locale ceux qui ont un fichier à ouvrir, des images ou un arrêt.
 - Options écartées : `objectHref` (un fichier local s'ouvre par l'app, pas par une adresse) ; toute la ligne en lien (la sortie n'est plus atteignable) ; pièces visibles sortie fermée ; `images` dessinées par Socle (double emploi avec la vignette de D-383) ; « Arrêté » en rouge comme un échec ; « Arrêté » caché.
 - Validation : par délégation de l'utilisateur, 2026-11-24 — docs/validation/components/AgentActivity-v2.html (Q1 A, Q2 A, Q3 A)
+
+## D-385 — Sidebar : point « En cours » sur un élément sur deux lignes
+- Date : 2026-11-24
+- Portée : Sidebar (étend D-055 à `Sidebar.TreeItem`)
+- Décision : `Sidebar.TreeItem` accepte `indicator="activity"`, le point vert « En cours » de `Sidebar.Item` (D-055), même dessin et même info-bulle, à droite du titre, avant le point de non-lu et le « … ». Rien d'autre ne change : l'alerte reste `status="warning"`, le non-lu reste `unread`.
+- Raison : la spec annonçait une icône d'état « en cours » sur la ligne du titre, jamais livrée ; dans Alfred, une conversation d'agent au travail ne se voyait pas. Alexandre a demandé de reprendre ce qui existe déjà plutôt qu'un nouveau dessin.
+- Options écartées : de nouvelles icônes d'état (roue, horloge, cercle) ; un point rouge pour l'échec (l'alerte existe déjà).
+- Validation : décision de l'utilisateur, 2026-11-24 (« tu prends ce qui existe […] un point vert à droite »)

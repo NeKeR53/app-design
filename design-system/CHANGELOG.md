@@ -2,6 +2,13 @@
 
 Versions selon semver (règle 6 du skill design) : une nouvelle option facultative est une version mineure ; un changement qui casse l'existant est une version majeure, avec une note de migration.
 
+## [1.7.0] — 2026-11-24
+
+Version mineure : une option facultative ; aucune API ne casse.
+
+### Ajouté
+- `Sidebar.TreeItem` : `indicator="activity"`, le point vert « En cours » de `Sidebar.Item` (D-385). Story `EnCours`.
+
 ## [1.6.0] — 2026-11-24
 
 Version mineure : un gabarit, deux composants et des options facultatives ; aucune API ne casse.

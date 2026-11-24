@@ -225,6 +225,27 @@ export const ActionRapide: Story = {
   },
 };
 
+/** Élément sur deux lignes au travail : le point vert « En cours » de Sidebar.Item (D-385). */
+export const EnCours: Story = {
+  render: () => (
+    <div className="h-[240px] w-(--side-w)">
+      <Sidebar selectedId="a" onSelectionChange={() => {}} account={<Sidebar.Account name="Camille Martin" onSettings={() => {}} />}>
+        <Sidebar.Section id="conv" title="Conversations">
+          <Sidebar.TreeItem id="a" title="Analyse des logs" subtitle="Claude Code" indicator="activity" />
+          <Sidebar.TreeItem id="b" title="Module Prefect" subtitle="Codex" status="warning" />
+          <Sidebar.TreeItem id="c" title="Tickets en onglets" subtitle="Claude Code" unread />
+        </Sidebar.Section>
+      </Sidebar>
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    const c = within(canvasElement);
+    const row = c.getByRole("row", { name: /^Analyse des logs/ });
+    await expect(row.querySelector(".bg-success")).not.toBeNull();
+    await expect(c.getByRole("row", { name: /^Module Prefect/ }).querySelector(".bg-success")).toBeNull();
+  },
+};
+
 /** Maj+F10 et la touche Menu ouvrent le menu « … » de l'élément ; appui long sur tactile (Sidebar.spec.md). */
 export const MenuAuClavierEtAppuiLong: Story = {
   render: () => <Demo />,
