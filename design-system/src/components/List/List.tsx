@@ -119,7 +119,9 @@ export function List({
         </span>
       )}
       <span className="flex min-w-0 flex-1 flex-col">
-        <span className="flex min-w-0 items-center gap-2">
+        {/* Ligne du titre : hauteur fixe d'une ligne de texte (h-lh). Les actions de 22 px qui apparaissent au
+            survol, au focus ou à la sélection ne la font pas grandir (D-368, D-379). */}
+        <span className="flex h-lh min-w-0 items-center gap-2">
           <OverflowTooltip text={it.title} textClass="min-w-0 flex-1 truncate text-fg">
             {highlight(it.title, terms)}
           </OverflowTooltip>

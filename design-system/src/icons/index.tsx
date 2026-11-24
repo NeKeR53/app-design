@@ -62,6 +62,7 @@ export const ICON_NAMES = [
   "FileArchive",
   "File",
   "Upload",
+  "Folder",
 ] as const;
 export type IconName = (typeof ICON_NAMES)[number];
 
@@ -322,3 +323,8 @@ export const FileArchive = icon(
 export const File = icon(PAGE, "File");
 /** Zone de dépôt : flèche vers le haut. */
 export const Upload = icon(<path d="M12 3v12M7 8l5-5 5 5M5 21h14" />, "Upload");
+/** Espace de travail (Sidebar.Workspace, D-379) : dossier. */
+export const Folder = icon(
+  <path d="M3 6.5A1.5 1.5 0 0 1 4.5 5H9l2 2h8.5A1.5 1.5 0 0 1 21 8.5v9a1.5 1.5 0 0 1-1.5 1.5h-15A1.5 1.5 0 0 1 3 17.5z" />,
+  "Folder",
+);

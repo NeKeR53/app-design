@@ -4,6 +4,19 @@ Versions selon semver (règle 6 du skill design) : une nouvelle option facultati
 
 ## [Non publié]
 
+## [1.3.0] — 2026-11-24
+
+Version mineure : une option facultative ; aucune API ne casse.
+
+### Ajouté
+- `Sidebar.Workspace` : option `icon` (D-379). Icône interne `Folder` (liste `ICON_NAMES`).
+
+### Changé
+- `Sidebar.Workspace` : une icône de dossier précède le nom de l'espace, dans une case de 24 px alignée sur l'avatar du compte. Toujours pas d'avatar ni de repère d'initiale (D-379).
+
+### Corrigé
+- `List` : un élément ne grandit plus quand ses actions apparaissent au survol, au focus ou à la sélection (D-379, comme la Sidebar en 1.1.0). Story `HauteurStable`.
+
 ## [1.2.0] — 2026-11-23
 
 Version mineure : une option facultative, le défaut ne change pas.
