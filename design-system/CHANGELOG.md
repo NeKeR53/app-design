@@ -2,6 +2,13 @@
 
 Versions selon semver (règle 6 du skill design) : une nouvelle option facultative est une version mineure ; un changement qui casse l'existant est une version majeure, avec une note de migration.
 
+## [1.10.1] — 2026-11-24
+
+Version corrective : documentation et story ; aucune API ne change.
+
+### Documenté
+- `ActivityGroup` : `groupAbove={0}` groupe même un outil seul (« 1 outil · 1 en cours »), story `OutilSeulReplie` (D-391).
+
 ## [1.10.0] — 2026-11-24
 
 Version mineure : un changement de rendu, sans changement d'API.

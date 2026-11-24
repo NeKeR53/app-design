@@ -2762,6 +2762,7 @@
 - Portée : AgentActivity, ActivityGroup (complète D-376, D-390)
 - Décision : un outil en cours garde l'icône de son type, sans `Spinner` ; « En cours » reste lu par le lecteur d'écran. Le résumé du groupe n'a plus de roue : « 7 outils · 2 en cours » dit seul qu'un outil tourne. La roue de `WorkStatus` (« Travail en cours », « Réflexion en cours ») ne change pas.
 - Raison : dans une conversation, `WorkStatus` montre déjà le travail en cours avec sa roue ; une roue de plus par outil et sur le résumé répète la même information.
+- Complément : `groupAbove={0}` groupe même un outil seul, derrière « 1 outil · 1 en cours » puis « 1 outil exécuté » ; sa commande ne se voit qu'une fois la ligne dépliée.
 - Options écartées : garder la roue sur le résumé seulement ; une option pour la garder (aucune app n'en a besoin).
 - Validation : par délégation de l'utilisateur, 2026-11-24 (ses mots : « ce n'est pas la peine de mettre le spinner, parce qu'on a déjà le spinner de travail en cours »).
 

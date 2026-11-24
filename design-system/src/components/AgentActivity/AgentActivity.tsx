@@ -52,7 +52,7 @@ export interface ActivityGroupProps {
   defaultExpanded?: boolean;
   /**
    * Nombre d'outils au-delà duquel ils se groupent derrière le résumé. Défaut : 3. Avec 1, deux outils qui se suivent
-   * forment déjà une ligne repliable (D-390).
+   * forment déjà une ligne repliable (D-390) ; avec 0, même un outil seul (« 1 outil · 1 en cours », D-391).
    */
   groupAbove?: number;
 }

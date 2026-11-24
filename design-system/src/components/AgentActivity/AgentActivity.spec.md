@@ -46,7 +46,7 @@ Ne pas l'utiliser pour :
 |---|---|---|---|
 | `items` | `ActivityItem[]` | — (obligatoire) | Outils (`id` + options d'`AgentActivity`). |
 | `defaultExpanded` | `boolean` | déplié si un outil tourne | Ouverture au premier affichage. Avec `false`, le groupe reste replié pendant le travail ; le résumé suit le compte. |
-| `groupAbove` | `number` | `3` | Nombre d'outils au-delà duquel ils se groupent derrière le résumé. Avec `1`, deux outils qui se suivent forment une seule ligne repliable (D-390). |
+| `groupAbove` | `number` | `3` | Nombre d'outils au-delà duquel ils se groupent derrière le résumé. Avec `1`, deux outils qui se suivent forment une seule ligne repliable (D-390) ; avec `0`, même un outil seul : sa commande ne se voit qu'une fois la ligne dépliée (D-391). |
 
 ## Exclus
 - Pas d'adresse (`href`) sur l'objet : l'app ouvre le fichier dans `onObjectPress` (D-384).

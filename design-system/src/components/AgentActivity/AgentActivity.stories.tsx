@@ -174,6 +174,35 @@ export const UneLigneRepliee: Story = {
   },
 };
 
+/** `groupAbove={0}` : même un outil seul est une ligne repliée ; sa commande ne se voit qu'une fois dépliée (D-391). */
+export const OutilSeulReplie: Story = {
+  render: () => {
+    const [done, setDone] = useState(false);
+    return (
+      <>
+        <button type="button" onClick={() => setDone(true)}>
+          Terminer
+        </button>
+        <ActivityGroup
+          items={[{ id: "1", kind: "command", verb: "Exécuté", object: "npm test", status: done ? "done" : "running" }]}
+          groupAbove={0}
+          defaultExpanded={false}
+        />
+      </>
+    );
+  },
+  play: async ({ canvasElement }) => {
+    const c = within(canvasElement);
+    const head = c.getByRole("button", { name: "1 outil · 1 en cours" });
+    await expect(head).toHaveAttribute("aria-expanded", "false");
+    await expect(c.queryByText("npm test")).toBeNull();
+    await userEvent.click(c.getByRole("button", { name: "Terminer" }));
+    const doneHead = c.getByRole("button", { name: "1 outil exécuté" });
+    await userEvent.click(doneHead);
+    await expect(c.getByText("npm test")).toBeInTheDocument();
+  },
+};
+
 /** Une erreur reste visible, en rouge, même groupe replié. */
 export const ErreurVisible: Story = {
   render: () => <ActivityGroup items={[...DONE.slice(0, 4), { id: "5", kind: "command", verb: "Exécuté", object: "npm test", status: "error", detail: "FAIL src/dates.test.ts" }]} />,
