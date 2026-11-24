@@ -22,7 +22,7 @@ const DONE: ActivityItem[] = [
   { id: "5", kind: "command", verb: "Exécuté", object: "npm test", detail: "PASS src/dates.test.ts\nTests: 12 passed" },
 ];
 
-/** Une ligne par outil : icône du type, verbe, objet en police à chasse fixe ; roue pendant l'exécution ; « Échec » en rouge. */
+/** Une ligne par outil : icône du type, verbe, objet en police à chasse fixe ; en cours, pas de roue, « En cours » lu (D-391) ; « Échec » en rouge. */
 export const Lignes: Story = {
   render: () => (
     <>
@@ -46,7 +46,9 @@ export const Lignes: Story = {
     await expect(getComputedStyle(failed).color).toBe(getComputedStyle(probe).color);
     probe.remove();
     const running = canvasElement.querySelector('[data-activity="running"]') as HTMLElement;
-    await expect(running.querySelector("[data-spinner]")).not.toBeNull();
+    // Pas de roue : WorkStatus montre déjà le travail en cours (D-391).
+    await expect(running.querySelector("[data-spinner]")).toBeNull();
+    await expect(running.querySelector("svg")).not.toBeNull();
     await expect(within(running).getByText("En cours")).toHaveClass("sr-only");
   },
 };
@@ -154,9 +156,10 @@ export const UneLigneRepliee: Story = {
   },
   play: async ({ canvasElement }) => {
     const c = within(canvasElement);
-    // Deux outils qui tournent : une seule ligne, repliée.
+    // Deux outils qui tournent : une seule ligne, repliée, sans roue ; le texte dit combien tournent (D-391).
     const head = c.getByRole("button", { name: "2 outils · 2 en cours" });
     await expect(head).toHaveAttribute("aria-expanded", "false");
+    await expect(head.querySelector("[data-spinner]")).toBeNull();
     await expect(c.queryByText("commande 1")).toBeNull();
     // Le compte suit en direct, la ligne reste repliée.
     await userEvent.click(c.getByRole("button", { name: "Outil suivant" }));

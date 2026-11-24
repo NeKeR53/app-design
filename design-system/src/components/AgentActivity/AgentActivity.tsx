@@ -10,7 +10,6 @@ import { BookOpen, Brain, ChevronDown, Pencil, Search, SquareTerminal, Wrench } 
 import { buttonReset, cx, focusRing } from "../../lib/cx";
 import { useMessages } from "../../provider/SocleProvider";
 import { Link } from "../Link/Link";
-import { Spinner } from "../Spinner/Spinner";
 
 export type ActivityKind = "command" | "edit" | "search" | "read" | "think" | "other";
 export type ActivityStatus = "running" | "done" | "error" | "stopped";
@@ -23,7 +22,7 @@ export interface AgentActivityProps {
   /** Objet de l'action, en police à chasse fixe : commande, chemin, motif. */
   object?: string;
   /**
-   * `running` : roue ; `done` : icône du type ; `error` : « Échec » en `--danger` ;
+   * `running` : icône du type, « En cours » lu (pas de roue, D-391) ; `done` : icône du type ; `error` : « Échec » en `--danger` ;
    * `stopped` : outil interrompu, « Arrêté » en `--fg-3` (D-384). Défaut : `done`.
    */
   status?: ActivityStatus;
@@ -72,13 +71,8 @@ function Label({ kind = "other", verb, object, status = "done", onObjectPress, l
   const title = object ? `${verb} ${object}` : verb;
   return (
     <>
-      {status === "running" ? (
-        <span className="inline-grid size-[15px] shrink-0 place-items-center">
-          <Spinner size="sm" decorative />
-        </span>
-      ) : (
-        <Icon size={15} />
-      )}
+      {/* Pas de roue : WorkStatus montre déjà le travail en cours ; « En cours » est lu (D-391). */}
+      <Icon size={15} />
       <span className="min-w-0 truncate" title={title}>
         {verb}
         {object && (
@@ -200,7 +194,6 @@ export function ActivityGroup({ items, defaultExpanded, groupAbove = GROUP_ABOVE
         onPress={() => setChoice(!open)}
         className={cx(buttonReset, line, "-mx-0.5 max-w-full cursor-default rounded-sm px-0.5 text-start data-hovered:text-fg", focusRing)}
       >
-        {running > 0 && <Spinner size="sm" decorative />}
         <span className={cx("min-w-0 truncate", failed > 0 && !open && "text-danger")}>{summary}</span>
         <ChevronDown size={12} className={cx("shrink-0 text-fg-3", !open && "-rotate-90")} />
       </Button>

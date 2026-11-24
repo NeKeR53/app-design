@@ -11,7 +11,7 @@ Ne pas l'utiliser pour :
 
 ## Anatomie
 1. Ligne (obligatoire) : 28 px de haut au moins, `--fs-sm` en `--fg-2`, espaces de 8 px.
-   - Icône de 15 px selon le type, ou `Spinner` `sm` pendant l'exécution.
+   - Icône de 15 px selon le type, aussi pendant l'exécution : pas de roue, `WorkStatus` montre déjà le travail en cours (D-391).
    - Verbe puis objet en `--font-mono`, coupés avec une ellipse (texte entier en `title`). Avec `onObjectPress`, l'objet est un `Link` (D-167) en chasse fixe (D-384).
    - « Échec » en `--danger`, si l'outil a échoué ; « Arrêté » en `--fg-3`, si l'outil a été interrompu (D-384).
 2. Chevron (si `detail` ou `attachments`) : la ligne devient un bouton qui ouvre la sortie. Si l'objet est un lien, le chevron est un bouton à part de 24 px, juste après le texte (D-384).
@@ -57,7 +57,7 @@ Ne pas l'utiliser pour :
 ## États
 | État | Rendu |
 |---|---|
-| En cours | Roue à la place de l'icône ; « En cours » lu par le lecteur d'écran. |
+| En cours | Icône du type, sans roue ; « En cours » lu par le lecteur d'écran ; le résumé du groupe dit « n en cours » (D-391). |
 | Terminé | Icône du type ; « Terminé » lu par le lecteur d'écran. |
 | Échec | « Échec » visible en `--danger`. |
 | Arrêté | Icône du type ; « Arrêté » visible en `--fg-3` (D-384). |
@@ -70,7 +70,7 @@ Ne pas l'utiliser pour :
 ## Comportement
 | Règle | Niveau de réglage | Test (story) |
 |---|---|---|
-| Icône par type, objet en chasse fixe, roue pendant l'exécution, « Échec » en `--danger` | verrouillé | `Lignes` |
+| Icône par type, objet en chasse fixe, pas de roue pendant l'exécution (D-391), « Échec » en `--danger` | verrouillé | `Lignes` |
 | Avec `detail`, clic, Entrée ou Espace ouvrent la sortie, de 2 à 12 lignes | réglable par l'app (`detail`) | `Detail` |
 | Jusqu'à 3 outils, une ligne chacun, sans résumé | réglable par l'app (`groupAbove`) | `PeuDOutils` |
 | Au-delà de 3, résumé repliable au clavier | réglable par l'app (`groupAbove`) | `Groupe` |
@@ -96,7 +96,7 @@ Tab atteint le résumé et chaque ligne ouvrable ; Entrée ou Espace ouvre ou fe
 - La liste du groupe est nommée par le résumé.
 - Le chevron à part s'appelle « Sortie de <verbe objet> » ; les pièces sont un groupe nommé « Pièces de <verbe objet> » (D-384).
 - L'état de chaque outil est un texte (caché sauf « Échec » et « Arrêté »), pas une couleur seule (1.4.1).
-- Les icônes et la roue sont décoratives.
+- Les icônes sont décoratives ; l'état « En cours » est un texte lu.
 
 ## Taille d'écran
 Identique ; l'objet se coupe avec une ellipse.
@@ -108,7 +108,7 @@ Un outil en échec : « Échec » en rouge, toujours visible ; sa sortie dans `d
 Dans `ChatTranscript`, entre les messages, ou dans `WorkSummary`.
 
 ## Composition
-`Button` de React Aria, `Link`, `Spinner`, icônes internes `SquareTerminal`, `Pencil`, `Search`, `BookOpen`, `Brain`, `Wrench`, `ChevronDown`.
+`Button` de React Aria, `Link`, icônes internes `SquareTerminal`, `Pencil`, `Search`, `BookOpen`, `Brain`, `Wrench`, `ChevronDown`.
 
 ## Décisions
 D-360, D-376, D-384

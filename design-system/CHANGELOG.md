@@ -2,6 +2,13 @@
 
 Versions selon semver (règle 6 du skill design) : une nouvelle option facultative est une version mineure ; un changement qui casse l'existant est une version majeure, avec une note de migration.
 
+## [1.10.0] — 2026-11-24
+
+Version mineure : un changement de rendu, sans changement d'API.
+
+### Changé
+- `AgentActivity` et `ActivityGroup` : plus de roue pour un outil en cours ni sur le résumé du groupe ; l'icône du type reste, « En cours » est lu, le résumé dit « n en cours » (D-391).
+
 ## [1.9.0] — 2026-11-24
 
 Version mineure : une option facultative et une correction ; aucune API ne casse.
