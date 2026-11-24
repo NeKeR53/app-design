@@ -33,6 +33,8 @@ Aucune variante visuelle. La disposition dépend de la largeur (D-013) et de la 
 | `detail` | slot `ReactNode` | aucun | Contenu du panneau de détail ; s'il est absent, ni la colonne ni le bouton ne s'affichent. |
 | `detailWidth` | `"default" \| "form"` | `"default"` | Largeur de départ du panneau : sections (`--detail-w`) ou formulaire (`--detail-w-form`) (D-240). |
 | `detailExpandable` | `boolean` | `false` | Bouton Agrandir dans la barre du haut, sur bureau : panneau large (D-241). |
+| `isDetailOpen` | `boolean` | aucun | Ouverture du panneau pilotée par l'app : `true` l'ouvre (colonne, ou overlay sur tablette et mobile), `false` le ferme ; absent, l'état mémorisé (D-018, D-398). |
+| `onDetailOpenChange` | `(isOpen) => void` | aucune | Appelée quand l'utilisateur ouvre ou ferme le panneau (bouton, Mod+., Échap, fermeture de l'overlay) (D-398). |
 | `tabbar` | `{ id, label, icon }[]` (4 au plus) | les 4 premières entrées de navigation | Entrées de la barre d'onglets mobile. Les entrées fixes du bas de la Sidebar peuvent y aller (`tabbar`, D-230). |
 | `history` | `boolean` | `true` | Affiche précédent/suivant. |
 

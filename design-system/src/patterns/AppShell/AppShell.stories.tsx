@@ -381,3 +381,41 @@ export const MacPleinEcran: Story = {
     await waitFor(() => expect(within(canvasElement).getByRole("button", { name: "Déplier la sidebar" })).toBeInTheDocument());
   },
 };
+
+/** L'app ouvre le panneau : un élément choisi dans la page l'ouvre, le bouton le referme (D-398). */
+function PiloteDemo() {
+  const [open, setOpen] = useState(false);
+  return (
+    <div className="fixed inset-0">
+      <AppShell
+        pageTitle="Tickets"
+        detail={<DemoDetail />}
+        isDetailOpen={open}
+        onDetailOpenChange={setOpen}
+        sidebar={
+          <Sidebar selectedId="t" onSelectionChange={() => {}} account={<Sidebar.Account name="Camille Martin" onSettings={() => {}} />}>
+            <Sidebar.Item id="t" icon={<Doc />} label="Tickets" />
+          </Sidebar>
+        }
+      >
+        <div className="p-6">
+          <Button onPress={() => setOpen(true)}>Ouvrir le ticket</Button>
+        </div>
+      </AppShell>
+    </div>
+  );
+}
+
+export const PanneauPilote: Story = {
+  render: () => <PiloteDemo />,
+  play: async ({ canvasElement }) => {
+    const c = within(canvasElement);
+    await expect(c.queryByRole("complementary", { name: "Détail" })).toBeNull();
+    await userEvent.click(c.getByRole("button", { name: "Ouvrir le ticket" }));
+    await waitFor(() => expect(c.getByRole("complementary", { name: "Détail" })).toBeVisible());
+    await userEvent.click(c.getByRole("button", { name: "Panneau de détail" }));
+    await waitFor(() => expect(c.queryByRole("complementary", { name: "Détail" })).toBeNull());
+    await userEvent.click(c.getByRole("button", { name: "Ouvrir le ticket" }));
+    await waitFor(() => expect(c.getByRole("complementary", { name: "Détail" })).toBeVisible());
+  },
+};

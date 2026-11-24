@@ -37,6 +37,14 @@ export interface AppShellProps {
   detailWidth?: "default" | "form";
   /** Bouton Agrandir dans la barre du haut, sur bureau : panneau large (D-241). */
   detailExpandable?: boolean;
+  /**
+   * Ouverture du panneau de détail pilotée par l'app (D-398) : `true` l'ouvre (colonne sur bureau, overlay sur tablette
+   * et mobile), `false` le ferme. Absent, AppShell garde son état mémorisé (D-018). Exemple : une page qui ouvre le
+   * panneau quand on choisit un élément.
+   */
+  isDetailOpen?: boolean;
+  /** Appelée quand l'utilisateur ouvre ou ferme le panneau (bouton, Mod+., Échap), avec le nouvel état. */
+  onDetailOpenChange?: (isOpen: boolean) => void;
   /** Entrées de la barre d'onglets mobile (4 au plus). Défaut : éléments `tabbar` de la sidebar, sinon les 4 premiers (D-003, D-019). */
   tabbar?: TabbarEntry[];
   /** Affiche précédent/suivant. */
@@ -98,7 +106,7 @@ function useMedia(query: string): boolean {
   return match;
 }
 
-export function AppShell({ pageTitle, views, activeView, onViewChange, onViewClose, actions, sidebar, detail, detailWidth: detailKind = "default", detailExpandable = false, tabbar, history = true, children }: AppShellProps) {
+export function AppShell({ pageTitle, views, activeView, onViewChange, onViewClose, actions, sidebar, detail, detailWidth: detailKind = "default", detailExpandable = false, isDetailOpen, onDetailOpenChange, tabbar, history = true, children }: AppShellProps) {
   const { isMac, platform, isFullscreen } = useSocle();
   const m = useMessages();
   const isMobile = useMedia("(max-width: 640px)");
@@ -141,14 +149,25 @@ export function AppShell({ pageTitle, views, activeView, onViewChange, onViewClo
   const [wideStored, setWide] = useStoredState("shell:detail-wide", false);
   const [sheet, setSheet] = useState(false);
   const floating = isMobile || isTablet;
-  const showDetail = Boolean(detail) && (floating ? detailFloat : detailOpen);
+  // Ouverture pilotée par l'app (D-398) : elle prime sur l'état mémorisé de la colonne.
+  const columnOpen = isDetailOpen ?? detailOpen;
+  useEffect(() => {
+    // Sur tablette et mobile, une ouverture demandée par l'app ouvre l'overlay ; une fermeture le ferme.
+    if (isDetailOpen !== undefined && floating) setDetailFloat(isDetailOpen);
+  }, [isDetailOpen, floating]);
+  const showDetail = Boolean(detail) && (floating ? detailFloat : columnOpen);
   const wide = detailExpandable && !floating && wideStored;
 
   const toggleSidebar = () => {
     setOverlay(false);
     setCollapsed(!collapsed);
   };
-  const toggleDetail = () => (floating ? setDetailFloat(!detailFloat) : setDetailOpen(!detailOpen));
+  const toggleDetail = () => {
+    const next = floating ? !detailFloat : !columnOpen;
+    if (floating) setDetailFloat(next);
+    else setDetailOpen(next);
+    onDetailOpenChange?.(next);
+  };
 
   // Raccourcis (D-006) : Mod+B sidebar, Mod+. détail ; Échap ferme ce qui flotte.
   useEffect(() => {
@@ -170,7 +189,10 @@ export function AppShell({ pageTitle, views, activeView, onViewChange, onViewClo
         toggleDetail();
       } else if (e.key === "Escape") {
         if (overlay) setOverlay(false);
-        else if (floating && detailFloat) setDetailFloat(false);
+        else if (floating && detailFloat) {
+          setDetailFloat(false);
+          onDetailOpenChange?.(false);
+        }
       }
     };
     window.addEventListener("keydown", onKey);
@@ -323,7 +345,10 @@ export function AppShell({ pageTitle, views, activeView, onViewChange, onViewClo
             form={detailKind === "form"}
             wide={wide}
             onWidth={setDetailWidth}
-            onClose={() => setDetailFloat(false)}
+            onClose={() => {
+              setDetailFloat(false);
+              onDetailOpenChange?.(false);
+            }}
           >
             {detail}
           </DetailColumn>

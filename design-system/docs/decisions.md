@@ -2820,3 +2820,19 @@
 - Options écartées : un seuil fixe plus grand (trop grand sur un petit écran, trop petit sur un grand) ; la moitié de la hauteur (on ne pourrait plus relire le message juste au-dessus sans être ramené en bas).
 - Validation : par délégation de l'utilisateur, 2026-11-24 (ses mots : « je ne suis pas très haut. Il faudrait peut-être agrandir la zone »).
 
+## D-397 — ChatTranscript : seul un geste décroche le suivi ; position gardée par conversation
+- Date : 2026-11-24
+- Portée : ChatTranscript (complète D-389 et D-396)
+- Décision :
+  - Seul un défilement qui suit un geste de l'utilisateur sur le relevé (molette ou trackpad, doigt, clavier, barre de défilement, dans les 400 ms) peut décrocher le suivi, en remontant au-delà de la zone de reprise. Un défilement fait par le navigateur seul (contenu qui se charge ou se replie, largeur qui change quand un panneau s'ouvre) ne le décroche jamais ; s'il déplace la vue pendant le suivi, le relevé revient en bas.
+  - Option `scrollKey` (l'identifiant de la conversation) : la position de lecture est gardée le temps de la session. En quittant la conversation (autre page, autre conversation) puis en y revenant, on la retrouve : remonté, au même endroit ; en bas, toujours en bas, les messages arrivés entre-temps déjà à l'écran, sans « Nouveaux messages ».
+  - Un envoi ramène toujours en bas (inchangé) ; l'ouverture prend la position gardée.
+- Raison : Alexandre retrouvait une conversation déplacée en revenant d'une page, avec « Nouveaux messages » à faire défiler, et perdait le suivi quand le panneau des différences s'ouvrait : le relevé repartait de zéro à chaque retour et prenait les défilements du navigateur pour un geste.
+- Validation : défaut signalé par Alexandre, 2026-11-24. Stories `RetourMemeEndroit`, `RetourEnBas`, `LargeurEtNavigateur` (elles échouent sur 1.15.0).
+
+## D-398 — AppShell : ouverture du panneau de détail pilotée par l'app
+- Date : 2026-11-24
+- Portée : AppShell (complète D-018)
+- Décision : options facultatives `isDetailOpen` et `onDetailOpenChange`. Avec `isDetailOpen`, l'app ouvre ou ferme le panneau (colonne sur bureau, overlay sur tablette et mobile) ; AppShell rend chaque ouverture ou fermeture de l'utilisateur par `onDetailOpenChange`. Sans elles, l'état mémorisé de D-018 ne change pas.
+- Raison : dans Alfred, une page qui demandait l'ouverture de son panneau (clic sur un élément) n'avait aucun effet : AppShell gardait seul l'état du panneau.
+- Validation : défaut signalé par Alexandre, 2026-11-24. Story `PanneauPilote`.

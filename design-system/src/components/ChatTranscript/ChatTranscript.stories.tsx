@@ -41,6 +41,13 @@ function Exchange({ n }: { n: number }) {
 }
 
 /** Écran complet : colonne de 760 px, bulle à droite, réponse sans bulle, travail replié, question au-dessus de la saisie. */
+/** Défilement fait par l'utilisateur : un geste (molette), puis le défilement. Sans geste, c'est le navigateur (D-397). */
+function userScroll(scroller: HTMLElement, top: number) {
+  scroller.dispatchEvent(new WheelEvent("wheel", { bubbles: true, deltaY: top < scroller.scrollTop ? -100 : 100 }));
+  scroller.scrollTop = top;
+  scroller.dispatchEvent(new Event("scroll"));
+}
+
 export const Conversation: Story = {
   render: () => (
     <div className="flex h-[640px] flex-col bg-surface">
@@ -159,8 +166,7 @@ export const CollageEnBas: Story = {
     await waitFor(() => expect(fromBottom(scroller)).toBeLessThan(2));
     await expect(c.queryByRole("button", { name: "Nouveaux messages" })).toBeNull();
     // Remonté : le relevé ne bouge pas, le bouton apparaît.
-    scroller.scrollTop = 0;
-    scroller.dispatchEvent(new Event("scroll"));
+    userScroll(scroller, 0);
     await userEvent.click(c.getByRole("button", { name: "Ajouter du texte" }));
     const button = await c.findByRole("button", { name: "Nouveaux messages" });
     await expect(scroller.scrollTop).toBe(0);
@@ -172,8 +178,7 @@ export const CollageEnBas: Story = {
     await userEvent.click(c.getByRole("button", { name: "Ajouter du texte" }));
     await waitFor(() => expect(fromBottom(scroller)).toBeLessThan(2));
     // Un envoi ramène en bas, même remonté.
-    scroller.scrollTop = 0;
-    scroller.dispatchEvent(new Event("scroll"));
+    userScroll(scroller, 0);
     await userEvent.click(c.getByRole("button", { name: "Envoyer" }));
     await waitFor(() => expect(fromBottom(scroller)).toBeLessThan(2));
     await expect(c.queryByRole("button", { name: "Nouveaux messages" })).toBeNull();
@@ -187,8 +192,7 @@ export const SeuilDeCollage: Story = {
     const c = within(canvasElement);
     const scroller = c.getByRole("region", { name: "Conversation" });
     await waitFor(() => expect(fromBottom(scroller)).toBeLessThan(2));
-    scroller.scrollTop = scroller.scrollHeight - scroller.clientHeight - 60;
-    scroller.dispatchEvent(new Event("scroll"));
+    userScroll(scroller, scroller.scrollHeight - scroller.clientHeight - 60);
     await userEvent.click(c.getByRole("button", { name: "Ajouter du texte" }));
     await waitFor(() => expect(fromBottom(scroller)).toBeLessThan(2));
     await expect(c.queryByRole("button", { name: "Nouveaux messages" })).toBeNull();
@@ -221,8 +225,7 @@ export const GrandBlocApresDefilement: Story = {
       await expect(c.queryByRole("button", { name: "Nouveaux messages" })).toBeNull();
     }
     // Remonté pour de bon : le relevé reste sur ce qu'on lit.
-    scroller.scrollTop = 0;
-    scroller.dispatchEvent(new Event("scroll"));
+    userScroll(scroller, 0);
     big.click();
     await c.findByRole("button", { name: "Nouveaux messages" });
     await expect(scroller.scrollTop).toBe(0);
@@ -246,14 +249,12 @@ export const ZoneDeReprise: Story = {
       await userEvent.click(c.getByRole("button", { name: "Ajouter du texte" }));
     await waitFor(() => expect(fromBottom(scroller)).toBeLessThan(2));
     // Un peu plus haut que 100 px, mais dans le dernier tiers : le suivi continue.
-    scroller.scrollTop = scroller.scrollHeight - scroller.clientHeight - 200;
-    scroller.dispatchEvent(new Event("scroll"));
+    userScroll(scroller, scroller.scrollHeight - scroller.clientHeight - 200);
     await userEvent.click(c.getByRole("button", { name: "Ajouter du texte" }));
     await waitFor(() => expect(fromBottom(scroller)).toBeLessThan(2));
     await expect(c.queryByRole("button", { name: "Nouveaux messages" })).toBeNull();
     // Au-delà du tiers : le relevé reste sur ce qu'on lit…
-    scroller.scrollTop = scroller.scrollHeight - scroller.clientHeight - scroller.clientHeight / 2;
-    scroller.dispatchEvent(new Event("scroll"));
+    userScroll(scroller, scroller.scrollHeight - scroller.clientHeight - scroller.clientHeight / 2);
     const kept = scroller.scrollTop;
     await userEvent.click(c.getByRole("button", { name: "Ajouter du texte" }));
     await c.findByRole("button", { name: "Nouveaux messages" });
@@ -270,8 +271,7 @@ export const MessagesPrecedents: Story = {
   play: async ({ canvasElement }) => {
     const c = within(canvasElement);
     const scroller = c.getByRole("region", { name: "Conversation" });
-    scroller.scrollTop = 0;
-    scroller.dispatchEvent(new Event("scroll"));
+    userScroll(scroller, 0);
     const target = c.getByText(/^Question 4 :/);
     const before = target.getBoundingClientRect().top;
     await userEvent.click(c.getByRole("button", { name: "Afficher les messages précédents" }));
@@ -340,5 +340,92 @@ export const ContexteVide: Story = {
   ),
   play: async ({ canvasElement }) => {
     await expect(within(canvasElement).queryByText("Depuis Notes · 24/11/2026 09:03")).toBeNull();
+  },
+};
+
+/** Banc des positions (D-397) : quitter la conversation et y revenir, des messages qui arrivent, une largeur qui change. */
+function Retour({ id }: { id: string }) {
+  const [shown, setShown] = useState(true);
+  const [count, setCount] = useState(30);
+  const [narrow, setNarrow] = useState(false);
+  return (
+    <div className="flex h-[480px] flex-col gap-2 p-2">
+      <div className="flex gap-2">
+        <button type="button" onClick={() => setShown((v) => !v)}>Basculer</button>
+        <button type="button" onClick={() => setCount((n) => n + 3)}>Nouveaux</button>
+        <button type="button" onClick={() => setNarrow((v) => !v)}>Largeur</button>
+      </div>
+      <div className={narrow ? "min-h-0 w-[360px] flex-1" : "min-h-0 w-full flex-1"}>
+        {shown ? (
+          <ChatTranscript scrollKey={id}>
+            {Array.from({ length: count }, (_, i) => (
+              <ChatMessage key={i} role={i % 2 ? "assistant" : "user"}>
+                <p>
+                  Message {i + 1}. Un texte assez long pour passer à la ligne quand la colonne rétrécit, comme une réponse
+                  d'agent avec plusieurs phrases à lire.
+                </p>
+              </ChatMessage>
+            ))}
+          </ChatTranscript>
+        ) : (
+          <p>Autre page</p>
+        )}
+      </div>
+    </div>
+  );
+}
+
+/** Remonté, on quitte puis on revient : même endroit, même avec des messages arrivés entre-temps (D-397). */
+export const RetourMemeEndroit: Story = {
+  render: () => <Retour id="retour-endroit" />,
+  play: async ({ canvasElement }) => {
+    const c = within(canvasElement);
+    let scroller = c.getByRole("region", { name: "Conversation" });
+    await waitFor(() => expect(fromBottom(scroller)).toBeLessThan(2));
+    userScroll(scroller, 300);
+    await userEvent.click(c.getByRole("button", { name: "Basculer" }));
+    await userEvent.click(c.getByRole("button", { name: "Nouveaux" }));
+    await userEvent.click(c.getByRole("button", { name: "Basculer" }));
+    scroller = await c.findByRole("region", { name: "Conversation" });
+    await waitFor(() => expect(scroller.scrollTop).toBe(300));
+  },
+};
+
+/** En bas, on quitte, des messages arrivent, on revient : toujours en bas, les nouveaux messages à l'écran (D-397). */
+export const RetourEnBas: Story = {
+  render: () => <Retour id="retour-bas" />,
+  play: async ({ canvasElement }) => {
+    const c = within(canvasElement);
+    let scroller = c.getByRole("region", { name: "Conversation" });
+    await waitFor(() => expect(fromBottom(scroller)).toBeLessThan(2));
+    await userEvent.click(c.getByRole("button", { name: "Basculer" }));
+    await userEvent.click(c.getByRole("button", { name: "Nouveaux" }));
+    await userEvent.click(c.getByRole("button", { name: "Basculer" }));
+    scroller = await c.findByRole("region", { name: "Conversation" });
+    await waitFor(() => expect(fromBottom(scroller)).toBeLessThan(2));
+    await expect(c.queryByRole("button", { name: "Nouveaux messages" })).toBeNull();
+    await userEvent.click(c.getByRole("button", { name: "Nouveaux" }));
+    await waitFor(() => expect(fromBottom(scroller)).toBeLessThan(2));
+  },
+};
+
+/** En bas, la largeur change (panneau qui s'ouvre) et le navigateur déplace la vue : le suivi continue (D-397). */
+export const LargeurEtNavigateur: Story = {
+  render: () => <Retour id="largeur" />,
+  play: async ({ canvasElement }) => {
+    const c = within(canvasElement);
+    const scroller = c.getByRole("region", { name: "Conversation" });
+    await waitFor(() => expect(fromBottom(scroller)).toBeLessThan(2));
+    await userEvent.click(c.getByRole("button", { name: "Largeur" }));
+    await waitFor(() => expect(fromBottom(scroller)).toBeLessThan(2));
+    // Défilement fait par le navigateur seul, sans geste : il ne décroche pas le suivi.
+    scroller.scrollTop = 0;
+    scroller.dispatchEvent(new Event("scroll"));
+    await waitFor(() => expect(fromBottom(scroller)).toBeLessThan(2));
+    await userEvent.click(c.getByRole("button", { name: "Nouveaux" }));
+    await waitFor(() => expect(fromBottom(scroller)).toBeLessThan(2));
+    await expect(c.queryByRole("button", { name: "Nouveaux messages" })).toBeNull();
+    await userEvent.click(c.getByRole("button", { name: "Largeur" }));
+    await waitFor(() => expect(fromBottom(scroller)).toBeLessThan(2));
   },
 };

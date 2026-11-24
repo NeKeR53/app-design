@@ -2,6 +2,17 @@
 
 Versions selon semver (règle 6 du skill design) : une nouvelle option facultative est une version mineure ; un changement qui casse l'existant est une version majeure, avec une note de migration.
 
+## [1.16.0] — 2026-11-24
+
+Version mineure : options facultatives ; aucune API ne casse.
+
+### Ajouté
+- `ChatTranscript` : option `scrollKey`, la position de lecture gardée par conversation ; en revenant, au même endroit, ou toujours en bas si l'on y était (D-397).
+- `AppShell` : options `isDetailOpen` et `onDetailOpenChange`, ouverture du panneau de détail pilotée par l'app (D-398). Story `PanneauPilote`.
+
+### Corrigé
+- `ChatTranscript` : seul un défilement qui suit un geste de l'utilisateur décroche le suivi ; ceux du navigateur (contenu qui se charge, panneau qui s'ouvre) ne le décrochent plus (D-397). Stories `RetourMemeEndroit`, `RetourEnBas`, `LargeurEtNavigateur`.
+
 ## [1.15.0] — 2026-11-24
 
 Version mineure : un changement de comportement par défaut ; aucune API ne casse.

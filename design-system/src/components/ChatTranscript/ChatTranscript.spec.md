@@ -26,6 +26,7 @@ Aucune.
 | `children` | `ReactNode` | aucun | Messages et travail de l'agent. |
 | `label` | `string` | « Conversation » (i18n) | Nom de la zone. |
 | `followKey` | `string \| number` | aucun | Change à chaque envoi de l'utilisateur : retour en bas et recollage. |
+| `scrollKey` | `string` | aucun | Identifiant de la conversation : sa position de lecture est gardée ; en la rouvrant, on la retrouve telle quelle, et en bas le suivi continue (D-397). |
 | `announce` | `string` | aucun | Texte lu poliment quand il change (fin de réponse). Vide pendant l'écriture. |
 | `empty` | `ReactNode` | aucun | Contenu d'une conversation vide (`EmptyState`). |
 | `hasEarlier`, `onShowEarlier` | `boolean`, `() => void` | `false` | Messages plus anciens à charger ; la lecture ne saute pas. |
@@ -90,7 +91,7 @@ Au centre d'une page ou d'un panneau de chat, au-dessus de `ChoicePrompt` et de 
 Contient `Button` (« Afficher les messages précédents »), `Tooltip` (détail du contexte), un `Button` de React Aria et l'icône interne `ArrowDown`. Reçoit `ChatMessage`, `ActivityGroup`, `WorkStatus`, `WorkSummary`, `EmptyState`.
 
 ## Décisions
-D-026, D-375, D-382, D-389, D-396
+D-026, D-375, D-382, D-389, D-396, D-397
 
 ## Questions ouvertes
 Aucune.

@@ -20,6 +20,12 @@ export interface ChatTranscriptProps {
   /** Change à chaque envoi de l'utilisateur : le relevé revient en bas et s'y recolle. */
   followKey?: string | number;
   /**
+   * Identifiant de la conversation affichée. La position de lecture lui est attachée : en quittant puis en rouvrant
+   * la conversation (autre page, autre conversation), on la retrouve telle quelle ; en bas, le suivi continue et les
+   * messages arrivés entre-temps sont déjà à l'écran (D-397).
+   */
+  scrollKey?: string;
+  /**
    * Texte lu poliment, une fois, quand il change : la fin d'une réponse (« Réponse terminée »).
    * Laisser vide pendant que la réponse s'écrit : rien n'est lu mot à mot.
    */
@@ -36,6 +42,12 @@ export interface ChatTranscriptProps {
   contextDetail?: string;
 }
 
+/** Position de lecture de chaque conversation (`scrollKey`), gardée le temps de la session (D-397). */
+const positions = new Map<string, { pinned: boolean; top: number }>();
+
+/** Délai pendant lequel un défilement suit un geste de l'utilisateur (molette, doigt, clavier, barre de défilement). */
+const USER_INPUT_MS = 400;
+
 /** Distance au bas sous laquelle le relevé suit la réponse, au moins (Q10 A). */
 export const STICK_DISTANCE = 100;
 
@@ -47,7 +59,7 @@ export function stickDistance(visibleHeight: number): number {
   return Math.max(STICK_DISTANCE, visibleHeight / 3);
 }
 
-export function ChatTranscript({ children, label, followKey, announce, empty, hasEarlier = false, onShowEarlier, context, contextDetail }: ChatTranscriptProps) {
+export function ChatTranscript({ children, label, followKey, scrollKey, announce, empty, hasEarlier = false, onShowEarlier, context, contextDetail }: ChatTranscriptProps) {
   const m = useMessages();
   const scroller = useRef<HTMLElement>(null);
   const column = useRef<HTMLDivElement>(null);
@@ -63,6 +75,19 @@ export function ChatTranscript({ children, label, followKey, announce, empty, ha
   const keepFromBottom = useRef<number | null>(null);
   const [unseen, setUnseen] = useState(false);
   const isEmpty = Children.toArray(children).length === 0;
+  /**
+   * Instant du dernier geste de l'utilisateur sur la zone, et bouton de souris enfoncé (barre de défilement). Seul un
+   * défilement qui suit un geste peut décrocher le suivi : ceux que le navigateur fait seul (contenu qui se charge,
+   * panneau qui s'ouvre, largeur qui change) ne le décrochent jamais (D-397).
+   */
+  const lastInput = useRef(0);
+  const pointerDown = useRef(false);
+  const byUser = () => pointerDown.current || performance.now() - lastInput.current < USER_INPUT_MS;
+
+  const remember = useCallback(() => {
+    const el = scroller.current;
+    if (scrollKey && el) positions.set(scrollKey, { pinned: pinned.current, top: el.scrollTop });
+  }, [scrollKey]);
 
   const toBottom = useCallback(() => {
     const el = scroller.current;
@@ -71,12 +96,38 @@ export function ChatTranscript({ children, label, followKey, announce, empty, ha
     lastTop.current = el.scrollTop;
   }, []);
 
-  // Ouverture et envoi de l'utilisateur : retour en bas, même s'il avait remonté.
+  // Ouverture d'une conversation : la position gardée pour elle, sinon le bas (D-397).
+  const opened = useRef<string | undefined>(undefined);
   useLayoutEffect(() => {
+    const el = scroller.current;
+    const saved = scrollKey ? positions.get(scrollKey) : undefined;
+    opened.current = scrollKey;
+    if (el && saved && !saved.pinned) {
+      pinned.current = false;
+      el.scrollTop = saved.top;
+      lastTop.current = el.scrollTop;
+    } else {
+      pinned.current = true;
+      toBottom();
+    }
+    setUnseen(false);
+  }, [scrollKey, toBottom]);
+
+  // Envoi de l'utilisateur : retour en bas, même s'il avait remonté. Pas à l'ouverture : la position gardée prime.
+  const firstFollow = useRef(true);
+  useLayoutEffect(() => {
+    if (firstFollow.current) {
+      firstFollow.current = false;
+      return;
+    }
     pinned.current = true;
     setUnseen(false);
     toBottom();
-  }, [followKey, toBottom]);
+    remember();
+  }, [followKey, toBottom, remember]);
+
+  // En quittant la conversation (autre page, autre conversation), sa position est gardée.
+  useLayoutEffect(() => () => remember(), [remember]);
 
   // Tout changement de hauteur (fragment de réponse, outil, image chargée) : suivre si l'on est en bas,
   // sinon signaler le nouveau contenu.
@@ -113,10 +164,18 @@ export function ChatTranscript({ children, label, followKey, announce, empty, ha
       // Revenu en bas (ou resté en bas) : le suivi reprend.
       pinned.current = true;
       setUnseen(false);
-    } else if (movedUp) {
-      // Remonté : le relevé reste sur ce qu'on lit.
+    } else if (movedUp && byUser()) {
+      // Remonté par l'utilisateur : le relevé reste sur ce qu'il lit. Un défilement fait par le navigateur seul
+      // (contenu qui se charge ou se replie, panneau qui s'ouvre) ne décroche pas le suivi (D-397).
       pinned.current = false;
+    } else if (pinned.current) {
+      // Le navigateur a déplacé la vue alors qu'on suivait : on revient en bas.
+      toBottom();
     }
+    remember();
+  };
+  const markInput = () => {
+    lastInput.current = performance.now();
   };
 
   const showNew = () => {
@@ -141,6 +200,20 @@ export function ChatTranscript({ children, label, followKey, announce, empty, ha
         // Zone défilante : atteinte au clavier pour défiler avec les flèches.
         tabIndex={0}
         onScroll={onScroll}
+        onWheel={markInput}
+        onTouchMove={markInput}
+        onKeyDown={markInput}
+        onPointerDown={() => {
+          pointerDown.current = true;
+          markInput();
+        }}
+        onPointerUp={() => {
+          pointerDown.current = false;
+          markInput();
+        }}
+        onPointerCancel={() => {
+          pointerDown.current = false;
+        }}
         data-transcript=""
         className={cx(
           // relative : la zone qui défile est le bloc de référence des éléments en position absolue du relevé (textes
