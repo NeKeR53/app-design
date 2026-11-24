@@ -95,6 +95,32 @@ export const Conversation: Story = {
   render: () => <Demo />,
 };
 
+/**
+ * Dans une zone qui défile (la zone `main` d'AppShell), seul le relevé défile : la page de chat ne dépasse pas, même
+ * avec des textes pour lecteur d'écran (`sr-only`, position absolue) au bas d'un long relevé (D-387).
+ */
+export const SaisieFixe: Story = {
+  render: () => (
+    <div data-testid="hote" className="h-[480px] overflow-auto">
+      <ChatPage composer={<ChatComposer placeholder="Répondre à l'agent…" onSubmit={fn()} />}>
+        <ChatTranscript>
+          {Array.from({ length: 40 }, (_, i) => (
+            <ChatMessage key={i} role={i % 2 ? "assistant" : "user"}>
+              <span>Message {i + 1}</span>
+            </ChatMessage>
+          ))}
+          {/* Comme l'état « Terminé » d'une activité : un texte caché, sans bloc de référence plus proche. */}
+          <span className="sr-only">Terminé</span>
+        </ChatTranscript>
+      </ChatPage>
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    const hote = within(canvasElement).getByTestId("hote");
+    await waitFor(() => expect(hote.scrollHeight).toBe(hote.clientHeight));
+  },
+};
+
 /** Le pied (alerte, question, saisie, options) a les mêmes bords que la colonne du relevé. */
 export const Alignement: Story = {
   render: () => <Demo />,

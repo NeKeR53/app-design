@@ -2,6 +2,13 @@
 
 Versions selon semver (règle 6 du skill design) : une nouvelle option facultative est une version mineure ; un changement qui casse l'existant est une version majeure, avec une note de migration.
 
+## [1.8.1] — 2026-11-24
+
+Correction.
+
+### Corrigé
+- `ChatTranscript` : la zone qui défile est le bloc de référence de ses éléments en position absolue ; un texte pour lecteur d'écran n'allonge plus la page de chat, et la saisie ne défile plus avec le relevé (D-387). Story `SaisieFixe`.
+
 ## [1.8.0] — 2026-11-24
 
 Version mineure : aucune API ne change ; l'affichage des actions de la Sidebar change.

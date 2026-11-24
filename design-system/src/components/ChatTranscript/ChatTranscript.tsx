@@ -118,7 +118,10 @@ export function ChatTranscript({ children, label, followKey, announce, empty, ha
         onScroll={onScroll}
         data-transcript=""
         className={cx(
-          "min-h-0 flex-1 overflow-auto overscroll-contain px-4 pt-3 pb-4 [overflow-anchor:none] [scrollbar-gutter:stable_both-edges]",
+          // relative : la zone qui défile est le bloc de référence des éléments en position absolue du relevé (textes
+          // pour lecteur d’écran, `sr-only`). Sans cela, ils se placent hors d’elle et allongent la page entière, qui
+          // défile alors avec la saisie (D-387).
+          "relative min-h-0 flex-1 overflow-auto overscroll-contain px-4 pt-3 pb-4 [overflow-anchor:none] [scrollbar-gutter:stable_both-edges]",
           "outline-none focus-visible:outline-2 focus-visible:outline-solid focus-visible:outline-focus focus-visible:-outline-offset-2",
         )}
       >

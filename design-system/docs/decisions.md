@@ -2726,3 +2726,10 @@
 - Raison : dans Alfred, la conversation ouverte est toujours sélectionnée ; ses actions cachaient en permanence son état, et Alexandre ne voyait plus si l'agent travaillait.
 - Options écartées : garder les actions sur l'élément sélectionné en cachant l'état (le problème) ; cacher les actions aussi au focus clavier (elles deviendraient inatteignables).
 - Validation : décision de l'utilisateur, 2026-11-24 (« les trois petits points […] uniquement quand la souris est par-dessus »)
+
+## D-387 — ChatTranscript : la zone qui défile tient ses éléments en position absolue
+- Date : 2026-11-24
+- Portée : ChatTranscript, ChatPage (correction)
+- Décision : la zone qui défile de `ChatTranscript` est le bloc de référence (`position: relative`) de ses descendants en position absolue. Les textes pour lecteur d'écran (`sr-only`), comme l'état « Terminé » d'une activité, défilent avec le relevé et ne dépassent plus de la page de chat. Seul le relevé défile ; la saisie reste fixe en bas.
+- Raison : dans Alfred, ces textes se plaçaient hors de la zone qui défile et allongeaient la page entière (5 426 px pour 862 px visibles) : la zone `main` d'AppShell défilait, saisie comprise.
+- Validation : correction d'un défaut signalé par Alexandre, 2026-11-24. Story `SaisieFixe`.
