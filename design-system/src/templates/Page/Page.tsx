@@ -125,6 +125,42 @@ export function PageSection({ title, description, actions, state = "ready", onRe
   );
 }
 
+/** Barre d'outils d'une ligne : contenu libre à gauche, actions en zone `toolbar` à droite (D-217). Usage interne (Page, ChatPage). */
+export function PageToolbar({
+  width,
+  toolbar,
+  actions,
+  actionsLabel,
+  onActionError,
+  onActionDone,
+}: {
+  width: PageWidth;
+  toolbar?: ReactNode;
+  actions?: ReadonlyArray<Action> | undefined;
+  actionsLabel?: string | undefined;
+  onActionError?: ((action: Action, error: unknown) => void) | undefined;
+  onActionDone?: ((action: Action) => void) | undefined;
+}) {
+  return (
+    <div role="toolbar" {...(actionsLabel ? { "aria-label": actionsLabel } : {})} className="shrink-0 border-b border-line">
+      <PageColumn width={width} layout="flex items-center gap-2 py-2.5">
+        <div data-page-toolbar className="flex min-w-0 flex-1 items-center gap-2 overflow-x-auto whitespace-nowrap [scrollbar-width:thin] [&>*]:shrink-0">
+          {toolbar}
+        </div>
+        {actions && actions.length > 0 && (
+          <ActionBar
+            actions={actions}
+            zone="toolbar"
+            {...(actionsLabel ? { subject: actionsLabel } : {})}
+            {...(onActionError ? { onError: onActionError } : {})}
+            {...(onActionDone ? { onDone: onActionDone } : {})}
+          />
+        )}
+      </PageColumn>
+    </div>
+  );
+}
+
 export interface PageProps {
   /** Contenu libre de la barre d'outils, à gauche (filtres, période). Une ligne (D-217). */
   toolbar?: ReactNode;
@@ -167,22 +203,14 @@ export function Page({
   return (
     <div className="socle-page flex h-full min-h-0 flex-col bg-surface font-sans text-md text-fg">
       {hasBar && (
-        <div role="toolbar" {...(actionsLabel ? { "aria-label": actionsLabel } : {})} className="shrink-0 border-b border-line">
-          <PageColumn width={width} layout="flex items-center gap-2 py-2.5">
-            <div data-page-toolbar className="flex min-w-0 flex-1 items-center gap-2 overflow-x-auto whitespace-nowrap [scrollbar-width:thin] [&>*]:shrink-0">
-              {toolbar}
-            </div>
-            {actions && actions.length > 0 && (
-              <ActionBar
-                actions={actions}
-                zone="toolbar"
-                {...(actionsLabel ? { subject: actionsLabel } : {})}
-                {...(onActionError ? { onError: onActionError } : {})}
-                {...(onActionDone ? { onDone: onActionDone } : {})}
-              />
-            )}
-          </PageColumn>
-        </div>
+        <PageToolbar
+          width={width}
+          toolbar={toolbar}
+          actions={actions}
+          actionsLabel={actionsLabel}
+          onActionError={onActionError}
+          onActionDone={onActionDone}
+        />
       )}
       <div data-page-content className={cx("min-h-0 flex-1", fill && state === "ready" ? "flex flex-col overflow-hidden" : "overflow-auto")}>
         <PageColumn width={width} layout={cx(fill && state === "ready" ? "flex min-h-0 flex-1 flex-col pt-(--pad) [&>*]:min-h-0 [&>*]:flex-1" : "flex flex-col gap-6 py-(--pad)")}>

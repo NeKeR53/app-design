@@ -459,6 +459,8 @@ export interface SocleMessages {
   transcriptLabel: string;
   transcriptNewMessages: string;
   transcriptShowEarlier: string;
+  /* ChatPage (D-382) */
+  chatPageDropHere: string;
   messageYou: string;
   messageAssistant: string;
   messageActions: string;
@@ -912,6 +914,7 @@ export const frenchMessages: SocleMessages = {
   transcriptLabel: "Conversation",
   transcriptNewMessages: "Nouveaux messages",
   transcriptShowEarlier: "Afficher les messages précédents",
+  chatPageDropHere: "Déposez les fichiers pour les joindre",
   messageYou: "Vous",
   messageAssistant: "Assistant",
   messageActions: "Actions du message",

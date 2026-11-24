@@ -2,7 +2,9 @@
 
 Versions selon semver (règle 6 du skill design) : une nouvelle option facultative est une version mineure ; un changement qui casse l'existant est une version majeure, avec une note de migration.
 
-## [Non publié]
+## [1.6.0] — 2026-11-24
+
+Version mineure : un gabarit, deux composants et des options facultatives ; aucune API ne casse.
 
 ### Ajouté
 - `AgentActivity` : option `onObjectPress`, l'objet devient un lien en chasse fixe ; avec une sortie, un chevron à part l'ouvre (D-384). Story `ObjetCliquable`.
@@ -13,6 +15,9 @@ Versions selon semver (règle 6 du skill design) : une nouvelle option facultati
 - `ImageGallery` : vignettes en groupes (`images` ou `groups`), légendes coupées avec info-bulle, les plus anciennes derrière « + N » (`visible`) ; vue agrandie parcourue avec précédente · « n / N » · suivante et ← →, arrêt aux bornes ; `onView` pour une image à lire (D-383).
 - Icône interne `ImageOff` ; libellés `image*` dans `messages`.
 - Specs `AttachmentChip` et `DocumentViewer` : renvoi vers `ImageThumbnail` pour l'aperçu en grand et la vignette (code inchangé).
+- `ChatPage` : gabarit de page de chat. Barre d'outils de `Page`, le relevé en enfant, pied aligné sur la colonne de 760 px de `ChatTranscript` (`alerts`, `question` bornée en hauteur, `composer`, `options`), cadre de dépôt sur toute la page (`onDropFiles`, `isDraggingFiles` pour un survol signalé par l'app, `dropLabel`) (D-382).
+- `ChatTranscript` : options `context` et `contextDetail`, une ligne de contexte en tête du relevé, le détail en info-bulle (D-382).
+- i18n : `chatPageDropHere`.
 
 ## [1.5.0] — 2026-11-24
 
