@@ -68,7 +68,7 @@ export function ChoicePrompt({ question, kind = "question", detail, options, all
     <section
       aria-labelledby={headingId}
       onKeyDownCapture={onKeyDownCapture}
-      className="socle-box flex flex-col gap-2 rounded-md border border-[color-mix(in_oklch,var(--accent)_35%,var(--line))] bg-[color-mix(in_oklch,var(--accent)_4%,var(--surface))] py-2.5 ps-3 pe-2.5 font-sans text-fg"
+      className="socle-box flex flex-col gap-2 rounded-lg border border-line bg-surface py-2.5 ps-3 pe-2.5 font-sans text-fg"
     >
       <header className="flex items-center gap-2 text-sm text-fg-2">
         <span aria-hidden="true" className="grid size-4 shrink-0 place-items-center rounded-full bg-accent text-sm leading-none font-bold text-accent-fg forced-colors:bg-[Highlight] forced-colors:text-[HighlightText]">

@@ -14,7 +14,7 @@ Ne pas l'utiliser pour :
 3. Détail (facultatif) : bloc en chasse fixe, `--surface-side`.
 4. Options : lignes de 32 px au moins, rayon `--radius-md`, numéro dans une case de 20 px, survol `--surface-side`.
 5. « Autre réponse… » (question) : ligne en `--fg-2`, qui devient un champ avec « Annuler » et « Envoyer ».
-Cadre : bord `--accent` à 35 % sur `--line`, fond `--accent` à 4 % sur `--surface`, rayon `--radius-md`, marges 10 × 12 px.
+Cadre neutre : bord `--line`, fond `--surface`, rayon `--radius-lg`, marges 10 × 12 px. Seule la pastille de l'en-tête porte l'accent (D-001).
 
 ## Variantes
 | Type (`kind`) | Rendu |
