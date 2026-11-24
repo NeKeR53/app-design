@@ -72,6 +72,7 @@ export const ICON_NAMES = [
   "Wrench",
   "RotateCcw",
   "Shuffle",
+  "Folder",
 ] as const;
 export type IconName = (typeof ICON_NAMES)[number];
 
@@ -387,4 +388,9 @@ export const RotateCcw = icon(<path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 
 export const Shuffle = icon(
   <path d="m18 14 4 4-4 4M18 2l4 4-4 4M2 18h1.973a4 4 0 0 0 3.3-1.7l5.454-7.6a4 4 0 0 1 3.3-1.7H22M2 6h1.972a4 4 0 0 1 3.6 2.2M22 18h-6.041a4 4 0 0 1-3.3-1.8l-.359-.45" />,
   "Shuffle",
+);
+/** Espace de travail (Sidebar.Workspace, D-379) : dossier. */
+export const Folder = icon(
+  <path d="M3 6.5A1.5 1.5 0 0 1 4.5 5H9l2 2h8.5A1.5 1.5 0 0 1 21 8.5v9a1.5 1.5 0 0 1-1.5 1.5h-15A1.5 1.5 0 0 1 3 17.5z" />,
+  "Folder",
 );

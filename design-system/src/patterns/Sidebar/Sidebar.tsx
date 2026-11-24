@@ -7,7 +7,7 @@ import type { Key, Selection } from "react-aria-components";
 import { Button, Tree, TreeItem, TreeItemContent } from "react-aria-components/Tree";
 import { useMessages, useStoredState } from "../../provider/SocleProvider";
 import { buttonReset, cx, focusRing } from "../../lib/cx";
-import { AlertTriangle, ChevronDown, ChevronRight, ChevronsUpDown, ExternalArrow, Lock, MoreHorizontal, Settings } from "../../icons";
+import { AlertTriangle, ChevronDown, ChevronRight, ChevronsUpDown, ExternalArrow, Folder, Lock, MoreHorizontal, Settings } from "../../icons";
 import { IconButton } from "../../components/IconButton/IconButton";
 import { DropdownMenu, useRowMenu } from "../../components/DropdownMenu/DropdownMenu";
 import { Tooltip } from "../../components/Tooltip/Tooltip";
@@ -90,6 +90,8 @@ export interface SidebarWorkspaceProps {
   /** Entrées `DropdownMenu.Item` après un trait : « Créer un espace… », « Ouvrir un autre dossier… » (D-231). */
   actions?: ReactNode;
   isDisabled?: boolean;
+  /** Icône de l'espace, à la place du dossier par défaut (D-379). Une icône, jamais un avatar. */
+  icon?: ReactNode;
 }
 
 export interface SidebarProps {
@@ -538,12 +540,20 @@ export function workspaceInitial(name: string): string {
   return (ch ?? "·").toLocaleUpperCase();
 }
 
-function Workspace({ workspaces, currentId, onChange, actions, isDisabled }: SidebarWorkspaceProps) {
+function Workspace({ workspaces, currentId, onChange, actions, isDisabled, icon }: SidebarWorkspaceProps) {
   const m = useMessages();
   const current = workspaces.find((w) => w.id === currentId) ?? workspaces[0];
   if (!current) return null;
-  // Le nom seul, sans repère : l'avatar du compte, juste en dessous, reste le seul rond du pied (D-369).
-  const who = <OverflowTooltip text={current.name} />;
+  // Une icône de dossier, dans une case de 24 px comme l'avatar du compte : les trois lignes du pied s'alignent
+  // (entrée fixe : icône, espace : icône, compte : avatar). Jamais d'avatar pour l'espace (D-369, D-379).
+  const who = (
+    <>
+      <span aria-hidden className="inline-grid size-6 shrink-0 place-items-center text-fg-2 [&>svg]:size-4">
+        {icon ?? <Folder />}
+      </span>
+      <OverflowTooltip text={current.name} />
+    </>
+  );
   // Un seul espace et aucune action : simple étiquette (comme le compte, D-046).
   if (workspaces.length < 2 && !actions) {
     return (

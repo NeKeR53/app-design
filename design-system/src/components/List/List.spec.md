@@ -14,7 +14,7 @@ Ne pas l'utiliser pour :
    1. visuel à gauche (facultatif) : un seul type par liste, icône 16 px, avatar 32 px ou vignette 40 px ; 24 px sur une seule ligne ; place gardée si un élément n'en a pas (D-069) ;
    2. ligne 1 : titre en `--fg`, coupé ; à droite, méta courte en `--fs-sm`, `--fg-3` (date, montant) ;
    3. ligne 2 (facultative) : sous-titre en `--fg-2`, coupé ; à droite, statut (`Badge`, D-160, D-169) ou point de non-lu (D-044) ;
-   4. actions de ligne au survol, deux au plus, à la place de la méta (D-066).
+   4. actions de ligne au survol, deux au plus, à la place de la méta (D-066) ; elles ne changent pas la hauteur de l'élément (D-379).
 2. **En-tête de groupe** (facultatif) : `--fs-sm`, `--fg-3`, sans chevron ; collé en haut pendant le défilement (D-070).
 3. **Pied** : compteur et « Afficher plus » (layout-rules, ListPage).
 

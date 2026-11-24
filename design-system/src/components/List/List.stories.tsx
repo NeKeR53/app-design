@@ -95,6 +95,29 @@ export const Actions: Story = {
   },
 };
 
+/** Les actions qui apparaissent au survol, au focus ou à la sélection ne font pas grandir la ligne (D-379). */
+export const HauteurStable: Story = {
+  render: () => <Demo selectionMode="single" />,
+  // Densité « desktop » : la ligne y est au plus juste, l'action de 22 px la faisait grandir.
+  globals: { density: "desktop" },
+  play: async ({ canvasElement }) => {
+    const c = within(canvasElement);
+    const height = (el: Element) => el.getBoundingClientRect().height;
+    const row = c.getByRole("row", { name: /Remboursement de frais/ });
+    const next = c.getByRole("row", { name: /Commande de matériel/ });
+    const h = height(row);
+    await userEvent.hover(row);
+    await waitFor(() => expect(within(row).getByRole("button", { name: "Plus d'actions" })).toBeVisible());
+    await expect(height(row)).toBe(h);
+    await userEvent.click(row);
+    await userEvent.unhover(row);
+    await expect(height(row)).toBe(h);
+    await userEvent.keyboard("{ArrowDown}");
+    await expect(height(next)).toBe(h);
+    await expect(height(row)).toBe(h);
+  },
+};
+
 /** Tactile : un appui long ouvre le menu « … » de la ligne, sans l'ouvrir ni la sélectionner (D-007). */
 export const AppuiLong: Story = {
   render: () => <Demo />,

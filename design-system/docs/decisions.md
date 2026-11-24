@@ -2657,3 +2657,13 @@
 - Raison : la zone de saisie du chat montre le contexte utilisé sans prendre de place et donne le détail des limites en un clic ; le seuil n'est jamais dit par la couleur seule.
 - Options écartées : barre d'usage au-dessus de la zone de saisie ; laisser l'app composer Popover et ProgressBar ; valeur visible à côté de l'anneau.
 - Validation : choix de l'utilisateur, 2026-11-23 — docs/validation/components/Chat-v1.html (Q4)
+
+## D-379 — Sidebar : icône de dossier pour l'espace de travail ; List : hauteur stable au survol
+- Date : 2026-11-24
+- Portée : Sidebar, List (complète D-368, remplace l'option écartée de D-369)
+- Décision :
+  - `Sidebar.Workspace` montre une icône de dossier (icône interne `Folder`, 16 px, `--fg-2`) dans une case de 24 px, puis le nom de l'espace et le chevron. Option facultative `icon` : une autre icône choisie par l'app. Jamais d'avatar ni de repère d'initiale.
+  - `List` : la ligne du titre a la hauteur d'une ligne de texte (`h-lh`) ; les actions de 22 px qui apparaissent au survol, au focus ou à la sélection ne font plus grandir l'élément. Même règle que la Sidebar (D-368).
+- Raison : à l'usage dans Alfred, le nom seul de l'espace, entre l'entrée « Agent » (icône) et le compte (avatar), était le seul élément du pied sans repère visuel. L'icône aligne les trois lignes sans ressembler à un second avatar. Dans une `List` à deux lignes, le « … » faisait grandir l'élément au survol, comme la Sidebar avant 1.1.0.
+- Options écartées : revenir au repère carré d'initiale (lu comme un avatar, D-369) ; une icône seulement quand l'app la fournit (le pied resterait inégal par défaut).
+- Validation : par délégation de l'utilisateur, 2026-11-24 (demande d'Alexandre : « mettre une icône de workspace »)

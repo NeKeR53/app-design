@@ -1,5 +1,5 @@
 # Sidebar
-Statut : validé (2026-11-21, v1 et v2) — Version : depuis 0.1.0 ; hauteur des lignes et espace de travail : 1.1.0 (D-368, D-369, par délégation de l'utilisateur)
+Statut : validé (2026-11-21, v1 et v2) — Version : depuis 0.1.0 ; hauteur des lignes et espace de travail : 1.1.0 (D-368, D-369) ; icône de l'espace : 1.3.0 (D-379), par délégation de l'utilisateur
 Validation : docs/validation/components/Sidebar-v1.html (sections et éléments sur deux lignes), docs/validation/components/Sidebar-v2.html (éléments du haut), docs/validation/components/Sidebar-footer-v1.html (pied : par délégation de l'utilisateur, 2026-11-23)
 
 ## Rôle
@@ -70,6 +70,7 @@ Couleurs : la sidebar lit des rôles dédiés, égaux par défaut aux rôles gé
 | `Sidebar.Workspace` : `workspaces`, `currentId`, `onChange` | `{ id, name }[]`, `string`, `(id) => void` | — (obligatoires) | Espaces proposés, espace ouvert, choix d'un autre espace. |
 | `Sidebar.Workspace` : `actions` | entrées de `DropdownMenu` | aucune | Après un trait : « Créer un espace… », « Ouvrir un autre dossier… ». |
 | `Sidebar.Workspace` : `isDisabled` | `boolean` | `false` | Désactivé (opacité 40 %), par exemple pendant une ouverture. |
+| `Sidebar.Workspace` : `icon` | `ReactNode` | dossier (`Folder`) | Icône de l'espace, dans une case de 24 px alignée sur l'avatar du compte (D-379). Une icône, jamais un avatar. |
 | `selectedId` / `onSelectionChange` | — | — (obligatoire) | Élément sélectionné (page courante). |
 
 ## Exclus
@@ -104,7 +105,7 @@ Couleurs : la sidebar lit des rôles dédiés, égaux par défaut aux rôles gé
 | Section longue : « Afficher plus (n) » au-delà de `limit` ; choix mémorisé ; l'élément sélectionné reste toujours visible (D-045) | réglable par app (`limit`) | `SectionLongue` |
 | Aucune animation au repli des sections et des enfants (D-026) | verrouillé | `Sections` |
 | Entrées fixes : en bas, hors du défilement, même sélection que la navigation (D-230, D-232) | verrouillé | `PiedFixe` |
-| Espace de travail : nom seul, sans repère (D-369) ; menu au-dessus, espace ouvert coché ; choisir l'espace ouvert ne fait rien ; un seul espace sans action : étiquette (D-231) | verrouillé | `EspaceDeTravail`, `EspaceUnique` |
+| Espace de travail : icône de dossier (ou `icon`) puis le nom, sans repère d'initiale (D-369, D-379) ; menu au-dessus, espace ouvert coché ; choisir l'espace ouvert ne fait rien ; un seul espace sans action : étiquette (D-231) | verrouillé | `EspaceDeTravail`, `EspaceUnique` |
 
 ## Contenu
 - Libellé ou titre trop long : coupé avec une ellipse, et texte complet dans une info-bulle.
