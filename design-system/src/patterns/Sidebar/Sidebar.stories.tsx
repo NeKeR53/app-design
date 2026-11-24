@@ -299,8 +299,8 @@ export const EnCours: Story = {
   play: async ({ canvasElement }) => {
     const c = within(canvasElement);
     const row = c.getByRole("row", { name: /^Analyse des logs/ });
-    await expect(row.querySelector(".bg-success")).not.toBeNull();
-    await expect(c.getByRole("row", { name: /^Module Prefect/ }).querySelector(".bg-success")).toBeNull();
+    await expect(row.querySelector("[data-activity]")).not.toBeNull();
+    await expect(c.getByRole("row", { name: /^Module Prefect/ }).querySelector("[data-activity]")).toBeNull();
   },
 };
 
@@ -343,7 +343,7 @@ export const ActionsALaPlaceDeLEtat: Story = {
   ),
   play: async ({ canvasElement }) => {
     const row = within(canvasElement).getByRole("row", { name: /^Analyse des logs/ });
-    const dot = row.querySelector<HTMLElement>(".bg-success")!;
+    const dot = row.querySelector<HTMLElement>("[data-activity]")!;
     const archive = within(row).getByRole("button", { name: "Archiver Analyse des logs", hidden: true });
     await expect(dot).toBeVisible();
     await expect(archive).not.toBeVisible();
@@ -388,7 +388,7 @@ export const PiedAligne: Story = {
     await expect(Math.abs(middle(navIcon) - middle(agentIcon))).toBeLessThanOrEqual(1);
     await expect(Math.abs(left(c.getByText("Accueil")) - left(agentText))).toBeLessThanOrEqual(1);
     // À droite : le point « En cours », le chevron de l'espace et la roue des réglages sur une même colonne.
-    const dot = c.getByRole("row", { name: /^Agent/ }).querySelector(".bg-success")!;
+    const dot = c.getByRole("row", { name: /^Agent/ }).querySelector("[data-activity]")!;
     const chevron = [...c.getByRole("button", { name: /Perso/ }).querySelectorAll("svg")].at(-1)!;
     const gear = c.getByRole("button", { name: /Réglages/ });
     await expect(Math.abs(middle(chevron) - middle(dot))).toBeLessThanOrEqual(1);

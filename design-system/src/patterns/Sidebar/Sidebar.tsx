@@ -357,7 +357,8 @@ function SmallAction({ action, rowMenu }: { action: SidebarAction; rowMenu?: boo
 const INDICATORS = {
   external: { icon: <ExternalArrow size={14} />, label: "opensInBrowser" },
   locked: { icon: <Lock size={14} />, label: "readOnly" },
-  activity: { icon: <span className="size-2 rounded-full bg-success" />, label: "activity" },
+  // Point gris qui pulse (D-395) : le vert se lisait comme « terminé ». Fixe si le système réduit les animations.
+  activity: { icon: <span data-activity="" className="size-2 rounded-full bg-side-fg-3 animate-pulse motion-reduce:animate-none" />, label: "activity" },
 } as const;
 
 /* ---------- Sidebar.Item ---------- */

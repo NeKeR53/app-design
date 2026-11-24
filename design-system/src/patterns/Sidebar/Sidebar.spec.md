@@ -21,7 +21,7 @@ Ne pas l'utiliser pour :
 ### `Sidebar.Item` — élément de navigation, sur une ligne
 1. Icône (obligatoire, 16 px, D-052).
 2. Libellé (obligatoire).
-3. Indicateur permanent (facultatif, un seul) : `external` (↗), `locked` (verrou) ou `activity` (point `--success`) ; icône en `--fg-3` ; info-bulle ; toujours visible, à gauche des actions ; jamais avec un compteur (D-055).
+3. Indicateur permanent (facultatif, un seul) : `external` (↗), `locked` (verrou) ou `activity` (point gris `--side-fg-3` qui pulse, fixe si les animations sont réduites, D-395) ; icône en `--fg-3` ; info-bulle ; toujours visible, à gauche des actions ; jamais avec un compteur (D-055).
 4. Chevron (si l'élément a des sous-pages) : après le libellé ; il déplie les sous-pages, sur un seul niveau, reliées par le trait de D-042. Une sous-page n'a pas d'icône (D-056).
 5. Actions (facultatives, deux au plus) : boutons-icônes de 22 px et de 4 px de rayon (D-040), par exemple « + » et « … » ; elles remplacent le compteur quand elles s'affichent (D-053).
 
@@ -64,7 +64,7 @@ Couleurs : la sidebar lit des rôles dédiés, égaux par défaut aux rôles gé
 | `Sidebar.TreeItem` : `id`, `title` | — | — (obligatoires) | Élément sur deux lignes. |
 | `Sidebar.TreeItem` : `subtitle`, `meta`, `status`, `children`, `actions` | — | aucun | Sous-titre, étiquette, icône d'état, enfants, actions du menu « … ». |
 | `Sidebar.TreeItem` : `quickActions` | `{ icon, label, onPress }[]` | aucune | Actions en bouton-icône avant le « … », au survol, au focus et sur l'élément sélectionné ; deux boutons au plus en tout (une avec `actions`, deux sans). Une action rapide n'est pas répétée dans le menu (D-381). |
-| `Sidebar.TreeItem` : `indicator` | `"activity"` | aucun | Point vert « En cours » à droite du titre, le même que `Sidebar.Item` (D-055, D-385). |
+| `Sidebar.TreeItem` : `indicator` | `"activity"` | aucun | Point gris qui pulse, « En cours », à droite du titre, le même que `Sidebar.Item` (D-055, D-385, D-395). |
 | `Sidebar.TreeItem` : `unread` | `boolean` | `false` | Point de 6 px en `--highlight` (l'accent par défaut) à droite du titre ; compté dans la ligne résumé du parent (D-044). |
 | `Sidebar.Account` : `name`, `detail`, `avatar`, `onSettings` | — | — | Compte et accès aux réglages. |
 | `Sidebar.Account` : `menu` | entrées de `DropdownMenu` | aucune | Menu du compte ; sans entrée, le nom est une simple étiquette (D-046). |
@@ -148,7 +148,7 @@ Uniquement dans la zone `sidebar` d'AppShell. Une seule sidebar par fenêtre.
 Contient `IconButton`, `Tooltip` et `DropdownMenu`. Utilisée par `AppShell`.
 
 ## Décisions
-D-002, D-003, D-006, D-007, D-016, D-017, D-019, D-021, D-026, D-039, D-040, D-042, D-043, D-044, D-045, D-046, D-052, D-053, D-054, D-055, D-056, D-230, D-231, D-232, D-260, D-337, D-338, D-368, D-369, D-381, D-385, D-386, D-392, D-393
+D-002, D-003, D-006, D-007, D-016, D-017, D-019, D-021, D-026, D-039, D-040, D-042, D-043, D-044, D-045, D-046, D-052, D-053, D-054, D-055, D-056, D-230, D-231, D-232, D-260, D-337, D-338, D-368, D-369, D-381, D-385, D-386, D-392, D-393, D-395
 
 ## Questions ouvertes
 Aucune.

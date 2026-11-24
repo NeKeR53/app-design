@@ -2,6 +2,13 @@
 
 Versions selon semver (règle 6 du skill design) : une nouvelle option facultative est une version mineure ; un changement qui casse l'existant est une version majeure, avec une note de migration.
 
+## [1.14.0] — 2026-11-24
+
+Version mineure : aucune API ne change ; le dessin de l'indicateur « En cours » change.
+
+### Changé
+- Sidebar : l'indicateur `activity` (« En cours ») est un point gris qui pulse, au lieu d'un point vert ; fixe si les animations sont réduites (D-395). Il porte `data-activity`.
+
 ## [1.13.3] — 2026-11-24
 
 Correction.
