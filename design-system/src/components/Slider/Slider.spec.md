@@ -10,7 +10,7 @@ Ne pas l'utiliser pour :
 - montrer un avancement : prendre `ProgressBar`.
 
 ## Anatomie
-1. **Ligne du haut** : libellé à gauche (`--fs-sm`, `--fw-medium`, comme `Field`), valeur à droite (`--fs-sm`, `--fg-2`, chiffres tabulaires), formatée par `formatOptions`.
+1. **Ligne du haut** : libellé à gauche (`--fs-sm`, `--fw-medium`, comme `Field`), valeur à droite (`--fs-sm`, `--fg-2`, chiffres tabulaires), formatée par `formatOptions`, ou en mots par `formatValue`.
 2. **Piste** : 4 px de haut, `--field`, rayon plein ; zone cliquable de 16 px de haut.
 3. **Partie remplie** : `--primary` (`--fg` par défaut), du début à la poignée, ou entre les deux poignées.
 4. **Poignée** : 16 px, ronde, fond `--surface`, trait de 2 px `--primary`.
@@ -34,6 +34,8 @@ Ne pas l'utiliser pour :
 | `minValue` / `maxValue` | `number` | `0` / `100` | Étendue. |
 | `step` | `number` | `1` | Pas des flèches ; Page haut / bas : dix pas. |
 | `formatOptions` | `Intl.NumberFormatOptions` | aucun | Format affiché et lu : pourcentage, devise, unité. |
+| `formatValue` | `(value) => string` | aucun | Texte affiché et lu (`aria-valuetext`) à la place du nombre : une échelle courte en mots (« Faible », « Moyen »…). Prime sur `formatOptions` (D-380). |
+| `showSteps` | `boolean` | `false` | Un cran sur la piste par pas (20 au plus), pour une échelle discrète (D-380). |
 | `isDisabled` | `boolean` | `false` | Désactivé. |
 | `width` | `FieldWidth` | `"md"` | Largeur (D-133). |
 | `name` | `string` | aucun | Nom dans le formulaire envoyé. |

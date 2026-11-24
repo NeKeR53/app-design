@@ -14,6 +14,7 @@ Versions selon semver (règle 6 du skill design) : une nouvelle option facultati
 - `ChoicePrompt` : question ou autorisation de l'agent (D-377).
 - `UsageRing` et `UsageMeter` : jauge de contexte qui ouvre le volet des limites (D-378).
 - Raccourcis : Échap s'affiche « Échap » (`keyEscape`).
+- Slider : options facultatives `formatValue` (valeur affichée et lue en mots) et `showSteps` (crans sur la piste) ; choix du modèle en volet de champs, effort en curseur à crans (D-380).
 
 ## [1.3.0] — 2026-11-24
 

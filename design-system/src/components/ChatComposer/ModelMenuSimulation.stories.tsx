@@ -13,7 +13,7 @@ import { ChatOptionButton, ChatOptions } from "./ChatOptions";
 import { DropdownMenu } from "../DropdownMenu/DropdownMenu";
 import { Popover } from "../Popover/Popover";
 import { Select } from "../Select/Select";
-import { SegmentedControl } from "../SegmentedControl/SegmentedControl";
+import { Slider } from "../Slider/Slider";
 import { Toggle } from "../Toggle/Toggle";
 import { UsageRing } from "../UsageRing/UsageRing";
 import { UsageMeter } from "../UsageRing/UsageMeter";
@@ -86,17 +86,17 @@ function MenuVersion() {
   );
 }
 
-/** Version B : un volet avec des champs, comme l'app d'origine : liste des modèles, effort en contrôle segmenté, interrupteur. */
+/** Version B : un volet avec des champs, comme l'app d'origine : liste des modèles, effort en curseur à crans, interrupteur. */
 function PanelVersion() {
   const [model, setModel] = useState<string>("advanced");
-  const [effort, setEffort] = useState("Moyen");
+  const [effort, setEffort] = useState(1);
   const [fast, setFast] = useState(false);
   const current = MODELS.find((x) => x.id === model)!;
   return (
-    <Popover label="Choix du modèle" title="Modèle" trigger={<ChatOptionButton label={current.label} value={effort} />}>
+    <Popover label="Choix du modèle" trigger={<ChatOptionButton label={current.label} value={EFFORTS[effort]!} />}>
       <div className="flex flex-col gap-4">
         <Select label="Modèle" isRequired options={MODELS.map((x) => ({ id: x.id, label: x.label }))} value={model} onChange={(v) => v && setModel(String(v))} />
-        <SegmentedControl label="Effort" options={EFFORTS.map((e) => ({ value: e, label: e }))} value={effort} onChange={(v) => setEffort(String(v))} />
+        <Slider label="Effort" minValue={0} maxValue={3} step={1} value={effort} onChange={(v) => setEffort(v as number)} showSteps formatValue={(v) => EFFORTS[v] ?? String(v)} width="full" />
         <Toggle isSelected={fast} onChange={setFast}>
           Mode rapide
         </Toggle>

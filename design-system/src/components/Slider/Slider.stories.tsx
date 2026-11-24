@@ -167,3 +167,21 @@ export const Desactive: Story = {
     await expect(getComputedStyle(canvasElement.querySelector(".socle-box")!).opacity).toBe("0.4");
   },
 };
+
+/** Échelle courte en mots : `formatValue` donne le texte affiché et lu ; `showSteps` marque les crans. */
+export const EchelleEnMots: Story = {
+  render: () => (
+    <Slider label="Effort" minValue={0} maxValue={3} step={1} defaultValue={1} showSteps formatValue={(v) => ["Faible", "Moyen", "Élevé", "Maximal"][v] ?? String(v)} />
+  ),
+  play: async ({ canvasElement }) => {
+    const c = within(canvasElement);
+    const thumb = c.getByRole("slider", { name: "Effort" });
+    await expect(c.getByText("Moyen")).toBeInTheDocument();
+    await waitFor(() => expect(thumb).toHaveAttribute("aria-valuetext", "Moyen"));
+    await expect(canvasElement.querySelectorAll('[data-part="step"]')).toHaveLength(4);
+    thumb.focus();
+    await userEvent.keyboard("{ArrowRight}");
+    await waitFor(() => expect(thumb).toHaveAttribute("aria-valuetext", "Élevé"));
+    await expect(c.getByText("Élevé")).toBeInTheDocument();
+  },
+};

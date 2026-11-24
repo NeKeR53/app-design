@@ -2667,3 +2667,11 @@
 - Raison : à l'usage dans Alfred, le nom seul de l'espace, entre l'entrée « Agent » (icône) et le compte (avatar), était le seul élément du pied sans repère visuel. L'icône aligne les trois lignes sans ressembler à un second avatar. Dans une `List` à deux lignes, le « … » faisait grandir l'élément au survol, comme la Sidebar avant 1.1.0.
 - Options écartées : revenir au repère carré d'initiale (lu comme un avatar, D-369) ; une icône seulement quand l'app la fournit (le pied resterait inégal par défaut).
 - Validation : par délégation de l'utilisateur, 2026-11-24 (demande d'Alexandre : « mettre une icône de workspace »)
+
+## D-380 — Choix du modèle dans la zone de chat : un volet de champs
+- Date : 2026-11-24
+- Portée : ChatOptions, Popover, Slider (exemple d'assemblage ; le choix du modèle reste construit par l'app)
+- Décision : le choix du modèle s'ouvre dans un Popover depuis un `ChatOptionButton` (« Modèle avancé Moyen ») : liste des modèles (Select), effort en curseur à crans avec la valeur en mots à droite, interrupteur « Mode rapide ». Pas de titre de volet : les libellés des champs suffisent et s'alignent sur le même bord. Slider gagne deux options facultatives : `formatValue` (texte affiché et lu à la place du nombre) et `showSteps` (un cran par pas, 20 au plus).
+- Raison : choix de l'utilisateur après la simulation des deux versions ; tous les réglages se voient d'un coup d'œil ; l'effort est une échelle courte, mieux rendue par un curseur à crans que par des boutons.
+- Options écartées : DropdownMenu enrichi (pastille, valeur de sous-menu, interrupteur) ; effort en contrôle segmenté ; titre de volet répétant le libellé du champ.
+- Validation : choix de l'utilisateur, 2026-11-24 — simulation Storybook « Simulations › Menu du modèle (Q3) », docs/validation/components/Chat-v1.html (Q3)
