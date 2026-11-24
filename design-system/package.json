@@ -1,6 +1,6 @@
 {
   "name": "socle-ui",
-  "version": "1.11.0",
+  "version": "1.12.0",
   "description": "Socle — design system React partagé par les apps web et desktop (Tauri).",
   "private": true,
   "type": "module",

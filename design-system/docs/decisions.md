@@ -2773,3 +2773,10 @@
 - Raison : dans Alfred, créer une conversation depuis la section « Conversations » demandait de passer par la page Agent ou Ctrl+N.
 - Options écartées : un menu « … » de section (aucun besoin de plusieurs actions cachées pour l'instant) ; un élément « Nouvelle conversation » dans la liste (une ligne de plus dans la navigation).
 - Validation : demande de l'utilisateur, 2026-11-24 (« juste un petit bouton plus et ça ouvre la page de conversation sur une nouvelle conversation »)
+
+## D-393 — Sidebar : les actions d'un élément sur deux lignes prennent la place de ses signes
+- Date : 2026-11-24
+- Portée : Sidebar (complète D-053, D-385, D-386)
+- Décision : sur un `Sidebar.TreeItem`, quand les actions apparaissent (survol, focus clavier, menu ouvert), elles prennent la place des signes d'état (point « En cours », point de non-lu, alerte), comme elles prennent celle du compteur d'un `Sidebar.Item` (D-053). Le reste du temps, les signes sont seuls à droite du titre.
+- Raison : demande d'Alexandre : les boutons s'ajoutaient à côté du point vert et le poussaient ; il veut qu'ils viennent à sa place, puis que le point revienne quand la souris part.
+- Validation : décision de l'utilisateur, 2026-11-24. Story `ActionsALaPlaceDeLEtat`.

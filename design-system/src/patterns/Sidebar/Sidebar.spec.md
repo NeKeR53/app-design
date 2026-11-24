@@ -103,7 +103,7 @@ Couleurs : la sidebar lit des rôles dédiés, égaux par défaut aux rôles gé
 | Sections : repliées ou dépliées au clic sur le titre ; état mémorisé par section (D-007) | verrouillé | `Sections` |
 | Item : le chevron déplie les sous-pages sans sélectionner ; le parent d'une sous-page sélectionnée reste déplié ; état mémorisé (D-056) | verrouillé | `SousPages` |
 | TreeItem : le chevron replie ou déplie les enfants, sans sélectionner ; la ligne résumé les déplie (D-043) ; état mémorisé | verrouillé | `Enfants` |
-| Actions et « … » : visibles au survol, au focus clavier et tant que leur menu est ouvert, jamais sur le seul élément sélectionné ; elles remplacent alors le compteur ; sur tactile, appui long (D-007, D-053, D-054, D-386) | verrouillé | `ActionsAuSurvol` |
+| Actions et « … » : visibles au survol, au focus clavier et tant que leur menu est ouvert, jamais sur le seul élément sélectionné ; elles remplacent alors le compteur ou les signes d’état ; sur tactile, appui long (D-007, D-053, D-054, D-386, D-393) | verrouillé | `ActionsAuSurvol` |
 | Hauteur de ligne fixe au survol, au focus et à la sélection ; icône du « … » alignée sur l'étiquette de la ligne 2 (D-368) | verrouillé | `HauteurStable` |
 | Section longue : « Afficher plus (n) » au-delà de `limit` ; choix mémorisé ; l'élément sélectionné reste toujours visible (D-045) | réglable par app (`limit`) | `SectionLongue` |
 | Aucune animation au repli des sections et des enfants (D-026) | verrouillé | `Sections` |
@@ -148,7 +148,7 @@ Uniquement dans la zone `sidebar` d'AppShell. Une seule sidebar par fenêtre.
 Contient `IconButton`, `Tooltip` et `DropdownMenu`. Utilisée par `AppShell`.
 
 ## Décisions
-D-002, D-003, D-006, D-007, D-016, D-017, D-019, D-021, D-026, D-039, D-040, D-042, D-043, D-044, D-045, D-046, D-052, D-053, D-054, D-055, D-056, D-230, D-231, D-232, D-260, D-337, D-338, D-368, D-369, D-381, D-385, D-386, D-392
+D-002, D-003, D-006, D-007, D-016, D-017, D-019, D-021, D-026, D-039, D-040, D-042, D-043, D-044, D-045, D-046, D-052, D-053, D-054, D-055, D-056, D-230, D-231, D-232, D-260, D-337, D-338, D-368, D-369, D-381, D-385, D-386, D-392, D-393
 
 ## Questions ouvertes
 Aucune.

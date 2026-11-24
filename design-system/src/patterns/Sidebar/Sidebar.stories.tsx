@@ -273,6 +273,32 @@ export const ActionDeSection: Story = {
   },
 };
 
+/** Au survol, les actions prennent la place des signes d'état ; la souris partie, les signes reviennent (D-393). */
+export const ActionsALaPlaceDeLEtat: Story = {
+  render: () => (
+    <div className="h-[200px] w-(--side-w)">
+      <Sidebar selectedId="x" onSelectionChange={() => {}} account={<Sidebar.Account name="Camille Martin" onSettings={() => {}} />}>
+        <Sidebar.Section id="conv" title="Conversations">
+          <Sidebar.TreeItem id="a" title="Analyse des logs" subtitle="Claude Code" indicator="activity" quickActions={[{ icon: <ArrowDownToLine />, label: "Archiver Analyse des logs", onPress: archived }]} actions={<DropdownMenu.Item label="Renommer" />} />
+        </Sidebar.Section>
+      </Sidebar>
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    const row = within(canvasElement).getByRole("row", { name: /^Analyse des logs/ });
+    const dot = row.querySelector<HTMLElement>(".bg-success")!;
+    const archive = within(row).getByRole("button", { name: "Archiver Analyse des logs", hidden: true });
+    await expect(dot).toBeVisible();
+    await expect(archive).not.toBeVisible();
+    await userEvent.hover(row);
+    await waitFor(() => expect(archive).toBeVisible());
+    await expect(dot).not.toBeVisible();
+    await userEvent.unhover(row);
+    await waitFor(() => expect(dot).toBeVisible());
+    await expect(archive).not.toBeVisible();
+  },
+};
+
 /** Maj+F10 et la touche Menu ouvrent le menu « … » de l'élément ; appui long sur tactile (Sidebar.spec.md). */
 export const MenuAuClavierEtAppuiLong: Story = {
   render: () => <Demo />,

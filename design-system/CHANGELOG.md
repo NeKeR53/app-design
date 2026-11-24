@@ -2,6 +2,13 @@
 
 Versions selon semver (règle 6 du skill design) : une nouvelle option facultative est une version mineure ; un changement qui casse l'existant est une version majeure, avec une note de migration.
 
+## [1.12.0] — 2026-11-24
+
+Version mineure : aucune API ne change ; l'affichage des actions d'un élément sur deux lignes change.
+
+### Changé
+- `Sidebar.TreeItem` : au survol, au focus clavier et menu ouvert, les actions prennent la place des signes d'état (point « En cours », non-lu, alerte) au lieu de s'y ajouter (D-393). Story `ActionsALaPlaceDeLEtat`.
+
 ## [1.11.0] — 2026-11-24
 
 Version mineure : une option facultative ; aucune API ne casse.

@@ -423,15 +423,27 @@ function TwoLine({ id, title, subtitle, meta, status, unread, indicator, actions
                   </Button>
                 )}
                 <span className="flex-1" />
-                {indicator && (
-                  <HintTooltip label={m[INDICATORS[indicator].label]} frameClass="inline-grid place-items-center">
-                    {INDICATORS[indicator].icon}
-                  </HintTooltip>
-                )}
-                {unread && <span role="img" aria-label={m.unread} className="size-1.5 shrink-0 rounded-full bg-highlight" />}
-                {status === "warning" && (
-                  <span role="img" aria-label={m.toDo} className="text-warning">
-                    <AlertTriangle size={14} />
+                {/* Signes d'état : quand les actions apparaissent (survol, focus clavier, menu ouvert), elles prennent
+                    leur place, comme pour le compteur d'un élément ; ensuite, les signes reviennent (D-393). */}
+                {(indicator || unread || status === "warning") && (
+                  <span
+                    className={cx(
+                      "flex shrink-0 items-center gap-1.5",
+                      Boolean(actions || quickActions?.length) &&
+                        "group-data-focus-visible:hidden group-data-hovered:hidden group-has-[[aria-haspopup][aria-expanded=true]]:hidden",
+                    )}
+                  >
+                    {indicator && (
+                      <HintTooltip label={m[INDICATORS[indicator].label]} frameClass="inline-grid place-items-center">
+                        {INDICATORS[indicator].icon}
+                      </HintTooltip>
+                    )}
+                    {unread && <span role="img" aria-label={m.unread} className="size-1.5 shrink-0 rounded-full bg-highlight" />}
+                    {status === "warning" && (
+                      <span role="img" aria-label={m.toDo} className="text-warning">
+                        <AlertTriangle size={14} />
+                      </span>
+                    )}
                   </span>
                 )}
                 {/* « … » à droite de la ligne du titre ; son icône s'aligne sur l'étiquette de la ligne 2 (D-368). */}
