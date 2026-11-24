@@ -52,6 +52,12 @@ export interface SidebarTreeItemProps {
   unread?: boolean;
   /** Entrées du menu « … » (`DropdownMenu.Item`…). */
   actions?: ReactNode;
+  /**
+   * Actions en bouton-icône, avant le « … » : visibles au survol, au focus et sur l'élément sélectionné, comme le
+   * « … ». Deux boutons au plus en tout : une seule avec `actions`, deux sans (D-053, D-381). Une action ici n'est
+   * pas répétée dans le menu.
+   */
+  quickActions?: SidebarAction[];
   /** Enfants, sur un seul niveau (D-042, D-043). */
   children?: ReactNode;
 }
@@ -385,7 +391,7 @@ function Item({ id, icon, label, count, indicator, actions, children }: SidebarI
 }
 
 /* ---------- Sidebar.TreeItem ---------- */
-function TwoLine({ id, title, subtitle, meta, status, unread, actions, children }: SidebarTreeItemProps) {
+function TwoLine({ id, title, subtitle, meta, status, unread, actions, quickActions, children }: SidebarTreeItemProps) {
   const m = useMessages();
   const { depth } = useContext(Depth);
   const ctx = useSidebar();
@@ -417,11 +423,15 @@ function TwoLine({ id, title, subtitle, meta, status, unread, actions, children 
                   </span>
                 )}
                 {/* « … » à droite de la ligne du titre ; son icône s'aligne sur l'étiquette de la ligne 2 (D-368). */}
-                {actions && (
-                  <span className="-mr-1 hidden group-data-focus-visible:inline-flex group-data-hovered:inline-flex group-data-selected:inline-flex group-has-[[aria-haspopup][aria-expanded=true]]:inline-flex">
-                    <DropdownMenu label={m.actionsOn(title)} placement="bottom end" trigger={<SmallAction action={{ icon: <MoreHorizontal />, label: m.actionsOn(title) }} rowMenu />}>
-                      {actions}
-                    </DropdownMenu>
+                {(actions || quickActions?.length) && (
+                  <span className="-mr-1 hidden gap-0.5 group-data-focus-visible:inline-flex group-data-hovered:inline-flex group-data-selected:inline-flex group-has-[[aria-haspopup][aria-expanded=true]]:inline-flex">
+                    {/* Deux boutons au plus : une action rapide avec le « … », deux sans lui (D-053, D-381). */}
+                    {quickActions?.slice(0, actions ? 1 : 2).map((a) => <SmallAction key={a.label} action={a} />)}
+                    {actions && (
+                      <DropdownMenu label={m.actionsOn(title)} placement="bottom end" trigger={<SmallAction action={{ icon: <MoreHorizontal />, label: m.actionsOn(title) }} rowMenu />}>
+                        {actions}
+                      </DropdownMenu>
+                    )}
                   </span>
                 )}
               </span>

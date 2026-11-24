@@ -4,6 +4,13 @@ Versions selon semver (règle 6 du skill design) : une nouvelle option facultati
 
 ## [Non publié]
 
+## [1.5.0] — 2026-11-24
+
+Version mineure : une option facultative ; aucune API ne casse.
+
+### Ajouté
+- `Sidebar.TreeItem` : option `quickActions`, des actions en bouton-icône avant le « … » (deux boutons au plus en tout), visibles au survol, au focus et à la sélection (D-381). Story `ActionRapide`.
+
 ## [1.4.0] — 2026-11-24
 
 Version mineure : de nouveaux composants et des options facultatives ; aucune API ne casse.

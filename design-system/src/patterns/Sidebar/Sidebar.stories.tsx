@@ -1,9 +1,11 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { useState } from "react";
-import { expect, userEvent, waitFor, within } from "storybook/test";
+import { expect, fn, userEvent, waitFor, within } from "storybook/test";
 import { Sidebar } from "./Sidebar";
 import { DropdownMenu } from "../../components/DropdownMenu/DropdownMenu";
-import { MoreHorizontal, Plus } from "../../icons";
+import { ArrowDownToLine, MoreHorizontal, Plus } from "../../icons";
+
+const archived = fn();
 
 const meta: Meta<typeof Sidebar> = {
   title: "Patterns/Sidebar",
@@ -78,7 +80,7 @@ function Demo({ initial = "home" }: { initial?: string }) {
               <Sidebar.TreeItem id="t1b" title="Devis Méca Services" subtitle="Reçu le 14 nov." meta="Achats" />
             </Sidebar.TreeItem>
             <Sidebar.TreeItem id="t2" title="Clôture mensuelle" subtitle="3 écritures à vérifier" meta="Compta" actions={<DropdownMenu.Item label="Archiver" />} />
-            <Sidebar.TreeItem id="t3" title="Arrivée de Camille" subtitle="Accès à créer" meta="RH" unread />
+            <Sidebar.TreeItem id="t3" title="Arrivée de Camille" subtitle="Accès à créer" meta="RH" unread quickActions={[{ icon: <ArrowDownToLine />, label: "Archiver Arrivée de Camille", onPress: archived }]} />
             <Sidebar.TreeItem id="t4" title="Contrat de maintenance" subtitle="Échéance le 30 nov." meta="Juridique" />
             <Sidebar.TreeItem id="t5" title="Inventaire annuel" subtitle="Planifié le 15 déc." meta="Logistique" />
           </Sidebar.Section>
@@ -201,6 +203,25 @@ export const HauteurStable: Story = {
     await expect(height(row)).toBe(h);
     await userEvent.keyboard("{ArrowUp}");
     await expect(height(row)).toBe(h);
+  },
+};
+
+/** Action rapide en bouton-icône, sans menu « … » : visible au survol, la ligne garde sa hauteur (D-381). */
+export const ActionRapide: Story = {
+  render: () => <Demo />,
+  globals: { density: "desktop" },
+  play: async ({ canvasElement }) => {
+    const c = within(canvasElement);
+    const row = c.getByRole("row", { name: /^Arrivée de Camille/ });
+    const h = row.getBoundingClientRect().height;
+    const archive = within(row).getByRole("button", { name: "Archiver Arrivée de Camille", hidden: true });
+    await expect(archive).not.toBeVisible();
+    await userEvent.hover(row);
+    await waitFor(() => expect(archive).toBeVisible());
+    await expect(row.getBoundingClientRect().height).toBe(h);
+    await expect(within(row).queryByRole("button", { name: /^Actions sur/ })).toBeNull();
+    await userEvent.click(archive);
+    await expect(archived).toHaveBeenCalled();
   },
 };
 

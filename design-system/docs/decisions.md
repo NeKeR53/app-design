@@ -2675,3 +2675,11 @@
 - Raison : choix de l'utilisateur après la simulation des deux versions ; tous les réglages se voient d'un coup d'œil ; l'effort est une échelle courte, mieux rendue par un curseur à crans que par des boutons.
 - Options écartées : DropdownMenu enrichi (pastille, valeur de sous-menu, interrupteur) ; effort en contrôle segmenté ; titre de volet répétant le libellé du champ.
 - Validation : choix de l'utilisateur, 2026-11-24 — simulation Storybook « Simulations › Menu du modèle (Q3) », docs/validation/components/Chat-v1.html (Q3)
+
+## D-381 — Sidebar : actions rapides d'un élément sur deux lignes
+- Date : 2026-11-24
+- Portée : Sidebar (complète D-053)
+- Décision : `Sidebar.TreeItem` gagne l'option facultative `quickActions` : des actions en bouton-icône de 22 px, placées avant le « … » sur la ligne du titre, visibles au survol, au focus et sur l'élément sélectionné, comme le « … ». Deux boutons au plus en tout : une action rapide avec le menu, deux sans. Une action rapide n'est pas répétée dans le menu. La hauteur de la ligne ne change pas (D-368).
+- Raison : dans Alfred, archiver une conversation est l'action la plus fréquente de la ligne ; la cacher dans le menu coûte deux clics. `Sidebar.Item` avait déjà des actions en bouton-icône (D-053), pas l'élément sur deux lignes.
+- Options écartées : réutiliser `actions` avec un autre type (changement cassant) ; garder l'action dans le menu en plus du bouton (deux chemins pour la même action).
+- Validation : par délégation de l'utilisateur, 2026-11-24 (demande d'Alexandre : « que le bouton Archiver soit une icône qui n'apparaît pas dans le menu »)
