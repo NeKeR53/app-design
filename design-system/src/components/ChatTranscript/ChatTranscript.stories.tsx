@@ -96,13 +96,13 @@ export const Vide: Story = {
 };
 
 /** Relevé de démonstration : « Ajouter du texte » prolonge la réponse, « Envoyer » change `followKey`. */
-function Streaming({ onEarlier }: { onEarlier?: () => void }) {
+function Streaming({ onEarlier, height = "h-[420px]" }: { onEarlier?: () => void; height?: string }) {
   const [chunks, setChunks] = useState(1);
   const [blocks, setBlocks] = useState(0);
   const [sent, setSent] = useState(0);
   const [earlier, setEarlier] = useState(false);
   return (
-    <div className="flex h-[420px] flex-col bg-surface">
+    <div className={`flex ${height} flex-col bg-surface`}>
       <div className="flex gap-2 p-2">
         <button type="button" onClick={() => setChunks((n) => n + 1)}>
           Ajouter du texte
@@ -226,6 +226,41 @@ export const GrandBlocApresDefilement: Story = {
     big.click();
     await c.findByRole("button", { name: "Nouveaux messages" });
     await expect(scroller.scrollTop).toBe(0);
+  },
+};
+
+/**
+ * Zone de reprise : le dernier tiers de la hauteur visible, 100 px au moins (D-396). Remonté de 200 px dans un relevé
+ * de 860 px de haut, la fin reste à l'écran : le relevé suit encore. Remonté de plus d'un tiers, il reste sur ce qu'on
+ * lit ; un envoi le ramène en bas.
+ */
+export const ZoneDeReprise: Story = {
+  render: () => <Streaming height="h-[900px]" />,
+  play: async ({ canvasElement }) => {
+    const c = within(canvasElement);
+    const scroller = c.getByRole("region", { name: "Conversation" });
+    await waitFor(() => expect(fromBottom(scroller)).toBeLessThan(2));
+    await expect(scroller.clientHeight).toBeGreaterThan(600);
+    // Assez de contenu pour remonter de plus d'une demi-hauteur.
+    while (scroller.scrollHeight - scroller.clientHeight < scroller.clientHeight)
+      await userEvent.click(c.getByRole("button", { name: "Ajouter du texte" }));
+    await waitFor(() => expect(fromBottom(scroller)).toBeLessThan(2));
+    // Un peu plus haut que 100 px, mais dans le dernier tiers : le suivi continue.
+    scroller.scrollTop = scroller.scrollHeight - scroller.clientHeight - 200;
+    scroller.dispatchEvent(new Event("scroll"));
+    await userEvent.click(c.getByRole("button", { name: "Ajouter du texte" }));
+    await waitFor(() => expect(fromBottom(scroller)).toBeLessThan(2));
+    await expect(c.queryByRole("button", { name: "Nouveaux messages" })).toBeNull();
+    // Au-delà du tiers : le relevé reste sur ce qu'on lit…
+    scroller.scrollTop = scroller.scrollHeight - scroller.clientHeight - scroller.clientHeight / 2;
+    scroller.dispatchEvent(new Event("scroll"));
+    const kept = scroller.scrollTop;
+    await userEvent.click(c.getByRole("button", { name: "Ajouter du texte" }));
+    await c.findByRole("button", { name: "Nouveaux messages" });
+    await expect(scroller.scrollTop).toBe(kept);
+    // … et un envoi le ramène en bas.
+    await userEvent.click(c.getByRole("button", { name: "Envoyer" }));
+    await waitFor(() => expect(fromBottom(scroller)).toBeLessThan(2));
   },
 };
 

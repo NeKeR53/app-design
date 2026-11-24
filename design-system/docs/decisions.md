@@ -2811,3 +2811,12 @@
 - Raison : pour Alexandre, un point vert dit « terminé » ; une activité en cours se lit mieux par un signe neutre qui bouge.
 - Options écartées : garder le vert ; une roue (`Spinner`), trop présente dans une liste de conversations.
 - Validation : décision de l'utilisateur, 2026-11-24
+
+## D-396 — ChatTranscript : zone de reprise du suivi au tiers de la hauteur visible
+- Date : 2026-11-24
+- Portée : ChatTranscript (modifie D-375, complète D-389)
+- Décision : le relevé suit le contenu tant que l'utilisateur est dans le dernier tiers de la hauteur visible (100 px au moins), au lieu de 100 px fixes. `STICK_DISTANCE` (100 px) reste le minimum. Un envoi (`followKey`) ramène en bas et rétablit le suivi, quelle que soit la position (déjà en D-375, vérifié dans Alfred).
+- Raison : mesuré dans un banc qui reprend la page Agent d'Alfred (fenêtre de 800 px, relevé de 601 px) : 100 px font 17 % de la hauteur visible, environ cinq lignes ; un petit geste vers le haut suffisait à quitter le suivi, alors que la fin de la conversation restait à l'écran (« pourtant, je ne suis pas très haut »). Dans le dernier tiers, les deux tiers du bas de l'écran montrent encore la fin : l'utilisateur la suit. Plus haut que le tiers, il relit autre chose, et le relevé ne doit pas le déplacer.
+- Options écartées : un seuil fixe plus grand (trop grand sur un petit écran, trop petit sur un grand) ; la moitié de la hauteur (on ne pourrait plus relire le message juste au-dessus sans être ramené en bas).
+- Validation : par délégation de l'utilisateur, 2026-11-24 (ses mots : « je ne suis pas très haut. Il faudrait peut-être agrandir la zone »).
+

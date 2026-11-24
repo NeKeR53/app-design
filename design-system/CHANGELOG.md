@@ -2,6 +2,13 @@
 
 Versions selon semver (règle 6 du skill design) : une nouvelle option facultative est une version mineure ; un changement qui casse l'existant est une version majeure, avec une note de migration.
 
+## [1.15.0] — 2026-11-24
+
+Version mineure : un changement de comportement par défaut ; aucune API ne casse.
+
+### Changé
+- `ChatTranscript` : le suivi du bas reprend dans le dernier tiers de la hauteur visible (100 px au moins), au lieu de 100 px fixes (D-396).
+
 ## [1.14.0] — 2026-11-24
 
 Version mineure : aucune API ne change ; le dessin de l'indicateur « En cours » change.

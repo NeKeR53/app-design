@@ -36,8 +36,16 @@ export interface ChatTranscriptProps {
   contextDetail?: string;
 }
 
-/** Distance au bas sous laquelle le relevé suit la réponse (Q10 A). */
+/** Distance au bas sous laquelle le relevé suit la réponse, au moins (Q10 A). */
 export const STICK_DISTANCE = 100;
+
+/**
+ * Zone de reprise du suivi : le tiers de la hauteur visible, 100 px au moins (D-396). Dans ce tiers, la fin de la
+ * conversation reste à l'écran ; au-delà, l'utilisateur lit autre chose.
+ */
+export function stickDistance(visibleHeight: number): number {
+  return Math.max(STICK_DISTANCE, visibleHeight / 3);
+}
 
 export function ChatTranscript({ children, label, followKey, announce, empty, hasEarlier = false, onShowEarlier, context, contextDetail }: ChatTranscriptProps) {
   const m = useMessages();
@@ -101,7 +109,7 @@ export function ChatTranscript({ children, label, followKey, announce, empty, ha
     if (!el) return;
     const movedUp = el.scrollTop < lastTop.current - 1;
     lastTop.current = el.scrollTop;
-    if (el.scrollHeight - el.scrollTop - el.clientHeight < STICK_DISTANCE) {
+    if (el.scrollHeight - el.scrollTop - el.clientHeight < stickDistance(el.clientHeight)) {
       // Revenu en bas (ou resté en bas) : le suivi reprend.
       pinned.current = true;
       setUnseen(false);
