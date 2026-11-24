@@ -2,6 +2,14 @@
 
 Versions selon semver (règle 6 du skill design) : une nouvelle option facultative est une version mineure ; un changement qui casse l'existant est une version majeure, avec une note de migration.
 
+## [1.13.3] — 2026-11-24
+
+Correction.
+
+### Corrigé
+- Sidebar : le pied a la même marge latérale que la navigation (6 px) ; ses icônes et ses textes tombent sur les colonnes des entrées du haut (D-394). Story `PiedAligne` complétée.
+- Sidebar : à droite du pied, le point « En cours », le chevron de l'espace de travail et la roue des réglages tombent sur une même colonne, dans les deux densités (D-394).
+
 ## [1.13.2] — 2026-11-24
 
 Correction.

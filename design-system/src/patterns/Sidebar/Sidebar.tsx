@@ -259,7 +259,7 @@ export function Sidebar({ selectedId, onSelectionChange, account, footer, worksp
           {children}
         </Tree>
         {/* Pied (D-232) : entrées fixes, espace de travail, compte ; un seul trait au-dessus. */}
-        <div className="flex flex-col gap-0.5 border-t border-line p-2">
+        <div className="flex flex-col gap-0.5 border-t border-line px-1.5 py-2">
           {hasFooter && (
             <Tree {...treeProps} aria-label={m.footerNavigation} className="outline-none">
               {footer}
@@ -572,7 +572,10 @@ function Account({ name, detail, avatar, onSettings, menu }: SidebarAccountProps
       ) : (
         <span className="flex h-(--row-h) min-w-0 flex-1 items-center gap-1 px-1">{who}</span>
       )}
-      <IconButton icon={<Settings />} label={m.settings} shortcut="Mod+," onPress={onSettings} tooltipPlacement="top" />
+      {/* Case de 24 px : la roue tombe sur la colonne de droite du pied dans les deux densités (bouton de 24 ou 28 px) (D-394). */}
+      <span className="flex w-6 shrink-0 justify-center">
+        <IconButton icon={<Settings />} label={m.settings} shortcut="Mod+," onPress={onSettings} tooltipPlacement="top" />
+      </span>
     </div>
   );
 }
@@ -626,7 +629,11 @@ function Workspace({ workspaces, currentId, onChange, actions, isDisabled, icon 
         >
           {who}
           <span className="flex-1" />
-          <ChevronsUpDown size={12} className="shrink-0 text-fg-3" />
+          {/* Case de 16 px : le chevron tombe sur la colonne de droite du pied, celle du point « En cours » et de la roue
+              des réglages (D-394). */}
+          <span aria-hidden className="inline-grid w-4 shrink-0 place-items-center text-fg-3">
+            <ChevronsUpDown size={12} />
+          </span>
         </Button>
       }
     >

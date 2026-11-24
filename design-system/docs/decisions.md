@@ -2801,5 +2801,5 @@
 - Date : 2026-11-24
 - Portée : Sidebar (correction de D-231, D-232, D-379)
 - Décision : l'espace de travail et le compte prennent la grille de `Sidebar.Item` : marge de 4 px, case de 24 px (icône de dossier ou avatar) centrée sur la colonne des icônes (16 px du bord), 4 px avant le texte, qui commence avec celui des entrées (32 px du bord).
-- Raison : avec une marge de 6 px et un écart de 8 px, la case et le texte du pied étaient décalés de 2 px et 6 px par rapport à l'entrée « Agent » juste au-dessus.
+- Raison : avec une marge de 6 px et un écart de 8 px, la case et le texte du pied étaient décalés de 2 px et 6 px par rapport à l'entrée « Agent » juste au-dessus. En 1.13.3, le pied prend aussi la marge latérale de la navigation (6 px au lieu de 8) : tout le pied était décalé de 2 px par rapport aux entrées du haut. À droite, le chevron de l'espace (case de 16 px) et la roue des réglages (case de 24 px) tombent sur la colonne du point « En cours ».
 - Validation : correction d'un défaut signalé par Alexandre, 2026-11-24. Story `PiedAligne`.

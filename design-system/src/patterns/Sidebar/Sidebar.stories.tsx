@@ -363,7 +363,7 @@ export const PiedAligne: Story = {
       <Sidebar
         selectedId="x"
         onSelectionChange={() => {}}
-        footer={<Sidebar.Item id="agent" icon={<Plus />} label="Agent" />}
+        footer={<Sidebar.Item id="agent" icon={<Plus />} label="Agent" indicator="activity" />}
         workspace={<Sidebar.Workspace workspaces={[{ id: "p", name: "Perso" }, { id: "t", name: "taff" }]} currentId="p" onChange={() => {}} />}
         account={<Sidebar.Account name="Alexandre" onSettings={() => {}} />}
       >
@@ -383,6 +383,16 @@ export const PiedAligne: Story = {
     await expect(Math.abs(middle(avatar) - middle(agentIcon))).toBeLessThanOrEqual(1);
     await expect(Math.abs(left(c.getByText("Perso")) - left(agentText))).toBeLessThanOrEqual(1);
     await expect(Math.abs(left(c.getByText("Alexandre")) - left(agentText))).toBeLessThanOrEqual(1);
+    // Et le pied tombe sur les colonnes de la navigation au-dessus.
+    const navIcon = c.getByRole("row", { name: /^Accueil/ }).querySelector("svg")!;
+    await expect(Math.abs(middle(navIcon) - middle(agentIcon))).toBeLessThanOrEqual(1);
+    await expect(Math.abs(left(c.getByText("Accueil")) - left(agentText))).toBeLessThanOrEqual(1);
+    // À droite : le point « En cours », le chevron de l'espace et la roue des réglages sur une même colonne.
+    const dot = c.getByRole("row", { name: /^Agent/ }).querySelector(".bg-success")!;
+    const chevron = [...c.getByRole("button", { name: /Perso/ }).querySelectorAll("svg")].at(-1)!;
+    const gear = c.getByRole("button", { name: /Réglages/ });
+    await expect(Math.abs(middle(chevron) - middle(dot))).toBeLessThanOrEqual(1);
+    await expect(Math.abs(middle(gear) - middle(dot))).toBeLessThanOrEqual(1);
   },
 };
 
