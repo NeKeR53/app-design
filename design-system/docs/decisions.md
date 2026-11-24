@@ -2733,3 +2733,10 @@
 - Décision : la zone qui défile de `ChatTranscript` est le bloc de référence (`position: relative`) de ses descendants en position absolue. Les textes pour lecteur d'écran (`sr-only`), comme l'état « Terminé » d'une activité, défilent avec le relevé et ne dépassent plus de la page de chat. Seul le relevé défile ; la saisie reste fixe en bas.
 - Raison : dans Alfred, ces textes se plaçaient hors de la zone qui défile et allongeaient la page entière (5 426 px pour 862 px visibles) : la zone `main` d'AppShell défilait, saisie comprise.
 - Validation : correction d'un défaut signalé par Alexandre, 2026-11-24. Story `SaisieFixe`.
+
+## D-388 — ChatComposer : boutons centrés sur la ligne du texte
+- Date : 2026-11-24
+- Portée : ChatComposer (correction)
+- Décision : chaque bouton de la ligne de saisie (« + », boutons de l'app, arrêt, envoi) est posé dans une case de la hauteur d'une ligne du champ (28 px), centré dedans. La ligne reste calée en bas : sur plusieurs lignes, les boutons restent centrés sur la dernière.
+- Raison : en densité desktop, les boutons-icônes de 24 px étaient calés sur le bas du champ de 28 px, 2 px sous le milieu du texte ; Alexandre les voyait trop bas.
+- Validation : correction d'un défaut signalé par Alexandre, 2026-11-24. Stories `BoutonsCentres` et `BoutonsCentresWeb`.

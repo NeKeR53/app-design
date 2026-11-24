@@ -215,6 +215,7 @@ export function ChatComposer({
       {attachments ? <AttachmentList>{attachments}</AttachmentList> : null}
       <div className="flex min-w-0 items-end gap-1">
         {hasMenu && (
+          <Slot>
           <DropdownMenu label={m.composerAdd} placement="top start" trigger={<IconButton icon={<Plus />} label={m.composerAdd} tooltipPlacement="top" isDisabled={isDisabled} />}>
             {onAddFiles && <DropdownMenu.Item id="attach" label={m.composerAttachFiles} icon={<Paperclip />} onAction={() => fileInput.current?.click()} />}
             {onAddFiles && (triggers.length > 0 || addMenu.length > 0) && <DropdownMenu.Separator />}
@@ -225,6 +226,7 @@ export function ChatComposer({
               <DropdownMenu.Item key={item.id} id={item.id} label={item.label} icon={item.icon} isDisabled={item.isDisabled ?? false} onAction={item.onAction} />
             ))}
           </DropdownMenu>
+          </Slot>
         )}
         <MentionInput
           ref={mention}
@@ -239,8 +241,13 @@ export function ChatComposer({
           onKeyDown={onKeyDown}
           onPaste={onPaste}
         />
-        {trailing}
-        {isRunning && onStop && <IconButton icon={<Square size={14} />} label={m.composerStop} shortcut="Escape" onPress={onStop} isDisabled={isDisabled} />}
+        {trailing && <Slot>{trailing}</Slot>}
+        {isRunning && onStop && (
+          <Slot>
+            <IconButton icon={<Square size={14} />} label={m.composerStop} shortcut="Escape" onPress={onStop} isDisabled={isDisabled} />
+          </Slot>
+        )}
+        <Slot>
         <IconButton
           icon={<ArrowUp />}
           label={sendLabel}
@@ -250,6 +257,7 @@ export function ChatComposer({
           isPending={isPending}
           onPress={() => submit("now")}
         />
+        </Slot>
       </div>
       {onAddFiles && (
         <input
@@ -268,4 +276,13 @@ export function ChatComposer({
       )}
     </div>
   );
+}
+
+/**
+ * Case d'un bouton de la ligne de saisie : la hauteur d'une ligne du champ (28 px, `min-h-7` de `MentionInput`
+ * `plain`), bouton centré dedans. Avec la ligne calée en bas (`items-end`), les boutons restent centrés sur la
+ * dernière ligne du texte, quelle que soit la densité (bouton-icône de 24 ou 28 px) (D-388).
+ */
+function Slot({ children }: { children: ReactNode }) {
+  return <span className="flex h-7 shrink-0 items-center gap-1">{children}</span>;
 }

@@ -106,6 +106,25 @@ const reset = () => [onSubmit, onStop, onAddFiles, onPasteLongText, onResume].fo
 export const ParDefaut: Story = { render: () => <Demo /> };
 
 /** Pendant une réponse, avec une file et des pièces jointes : l'écran validé (Q1 B, Q2 A, Q9 A). */
+/** Les boutons de la ligne de saisie sont centrés sur la ligne du texte, en densité desktop comme web (D-388). */
+const boutonsCentres: Story["play"] = async ({ canvasElement }) => {
+  const editor = canvasElement.querySelector<HTMLElement>('[contenteditable="true"], textarea');
+  await expect(editor).not.toBeNull();
+  const box = editor!.getBoundingClientRect();
+  const textMiddle = box.top + box.height / 2;
+  // La ligne de saisie : le premier ancêtre calé en bas qui porte aussi les boutons.
+  const row = editor!.closest<HTMLElement>(".items-end")!;
+  const buttons = [...row.querySelectorAll<HTMLElement>("button")];
+  await expect(buttons.length).toBeGreaterThan(1);
+  for (const button of buttons) {
+    const r = button.getBoundingClientRect();
+    await expect(Math.abs(r.top + r.height / 2 - textMiddle)).toBeLessThanOrEqual(0.5);
+  }
+};
+
+export const BoutonsCentres: Story = { render: () => <Demo />, globals: { density: "desktop" }, play: boutonsCentres };
+export const BoutonsCentresWeb: Story = { render: () => <Demo />, globals: { density: "web" }, play: boutonsCentres };
+
 export const PendantUneReponse: Story = {
   render: () => <Demo isRunning initialQueue={[{ id: "1", text: "Ensuite, mets à jour la doc du formulaire" }]} />,
 };

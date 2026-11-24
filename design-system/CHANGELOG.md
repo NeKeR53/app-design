@@ -2,6 +2,13 @@
 
 Versions selon semver (règle 6 du skill design) : une nouvelle option facultative est une version mineure ; un changement qui casse l'existant est une version majeure, avec une note de migration.
 
+## [1.8.2] — 2026-11-24
+
+Correction.
+
+### Corrigé
+- `ChatComposer` : les boutons de la ligne de saisie sont centrés sur la ligne du texte ; en densité desktop, ils étaient 2 px trop bas (D-388). Stories `BoutonsCentres` et `BoutonsCentresWeb`.
+
 ## [1.8.1] — 2026-11-24
 
 Correction.
