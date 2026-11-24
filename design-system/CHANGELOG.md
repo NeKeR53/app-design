@@ -4,6 +4,10 @@ Versions selon semver (règle 6 du skill design) : une nouvelle option facultati
 
 ## [Non publié]
 
+## [1.4.0] — 2026-11-24
+
+Version mineure : de nouveaux composants et des options facultatives ; aucune API ne casse.
+
 ### Ajouté — composants de chat
 - `ChatComposer`, `ChatOptions` et `ChatOptionButton` : zone de saisie d'un chat avec un agent et sa rangée d'options (D-371).
 - `MentionInput` et `MentionText` : texte à pastilles de références avec suggestions fournies par l'app (D-372).
