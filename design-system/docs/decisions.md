@@ -2683,3 +2683,11 @@
 - Raison : dans Alfred, archiver une conversation est l'action la plus fréquente de la ligne ; la cacher dans le menu coûte deux clics. `Sidebar.Item` avait déjà des actions en bouton-icône (D-053), pas l'élément sur deux lignes.
 - Options écartées : réutiliser `actions` avec un autre type (changement cassant) ; garder l'action dans le menu en plus du bouton (deux chemins pour la même action).
 - Validation : par délégation de l'utilisateur, 2026-11-24 (demande d'Alexandre : « que le bouton Archiver soit une icône qui n'apparaît pas dans le menu »)
+
+## D-384 — AgentActivity : objet cliquable, pièces dans la sortie, état « Arrêté »
+- Date : 2026-11-24
+- Portée : AgentActivity, ActivityGroup
+- Décision : trois options facultatives. `onObjectPress` fait de l'objet un `Link` (D-167) en chasse fixe ; si la ligne a une sortie, un chevron à part de 24 px l'ouvre, juste après le texte. `attachments` (ReactNode) pose les pièces produites par l'outil sous le texte de la sortie ouverte, dans un groupe nommé « Pièces de … » ; une pièce seule rend la ligne ouvrable. `status: "stopped"` garde l'icône du type et affiche « Arrêté » en `--fg-3` ; le résumé du groupe ajoute « · n arrêté(s) » ; replié, seuls les échecs restent visibles. Le message `activityGroup` reçoit un 4e argument, le nombre d'arrêtés.
+- Raison : l'app garde tous les outils dans le même groupe au lieu de sortir en ligne locale ceux qui ont un fichier à ouvrir, des images ou un arrêt.
+- Options écartées : `objectHref` (un fichier local s'ouvre par l'app, pas par une adresse) ; toute la ligne en lien (la sortie n'est plus atteignable) ; pièces visibles sortie fermée ; `images` dessinées par Socle (double emploi avec la vignette de D-383) ; « Arrêté » en rouge comme un échec ; « Arrêté » caché.
+- Validation : par délégation de l'utilisateur, 2026-11-24 — docs/validation/components/AgentActivity-v2.html (Q1 A, Q2 A, Q3 A)
