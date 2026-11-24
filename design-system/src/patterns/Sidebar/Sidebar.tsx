@@ -314,7 +314,7 @@ function Actions({ actions }: { actions: SidebarAction[] }) {
   // Le dernier menu (en général « … ») s'ouvre aussi au clic droit, à l'appui long et à Maj+F10.
   const rowMenu = shown.map((a) => Boolean(a.menu)).lastIndexOf(true);
   return (
-    <span className="hidden items-center gap-0.5 group-data-focus-visible:flex group-data-hovered:flex group-data-selected:flex group-has-[[aria-haspopup][aria-expanded=true]]:flex">
+    <span className="hidden items-center gap-0.5 group-data-focus-visible:flex group-data-hovered:flex group-has-[[aria-haspopup][aria-expanded=true]]:flex">
       {shown.map((a, i) =>
         a.menu ? (
           <DropdownMenu key={a.label} label={a.label} placement="bottom end" trigger={<SmallAction action={a} rowMenu={i === rowMenu} />}>
@@ -379,7 +379,7 @@ function Item({ id, icon, label, count, indicator, actions, children }: SidebarI
               </HintTooltip>
             )}
             {count !== undefined && !ind && (
-              <span className={cx("px-1 text-sm text-fg-3 tabular-nums group-data-selected:text-fg-2", Boolean(actions?.length) && "group-data-focus-visible:hidden group-data-hovered:hidden group-data-selected:hidden group-has-[[aria-haspopup][aria-expanded=true]]:hidden")}>
+              <span className={cx("px-1 text-sm text-fg-3 tabular-nums group-data-selected:text-fg-2", Boolean(actions?.length) && "group-data-focus-visible:hidden group-data-hovered:hidden group-has-[[aria-haspopup][aria-expanded=true]]:hidden")}>
                 {count > 99 ? "99+" : count}
               </span>
             )}
@@ -431,7 +431,7 @@ function TwoLine({ id, title, subtitle, meta, status, unread, indicator, actions
                 )}
                 {/* « … » à droite de la ligne du titre ; son icône s'aligne sur l'étiquette de la ligne 2 (D-368). */}
                 {(actions || quickActions?.length) && (
-                  <span className="-mr-1 hidden gap-0.5 group-data-focus-visible:inline-flex group-data-hovered:inline-flex group-data-selected:inline-flex group-has-[[aria-haspopup][aria-expanded=true]]:inline-flex">
+                  <span className="-mr-1 hidden gap-0.5 group-data-focus-visible:inline-flex group-data-hovered:inline-flex group-has-[[aria-haspopup][aria-expanded=true]]:inline-flex">
                     {/* Deux boutons au plus : une action rapide avec le « … », deux sans lui (D-053, D-381). */}
                     {quickActions?.slice(0, actions ? 1 : 2).map((a) => <SmallAction key={a.label} action={a} />)}
                     {actions && (

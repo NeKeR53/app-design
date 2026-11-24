@@ -199,7 +199,8 @@ export const HauteurStable: Story = {
     await userEvent.click(row);
     await expect(row).toHaveAttribute("aria-selected", "true");
     await userEvent.unhover(row);
-    await expect(more).toBeVisible();
+    // Sélectionné sans survol : les actions se cachent, l'état reste lisible (D-386).
+    await expect(more).not.toBeVisible();
     await expect(height(row)).toBe(h);
     await userEvent.keyboard("{ArrowUp}");
     await expect(height(row)).toBe(h);

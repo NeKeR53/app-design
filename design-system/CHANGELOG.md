@@ -2,6 +2,13 @@
 
 Versions selon semver (règle 6 du skill design) : une nouvelle option facultative est une version mineure ; un changement qui casse l'existant est une version majeure, avec une note de migration.
 
+## [1.8.0] — 2026-11-24
+
+Version mineure : aucune API ne change ; l'affichage des actions de la Sidebar change.
+
+### Changé
+- Sidebar : les actions et le « … » d'un élément apparaissent au survol, au focus clavier et menu ouvert, plus sur l'élément seulement sélectionné ; son compteur et son état restent visibles (D-386).
+
 ## [1.7.0] — 2026-11-24
 
 Version mineure : une option facultative ; aucune API ne casse.

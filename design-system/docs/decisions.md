@@ -2718,3 +2718,11 @@
 - Raison : la spec annonçait une icône d'état « en cours » sur la ligne du titre, jamais livrée ; dans Alfred, une conversation d'agent au travail ne se voyait pas. Alexandre a demandé de reprendre ce qui existe déjà plutôt qu'un nouveau dessin.
 - Options écartées : de nouvelles icônes d'état (roue, horloge, cercle) ; un point rouge pour l'échec (l'alerte existe déjà).
 - Validation : décision de l'utilisateur, 2026-11-24 (« tu prends ce qui existe […] un point vert à droite »)
+
+## D-386 — Sidebar : actions au survol seulement, pas sur l'élément sélectionné
+- Date : 2026-11-24
+- Portée : Sidebar (modifie D-053, D-054, D-381)
+- Décision : les actions d'un élément de la Sidebar (`Sidebar.Item`, `Sidebar.TreeItem`, « … » et actions rapides) apparaissent au survol, au focus clavier et tant que leur menu est ouvert. Elles n'apparaissent plus sur l'élément seulement sélectionné. Le compteur et les signes d'état (point « En cours », alerte, non-lu) restent donc visibles sur l'élément sélectionné quand le pointeur est ailleurs. Sur tactile, l'appui long ouvre toujours le menu (D-007).
+- Raison : dans Alfred, la conversation ouverte est toujours sélectionnée ; ses actions cachaient en permanence son état, et Alexandre ne voyait plus si l'agent travaillait.
+- Options écartées : garder les actions sur l'élément sélectionné en cachant l'état (le problème) ; cacher les actions aussi au focus clavier (elles deviendraient inatteignables).
+- Validation : décision de l'utilisateur, 2026-11-24 (« les trois petits points […] uniquement quand la souris est par-dessus »)
