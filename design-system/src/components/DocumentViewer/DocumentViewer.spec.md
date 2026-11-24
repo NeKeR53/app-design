@@ -8,7 +8,7 @@ Ne pas l'utiliser pour :
 - du texte brut ou du code : `Code` en bloc ;
 - du Markdown : `Markdown` ;
 - un HTML reçu (courriel, page) : `HtmlContent` ;
-- une vignette dans une liste : `Avatar` ou l'image de l'app.
+- une vignette d'image : `ImageThumbnail`, qui ouvre cette visionneuse en grand (D-383) ; une photo de personne : `Avatar`.
 
 ## Anatomie
 1. Cadre (obligatoire) : bord `--line`, rayon `--radius-lg`, fond `--surface`.
@@ -93,7 +93,7 @@ Corps d'une page de détail, panneau de détail large, modale `xl`. Pas dans une
 Contient `IconButton`, `Separator`, `ActionBar`, `SkeletonGroup`, `EmptyState`, `Button`.
 
 ## Décisions
-D-011, D-035, D-089, D-111, D-165, D-166, D-310 à D-316
+D-011, D-035, D-089, D-111, D-165, D-166, D-310 à D-316, D-383
 
 ## Questions ouvertes
 Aucune.

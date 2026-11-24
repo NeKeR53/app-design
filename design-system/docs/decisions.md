@@ -2683,3 +2683,11 @@
 - Raison : dans Alfred, archiver une conversation est l'action la plus fréquente de la ligne ; la cacher dans le menu coûte deux clics. `Sidebar.Item` avait déjà des actions en bouton-icône (D-053), pas l'élément sur deux lignes.
 - Options écartées : réutiliser `actions` avec un autre type (changement cassant) ; garder l'action dans le menu en plus du bouton (deux chemins pour la même action).
 - Validation : par délégation de l'utilisateur, 2026-11-24 (demande d'Alexandre : « que le bouton Archiver soit une icône qui n'apparaît pas dans le menu »)
+
+## D-383 — ImageThumbnail et ImageGallery
+- Date : 2026-11-24
+- Portée : ImageThumbnail, ImageGallery (complète D-310, D-374)
+- Décision : un composant à part, pas une option d'`AttachmentChip`. `ImageThumbnail` est une vignette d'image cliquable qui s'agrandit dans une `Modal` `xl` avec `DocumentViewer` (zoom, « Télécharger » par `onDownload`). Trois formes fixes (`shape`) : `wide` 360 px en 4:3, image entière ; `square` 160 px, carrée, recadrée ; `page` 160 px en 16:10, haut de l'image. Chargement par `Skeleton` ; erreur : « Image indisponible » et un bouton « Réessayer » visible (nouvel essai de l'image, ou `onRetry` de l'app). `ImageGallery` range les vignettes en groupes (12 px entre groupes, 8 px entre vignettes), légende sur une ligne coupée avec info-bulle ; avec `visible`, les plus anciennes passent derrière une tuile « + N » en tête, de la taille des vignettes, qui ouvre la plus récente des cachées. Dans la vue agrandie, le pied porte précédente · « n / N » · suivante ; ← → parcourent le groupe et s'arrêtent aux bornes (comme D-314).
+- Raison : `AttachmentChip` est la pièce d'un message avant l'envoi, à retirer (D-374) ; une image qu'on consulte (envoyée, citée, produite, capturée) a un autre rôle et d'autres tailles. `DocumentViewer` exclut la vignette (D-310) mais sert tel quel à la vue agrandie.
+- Options écartées : étendre `AttachmentChip` (`onPress`, `status: "loading"`, tailles) ; un mode vignette de `DocumentViewer` ; largeur, rapport et recadrage libres ; toute la tuile en « Réessayer » ; flèches sur l'image ; parcours en boucle ; « + N » à la fin ; bouton « Voir tout ».
+- Validation : docs/validation/components/ImageThumbnail-v1.html — par délégation de l'utilisateur, 2026-11-24

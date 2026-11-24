@@ -4,6 +4,12 @@ Versions selon semver (règle 6 du skill design) : une nouvelle option facultati
 
 ## [Non publié]
 
+### Ajouté
+- `ImageThumbnail` : vignette d'image cliquable qui s'agrandit dans une `Modal` `xl` avec `DocumentViewer` ; formes `wide` (360 px, 4:3), `square` (160 px) et `page` (160 px, 16:10, haut de l'image) ; chargement, erreur avec « Réessayer » (`onRetry`), « Télécharger » (`onDownload`) (D-383).
+- `ImageGallery` : vignettes en groupes (`images` ou `groups`), légendes coupées avec info-bulle, les plus anciennes derrière « + N » (`visible`) ; vue agrandie parcourue avec précédente · « n / N » · suivante et ← →, arrêt aux bornes ; `onView` pour une image à lire (D-383).
+- Icône interne `ImageOff` ; libellés `image*` dans `messages`.
+- Specs `AttachmentChip` et `DocumentViewer` : renvoi vers `ImageThumbnail` pour l'aperçu en grand et la vignette (code inchangé).
+
 ## [1.5.0] — 2026-11-24
 
 Version mineure : une option facultative ; aucune API ne casse.

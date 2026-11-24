@@ -301,6 +301,8 @@ export { MessageQueue } from "./components/MessageQueue/MessageQueue";
 export type { MessageQueueProps, QueuedMessage } from "./components/MessageQueue/MessageQueue";
 export { AttachmentChip, AttachmentList } from "./components/AttachmentChip/AttachmentChip";
 export type { AttachmentChipProps, AttachmentListProps, AttachmentKind, AttachmentStatus } from "./components/AttachmentChip/AttachmentChip";
+export { ImageThumbnail, ImageGallery } from "./components/ImageThumbnail/ImageThumbnail";
+export type { ImageThumbnailProps, ImageGalleryProps, ImageGalleryItem, ImageGalleryGroup, ImageSource, ImageShape } from "./components/ImageThumbnail/ImageThumbnail";
 /* Relevé de conversation, travail de l'agent, question de l'agent (D-375 à D-377). */
 export { ChatTranscript } from "./components/ChatTranscript/ChatTranscript";
 export type { ChatTranscriptProps } from "./components/ChatTranscript/ChatTranscript";

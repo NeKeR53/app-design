@@ -6,7 +6,8 @@ Validation : docs/validation/components/Chat-v1.html (Q11)
 Pièce jointe d'un message, avant l'envoi : une image, un fichier, ou un long texte collé. On la voit, on l'ouvre (texte), on la retire.
 Ne pas l'utiliser pour :
 - une liste de fichiers envoyés vers un serveur, avec avancement : prendre `FileList` ;
-- une étiquette de mot-clé : prendre `Tag`.
+- une étiquette de mot-clé : prendre `Tag` ;
+- une image envoyée, citée ou produite, à agrandir : prendre `ImageThumbnail` (D-383).
 
 ## Anatomie
 `AttachmentList` : liste « Pièces jointes », en ligne, 8 px d'écart, alignée en bas, 4 px dessous.
@@ -38,7 +39,7 @@ Ne pas l'utiliser pour :
 `AttachmentList` : `label` (défaut « Pièces jointes »), `children` (des `AttachmentChip`, avec une `key`).
 
 ## Exclus
-- Pas d'aperçu en grand d'une image : l'app l'ouvre si besoin.
+- Pas d'aperçu en grand d'une image : pour une image qu'on consulte (message envoyé, image citée), prendre `ImageThumbnail` (D-383).
 - Pas de barre d'avancement : prendre `FileList`.
 - Pas de `className` ni de `style`.
 
@@ -90,7 +91,7 @@ Slot `attachments` de `ChatComposer` ; aussi sous un message envoyé.
 `Modal`, `TextArea`, `Spinner`, `Tooltip`, info-bulles internes (`OverflowTooltip`, `HintTooltip`). Icônes internes `Paperclip`, `FileText`, `FileImage`, `CircleAlert`, `X`.
 
 ## Décisions
-D-001, D-120, D-131, D-360, D-374.
+D-001, D-120, D-131, D-360, D-374, D-383.
 
 ## Questions ouvertes
 Aucune.
