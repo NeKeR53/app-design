@@ -2,6 +2,14 @@
 
 Versions selon semver (règle 6 du skill design) : une nouvelle option facultative est une version mineure ; un changement qui casse l'existant est une version majeure, avec une note de migration.
 
+## [1.13.0] — 2026-11-24
+
+Version mineure : un type d'outil et un ajout de rendu ; aucune API ne casse.
+
+### Ajouté
+- `AgentActivity` : type `list` (icône dossier) (D-394).
+- `ActivityGroup` : la ligne repliée montre une icône par type d'outil appelé, avant le résumé (D-394).
+
 ## [1.12.0] — 2026-11-24
 
 Version mineure : aucune API ne change ; l'affichage des actions d'un élément sur deux lignes change.

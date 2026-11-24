@@ -2780,3 +2780,12 @@
 - Décision : sur un `Sidebar.TreeItem`, quand les actions apparaissent (survol, focus clavier, menu ouvert), elles prennent la place des signes d'état (point « En cours », point de non-lu, alerte), comme elles prennent celle du compteur d'un `Sidebar.Item` (D-053). Le reste du temps, les signes sont seuls à droite du titre.
 - Raison : demande d'Alexandre : les boutons s'ajoutaient à côté du point vert et le poussaient ; il veut qu'ils viennent à sa place, puis que le point revienne quand la souris part.
 - Validation : décision de l'utilisateur, 2026-11-24. Story `ActionsALaPlaceDeLEtat`.
+
+## D-394 — ActivityGroup : icônes des types d'outils sur la ligne repliée ; type « lister »
+- Date : 2026-11-24
+- Portée : AgentActivity, ActivityGroup (complète D-376, D-390, D-391)
+- Décision : `ActivityKind` gagne `list` (icône dossier). La ligne repliée d'`ActivityGroup` montre, avant le résumé, une icône par type d'outil appelé (console, livre, crayon, dossier, loupe, cerveau, clé), dans l'ordre du premier appel, 6 au plus, de 15 px, décoratives : le nom de la ligne reste le résumé.
+- Raison : depuis D-391, même un outil seul est replié ; la ligne ne disait plus quels outils l'agent utilise. L'utilisateur avait l'habitude de reconnaître l'outil à son icône.
+- Options écartées : une icône par appel (sept consoles d'affilée ne disent rien de plus) ; les icônes avec un compte par type (« 3 × console ») ; les icônes seulement pour un outil seul.
+- Validation : par délégation de l'utilisateur, 2026-11-24 (ses mots : « j'avais toujours une petite icône en fonction de l'outil… "Lister" c'est un dossier, "Rechercher" c'est une loupe »).
+

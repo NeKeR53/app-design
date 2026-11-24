@@ -26,6 +26,7 @@ Ne pas l'utiliser pour :
 | `edit` | Crayon |
 | `search` | Loupe |
 | `read` | Livre ouvert |
+| `list` | Dossier (D-394) |
 | `think` | Cerveau |
 | `other` (défaut) | Clé |
 
@@ -74,6 +75,7 @@ Ne pas l'utiliser pour :
 | Avec `detail`, clic, Entrée ou Espace ouvrent la sortie, de 2 à 12 lignes | réglable par l'app (`detail`) | `Detail` |
 | Jusqu'à 3 outils, une ligne chacun, sans résumé | réglable par l'app (`groupAbove`) | `PeuDOutils` |
 | Au-delà de 3, résumé repliable au clavier | réglable par l'app (`groupAbove`) | `Groupe` |
+| Ligne repliée : une icône par type d'outil appelé, dans l'ordre du premier appel, 6 au plus, décoratives, avant le résumé (D-394) | verrouillé | `IconesDesOutils` |
 | Résumé « n outils · r en cours » pendant le travail, « n outils exécutés » ensuite ; à jour à chaque outil (D-390) | verrouillé | `GroupeEnCours`, `UneLigneRepliee` |
 | Déplié tant qu'un outil tourne, replié à la fin (sauf choix de l'utilisateur) | verrouillé | `GroupeEnCours` |
 | Un outil en échec reste visible, groupe replié | verrouillé | `ErreurVisible` |
@@ -108,7 +110,7 @@ Un outil en échec : « Échec » en rouge, toujours visible ; sa sortie dans `d
 Dans `ChatTranscript`, entre les messages, ou dans `WorkSummary`.
 
 ## Composition
-`Button` de React Aria, `Link`, icônes internes `SquareTerminal`, `Pencil`, `Search`, `BookOpen`, `Brain`, `Wrench`, `ChevronDown`.
+`Button` de React Aria, `Link`, icônes internes `SquareTerminal`, `Pencil`, `Search`, `BookOpen`, `Folder`, `Brain`, `Wrench`, `ChevronDown`.
 
 ## Décisions
 D-360, D-376, D-384

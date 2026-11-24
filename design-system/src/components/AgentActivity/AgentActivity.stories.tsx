@@ -203,6 +203,34 @@ export const OutilSeulReplie: Story = {
   },
 };
 
+/** Ligne repliée : une icône par type d'outil appelé (console, livre, crayon, dossier, loupe, clé), puis le résumé (D-394). */
+export const IconesDesOutils: Story = {
+  render: () => (
+    <ActivityGroup
+      groupAbove={0}
+      defaultExpanded={false}
+      items={[
+        { id: "1", kind: "command", verb: "Exécuté", object: "npm test" },
+        { id: "2", kind: "read", verb: "Lu", object: "src/dates.ts" },
+        { id: "3", kind: "edit", verb: "Modifié", object: "src/dates.ts" },
+        { id: "4", kind: "command", verb: "Exécuté", object: "npm run lint" },
+        { id: "5", kind: "list", verb: "Listé", object: "src" },
+        { id: "6", kind: "search", verb: "Recherché", object: "formatDate", status: "running" },
+      ]}
+    />
+  ),
+  play: async ({ canvasElement }) => {
+    const c = within(canvasElement);
+    const head = c.getByRole("button", { name: "6 outils · 1 en cours" });
+    const kinds = head.querySelector("[data-activity-kinds]") as HTMLElement;
+    // Cinq types, chacun une fois, dans l'ordre du premier appel ; décoratives, le nom reste le résumé.
+    await expect(kinds.querySelectorAll("svg")).toHaveLength(5);
+    await expect(kinds).toHaveAttribute("aria-hidden", "true");
+    await userEvent.click(head);
+    await expect(c.getByText("src")).toBeInTheDocument();
+  },
+};
+
 /** Une erreur reste visible, en rouge, même groupe replié. */
 export const ErreurVisible: Story = {
   render: () => <ActivityGroup items={[...DONE.slice(0, 4), { id: "5", kind: "command", verb: "Exécuté", object: "npm test", status: "error", detail: "FAIL src/dates.test.ts" }]} />,

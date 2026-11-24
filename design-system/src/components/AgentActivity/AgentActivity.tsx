@@ -6,12 +6,12 @@
  */
 import { type ReactNode, useId, useState } from "react";
 import { Button } from "react-aria-components/Button";
-import { BookOpen, Brain, ChevronDown, Pencil, Search, SquareTerminal, Wrench } from "../../icons";
+import { BookOpen, Brain, ChevronDown, Folder, Pencil, Search, SquareTerminal, Wrench } from "../../icons";
 import { buttonReset, cx, focusRing } from "../../lib/cx";
 import { useMessages } from "../../provider/SocleProvider";
 import { Link } from "../Link/Link";
 
-export type ActivityKind = "command" | "edit" | "search" | "read" | "think" | "other";
+export type ActivityKind = "command" | "edit" | "search" | "read" | "list" | "think" | "other";
 export type ActivityStatus = "running" | "done" | "error" | "stopped";
 
 export interface AgentActivityProps {
@@ -60,7 +60,18 @@ export interface ActivityGroupProps {
 /** Au-delà de ce nombre d'outils, ils se groupent derrière un résumé (Q7 A). */
 export const GROUP_ABOVE = 3;
 
-const ICONS = { command: SquareTerminal, edit: Pencil, search: Search, read: BookOpen, think: Brain, other: Wrench } as const;
+const ICONS = {
+  command: SquareTerminal,
+  edit: Pencil,
+  search: Search,
+  read: BookOpen,
+  list: Folder,
+  think: Brain,
+  other: Wrench,
+} as const;
+
+/** Icônes de la ligne repliée : un type par outil appelé, dans l'ordre du premier appel, 6 au plus (D-394). */
+const SUMMARY_ICONS = 6;
 
 /** Ligne : 28 px de haut au moins, texte `--fs-sm` en `--fg-2`, icône de 15 px. */
 const line = "flex min-h-7 min-w-0 items-center gap-2 py-0.5 text-sm text-fg-2";
@@ -194,6 +205,12 @@ export function ActivityGroup({ items, defaultExpanded, groupAbove = GROUP_ABOVE
         onPress={() => setChoice(!open)}
         className={cx(buttonReset, line, "-mx-0.5 max-w-full cursor-default rounded-sm px-0.5 text-start data-hovered:text-fg", focusRing)}
       >
+        <span aria-hidden="true" data-activity-kinds="" className="inline-flex shrink-0 items-center gap-1">
+          {[...new Set(items.map((i) => i.kind ?? "other"))].slice(0, SUMMARY_ICONS).map((kind) => {
+            const Icon = ICONS[kind];
+            return <Icon key={kind} size={15} />;
+          })}
+        </span>
         <span className={cx("min-w-0 truncate", failed > 0 && !open && "text-danger")}>{summary}</span>
         <ChevronDown size={12} className={cx("shrink-0 text-fg-3", !open && "-rotate-90")} />
       </Button>
