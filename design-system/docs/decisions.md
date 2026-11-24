@@ -2789,3 +2789,10 @@
 - Options écartées : une icône par appel (sept consoles d'affilée ne disent rien de plus) ; les icônes avec un compte par type (« 3 × console ») ; les icônes seulement pour un outil seul.
 - Validation : par délégation de l'utilisateur, 2026-11-24 (ses mots : « j'avais toujours une petite icône en fonction de l'outil… "Lister" c'est un dossier, "Rechercher" c'est une loupe »).
 
+## D-395 — Sidebar : un écart entre les lignes, l'anneau de focus dans la ligne
+- Date : 2026-11-24
+- Portée : Sidebar (complète D-039, D-040, D-368) ; anneau intérieur de Tabs, Table et List
+- Décision : chaque ligne de la sidebar a 2 px transparents en haut et en bas, pris dans sa hauteur (`--row-h`, `--row2-h` ne changent pas) ; son fond s'arrête au bord intérieur. Deux fonds voisins restent séparés de 4 px. L'anneau de focus clavier est tracé sur le bord du fond, à l'intérieur de la ligne. L'info-bulle d'un titre coupé s'ouvre à droite de la ligne, et non dessous. Correction liée : `focusRing` suivi de `-outline-offset-2` laissait gagner `outline-offset-1` (ordre de la feuille générée) ; l'anneau de Sidebar, Tabs, Table et List débordait de 1 px sur l'élément voisin. Ces composants utilisent maintenant `insetFocusRing`.
+- Raison : dans Alfred, une conversation sélectionnée au clavier et la conversation survolée juste dessous se collaient : le fond gris de survol touchait l'anneau bleu, et l'info-bulle du titre couvrait la carte survolée.
+- Options écartées : une marge entre les lignes (la ligne grandirait, contraire à D-368) ; un anneau plus fin.
+- Validation : par délégation de l'utilisateur, 2026-11-24. Story `EcartEntreLignes`.

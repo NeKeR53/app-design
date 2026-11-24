@@ -91,7 +91,7 @@ Couleurs : la sidebar lit des rôles dédiés, égaux par défaut aux rôles gé
 | Par défaut | Sans fond ; libellé `--fg-2` (Item) ou titre `--fg` (TreeItem). |
 | Survol | Fond `--hover` ; les actions et le « … » apparaissent ; la hauteur de la ligne ne change pas (D-368). |
 | Sélectionné | Fond `--selected`, fixe au survol : un clic sur l'élément sélectionné ne fait rien (D-039). Le texte tertiaire passe en `--fg-2` (contraste AA). |
-| Focus clavier | Anneau de focus `--accent`. |
+| Focus clavier | Anneau de focus `--accent`, tracé sur le bord du fond, à l'intérieur de la ligne : il ne touche jamais la ligne voisine (D-395). |
 | Section repliée | Chevron vers la droite ; contenu masqué. |
 | Section vide | La section n'est pas affichée. |
 
@@ -111,13 +111,13 @@ Couleurs : la sidebar lit des rôles dédiés, égaux par défaut aux rôles gé
 | Espace de travail : icône de dossier (ou `icon`) puis le nom, sans repère d'initiale (D-369, D-379) ; menu au-dessus, espace ouvert coché ; choisir l'espace ouvert ne fait rien ; un seul espace sans action : étiquette (D-231) | verrouillé | `EspaceDeTravail`, `EspaceUnique` |
 
 ## Contenu
-- Libellé ou titre trop long : coupé avec une ellipse, et texte complet dans une info-bulle.
+- Libellé ou titre trop long : coupé avec une ellipse, et texte complet dans une info-bulle, à droite de la ligne : elle ne couvre pas les lignes voisines (D-395).
 - Sous-titre : une seule ligne, coupée.
 - Nom d'espace de travail trop long : coupé avec une ellipse, nom complet en info-bulle ; dans le menu, ellipse au-delà de 320 px (spec DropdownMenu).
 - Section longue : 5 éléments, puis « Afficher plus (n) » ; ensuite « Afficher moins ». Choix mémorisé par section. Si l'élément sélectionné est au-delà, la section s'affiche en entier (D-045).
 
 ## Densité
-Hauteurs `--row-h` (Item) et `--row2-h` (TreeItem), marges comprises. La hauteur d'une ligne ne change jamais au survol, au focus ni à la sélection : les actions et le « … » apparaissent sans l'agrandir (D-368). Largeur `--side-w`. Rayon de 8 px (D-040).
+Hauteurs `--row-h` (Item) et `--row2-h` (TreeItem), marges comprises. La hauteur d'une ligne ne change jamais au survol, au focus ni à la sélection : les actions et le « … » apparaissent sans l'agrandir (D-368). Largeur `--side-w`. Rayon de 8 px (D-040). Écart de 2 px transparent en haut et en bas de chaque ligne, dans sa hauteur : deux fonds voisins (survol, sélection) restent séparés de 4 px (D-395).
 
 ## Clavier
 - Tab entre dans la sidebar sur l'élément sélectionné, puis passe aux entrées fixes, à l'espace de travail et au compte.

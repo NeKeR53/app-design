@@ -207,6 +207,63 @@ export const HauteurStable: Story = {
   },
 };
 
+/**
+ * Écart entre les lignes (D-395) : le fond de survol d'une ligne ne touche ni le fond ni l'anneau de focus
+ * de la ligne sélectionnée juste au-dessus ; l'info-bulle d'un titre coupé s'ouvre à droite de la ligne,
+ * sans couvrir les lignes voisines.
+ */
+function GapDemo() {
+  const [sel, setSel] = useState("c1");
+  return (
+    <div className="flex h-[400px]">
+      <div className="w-(--side-w) border-r border-line">
+        <Sidebar selectedId={sel} onSelectionChange={setSel} account={<Sidebar.Account name="Camille Martin" onSettings={() => setSel("settings")} />}>
+          <Sidebar.Section id="conv" title="Conversations">
+            <Sidebar.TreeItem id="c1" title="Vérification de compatibilité des modules installés" subtitle="Claude Code · En veille" actions={<DropdownMenu.Item label="Renommer" />} />
+            <Sidebar.TreeItem id="c2" title="Cartes de builds Prefect et Jenkins sur la page d'accueil" subtitle="Claude Code · En veille" actions={<DropdownMenu.Item label="Renommer" />} />
+            <Sidebar.TreeItem id="c3" title="Tickets" subtitle="Claude Code · En veille" />
+          </Sidebar.Section>
+        </Sidebar>
+      </div>
+    </div>
+  );
+}
+
+export const EcartEntreLignes: Story = {
+  render: () => <GapDemo />,
+  globals: { density: "desktop" },
+  play: async ({ canvasElement }) => {
+    const c = within(canvasElement);
+    const first = c.getByRole("row", { name: /^Vérification/ });
+    const second = c.getByRole("row", { name: /^Cartes de builds/ });
+    const title = within(second).getByText(/^Cartes de builds/);
+    // Fond d'une ligne : sa boîte moins l'écart transparent du haut et du bas.
+    const fill = (el: Element) => {
+      const r = el.getBoundingClientRect();
+      const st = getComputedStyle(el);
+      return { top: r.top + parseFloat(st.borderTopWidth), bottom: r.bottom - parseFloat(st.borderBottomWidth) };
+    };
+    await expect(getComputedStyle(first).backgroundClip).toBe("padding-box");
+    // Info-bulle du titre coupé : à droite de la ligne, pas sur la ligne suivante.
+    await userEvent.hover(title);
+    const tip = await waitFor(() => body().getByRole("tooltip"), { timeout: 2000 });
+    await expect(tip).toHaveTextContent(/^Cartes de builds Prefect et Jenkins/);
+    await expect(tip.getBoundingClientRect().left).toBeGreaterThanOrEqual(second.getBoundingClientRect().right);
+    await userEvent.unhover(title);
+    await waitFor(() => expect(body().queryByRole("tooltip")).toBeNull());
+    // Ligne sélectionnée au clavier (anneau de focus), survol de la suivante.
+    await userEvent.click(first);
+    await userEvent.keyboard("{ArrowDown}{ArrowUp}");
+    await waitFor(() => expect(first).toHaveAttribute("data-focus-visible", "true"));
+    await userEvent.hover(second);
+    await waitFor(() => expect(second).toHaveAttribute("data-hovered", "true"));
+    // 4 px entre les deux fonds ; l'anneau (2 px), posé sur le bord du fond, ne déborde pas dans l'écart.
+    await expect(fill(second).top - fill(first).bottom).toBeGreaterThanOrEqual(4);
+    const st = getComputedStyle(first);
+    await expect(parseFloat(st.outlineWidth) + parseFloat(st.outlineOffset)).toBeLessThanOrEqual(-parseFloat(st.borderBottomWidth));
+  },
+};
+
 /** Action rapide en bouton-icône, sans menu « … » : visible au survol, la ligne garde sa hauteur (D-381). */
 export const ActionRapide: Story = {
   render: () => <Demo />,

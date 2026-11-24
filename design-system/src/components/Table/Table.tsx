@@ -8,7 +8,7 @@ import { Cell, Column, ColumnResizer, ResizableTableContainer, Row, Table as RAC
 import { Button } from "react-aria-components/Button";
 import { Checkbox } from "react-aria-components/Checkbox";
 import { useMessages, useStoredState } from "../../provider/SocleProvider";
-import { buttonReset, cx, focusRing } from "../../lib/cx";
+import { buttonReset, cx, focusRing, insetFocusRing } from "../../lib/cx";
 import { ErrorBanner, highlight, LoadError, NoResults, ReloadBar, type ResultsStateProps } from "../../lib/results";
 import { ArrowDown, ArrowUp, Check, ChevronDown, Minus } from "../../icons";
 import { DropdownMenu, useRowMenu } from "../DropdownMenu/DropdownMenu";
@@ -263,8 +263,7 @@ export function Table<T extends { id: string }>({
                     headH,
                     padX,
                     col.align === "end" ? "text-end" : "text-start",
-                    focusRing,
-                    "data-focus-visible:-outline-offset-2",
+                    insetFocusRing,
                   )}
                 >
                   {({ allowsSorting, sortDirection }) => (
@@ -312,8 +311,7 @@ export function Table<T extends { id: string }>({
                   className={cx(
                     "group/row cursor-default outline-none",
                     "data-hovered:[&>td]:bg-hover data-selected:[&>td]:bg-selected data-selected:data-hovered:[&>td]:bg-selected",
-                    focusRing,
-                    "data-focus-visible:-outline-offset-2",
+                    insetFocusRing,
                   )}
                 >
                   {multiple && (
@@ -404,7 +402,7 @@ function GroupRow({ item, colCount, isCollapsed, onToggle, countLabel }: { item:
       onAction={onToggle}
       data-group={item.group}
       data-collapsed={isCollapsed || undefined}
-      className={cx("group/grow cursor-default outline-none data-hovered:[&>td]:bg-hover", focusRing, "data-focus-visible:-outline-offset-2")}
+      className={cx("group/grow cursor-default outline-none data-hovered:[&>td]:bg-hover", insetFocusRing)}
     >
       <Cell colSpan={colCount} className="h-(--row-h) border-b border-line px-2 align-bottom pb-1 pt-2">
         <span className="flex min-w-0 items-center gap-1">

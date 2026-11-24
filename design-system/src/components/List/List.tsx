@@ -7,7 +7,7 @@ import type { Key, Selection } from "react-aria-components";
 import { GridList, GridListHeader, GridListItem, GridListSection } from "react-aria-components/GridList";
 import { Button } from "react-aria-components/Button";
 import { Checkbox } from "react-aria-components/Checkbox";
-import { buttonReset, cx, focusRing } from "../../lib/cx";
+import { buttonReset, cx, focusRing, insetFocusRing } from "../../lib/cx";
 import { ErrorBanner, highlight, LoadError, NoResults, ReloadBar, RetryButton, type ResultsStateProps } from "../../lib/results";
 import { Check } from "../../icons";
 import { DropdownMenu, useRowMenu } from "../DropdownMenu/DropdownMenu";
@@ -104,8 +104,7 @@ export function List({
         // Sur tactile, 44 px au moins (List.spec.md, Taille d'écran).
         "pointer-coarse:min-h-11",
         "data-hovered:bg-hover data-selected:bg-selected data-selected:data-hovered:bg-selected",
-        focusRing,
-        "data-focus-visible:-outline-offset-2",
+        insetFocusRing,
       )}
     >
       {selectionMode === "multiple" && (

@@ -2,6 +2,15 @@
 
 Versions selon semver (règle 6 du skill design) : une nouvelle option facultative est une version mineure ; un changement qui casse l'existant est une version majeure, avec une note de migration.
 
+## [1.13.1] — 2026-11-24
+
+Version corrective : aucune API publique ne change ; la hauteur des lignes ne change pas.
+
+### Corrigé
+- `Sidebar` : 2 px transparents en haut et en bas de chaque ligne ; deux fonds voisins (survol, sélection) sont séparés de 4 px. L'anneau de focus reste dans la ligne (D-395). Story `EcartEntreLignes`.
+- `Sidebar` : l'info-bulle d'un libellé ou d'un titre coupé s'ouvre à droite de la ligne, sans couvrir les lignes voisines (D-395).
+- `Tabs`, `Table`, `List`, `Sidebar` : l'anneau de focus intérieur débordait de 1 px sur l'élément voisin (`outline-offset-1` l'emportait sur `-outline-offset-2`). Nouvel utilitaire interne `insetFocusRing` (D-395).
+
 ## [1.13.0] — 2026-11-24
 
 Version mineure : un type d'outil et un ajout de rendu ; aucune API ne casse.

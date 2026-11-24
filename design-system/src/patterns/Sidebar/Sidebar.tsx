@@ -282,16 +282,21 @@ const rowBase = cx(
   "data-selected:bg-selected data-selected:text-fg data-selected:data-hovered:bg-selected",
   // Texte de l'entrée active : --side-selected-fg (D-337), repris par tout ce qui est en --fg dans la ligne.
   "data-selected:[--fg:var(--side-selected-fg)]",
-  focusRing,
-  "data-focus-visible:-outline-offset-2",
+  // Écart entre deux lignes (D-395) : 2 px transparents en haut et en bas, dans la hauteur de la ligne ;
+  // le fond s'arrête au bord intérieur. Deux fonds voisins (survol, sélection) restent séparés de 4 px.
+  "border-y-2 border-transparent bg-clip-padding",
+  // Anneau de focus posé sur le bord du fond, dans la ligne : il ne touche jamais la ligne voisine (D-395).
+  // Pas `focusRing` suivi d'un décalage : son `outline-offset-1` l'emporterait.
+  "data-focus-visible:outline-2 data-focus-visible:outline-solid data-focus-visible:outline-focus data-focus-visible:-outline-offset-4",
 );
 
 /** Trait et coude qui relient un enfant à son parent (D-042). */
 function Connector() {
+  // Le trait couvre aussi l'écart transparent des lignes (D-395) : il reste continu d'un enfant à l'autre.
   const { depth, last } = useContext(Depth);
   if (depth === 0) return null;
   return (
-    <span aria-hidden className="pointer-events-none absolute top-0 left-4 h-full w-3">
+    <span aria-hidden className="pointer-events-none absolute -top-0.5 left-4 h-[calc(100%+4px)] w-3">
       {last ? (
         <span className="absolute top-0 left-0 h-1/2 w-2 rounded-bl-[8px] border-b border-l border-tree-line" />
       ) : (
@@ -371,7 +376,7 @@ function Item({ id, icon, label, count, indicator, actions, children }: SidebarI
           <>
             <Connector />
             {depth === 0 && <span className="mr-2 inline-grid w-4 shrink-0 place-items-center">{icon}</span>}
-            <OverflowTooltip text={label} />
+            <OverflowTooltip text={label} beside />
             {hasKids && (
               <Button slot="chevron" aria-label={isExpanded ? m.collapseItem(label) : m.expandItem(label)} className={cx(buttonReset, "ml-1 inline-grid size-4 place-items-center rounded-sm text-fg-3 data-hovered:bg-selected")}>
                 <ChevronRight size={12} className={cx("shrink-0", isExpanded && "rotate-90")} />
@@ -407,7 +412,7 @@ function TwoLine({ id, title, subtitle, meta, status, unread, indicator, actions
   const unreadKids = kids.filter((k) => k.props.unread).length;
   const showSummary = kids.length > 0 && !ctx.isExpanded(id);
   const row = (
-    <TreeItem ref={currentRef} id={id} textValue={title} className={cx(rowBase, "box-border min-h-(--row2-h) py-1.5", depth > 0 ? "pl-8" : "pl-2", "pr-2")}>
+    <TreeItem ref={currentRef} id={id} textValue={title} className={cx(rowBase, "box-border min-h-(--row2-h) py-1", depth > 0 ? "pl-8" : "pl-2", "pr-2")}>
       <TreeItemContent>
         {({ isExpanded }) => (
           <>
@@ -416,7 +421,7 @@ function TwoLine({ id, title, subtitle, meta, status, unread, indicator, actions
               {/* Ligne du titre : hauteur fixe d'une ligne de texte (h-lh). Ni le « … » de 22 px,
                   ni l'icône d'état ne la font grandir, au survol, au focus ou à la sélection (D-368). */}
               <span className="flex h-lh min-w-0 items-center gap-1.5">
-                <OverflowTooltip text={title} textClass="min-w-0 truncate text-fg" />
+                <OverflowTooltip text={title} textClass="min-w-0 truncate text-fg" beside />
                 {kids.length > 0 && (
                   <Button slot="chevron" aria-label={isExpanded ? m.collapseItem(title) : m.expandItem(title)} className={cx(buttonReset, "inline-grid size-4 shrink-0 place-items-center rounded-sm text-fg-3 data-hovered:bg-selected")}>
                     <ChevronRight size={12} className={cx(isExpanded && "rotate-90")} />

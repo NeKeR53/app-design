@@ -19,7 +19,7 @@ import { Dialog as AriaDialog, DialogTrigger } from "react-aria-components/Dialo
 import { GridList, GridListItem } from "react-aria-components/GridList";
 import { Popover } from "react-aria-components/Popover";
 import { useMessages, useSocle } from "../../provider/SocleProvider";
-import { buttonReset, cx, focusRing } from "../../lib/cx";
+import { buttonReset, cx, focusRing, insetFocusRing } from "../../lib/cx";
 import { Check, ChevronDown, X } from "../../icons";
 import { IconButton } from "../IconButton/IconButton";
 import { itemClass, popoverClass } from "../DropdownMenu/DropdownMenu";
@@ -110,8 +110,7 @@ const tabClass = cx(
   "socle-tab group relative flex h-[calc(var(--row-h)-4px)] max-w-[200px] shrink-0 cursor-default items-center rounded-md pl-2.5 text-md text-fg-2 select-none",
   "data-hovered:bg-hover data-hovered:text-fg",
   "data-selected:bg-selected data-selected:text-fg data-selected:data-hovered:bg-selected",
-  focusRing,
-  "data-focus-visible:-outline-offset-2",
+  insetFocusRing,
 );
 
 export function Tabs({ items, selectedId, onSelectionChange, onClose, pageTitle, id }: TabsProps) {
