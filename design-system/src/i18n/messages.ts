@@ -464,8 +464,15 @@ export interface SocleMessages {
   activityRunning: string;
   activityDone: string;
   activityFailed: string;
+  /** Outil interrompu (D-384). */
+  activityStopped: string;
   activityDetail: (title: string) => string;
-  activityGroup: (total: number, running: number, failed: number) => string;
+  /** Nom du chevron quand l'objet est un lien (D-384). */
+  activityToggle: (title: string) => string;
+  /** Nom du groupe de pièces sous la sortie (D-384). */
+  activityAttachments: (title: string) => string;
+  /** Résumé du groupe ; `stopped` : outils arrêtés (D-384). */
+  activityGroup: (total: number, running: number, failed: number, stopped: number) => string;
   workDuration: (seconds: number) => string;
   workThinking: string;
   workTool: (name: string) => string;
@@ -900,9 +907,12 @@ export const frenchMessages: SocleMessages = {
   activityRunning: "En cours",
   activityDone: "Terminé",
   activityFailed: "Échec",
+  activityStopped: "Arrêté",
   activityDetail: (t) => `Détail de ${t}`,
-  activityGroup: (n, r, f) =>
-    [`${n} outil${s(n)} exécuté${s(n)}`, r ? `${r} en cours` : "", f ? `${f} en échec` : ""].filter(Boolean).join(" · "),
+  activityToggle: (t) => `Sortie de ${t}`,
+  activityAttachments: (t) => `Pièces de ${t}`,
+  activityGroup: (n, r, f, a) =>
+    [`${n} outil${s(n)} exécuté${s(n)}`, r ? `${r} en cours` : "", f ? `${f} en échec` : "", a ? `${a} arrêté${s(a)}` : ""].filter(Boolean).join(" · "),
   workDuration: (t) =>
     t < 60 ? `${t} s` : t < 3600 ? `${Math.floor(t / 60)} min ${t % 60} s` : `${Math.floor(t / 3600)} h ${Math.floor((t % 3600) / 60)} min ${t % 60} s`,
   workThinking: "Réflexion en cours",

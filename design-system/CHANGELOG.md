@@ -4,6 +4,12 @@ Versions selon semver (règle 6 du skill design) : une nouvelle option facultati
 
 ## [Non publié]
 
+### Ajouté
+- `AgentActivity` : option `onObjectPress`, l'objet devient un lien en chasse fixe ; avec une sortie, un chevron à part l'ouvre (D-384). Story `ObjetCliquable`.
+- `AgentActivity` : option `attachments` (ReactNode), pièces produites par l'outil sous le texte de la sortie ; une pièce seule rend la ligne ouvrable (D-384). Story `Pieces`.
+- `AgentActivity` : état `status: "stopped"`, « Arrêté » en `--fg-3` ; `ActivityGroup` ajoute « · n arrêté(s) » au résumé (D-384). Story `Arrete`.
+- Messages : `activityStopped`, `activityToggle`, `activityAttachments` ; `activityGroup` reçoit un 4e argument, le nombre d'arrêtés (une fonction à 3 arguments reste acceptée).
+
 ## [1.5.0] — 2026-11-24
 
 Version mineure : une option facultative ; aucune API ne casse.

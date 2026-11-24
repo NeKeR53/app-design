@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { useState } from "react";
-import { expect, userEvent, within } from "storybook/test";
+import { expect, fn, userEvent, within } from "storybook/test";
+import { AttachmentChip } from "../AttachmentChip/AttachmentChip";
 import { ActivityGroup, AgentActivity, type ActivityItem } from "./AgentActivity";
 
 const meta: Meta<typeof AgentActivity> = {
@@ -134,5 +135,107 @@ export const ErreurVisible: Story = {
     await expect(c.getByText("Échec")).toBeVisible();
     await expect(c.getByText("npm test")).toBeVisible();
     await expect(c.queryByText("formatDate")).toBeNull();
+  },
+};
+
+/** Capture factice, en `data:`, pour les pièces. */
+const CAPTURE =
+  "data:image/svg+xml;utf8," +
+  encodeURIComponent(
+    '<svg xmlns="http://www.w3.org/2000/svg" width="160" height="100"><defs><linearGradient id="g" x2="1" y2="1"><stop offset="0" stop-color="#9db4e8"/><stop offset="1" stop-color="#d6c3ef"/></linearGradient></defs><rect width="160" height="100" fill="url(#g)"/></svg>',
+  );
+
+const openFile = fn();
+
+/** Objet cliquable (D-384) : l'objet devient un lien ; avec une sortie, un chevron à part l'ouvre. */
+export const ObjetCliquable: Story = {
+  render: () => (
+    <>
+      <AgentActivity kind="read" verb="Lu" object="src/dates.ts" onObjectPress={() => openFile("src/dates.ts")} />
+      <AgentActivity kind="edit" verb="Modifié" object="src/app.tsx" detail={"+ return d.toLocaleDateString();\n- return d.toISOString();"} onObjectPress={() => openFile("src/app.tsx")} />
+      <AgentActivity kind="search" verb="Recherché" object="formatDate" />
+    </>
+  ),
+  play: async ({ canvasElement }) => {
+    const c = within(canvasElement);
+    openFile.mockClear();
+    const read = c.getByRole("button", { name: "src/dates.ts" });
+    await userEvent.click(read);
+    await expect(openFile).toHaveBeenCalledWith("src/dates.ts");
+    await expect(getComputedStyle(read).fontFamily).toBe(getComputedStyle(document.documentElement).getPropertyValue("--font-mono").trim());
+    // Tab : le lien de la 2e ligne, puis son chevron ; Entrée ouvre la sortie sans ouvrir le fichier.
+    await userEvent.tab();
+    await expect(c.getByRole("button", { name: "src/app.tsx" })).toHaveFocus();
+    await userEvent.tab();
+    const toggle = c.getByRole("button", { name: "Sortie de Modifié src/app.tsx" });
+    await expect(toggle).toHaveFocus();
+    await expect(toggle).toHaveAttribute("aria-expanded", "false");
+    await userEvent.keyboard("{Enter}");
+    await expect(toggle).toHaveAttribute("aria-expanded", "true");
+    await expect(c.getByRole("textbox", { name: "Détail de Modifié src/app.tsx" })).toBeVisible();
+    await expect(openFile).toHaveBeenCalledTimes(1);
+    // Sans `onObjectPress`, l'objet reste du texte.
+    await expect(c.queryByRole("button", { name: "formatDate" })).toBeNull();
+  },
+};
+
+/** Pièces dans la sortie (D-384) : sous le texte de `detail` ; une pièce seule suffit à rendre la ligne ouvrable. */
+export const Pieces: Story = {
+  render: () => (
+    <>
+      <AgentActivity kind="other" verb="Capture d'écran" detail="Capture enregistrée : 1280 × 800" attachments={<AttachmentChip kind="image" name="capture.png" src={CAPTURE} />} />
+      <AgentActivity
+        kind="other"
+        verb="Généré"
+        object="rapport"
+        attachments={
+          <>
+            <AttachmentChip kind="image" name="graphique.png" src={CAPTURE} />
+            <AttachmentChip kind="file" name="rapport.pdf" />
+          </>
+        }
+      />
+    </>
+  ),
+  play: async ({ canvasElement }) => {
+    const c = within(canvasElement);
+    const [shot, report] = c.getAllByRole("button", { expanded: false }) as [HTMLElement, HTMLElement];
+    await userEvent.click(shot);
+    const textbox = c.getByRole("textbox", { name: "Détail de Capture d'écran" });
+    const pieces = c.getByRole("group", { name: "Pièces de Capture d'écran" });
+    await expect(pieces).toBeVisible();
+    // Les pièces viennent sous le texte.
+    await expect(textbox.compareDocumentPosition(pieces) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    await userEvent.click(report);
+    await expect(c.getByRole("group", { name: "Pièces de Généré rapport" })).toBeVisible();
+    await expect(c.queryByRole("textbox", { name: "Détail de Généré rapport" })).toBeNull();
+    await expect(c.getByText("rapport.pdf")).toBeVisible();
+  },
+};
+
+/** État « Arrêté » (D-384) : icône du type, « Arrêté » en `--fg-3` ; compté dans le résumé ; pas gardé visible, groupe replié. */
+export const Arrete: Story = {
+  render: () => (
+    <>
+      <AgentActivity kind="command" verb="Exécuté" object="npm run dev" status="stopped" />
+      <ActivityGroup items={[...DONE.slice(0, 4), { id: "5", kind: "command", verb: "Exécuté", object: "npm run dev", status: "stopped" }]} />
+    </>
+  ),
+  play: async ({ canvasElement }) => {
+    const c = within(canvasElement);
+    const line = canvasElement.querySelector('[data-activity="stopped"]') as HTMLElement;
+    await expect(line.querySelector("[data-spinner]")).toBeNull();
+    const label = within(line).getByText("Arrêté");
+    await expect(label).not.toHaveClass("sr-only");
+    const probe = document.createElement("span");
+    probe.style.color = "var(--fg-3)";
+    document.body.append(probe);
+    await expect(getComputedStyle(label).color).toBe(getComputedStyle(probe).color);
+    probe.remove();
+    const head = c.getByRole("button", { name: "5 outils exécutés · 1 arrêté" });
+    await expect(head).toHaveAttribute("aria-expanded", "false");
+    await expect(c.getAllByText("Arrêté")).toHaveLength(1);
+    await userEvent.click(head);
+    await expect(c.getAllByText("Arrêté")).toHaveLength(2);
   },
 };
