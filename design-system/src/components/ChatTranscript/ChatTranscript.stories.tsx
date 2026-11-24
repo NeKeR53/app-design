@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { useState } from "react";
+import { flushSync } from "react-dom";
 import { expect, fn, userEvent, waitFor, within } from "storybook/test";
 import { ChatTranscript } from "./ChatTranscript";
 import { ChatMessage } from "./ChatMessage";
@@ -97,6 +98,7 @@ export const Vide: Story = {
 /** Relevé de démonstration : « Ajouter du texte » prolonge la réponse, « Envoyer » change `followKey`. */
 function Streaming({ onEarlier }: { onEarlier?: () => void }) {
   const [chunks, setChunks] = useState(1);
+  const [blocks, setBlocks] = useState(0);
   const [sent, setSent] = useState(0);
   const [earlier, setEarlier] = useState(false);
   return (
@@ -107,6 +109,10 @@ function Streaming({ onEarlier }: { onEarlier?: () => void }) {
         </button>
         <button type="button" onClick={() => setSent((n) => n + 1)}>
           Envoyer
+        </button>
+        {/* Bloc de 400 px (code, image, outils dépliés) rendu tout de suite, dans la même tâche que le clic. */}
+        <button type="button" onClick={() => flushSync(() => setBlocks((n) => n + 1))}>
+          Ajouter un grand bloc
         </button>
       </div>
       <ChatTranscript
@@ -126,6 +132,11 @@ function Streaming({ onEarlier }: { onEarlier?: () => void }) {
             <p key={i} className="m-0 mb-3">
               Fragment {i + 1} de la réponse en cours, assez long pour occuper plusieurs lignes dans la colonne de la conversation.
             </p>
+          ))}
+          {Array.from({ length: blocks }, (_, i) => (
+            <div key={`bloc-${i}`} className="mb-3 h-[400px] rounded-md bg-surface-side p-3">
+              Grand bloc {i + 1}
+            </div>
           ))}
         </ChatMessage>
       </ChatTranscript>
@@ -181,6 +192,40 @@ export const SeuilDeCollage: Story = {
     await userEvent.click(c.getByRole("button", { name: "Ajouter du texte" }));
     await waitFor(() => expect(fromBottom(scroller)).toBeLessThan(2));
     await expect(c.queryByRole("button", { name: "Nouveaux messages" })).toBeNull();
+  },
+};
+
+/**
+ * En bas, un grand bloc arrive juste après un défilement du relevé, avant que l'événement de ce défilement soit lu :
+ * le relevé reste collé (D-389). Avant la correction, l'événement lu après la croissance (400 px du bas) décrochait
+ * le suivi et « Nouveaux messages » apparaissait sans que l'utilisateur ait remonté.
+ */
+export const GrandBlocApresDefilement: Story = {
+  render: () => <Streaming />,
+  play: async ({ canvasElement }) => {
+    const c = within(canvasElement);
+    const scroller = c.getByRole("region", { name: "Conversation" });
+    const big = c.getByRole("button", { name: "Ajouter un grand bloc" });
+    await waitFor(() => expect(fromBottom(scroller)).toBeLessThan(2));
+    for (let round = 0; round < 3; round++) {
+      // Un grand bloc : le relevé le suit en défilant. L'événement de ce défilement n'est lu qu'à l'image suivante…
+      big.click();
+      await new Promise<void>((resolve) => {
+        const tick = () => (fromBottom(scroller) < 2 ? resolve() : setTimeout(tick, 0));
+        setTimeout(tick, 0);
+      });
+      // … et le bloc suivant est rendu avant, dès la tâche d'après.
+      big.click();
+      await new Promise((resolve) => setTimeout(resolve, 120));
+      await waitFor(() => expect(fromBottom(scroller)).toBeLessThan(2));
+      await expect(c.queryByRole("button", { name: "Nouveaux messages" })).toBeNull();
+    }
+    // Remonté pour de bon : le relevé reste sur ce qu'on lit.
+    scroller.scrollTop = 0;
+    scroller.dispatchEvent(new Event("scroll"));
+    big.click();
+    await c.findByRole("button", { name: "Nouveaux messages" });
+    await expect(scroller.scrollTop).toBe(0);
   },
 };
 

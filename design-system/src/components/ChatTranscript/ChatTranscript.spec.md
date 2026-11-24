@@ -53,6 +53,7 @@ Aucune.
 |---|---|---|
 | À moins de 100 px du bas, la zone suit le contenu (fragment, outil, image chargée) | verrouillé | `CollageEnBas`, `SeuilDeCollage` |
 | Remonté, un nouveau contenu affiche « Nouveaux messages ↓ » ; la position ne bouge pas | verrouillé | `CollageEnBas` |
+| Seul un défilement vers le haut décroche le suivi : un événement de défilement lu après une croissance du contenu (grand bloc, image, outils) ne décroche pas (D-389) | verrouillé | `GrandBlocApresDefilement` |
 | Le bouton ramène en bas, recolle, disparaît ; le focus reste sur la zone | verrouillé | `CollageEnBas` |
 | Un changement de `followKey` (envoi) ramène en bas, même remonté | réglable par l'app (`followKey`) | `CollageEnBas` |
 | `announce` est lu poliment, une fois, quand il change ; jamais mot à mot | réglable par l'app (`announce`) | `AnnonceDeFin` |
@@ -89,7 +90,7 @@ Au centre d'une page ou d'un panneau de chat, au-dessus de `ChoicePrompt` et de 
 Contient `Button` (« Afficher les messages précédents »), `Tooltip` (détail du contexte), un `Button` de React Aria et l'icône interne `ArrowDown`. Reçoit `ChatMessage`, `ActivityGroup`, `WorkStatus`, `WorkSummary`, `EmptyState`.
 
 ## Décisions
-D-026, D-375, D-382
+D-026, D-375, D-382, D-389
 
 ## Questions ouvertes
 Aucune.

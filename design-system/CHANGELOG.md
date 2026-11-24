@@ -2,6 +2,19 @@
 
 Versions selon semver (règle 6 du skill design) : une nouvelle option facultative est une version mineure ; un changement qui casse l'existant est une version majeure, avec une note de migration.
 
+## [1.9.0] — 2026-11-24
+
+Version mineure : une option facultative et une correction ; aucune API ne casse.
+
+### Ajouté
+- `ActivityGroup` : option `groupAbove` (défaut 3), seuil au-delà duquel les outils se groupent ; avec `1` et `defaultExpanded={false}`, une seule ligne repliée (D-390).
+
+### Changé
+- `ActivityGroup` : le résumé dit « n outils · r en cours » pendant le travail, « n outils exécutés » ensuite (D-390).
+
+### Corrigé
+- `ChatTranscript` : le suivi du bas ne décroche plus quand un grand bloc arrive juste après un défilement du relevé ; seul un défilement vers le haut le décroche (D-389).
+
 ## [1.8.2] — 2026-11-24
 
 Correction.

@@ -45,6 +45,12 @@ export function ChatTranscript({ children, label, followKey, announce, empty, ha
   const column = useRef<HTMLDivElement>(null);
   /** L'utilisateur est en bas : le relevé suit le contenu. */
   const pinned = useRef(true);
+  /**
+   * Dernière position connue de la zone. Seul un défilement vers le haut décroche le suivi : un événement de
+   * défilement lu après une croissance du contenu (le nôtre, différé d'une image) ne veut pas dire que l'utilisateur
+   * est remonté (D-389).
+   */
+  const lastTop = useRef(0);
   /** Distance au bas à garder pendant l'ajout des messages plus anciens. */
   const keepFromBottom = useRef<number | null>(null);
   const [unseen, setUnseen] = useState(false);
@@ -52,7 +58,9 @@ export function ChatTranscript({ children, label, followKey, announce, empty, ha
 
   const toBottom = useCallback(() => {
     const el = scroller.current;
-    if (el) el.scrollTop = el.scrollHeight;
+    if (!el) return;
+    el.scrollTop = el.scrollHeight;
+    lastTop.current = el.scrollTop;
   }, []);
 
   // Ouverture et envoi de l'utilisateur : retour en bas, même s'il avait remonté.
@@ -76,6 +84,7 @@ export function ChatTranscript({ children, label, followKey, announce, empty, ha
       if (keepFromBottom.current !== null) {
         if (!grew) return;
         el.scrollTop = el.scrollHeight - keepFromBottom.current;
+        lastTop.current = el.scrollTop;
         keepFromBottom.current = null;
         return;
       }
@@ -90,8 +99,16 @@ export function ChatTranscript({ children, label, followKey, announce, empty, ha
   const onScroll = () => {
     const el = scroller.current;
     if (!el) return;
-    pinned.current = el.scrollHeight - el.scrollTop - el.clientHeight < STICK_DISTANCE;
-    if (pinned.current) setUnseen(false);
+    const movedUp = el.scrollTop < lastTop.current - 1;
+    lastTop.current = el.scrollTop;
+    if (el.scrollHeight - el.scrollTop - el.clientHeight < STICK_DISTANCE) {
+      // Revenu en bas (ou resté en bas) : le suivi reprend.
+      pinned.current = true;
+      setUnseen(false);
+    } else if (movedUp) {
+      // Remonté : le relevé reste sur ce qu'on lit.
+      pinned.current = false;
+    }
   };
 
   const showNew = () => {

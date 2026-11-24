@@ -2740,3 +2740,20 @@
 - Décision : chaque bouton de la ligne de saisie (« + », boutons de l'app, arrêt, envoi) est posé dans une case de la hauteur d'une ligne du champ (28 px), centré dedans. La ligne reste calée en bas : sur plusieurs lignes, les boutons restent centrés sur la dernière.
 - Raison : en densité desktop, les boutons-icônes de 24 px étaient calés sur le bas du champ de 28 px, 2 px sous le milieu du texte ; Alexandre les voyait trop bas.
 - Validation : correction d'un défaut signalé par Alexandre, 2026-11-24. Stories `BoutonsCentres` et `BoutonsCentresWeb`.
+
+## D-389 — ChatTranscript : seul un défilement vers le haut décroche le suivi
+- Date : 2026-11-24
+- Portée : ChatTranscript (complète D-375)
+- Décision : le relevé ne décroche plus le suivi du bas sur la seule distance au bas lue dans un événement de défilement. Il garde sa dernière position connue (y compris celle de ses propres défilements) ; un événement ne décroche que si la position a reculé et que la distance au bas dépasse 100 px. À moins de 100 px du bas, le suivi reprend.
+- Raison : mesuré dans Alfred (banc en Chrome, 2026-11-24) : pendant qu'une réponse s'écrit, le relevé défile en bas ; l'événement de ce défilement n'est lu qu'à l'image suivante. Si un grand bloc (code, image, outils dépliés, ≥ 100 px) arrive entre-temps, l'événement lit 400 px du bas, le relevé croit que l'utilisateur est remonté, cesse de suivre et montre « Nouveaux messages » : la lecture « remonte » sans geste de l'utilisateur.
+- Options écartées : relever le seuil (le saut revient avec un bloc plus grand) ; ignorer tout événement pendant 100 ms après un défilement du relevé (un vrai geste de l'utilisateur serait perdu).
+- Validation : comportement voulu décrit par l'utilisateur (« tout en bas, il suit ; remonté, il reste ; revenu en bas, il reprend »), 2026-11-24 ; correction par délégation.
+
+## D-390 — ActivityGroup : seuil de groupe réglable, résumé pendant le travail
+- Date : 2026-11-24
+- Portée : ActivityGroup (complète D-376)
+- Décision : option facultative `groupAbove` (défaut 3) : au-delà, les outils se groupent derrière le résumé. Avec `groupAbove={1}` et `defaultExpanded={false}`, les appels d'outils qui se suivent forment une seule ligne repliée, même pendant le travail. Le résumé dit « 7 outils · 2 en cours » tant qu'un outil tourne, « 7 outils exécutés » ensuite ; il suit chaque nouvel outil. Déplié, il montre une ligne par appel, comme avant.
+- Raison : demande de l'utilisateur dans Alfred : voir d'un coup d'œil combien d'outils ont été appelés et combien tournent, sans que les lignes encombrent la conversation.
+- Options écartées : changer le défaut à 1 pour toutes les apps (changement visible de l'existant) ; « 7 outils exécutés · 2 en cours » (faux tant que deux tournent).
+- Validation : par délégation de l'utilisateur, 2026-11-24 (ses mots : « une seule ligne qui est un petit replié, où je vois le nombre d'appels d'outils et le nombre d'outils en cours »).
+

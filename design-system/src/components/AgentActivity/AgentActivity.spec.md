@@ -3,7 +3,7 @@ Statut : validé (2026-11-23) — Version : depuis la version qui suit 1.0.0
 Validation : docs/validation/components/Chat-v1.html (Q7 A, Q11 A) ; docs/validation/components/AgentActivity-v2.html (Q1 A, Q2 A, Q3 A, D-384)
 
 ## Rôle
-`AgentActivity` montre un outil appelé par l'agent sur une ligne ; `ActivityGroup` montre une suite d'outils et la groupe derrière un résumé au-delà de 3 (D-376).
+`AgentActivity` montre un outil appelé par l'agent sur une ligne ; `ActivityGroup` montre une suite d'outils et la groupe derrière un résumé au-delà de 3, ou du seuil choisi par l'app (D-376, D-390).
 Ne pas l'utiliser pour :
 - l'étape en cours avec son temps écoulé : prendre `WorkStatus` ;
 - le travail d'un tour terminé : le mettre dans `WorkSummary` ;
@@ -45,7 +45,8 @@ Ne pas l'utiliser pour :
 | Option | Type | Défaut | Description |
 |---|---|---|---|
 | `items` | `ActivityItem[]` | — (obligatoire) | Outils (`id` + options d'`AgentActivity`). |
-| `defaultExpanded` | `boolean` | déplié si un outil tourne | Ouverture au premier affichage. |
+| `defaultExpanded` | `boolean` | déplié si un outil tourne | Ouverture au premier affichage. Avec `false`, le groupe reste replié pendant le travail ; le résumé suit le compte. |
+| `groupAbove` | `number` | `3` | Nombre d'outils au-delà duquel ils se groupent derrière le résumé. Avec `1`, deux outils qui se suivent forment une seule ligne repliable (D-390). |
 
 ## Exclus
 - Pas d'adresse (`href`) sur l'objet : l'app ouvre le fichier dans `onObjectPress` (D-384).
@@ -71,8 +72,9 @@ Ne pas l'utiliser pour :
 |---|---|---|
 | Icône par type, objet en chasse fixe, roue pendant l'exécution, « Échec » en `--danger` | verrouillé | `Lignes` |
 | Avec `detail`, clic, Entrée ou Espace ouvrent la sortie, de 2 à 12 lignes | réglable par l'app (`detail`) | `Detail` |
-| Jusqu'à 3 outils, une ligne chacun, sans résumé | verrouillé | `PeuDOutils` |
-| Au-delà de 3, résumé repliable au clavier | verrouillé | `Groupe` |
+| Jusqu'à 3 outils, une ligne chacun, sans résumé | réglable par l'app (`groupAbove`) | `PeuDOutils` |
+| Au-delà de 3, résumé repliable au clavier | réglable par l'app (`groupAbove`) | `Groupe` |
+| Résumé « n outils · r en cours » pendant le travail, « n outils exécutés » ensuite ; à jour à chaque outil (D-390) | verrouillé | `GroupeEnCours`, `UneLigneRepliee` |
 | Déplié tant qu'un outil tourne, replié à la fin (sauf choix de l'utilisateur) | verrouillé | `GroupeEnCours` |
 | Un outil en échec reste visible, groupe replié | verrouillé | `ErreurVisible` |
 | Avec `onObjectPress`, l'objet est un lien ; la sortie s'ouvre par un chevron à part | réglable par l'app (`onObjectPress`) | `ObjetCliquable` |

@@ -118,10 +118,56 @@ export const GroupeEnCours: Story = {
   },
   play: async ({ canvasElement }) => {
     const c = within(canvasElement);
-    const head = c.getByRole("button", { name: "5 outils exécutés · 1 en cours" });
+    const head = c.getByRole("button", { name: "5 outils · 1 en cours" });
     await expect(head).toHaveAttribute("aria-expanded", "true");
     await userEvent.click(c.getByRole("button", { name: "Terminer" }));
     await expect(c.getByRole("button", { name: "5 outils exécutés" })).toHaveAttribute("aria-expanded", "false");
+  },
+};
+
+/**
+ * Replié dès deux outils (`groupAbove={1}`, `defaultExpanded={false}`) : une seule ligne donne le nombre d'appels et
+ * le nombre en cours, à jour à chaque outil ; dépliée, elle montre une ligne par appel (D-390).
+ */
+export const UneLigneRepliee: Story = {
+  render: () => {
+    const [count, setCount] = useState(2);
+    const [done, setDone] = useState(false);
+    const items: ActivityItem[] = Array.from({ length: count }, (_, n) => ({
+      id: String(n),
+      kind: "command",
+      verb: "Exécuté",
+      object: `commande ${n + 1}`,
+      status: done || n < count - 2 ? "done" : "running",
+    }));
+    return (
+      <>
+        <button type="button" onClick={() => setCount((n) => n + 1)}>
+          Outil suivant
+        </button>
+        <button type="button" onClick={() => setDone(true)}>
+          Terminer
+        </button>
+        <ActivityGroup items={items} groupAbove={1} defaultExpanded={false} />
+      </>
+    );
+  },
+  play: async ({ canvasElement }) => {
+    const c = within(canvasElement);
+    // Deux outils qui tournent : une seule ligne, repliée.
+    const head = c.getByRole("button", { name: "2 outils · 2 en cours" });
+    await expect(head).toHaveAttribute("aria-expanded", "false");
+    await expect(c.queryByText("commande 1")).toBeNull();
+    // Le compte suit en direct, la ligne reste repliée.
+    await userEvent.click(c.getByRole("button", { name: "Outil suivant" }));
+    await userEvent.click(c.getByRole("button", { name: "Outil suivant" }));
+    await expect(c.getByRole("button", { name: "4 outils · 2 en cours" })).toHaveAttribute("aria-expanded", "false");
+    // Dépliée : une ligne par appel.
+    await userEvent.click(c.getByRole("button", { name: "4 outils · 2 en cours" }));
+    await expect(c.getByText("commande 1")).toBeInTheDocument();
+    await expect(c.getByText("commande 4")).toBeInTheDocument();
+    await userEvent.click(c.getByRole("button", { name: "Terminer" }));
+    await expect(c.getByRole("button", { name: "4 outils exécutés" })).toBeInTheDocument();
   },
 };
 

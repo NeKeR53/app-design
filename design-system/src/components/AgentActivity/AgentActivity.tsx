@@ -51,6 +51,11 @@ export interface ActivityGroupProps {
   items: ActivityItem[];
   /** Déplié par défaut. Défaut : déplié tant qu'un outil tourne, replié ensuite. */
   defaultExpanded?: boolean;
+  /**
+   * Nombre d'outils au-delà duquel ils se groupent derrière le résumé. Défaut : 3. Avec 1, deux outils qui se suivent
+   * forment déjà une ligne repliable (D-390).
+   */
+  groupAbove?: number;
 }
 
 /** Au-delà de ce nombre d'outils, ils se groupent derrière un résumé (Q7 A). */
@@ -170,14 +175,14 @@ export function AgentActivity(props: AgentActivityProps) {
  * (« 5 outils exécutés · 1 en cours · 1 en échec · 1 arrêté »), déplié tant qu'un outil tourne.
  * Replié, un outil en échec reste visible sous le résumé.
  */
-export function ActivityGroup({ items, defaultExpanded }: ActivityGroupProps) {
+export function ActivityGroup({ items, defaultExpanded, groupAbove = GROUP_ABOVE }: ActivityGroupProps) {
   const m = useMessages();
   const panel = useId();
   const [choice, setChoice] = useState<boolean | undefined>(defaultExpanded);
   const running = items.filter((i) => i.status === "running").length;
   const failed = items.filter((i) => i.status === "error").length;
   const stopped = items.filter((i) => i.status === "stopped").length;
-  if (items.length <= GROUP_ABOVE)
+  if (items.length <= groupAbove)
     return (
       <div className="min-w-0">
         {items.map(({ id, ...item }) => (

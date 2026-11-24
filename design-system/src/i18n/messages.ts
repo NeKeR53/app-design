@@ -933,8 +933,9 @@ export const frenchMessages: SocleMessages = {
   activityDetail: (t) => `Détail de ${t}`,
   activityToggle: (t) => `Sortie de ${t}`,
   activityAttachments: (t) => `Pièces de ${t}`,
+  // Pendant le travail, « 7 outils · 2 en cours » : tous ne sont pas encore exécutés (D-390).
   activityGroup: (n, r, f, a) =>
-    [`${n} outil${s(n)} exécuté${s(n)}`, r ? `${r} en cours` : "", f ? `${f} en échec` : "", a ? `${a} arrêté${s(a)}` : ""].filter(Boolean).join(" · "),
+    [r ? `${n} outil${s(n)}` : `${n} outil${s(n)} exécuté${s(n)}`, r ? `${r} en cours` : "", f ? `${f} en échec` : "", a ? `${a} arrêté${s(a)}` : ""].filter(Boolean).join(" · "),
   workDuration: (t) =>
     t < 60 ? `${t} s` : t < 3600 ? `${Math.floor(t / 60)} min ${t % 60} s` : `${Math.floor(t / 3600)} h ${Math.floor((t % 3600) / 60)} min ${t % 60} s`,
   workThinking: "Réflexion en cours",
