@@ -4,6 +4,13 @@ Versions selon semver (règle 6 du skill design) : une nouvelle option facultati
 
 ## [Non publié]
 
+Version mineure : un nouveau gabarit et deux options facultatives ; aucune API ne casse.
+
+### Ajouté
+- `ChatPage` : gabarit de page de chat. Barre d'outils de `Page`, le relevé en enfant, pied aligné sur la colonne de 760 px de `ChatTranscript` (`alerts`, `question` bornée en hauteur, `composer`, `options`), cadre de dépôt sur toute la page (`onDropFiles`, `isDraggingFiles` pour un survol signalé par l'app, `dropLabel`) (D-382).
+- `ChatTranscript` : options `context` et `contextDetail`, une ligne de contexte en tête du relevé, le détail en info-bulle (D-382).
+- i18n : `chatPageDropHere`.
+
 ## [1.5.0] — 2026-11-24
 
 Version mineure : une option facultative ; aucune API ne casse.

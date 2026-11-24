@@ -72,6 +72,12 @@ Une app décrit ses actions par des données (`Action`) et les passe à `ActionB
 - `footer` : pied fixe, contenu libre (total, sélection).
 - Pas d'en-tête : le nom de la page est dans la barre du haut. Aucun HTML stylé côté app.
 
+### ChatPage (D-382)
+- Page de chat avec un agent : barre d'outils de `Page` (titre de la conversation, actions), puis le relevé (`ChatTranscript`), seule zone qui défile.
+- Pied aligné sur la colonne de 760 px du relevé, dans cet ordre : alertes liées à la saisie, question de l'agent (bornée à 40 % de la hauteur de la page de chat, 360 px au plus ; elle défile), saisie, options juste dessous.
+- Ligne de contexte (origine, date, modèle en info-bulle) : en tête du relevé, option `context` de `ChatTranscript`, jamais dans la barre d'outils.
+- Dépôt de fichiers : toute la page sous la barre ; le survol vu par le système (Tauri) passe par `isDraggingFiles`.
+
 ### FormPage (D-022)
 - `header` : titre et phrase d'intention.
 - `sections` : sections titrées. Sur bureau, le titre et l'aide sont à gauche ; ailleurs, ils passent au-dessus. Chaque champ a son libellé au-dessus et son aide ou son erreur en dessous.

@@ -130,6 +130,8 @@ export type {
 } from "./templates/SettingsPage/SettingsPage";
 export { Page, PageSection } from "./templates/Page/Page";
 export type { PageProps, PageSectionProps, PageEmpty, PageWidth } from "./templates/Page/Page";
+export { ChatPage } from "./templates/ChatPage/ChatPage";
+export type { ChatPageProps } from "./templates/ChatPage/ChatPage";
 export { DetailPage } from "./templates/DetailPage/DetailPage";
 export type { DetailPageProps, DetailPageBack } from "./templates/DetailPage/DetailPage";
 export { TreeView } from "./components/TreeView/TreeView";

@@ -5,7 +5,9 @@
  */
 import { Children, useCallback, useLayoutEffect, useRef, useState, type ReactNode } from "react";
 import { Button as RACButton } from "react-aria-components/Button";
+import { Focusable } from "react-aria-components/Focusable";
 import { Button } from "../Button/Button";
+import { Tooltip } from "../Tooltip/Tooltip";
 import { ArrowDown } from "../../icons";
 import { buttonReset, cx, focusRing } from "../../lib/cx";
 import { useMessages } from "../../provider/SocleProvider";
@@ -28,12 +30,16 @@ export interface ChatTranscriptProps {
   hasEarlier?: boolean;
   /** Charge les messages plus anciens ; la position de lecture est gardée. */
   onShowEarlier?: () => void;
+  /** Ligne de contexte en tête du relevé, au-dessus du premier message : « Depuis Notes · 24/11/2026 09:03 » (D-382). */
+  context?: string;
+  /** Détail de la ligne de contexte, montré en info-bulle au survol et au focus (le modèle utilisé). */
+  contextDetail?: string;
 }
 
 /** Distance au bas sous laquelle le relevé suit la réponse (Q10 A). */
 export const STICK_DISTANCE = 100;
 
-export function ChatTranscript({ children, label, followKey, announce, empty, hasEarlier = false, onShowEarlier }: ChatTranscriptProps) {
+export function ChatTranscript({ children, label, followKey, announce, empty, hasEarlier = false, onShowEarlier, context, contextDetail }: ChatTranscriptProps) {
   const m = useMessages();
   const scroller = useRef<HTMLElement>(null);
   const column = useRef<HTMLDivElement>(null);
@@ -117,6 +123,7 @@ export function ChatTranscript({ children, label, followKey, announce, empty, ha
         )}
       >
         <div ref={column} className={cx("mx-auto max-w-[760px] [overflow-wrap:anywhere]", isEmpty && "flex min-h-full flex-col justify-center")}>
+          {context && !isEmpty && <ContextLine text={context} detail={contextDetail} />}
           {hasEarlier && onShowEarlier && (
             <div className="flex justify-center pb-2">
               <Button size="sm" variant="subtle" onPress={showEarlier}>
@@ -145,5 +152,27 @@ export function ChatTranscript({ children, label, followKey, announce, empty, ha
         {announce}
       </div>
     </div>
+  );
+}
+
+/** Ligne de contexte centrée ; avec un détail, focusable pour montrer l'info-bulle au clavier (D-382, comme BadgeDot). */
+function ContextLine({ text, detail }: { text: string; detail?: string | undefined }) {
+  return (
+    <p data-transcript-context="" className="m-0 mb-1 text-center text-sm text-fg-2">
+      {detail ? (
+        <Tooltip content={detail} placement="bottom">
+          <Focusable>
+            <span
+              tabIndex={0}
+              className="cursor-default rounded-sm px-1 outline-none focus-visible:outline-2 focus-visible:outline-solid focus-visible:outline-focus focus-visible:outline-offset-1"
+            >
+              {text}
+            </span>
+          </Focusable>
+        </Tooltip>
+      ) : (
+        text
+      )}
+    </p>
   );
 }

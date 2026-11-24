@@ -2683,3 +2683,14 @@
 - Raison : dans Alfred, archiver une conversation est l'action la plus fréquente de la ligne ; la cacher dans le menu coûte deux clics. `Sidebar.Item` avait déjà des actions en bouton-icône (D-053), pas l'élément sur deux lignes.
 - Options écartées : réutiliser `actions` avec un autre type (changement cassant) ; garder l'action dans le menu en plus du bouton (deux chemins pour la même action).
 - Validation : par délégation de l'utilisateur, 2026-11-24 (demande d'Alexandre : « que le bouton Archiver soit une icône qui n'apparaît pas dans le menu »)
+
+## D-382 — ChatPage : gabarit de page de chat ; ligne de contexte du relevé
+- Date : 2026-11-24
+- Portée : ChatPage (nouveau gabarit), ChatTranscript (complète D-375)
+- Décision :
+  - Nouveau gabarit `ChatPage` : barre d'outils de `Page` (D-217), le relevé en enfant, puis un pied aligné sur la colonne de 760 px du relevé, zones empilées à 8 px : `alerts`, `question` (bornée à 40 % de la hauteur de la page de chat (360 px au plus), défile ; vide, rien), `composer`, `options` (sans écart sous la saisie). Toutes facultatives.
+  - Zone de dépôt de toute la page : cadre en tirets `--accent` à 12 px des bords, fond accent à 6 %, « Déposez les fichiers pour les joindre » (`dropLabel`). Il s'affiche au survol DOM avec `onDropFiles`, ou quand l'app passe `isDraggingFiles` (glisser-déposer du système, que le DOM ne voit pas dans Tauri). Un dépôt déjà pris par `ChatComposer` n'est pas compté deux fois.
+  - `ChatTranscript` gagne `context` (texte) et `contextDetail` (texte) : une ligne centrée `--fs-sm` `--fg-2` au-dessus du premier message, 4 px dessous ; avec un détail, elle est focusable et le montre en `Tooltip`. Absente quand la conversation est vide.
+- Raison : dans Alfred, poser le pied, la ligne de contexte et le dépôt coûtait 6 `className` et ~60 lignes de CSS local ; toute app de chat avec un agent en a besoin. La ligne de contexte défile avec les messages : elle va dans le relevé, pas dans le gabarit.
+- Options écartées : un composant `ChatFooter` seul (le dépôt de page n'a pas de place) ; un pied et un dépôt dans `ChatTranscript` (contredit D-375 : la saisie est hors du relevé) ; une tête libre `header: ReactNode` (HTML stylé côté app) ; le contexte dans la barre d'outils ; le dépôt sur le cadre de saisie seulement ; une question sans borne de hauteur.
+- Validation : par délégation de l'utilisateur, 2026-11-24 — docs/validation/components/ChatPage-v1.html (Q1 A, Q2 A, Q3 A, Q4 A)

@@ -224,3 +224,41 @@ export const AnnonceDeFin: Story = {
     await expect(live).toHaveTextContent("Réponse terminée");
   },
 };
+
+/** Ligne de contexte en tête du relevé ; son détail s'ouvre en info-bulle au focus clavier (D-382). */
+export const LigneDeContexte: Story = {
+  render: () => (
+    <div className="flex h-[360px] flex-col bg-surface">
+      <ChatTranscript context="Depuis Notes · 24/11/2026 09:03" contextDetail="Modèle avancé · effort moyen">
+        <Exchange n={1} />
+      </ChatTranscript>
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    const c = within(canvasElement);
+    const line = c.getByText("Depuis Notes · 24/11/2026 09:03");
+    const scroller = c.getByRole("region", { name: "Conversation" });
+    // La ligne défile avec les messages : elle est dans la zone défilante, avant le premier message.
+    await expect(scroller.contains(line)).toBe(true);
+    await expect(line.compareDocumentPosition(c.getAllByRole("article")[0] as Node) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    // Tab : la zone défilante, puis la ligne de contexte.
+    await userEvent.tab();
+    await expect(scroller).toHaveFocus();
+    await userEvent.tab();
+    await expect(line).toHaveFocus();
+    const tip = await within(document.body).findByRole("tooltip");
+    await expect(tip).toHaveTextContent("Modèle avancé · effort moyen");
+  },
+};
+
+/** Conversation vide : pas de ligne de contexte. */
+export const ContexteVide: Story = {
+  render: () => (
+    <div className="flex h-[300px] flex-col bg-surface">
+      <ChatTranscript context="Depuis Notes · 24/11/2026 09:03" empty={<EmptyState title="Nouvelle conversation" />} />
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    await expect(within(canvasElement).queryByText("Depuis Notes · 24/11/2026 09:03")).toBeNull();
+  },
+};
