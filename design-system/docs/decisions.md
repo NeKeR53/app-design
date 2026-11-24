@@ -2766,3 +2766,10 @@
 - Options écartées : garder la roue sur le résumé seulement ; une option pour la garder (aucune app n'en a besoin).
 - Validation : par délégation de l'utilisateur, 2026-11-24 (ses mots : « ce n'est pas la peine de mettre le spinner, parce qu'on a déjà le spinner de travail en cours »).
 
+## D-392 — Sidebar : actions sur le titre d'une section
+- Date : 2026-11-24
+- Portée : Sidebar
+- Décision : `Sidebar.Section` accepte `actions`, deux boutons-icônes de 22 px au plus, à droite de son titre, avec le même dessin et les mêmes règles d'affichage que les actions d'un élément : au survol, au focus clavier et menu ouvert (D-386). Usage type : « + » pour créer un élément de la section. Le clic sur le titre replie toujours la section ; le bouton ne la replie pas.
+- Raison : dans Alfred, créer une conversation depuis la section « Conversations » demandait de passer par la page Agent ou Ctrl+N.
+- Options écartées : un menu « … » de section (aucun besoin de plusieurs actions cachées pour l'instant) ; un élément « Nouvelle conversation » dans la liste (une ligne de plus dans la navigation).
+- Validation : demande de l'utilisateur, 2026-11-24 (« juste un petit bouton plus et ça ouvre la page de conversation sur une nouvelle conversation »)

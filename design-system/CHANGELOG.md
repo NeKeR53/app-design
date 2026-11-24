@@ -2,6 +2,13 @@
 
 Versions selon semver (règle 6 du skill design) : une nouvelle option facultative est une version mineure ; un changement qui casse l'existant est une version majeure, avec une note de migration.
 
+## [1.11.0] — 2026-11-24
+
+Version mineure : une option facultative ; aucune API ne casse.
+
+### Ajouté
+- `Sidebar.Section` : option `actions`, boutons-icônes à droite du titre (deux au plus), au survol, au focus clavier et menu ouvert (D-392). Story `ActionDeSection`.
+
 ## [1.10.1] — 2026-11-24
 
 Version corrective : documentation et story ; aucune API ne change.

@@ -60,6 +60,7 @@ Couleurs : la sidebar lit des rôles dédiés, égaux par défaut aux rôles gé
 | `Sidebar.Item` : `tabbar` | `boolean` | `false` | L'élément va dans la barre d'onglets mobile (4 au plus) ; sinon dans la feuille « Plus » (D-003, D-019). |
 | `Sidebar.Section` : `id`, `title` | — | — (obligatoires) | Section repliable. |
 | `Sidebar.Section` : `limit` | `number` | `5` | Nombre d'éléments affichés avant « Afficher plus (n) » (D-045). |
+| `Sidebar.Section` : `actions` | `{ icon, label, onPress }[]` (2 au plus) | aucune | Actions du titre de la section, à droite, en boutons-icônes de 22 px ; visibles au survol, au focus clavier et menu ouvert (D-386, D-392). Exemple : « + » pour créer un élément de la section. |
 | `Sidebar.TreeItem` : `id`, `title` | — | — (obligatoires) | Élément sur deux lignes. |
 | `Sidebar.TreeItem` : `subtitle`, `meta`, `status`, `children`, `actions` | — | aucun | Sous-titre, étiquette, icône d'état, enfants, actions du menu « … ». |
 | `Sidebar.TreeItem` : `quickActions` | `{ icon, label, onPress }[]` | aucune | Actions en bouton-icône avant le « … », au survol, au focus et sur l'élément sélectionné ; deux boutons au plus en tout (une avec `actions`, deux sans). Une action rapide n'est pas répétée dans le menu (D-381). |
@@ -147,7 +148,7 @@ Uniquement dans la zone `sidebar` d'AppShell. Une seule sidebar par fenêtre.
 Contient `IconButton`, `Tooltip` et `DropdownMenu`. Utilisée par `AppShell`.
 
 ## Décisions
-D-002, D-003, D-006, D-007, D-016, D-017, D-019, D-021, D-026, D-039, D-040, D-042, D-043, D-044, D-045, D-046, D-052, D-053, D-054, D-055, D-056, D-230, D-231, D-232, D-260, D-337, D-338, D-368, D-369, D-381, D-385, D-386
+D-002, D-003, D-006, D-007, D-016, D-017, D-019, D-021, D-026, D-039, D-040, D-042, D-043, D-044, D-045, D-046, D-052, D-053, D-054, D-055, D-056, D-230, D-231, D-232, D-260, D-337, D-338, D-368, D-369, D-381, D-385, D-386, D-392
 
 ## Questions ouvertes
 Aucune.

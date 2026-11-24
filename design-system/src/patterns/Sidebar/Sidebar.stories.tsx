@@ -247,6 +247,32 @@ export const EnCours: Story = {
   },
 };
 
+const created = fn();
+
+/** « + » sur le titre d'une section : au survol seulement, il ne replie pas la section (D-392). */
+export const ActionDeSection: Story = {
+  render: () => (
+    <div className="h-[240px] w-(--side-w)">
+      <Sidebar selectedId="a" onSelectionChange={() => {}} account={<Sidebar.Account name="Camille Martin" onSettings={() => {}} />}>
+        <Sidebar.Section id="conv" title="Conversations" actions={[{ icon: <Plus />, label: "Nouvelle conversation", onPress: created }]}>
+          <Sidebar.TreeItem id="a" title="Analyse des logs" subtitle="Claude Code" />
+        </Sidebar.Section>
+      </Sidebar>
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    const c = within(canvasElement);
+    const header = c.getByRole("row", { name: /^Conversations/ });
+    const plus = within(header).getByRole("button", { name: "Nouvelle conversation", hidden: true });
+    await expect(plus).not.toBeVisible();
+    await userEvent.hover(header);
+    await waitFor(() => expect(plus).toBeVisible());
+    await userEvent.click(plus);
+    await expect(created).toHaveBeenCalled();
+    await expect(c.getByRole("row", { name: /^Analyse des logs/ })).toBeVisible();
+  },
+};
+
 /** Maj+F10 et la touche Menu ouvrent le menu « … » de l'élément ; appui long sur tactile (Sidebar.spec.md). */
 export const MenuAuClavierEtAppuiLong: Story = {
   render: () => <Demo />,

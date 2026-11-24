@@ -69,6 +69,11 @@ export interface SidebarSectionProps {
   title: string;
   /** Éléments affichés avant « Afficher plus (n) » (D-045). */
   limit?: number;
+  /**
+   * Actions du titre de la section, à droite : boutons-icônes de 22 px, deux au plus, par exemple « + » pour créer un
+   * élément de la section. Visibles au survol, au focus clavier et menu ouvert, comme celles d'un élément (D-386, D-392).
+   */
+  actions?: SidebarAction[];
   children: ReactNode;
 }
 
@@ -479,7 +484,7 @@ function TwoLine({ id, title, subtitle, meta, status, unread, indicator, actions
 }
 
 /* ---------- Sidebar.Section ---------- */
-function Section({ id, title, limit = 5, children }: SidebarSectionProps) {
+function Section({ id, title, limit = 5, actions, children }: SidebarSectionProps) {
   const m = useMessages();
   const ctx = useSidebar();
   const list = Children.toArray(children).filter(isValidElement);
@@ -491,10 +496,18 @@ function Section({ id, title, limit = 5, children }: SidebarSectionProps) {
     <TreeItem id={id} textValue={title} className={cx("group mt-2.5 flex h-7 cursor-default items-center rounded-md px-2 text-sm text-fg-3 outline-none data-hovered:text-fg-2", focusRing)}>
       <TreeItemContent>
         {({ isExpanded }) => (
-          <span className="flex items-center gap-1">
-            {title}
-            <ChevronDown size={12} className={cx(!isExpanded && "-rotate-90")} />
-          </span>
+          <>
+            <span className="flex items-center gap-1">
+              {title}
+              <ChevronDown size={12} className={cx(!isExpanded && "-rotate-90")} />
+            </span>
+            {actions?.length ? (
+              <>
+                <span className="flex-1" />
+                <Actions actions={actions} />
+              </>
+            ) : null}
+          </>
         )}
       </TreeItemContent>
       {withDepth(shown, 0)}
