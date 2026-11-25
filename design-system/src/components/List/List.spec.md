@@ -30,7 +30,7 @@ Aucune. Les éléments sont séparés par un trait horizontal `--line`, sans ray
 | `onAction` | `(id) => void` | — | Ouverture (double-clic ou Entrée), dans une vue fermable (D-021). |
 | `itemActions` | `(item) => { icon, label, onPress }[]` (2 au plus) | aucune | Actions au survol (D-066). |
 | `leading` | `"icon" \| "avatar" \| "thumbnail"` | aucun | Type de visuel à gauche, le même pour toute la liste (D-069). Chaque élément fournit son icône, ses initiales ou son image. |
-| `dividers` | `boolean` | `true` | Trait entre les éléments. `false` pour une courte liste dans une section de `Drawer`, où les lignes se lisent sans trait (D-400). |
+| `dividers` | `boolean` | `true` | Trait entre les éléments. `false` pour une courte liste dans une section de `Drawer`, où les lignes se lisent sans trait ; la liste s'aligne alors sur le bord du contenu de la section, sans retrait (D-400). |
 | `groups` | `{ id, title, items }[]` | aucun | Groupes avec en-tête collé ; ils ne se replient pas (D-070). |
 
 ## Exclus

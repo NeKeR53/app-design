@@ -2,6 +2,11 @@
 
 Versions selon semver (règle 6 du skill design) : une nouvelle option facultative est une version mineure ; un changement qui casse l'existant est une version majeure, avec une note de migration.
 
+## [1.18.1] — 2026-11-25
+
+### Modifié
+- `List` : avec `dividers={false}`, la ligne n'a plus de retrait horizontal ; l'icône s'aligne sur le titre de la section du `Drawer` (D-400).
+
 ## [1.18.0] — 2026-11-25
 
 ### Ajouté

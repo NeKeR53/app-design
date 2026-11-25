@@ -137,6 +137,7 @@ export const SansTraits: Story = {
   play: async ({ canvasElement }) => {
     const row = within(canvasElement).getByRole("row", { name: /Lire le code/ });
     await expect(getComputedStyle(row).borderBottomWidth).toBe("0px");
+    await expect(getComputedStyle(row).paddingLeft).toBe("0px");
   },
 };
 

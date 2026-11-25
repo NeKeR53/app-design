@@ -2848,7 +2848,7 @@
 ## D-400 — List : sans trait entre les éléments
 - Date : 2026-11-25
 - Portée : List (complète D-064)
-- Décision : option facultative `dividers` (défaut `true`). Avec `false`, les éléments ne sont pas séparés par le trait `--line`. Elle sert à une courte liste posée dans une section de `Drawer`, comme les étapes d'un plan : l'icône à gauche porte l'état, le trait n'ajoute rien.
+- Décision : option facultative `dividers` (défaut `true`). Avec `false`, les éléments ne sont pas séparés par le trait `--line`, et la ligne n'a pas de retrait horizontal : l'icône s'aligne sur le titre de la section et sur ses autres contenus. Elle sert à une courte liste posée dans une section de `Drawer`, comme les étapes d'un plan : l'icône à gauche porte l'état, le trait n'ajoute rien.
 - Raison : dans le panneau de l'agent d'Alfred, un trait sous chaque étape du plan chargeait la lecture.
 - Options écartées : retirer le trait partout (la liste d'une page `ListPage` en a besoin pour suivre les lignes) ; un composant de plan à part (la liste suffit).
 - Validation : demande de l'utilisateur, 2026-11-25. Story `SansTraits`.

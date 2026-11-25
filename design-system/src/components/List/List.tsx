@@ -44,7 +44,7 @@ export interface ListProps extends ResultsStateProps {
   /** Éléments, ou `groups` pour des groupes avec en-tête collé (D-070). */
   items?: ListItemData[];
   groups?: ListGroup[];
-  /** Trait `--line` entre les éléments (D-064). `false` pour une courte liste dans une section (étapes d'un plan, D-400). */
+  /** Trait `--line` entre les éléments (D-064). `false` pour une courte liste dans une section (étapes d'un plan) ; elle s'aligne alors sur le bord du contenu, sans retrait (D-400). */
   dividers?: boolean;
   /** Type de visuel à gauche, le même pour toute la liste (D-069). */
   leading?: "icon" | "avatar" | "thumbnail";
@@ -102,8 +102,9 @@ export function List({
       textValue={it.title}
       className={cx(
         // Traits horizontaux, sans rayon (D-068) ; sélection fixe au survol (D-039).
-        "group/item flex cursor-default items-center gap-3 px-3 outline-none",
-        dividers && "border-b border-line",
+        "group/item flex cursor-default items-center gap-3 outline-none",
+        // Sans trait, la liste est posée dans une section : elle s'aligne sur son contenu, sans retrait (D-400).
+        dividers ? "border-b border-line px-3" : "px-0",
         twoLines ? "min-h-(--row2-h) py-1.5" : "min-h-(--row-h)",
         // Sur tactile, 44 px au moins (List.spec.md, Taille d'écran).
         "pointer-coarse:min-h-11",
