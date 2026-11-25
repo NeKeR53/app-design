@@ -19,7 +19,7 @@ Ne pas l'utiliser pour :
 3. **Pied** : compteur et « Afficher plus » (layout-rules, ListPage).
 
 ## Variantes
-Aucune. Les éléments sont séparés par un trait horizontal `--line`, sans rayon, comme le tableau (D-064, D-068).
+Aucune. Les éléments sont séparés par un trait horizontal `--line`, sans rayon, comme le tableau (D-064, D-068). Une courte liste posée dans une section de `Drawer` (étapes d'un plan) peut s'en passer : `dividers={false}` (D-400).
 
 ## Options
 | Option | Type | Défaut | Description |
@@ -30,6 +30,7 @@ Aucune. Les éléments sont séparés par un trait horizontal `--line`, sans ray
 | `onAction` | `(id) => void` | — | Ouverture (double-clic ou Entrée), dans une vue fermable (D-021). |
 | `itemActions` | `(item) => { icon, label, onPress }[]` (2 au plus) | aucune | Actions au survol (D-066). |
 | `leading` | `"icon" \| "avatar" \| "thumbnail"` | aucun | Type de visuel à gauche, le même pour toute la liste (D-069). Chaque élément fournit son icône, ses initiales ou son image. |
+| `dividers` | `boolean` | `true` | Trait entre les éléments. `false` pour une courte liste dans une section de `Drawer`, où les lignes se lisent sans trait (D-400). |
 | `groups` | `{ id, title, items }[]` | aucun | Groupes avec en-tête collé ; ils ne se replient pas (D-070). |
 
 ## Exclus
@@ -80,7 +81,7 @@ Zone `list` de `ListPage`. Dans une section de page, une liste courte peut être
 Contient `Checkbox` (à spécifier), `IconButton`, `DropdownMenu`, `Tooltip`, `Badge` (D-160), `Skeleton` (D-165) et `EmptyState` (D-166) pour ses états (D-169).
 
 ## Décisions
-D-021, D-026, D-039, D-040, D-044, D-064, D-065, D-066, D-068, D-069, D-070, D-084, D-085, D-086, D-087
+D-021, D-026, D-039, D-040, D-044, D-064, D-065, D-066, D-068, D-069, D-070, D-084, D-085, D-086, D-087, D-400
 
 ## Questions ouvertes
 Aucune.

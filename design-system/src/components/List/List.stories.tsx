@@ -118,6 +118,28 @@ export const HauteurStable: Story = {
   },
 };
 
+/** Courte liste dans une section : sans trait entre les éléments (D-400). */
+export const SansTraits: Story = {
+  render: () => (
+    <div className="w-80 p-4">
+      <List
+        label="Étapes du plan"
+        selectionMode="none"
+        leading="icon"
+        dividers={false}
+        items={[
+          { id: "1", title: "Lire le code", visual: "✓" },
+          { id: "2", title: "Écrire le test", visual: "•" },
+        ]}
+      />
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    const row = within(canvasElement).getByRole("row", { name: /Lire le code/ });
+    await expect(getComputedStyle(row).borderBottomWidth).toBe("0px");
+  },
+};
+
 /** Tactile : un appui long ouvre le menu « … » de la ligne, sans l'ouvrir ni la sélectionner (D-007). */
 export const AppuiLong: Story = {
   render: () => <Demo />,

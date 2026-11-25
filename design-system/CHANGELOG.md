@@ -2,6 +2,11 @@
 
 Versions selon semver (règle 6 du skill design) : une nouvelle option facultative est une version mineure ; un changement qui casse l'existant est une version majeure, avec une note de migration.
 
+## [1.18.0] — 2026-11-25
+
+### Ajouté
+- `List` : option `dividers` ; `false` retire le trait entre les éléments, pour une courte liste dans une section de `Drawer` (D-400).
+
 ## [1.17.1] — 2026-11-25
 
 ### Modifié
