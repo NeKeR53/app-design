@@ -57,7 +57,7 @@ Aucune.
 | `emptyMessage` | `string` | « Sélectionnez un élément pour voir son détail. » | Phrase quand rien n'est sélectionné. |
 | `onActionDone` | `(action) => void` | aucun | Après la réussite d'une action de l'en-tête ou d'une section (par exemple recharger). |
 | `onActionError` | `(action, error) => void` | aucun | Une action a échoué ; l'app affiche la notification (D-116). |
-| `reorderable` | `boolean` | `false` | L'utilisateur range les sections : poignée devant chaque titre (au survol, toujours atteignable au clavier), à glisser, ou flèches haut et bas sur la poignée ; déplacement annoncé (D-399). |
+| `reorderable` | `boolean` | `false` | L'utilisateur range les sections : poignée au bord droit de chaque en-tête, après les actions (au survol, toujours atteignable au clavier), à glisser, ou flèches haut et bas sur la poignée ; déplacement annoncé (D-399). |
 | `orderKey` | `string` | ordre commun | Clé de mémoire de l'ordre des sections ; une section inconnue garde sa place (D-399). |
 
 `DetailHeader` :

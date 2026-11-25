@@ -224,7 +224,7 @@ function Declarative({ header, sections, isLoading, hasError, onRetry, isNotFoun
                         type="button"
                         aria-label={m.sectionMove(s.title, index + 1, ordered.length)}
                         aria-keyshortcuts="ArrowUp ArrowDown"
-                        className="socle-btn -ml-1 inline-grid size-5 shrink-0 cursor-grab touch-none place-items-center rounded-sm text-fg-3 opacity-0 group-hover/section:opacity-100 hover:text-fg focus-visible:opacity-100 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-focus focus-visible:outline-solid"
+                        className="socle-btn -mr-1 inline-grid size-5 shrink-0 cursor-grab touch-none place-items-center rounded-sm text-fg-3 opacity-0 group-hover/section:opacity-100 hover:text-fg focus-visible:opacity-100 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-focus focus-visible:outline-solid"
                         onPointerDown={(event) => {
                           const frame = event.currentTarget.closest<HTMLElement>("section");
                           if (frame) startDrag(event, s.id, frame);
@@ -235,7 +235,7 @@ function Declarative({ header, sections, isLoading, hasError, onRetry, isNotFoun
                           move(s.id, event.key === "ArrowUp" ? -1 : 1);
                         }}
                       >
-                        <GripVertical size={12} />
+                        <GripVertical size={14} />
                       </button>
                     ),
                   },
@@ -360,7 +360,6 @@ function SectionFrame({ id, title, footer, summary, actions, defaultCollapsed = 
       className={cx("group/section border-b border-line px-(--pad) pt-3 pb-2.5 last:border-b-0", sortable?.dragged && "opacity-40")}
     >
       <div className="mb-1 flex h-6 min-w-0 items-center gap-1.5">
-        {sortable?.handle}
         {/* En-tête d'accordéon (APG) : le bouton est dans un titre de niveau 3, sous le titre de l'objet (h2). */}
         <h3 className="m-0 flex min-w-0 text-[length:inherit] leading-[inherit] font-[inherit]">
           <Button
@@ -375,9 +374,13 @@ function SectionFrame({ id, title, footer, summary, actions, defaultCollapsed = 
           </Button>
         </h3>
         {sum && <Badge {...(sum.tone ? { tone: sum.tone } : {})}>{sum.label}</Badge>}
-        {actions && actions.length > 0 && (
-          <span className="ml-auto">
-            <ActionBar actions={actions} zone="section" subject={title} {...(onDone ? { onDone } : {})} {...(onError ? { onError } : {})} />
+        {/* Actions puis poignée de rangement, au bord droit : le titre reste aligné à gauche (D-399). */}
+        {((actions && actions.length > 0) || sortable) && (
+          <span className="ml-auto flex items-center gap-1">
+            {actions && actions.length > 0 && (
+              <ActionBar actions={actions} zone="section" subject={title} {...(onDone ? { onDone } : {})} {...(onError ? { onError } : {})} />
+            )}
+            {sortable?.handle}
           </span>
         )}
       </div>

@@ -2,6 +2,11 @@
 
 Versions selon semver (règle 6 du skill design) : une nouvelle option facultative est une version mineure ; un changement qui casse l'existant est une version majeure, avec une note de migration.
 
+## [1.17.1] — 2026-11-25
+
+### Modifié
+- `Drawer` : la poignée de rangement des sections passe au bord droit de l'en-tête, après les actions ; le titre reste aligné à gauche. Elle reste invisible sans survol (D-399).
+
 ## [1.17.0] — 2026-11-25
 
 Version mineure : options facultatives ; aucune API ne casse.
