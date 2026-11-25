@@ -495,6 +495,17 @@ export interface SocleMessages {
   workWorking: string;
   workSince: (duration: string) => string;
   workSummary: (duration: string, tools: number) => string;
+  /* BackgroundTasks (D-401) */
+  /** Nom de la liste des tâches. */
+  tasksLabel: string;
+  /** Aucune tâche en cours ni finie. */
+  tasksEmpty: string;
+  /** Bouton d'arrêt d'une tâche. */
+  taskStop: (title: string) => string;
+  /** Résumé : tâches finies (réussies ou non). */
+  tasksFinished: (count: number) => string;
+  /** Résumé : tâches en échec, en `--danger`. */
+  tasksFailed: (count: number) => string;
   /* ChoicePrompt (D-377) */
   choiceQuestion: string;
   choicePermission: string;
@@ -943,6 +954,11 @@ export const frenchMessages: SocleMessages = {
   workDuration: (t) =>
     t < 60 ? `${t} s` : t < 3600 ? `${Math.floor(t / 60)} min ${t % 60} s` : `${Math.floor(t / 3600)} h ${Math.floor((t % 3600) / 60)} min ${t % 60} s`,
   workThinking: "Réflexion en cours",
+  tasksLabel: "Tâches en arrière-plan",
+  tasksEmpty: "Aucune tâche en cours",
+  taskStop: (t) => `Arrêter ${t}`,
+  tasksFinished: (n) => `${n} terminée${s(n)}`,
+  tasksFailed: (n) => `${n} en échec`,
   workTool: (name) => `Outil en cours : ${name}`,
   workWriting: "Rédaction en cours",
   workApproval: "Autorisation requise",

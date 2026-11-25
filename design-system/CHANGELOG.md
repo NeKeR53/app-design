@@ -2,6 +2,12 @@
 
 Versions selon semver (règle 6 du skill design) : une nouvelle option facultative est une version mineure ; un changement qui casse l'existant est une version majeure, avec une note de migration.
 
+## [1.19.0] — 2026-11-25
+
+### Ajouté
+- `BackgroundTasks` : tâches de fond d'un agent ou de l'app ; une ligne par tâche en cours (icône du type, libellé coupé, durée qui avance, bouton d'arrêt toujours visible), puis « 82 terminées » et « 3 en échec » en `--danger` (D-401).
+- Icône `Bot` (sous-agent).
+
 ## [1.18.1] — 2026-11-25
 
 ### Modifié

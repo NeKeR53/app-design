@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>BackgroundTasks v1</title>
+<style>
+:root { --bg:#f7f7f8; --surface:#fff; --fg:#18181b; --fg-2:#52525b; --fg-3:#8a8a93; --line:#e4e4e7; --danger:#c2410c; --hover:#f0f0f2; --row-h:34px; --accent:#2563eb; }
+@media (prefers-color-scheme: dark) { :root { --bg:#111113; --surface:#18181b; --fg:#f4f4f5; --fg-2:#c4c4cc; --fg-3:#8a8a93; --line:#2e2e33; --danger:#fb923c; --hover:#232327; } }
+body.desktop { --row-h:28px; }
+body { margin:0; background:var(--bg); color:var(--fg); font:14px/1.45 system-ui, sans-serif; padding:24px 16px; }
+main { max-width:1000px; margin:0 auto; }
+.badge { display:inline-block; padding:2px 8px; border-radius:6px; background:#dcfce7; color:#166534; font-size:12px; font-weight:600; }
+.cols { display:grid; grid-template-columns:repeat(auto-fit, minmax(300px, 1fr)); gap:16px; }
+.panel { background:var(--surface); border:1px solid var(--line); border-radius:12px; padding:12px 16px; }
+.sec { font-size:12px; color:var(--fg-3); display:flex; gap:8px; align-items:center; margin-bottom:6px; }
+.pill { font-size:12px; color:var(--accent); }
+.row { display:flex; align-items:center; gap:8px; min-height:var(--row-h); }
+.row .t { flex:1; min-width:0; overflow:hidden; white-space:nowrap; text-overflow:ellipsis; }
+.row .d { font-size:12px; color:var(--fg-3); font-variant-numeric:tabular-nums; }
+.stop { width:28px; height:28px; border:0; border-radius:8px; background:transparent; color:var(--fg-2); display:grid; place-items:center; }
+.stop:hover { background:var(--hover); }
+.sum { display:flex; justify-content:space-between; font-size:12px; color:var(--fg-3); min-height:var(--row-h); align-items:center; }
+.sum b { color:var(--danger); font-weight:500; }
+.ic { width:16px; height:16px; color:var(--fg-2); flex:none; }
+.box { border:1px solid var(--line); border-radius:12px; padding:12px 16px; background:var(--surface); margin:16px 0; }
+.muted { color:var(--fg-3); }
+</style>
+</head>
+<body>
+<main>
+<h1>BackgroundTasks <span class="badge">VALIDÉ le 2026-11-25 (par délégation)</span></h1>
+<p>Besoin : dans le panneau d'une conversation d'Alfred, voir les commandes de fond, les sous-agents et les scripts longs, et arrêter chacun. Modèle : le bloc « Background tasks » de Claude Code.</p>
+<p><label><input type="checkbox" onchange="document.body.classList.toggle('desktop', this.checked)"> Densité desktop</label></p>
+
+<div class="cols">
+  <section class="panel">
+    <h2>Actuellement : <code>List</code></h2>
+    <div class="sec">⌄ Tâches en arrière-plan</div>
+    <div class="row"><span class="t">npm run dev</span><span class="d">1 min 0 s</span></div>
+    <div class="row"><span class="t">Relire le module</span><span class="d">12 s</span></div>
+    <p class="muted">L'arrêt n'apparaît qu'au survol, à la place de la durée (D-066). Pas de durée vivante, pas de résumé des échecs.</p>
+  </section>
+  <section class="panel">
+    <h2>Proposition : <code>BackgroundTasks</code></h2>
+    <div class="sec">⌄ Tâches en arrière-plan <span class="pill">2 en cours</span></div>
+    <div class="row"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m7 11 2-2-2-2M11 13h4"/><rect width="18" height="18" x="3" y="3" rx="2"/></svg><span class="t">npm run dev -- --port 5173 --host 127.0.0.1</span><span class="d" data-start="60">1 min 0 s</span><button class="stop" aria-label="Arrêter npm run dev"><svg width="14" height="14" viewBox="0 0 24 24"><rect x="6" y="6" width="12" height="12" rx="2" fill="currentColor"/></svg></button></div>
+    <div class="row"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 8V4H8"/><rect width="16" height="12" x="4" y="8" rx="2"/><path d="M2 14h2M20 14h2M15 13v2M9 13v2"/></svg><span class="t">Relire le module de facturation</span><span class="d" data-start="12">12 s</span><button class="stop" aria-label="Arrêter Relire le module"><svg width="14" height="14" viewBox="0 0 24 24"><rect x="6" y="6" width="12" height="12" rx="2" fill="currentColor"/></svg></button></div>
+    <div class="sum"><span>82 terminées</span><b>3 en échec</b></div>
+  </section>
+</div>
+
+<div class="box"><h3>Déjà décidé</h3><ul><li>D-066 : actions de <code>List</code> au survol.</li><li>D-107 : bouton en attente.</li><li>D-376 : format de la durée de <code>WorkStatus</code>.</li><li>D-399 : sections rangeables du <code>Drawer</code>.</li></ul></div>
+<div class="box"><h3>Décidé (choix délégués)</h3><ol>
+<li>Composant à part plutôt qu'option de <code>List</code> : A retenue (garde D-066 intact).</li>
+<li>Bouton d'arrêt toujours visible : retenu.</li>
+<li>Résumé : compte des terminées et des échecs, sans liste des tâches finies : retenu.</li></ol></div>
+
+<section class="box"><h2>Avant / après</h2>
+<table><tr><th>Composant</th><th>Ce qui change</th><th>Type</th><th>Décisions</th></tr>
+<tr><td>BackgroundTasks</td><td>Nouveau : tâches en cours, durée vivante, arrêt par ligne, résumé terminées / en échec</td><td>Nouveau composant (1.19.0)</td><td>D-401</td></tr>
+<tr><td>Icônes</td><td><code>Bot</code></td><td>Ajout</td><td>D-401</td></tr></table>
+<p>Avant : Alfred n'avait aucune vue des tâches de fond de l'agent. Après : section « Tâches en arrière-plan » du panneau de la conversation (capture dans le compte rendu d'Alfred).</p>
+</section>
+</main>
+<script>
+const t0 = Date.now();
+const fmt = (s) => s < 60 ? `${s} s` : s < 3600 ? `${Math.floor(s/60)} min ${s%60} s` : `${Math.floor(s/3600)} h ${Math.floor(s%3600/60)} min ${s%60} s`;
+setInterval(() => document.querySelectorAll('[data-start]').forEach((el) => { el.textContent = fmt(+el.dataset.start + Math.floor((Date.now()-t0)/1000)); }), 1000);
+</script>
+</body>
+</html>

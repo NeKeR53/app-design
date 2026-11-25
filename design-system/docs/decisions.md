@@ -2852,3 +2852,11 @@
 - Raison : dans le panneau de l'agent d'Alfred, un trait sous chaque étape du plan chargeait la lecture.
 - Options écartées : retirer le trait partout (la liste d'une page `ListPage` en a besoin pour suivre les lignes) ; un composant de plan à part (la liste suffit).
 - Validation : demande de l'utilisateur, 2026-11-25. Story `SansTraits`.
+
+## D-401 — BackgroundTasks : tâches de fond d'un agent
+- Date : 2026-11-25
+- Portée : BackgroundTasks (nouveau composant), icônes
+- Décision : composant `BackgroundTasks`. Une ligne par tâche en cours, de `--row-h` : icône du type (`command` terminal, `agent` robot `Bot`, `other` outil), libellé coupé avec info-bulle, durée écoulée qui avance chaque seconde (format de `WorkStatus`, `role="timer"`), bouton d'arrêt carré toujours visible quand l'app fournit `onStop` (en attente pendant sa promesse, D-107). Puis une ligne de résumé : « n terminées » en `--fg-3` à gauche, « n en échec » en `--danger` à droite. Vide : « Aucune tâche en cours ».
+- Raison : dans Alfred, l'utilisateur veut voir les commandes de fond, les sous-agents et les scripts longs d'une conversation, et arrêter chacun, comme le bloc « Background tasks » de Claude Code. `List` montre ses actions au survol, à la place de la méta (D-066) : la durée et l'arrêt ne pouvaient pas être visibles ensemble.
+- Options écartées : une option « actions toujours visibles » de `List` (casse D-066 pour un seul usage) ; des lignes `PropertyRow` (pas de durée vivante, une seule action par ligne sans libellé coupé) ; la liste des tâches finies (le compte suffit, le relevé garde le détail).
+- Validation : demande de l'utilisateur, choix délégués, 2026-11-25. docs/validation/components/BackgroundTasks-v1.html. Stories `EnCours`, `Arret`, `Resume`, `Vide`, `AppelArret`.

@@ -68,6 +68,7 @@ export const ICON_NAMES = [
   "GripVertical",
   "Pencil",
   "SquareTerminal",
+  "Bot",
   "BookOpen",
   "Brain",
   "Wrench",
@@ -379,6 +380,15 @@ export const SquareTerminal = icon(
     <rect width="18" height="18" x="3" y="3" rx="2" />
   </>,
   "SquareTerminal",
+);
+/** Sous-agent : tête de robot (BackgroundTasks, D-401). */
+export const Bot = icon(
+  <>
+    <path d="M12 8V4H8" />
+    <rect width="16" height="12" x="4" y="8" rx="2" />
+    <path d="M2 14h2M20 14h2M15 13v2M9 13v2" />
+  </>,
+  "Bot",
 );
 /** Lecture d'un fichier. */
 export const BookOpen = icon(

@@ -5,7 +5,7 @@
  * au fur et à mesure qu'ils sont spécifiés (mode `define`) puis codés.
  * Styles : importer `socle-ui/styles.css` une fois dans l'app.
  */
-export const SOCLE_VERSION = "1.18.1";
+export const SOCLE_VERSION = "1.19.0";
 
 export { SocleProvider, useSocle } from "./provider/SocleProvider";
 export { frenchMessages } from "./i18n/messages";
@@ -318,5 +318,7 @@ export { WorkStatus } from "./components/AgentActivity/WorkStatus";
 export type { WorkStatusProps, WorkPhase } from "./components/AgentActivity/WorkStatus";
 export { WorkSummary } from "./components/AgentActivity/WorkSummary";
 export type { WorkSummaryProps } from "./components/AgentActivity/WorkSummary";
+export { BackgroundTasks } from "./components/BackgroundTasks/BackgroundTasks";
+export type { BackgroundTask, BackgroundTaskKind, BackgroundTasksProps } from "./components/BackgroundTasks/BackgroundTasks";
 export { ChoicePrompt } from "./components/ChoicePrompt/ChoicePrompt";
 export type { ChoicePromptProps, ChoiceOption, ChoicePromptAnswer } from "./components/ChoicePrompt/ChoicePrompt";
