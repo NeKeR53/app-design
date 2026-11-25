@@ -54,7 +54,8 @@ export interface AppShellProps {
 }
 
 const DETAIL_MIN = 240;
-const DETAIL_MAX = 480;
+/** Largeur que la zone principale garde à côté du panneau de détail (D-241, D-402). */
+const MAIN_MIN = 360;
 const FOCUSABLE = 'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"]), [contenteditable="true"]';
 
 /** Éléments atteignables à la tabulation dans `root`, dans l'ordre du document (éléments visibles seulement). */
@@ -335,8 +336,8 @@ export function AppShell({ pageTitle, views, activeView, onViewChange, onViewClo
             {sidebar}
           </div>
         )}
-        {/* Panneau large : le contenu garde au moins 360 px (D-241). */}
-        <main {...panelProps} id={mainDomId} data-socle-zone="main" className={cx("min-w-0 flex-1 overflow-auto outline-none", wide && showDetail && "min-w-[360px]")}>{children}</main>
+        {/* Panneau en colonne : le contenu garde au moins 360 px (D-241, D-402). */}
+        <main {...panelProps} id={mainDomId} data-socle-zone="main" className={cx("min-w-0 flex-1 overflow-auto outline-none", Boolean(detail) && showDetail && !floating && "min-w-[360px]")}>{children}</main>
         {detail && showDetail && (
           <DetailColumn
             floating={floating}
@@ -440,18 +441,53 @@ function DetailColumn({ floating, fullscreen, width, form, wide, onWidth, onClos
     }
   };
   const current = () => ref.current?.getBoundingClientRect().width ?? DETAIL_MIN;
-  const clamp = (w: number) => Math.round(Math.min(DETAIL_MAX, Math.max(DETAIL_MIN, w)));
-  const startDrag = (e: ReactPointerEvent) => {
+  // Largeur libre : seule la zone principale (la colonne voisine) garde MAIN_MIN (D-402).
+  const maxWidth = () => {
+    const main = ref.current?.previousElementSibling;
+    return Math.max(DETAIL_MIN, current() + (main ? main.getBoundingClientRect().width - MAIN_MIN : 0));
+  };
+  const clamp = (w: number, max = maxWidth()) => Math.round(Math.min(max, Math.max(DETAIL_MIN, w)));
+  const [dragging, setDragging] = useState(false);
+  const endDrag = useRef<(() => void) | null>(null);
+  useEffect(() => () => endDrag.current?.(), []);
+  // Le glisser capture le pointeur : un relâché hors de la fenêtre ou au-dessus d'une iframe
+  // (une page d'Alfred) n'est plus perdu. Il finit aussi si le bouton n'est plus pressé,
+  // si le pointeur est annulé ou si la fenêtre perd le focus (D-402).
+  const startDrag = (e: ReactPointerEvent<HTMLDivElement>) => {
+    if (e.button !== 0) return;
     e.preventDefault();
+    const handle = e.currentTarget;
+    const id = e.pointerId;
     const x0 = e.clientX;
     const w0 = current();
-    const move = (ev: PointerEvent) => onWidth(clamp(w0 + (x0 - ev.clientX)));
-    const up = () => {
-      window.removeEventListener("pointermove", move);
-      window.removeEventListener("pointerup", up);
+    const max = maxWidth();
+    const move = (ev: PointerEvent) => {
+      if (ev.pointerId !== id) return;
+      if ((ev.buttons & 1) === 0) return end();
+      onWidth(clamp(w0 + (x0 - ev.clientX), max));
     };
+    const end = () => {
+      handle.removeEventListener("pointercancel", end);
+      handle.removeEventListener("lostpointercapture", end);
+      window.removeEventListener("pointermove", move);
+      window.removeEventListener("pointerup", end);
+      window.removeEventListener("blur", end);
+      if (handle.hasPointerCapture?.(id)) handle.releasePointerCapture(id);
+      endDrag.current = null;
+      setDragging(false);
+    };
+    try {
+      handle.setPointerCapture(id);
+    } catch {
+      // Pointeur synthétique (tests) : les écouteurs de la fenêtre suffisent.
+    }
+    handle.addEventListener("pointercancel", end);
+    handle.addEventListener("lostpointercapture", end);
     window.addEventListener("pointermove", move);
-    window.addEventListener("pointerup", up);
+    window.addEventListener("pointerup", end);
+    window.addEventListener("blur", end);
+    endDrag.current = end;
+    setDragging(true);
   };
   return (
     <aside
@@ -463,7 +499,8 @@ function DetailColumn({ floating, fullscreen, width, form, wide, onWidth, onClos
       data-width={wide ? "wide" : form ? "form" : "default"}
       className={cx(
         "box-border flex min-h-0 flex-col border-l border-line bg-surface",
-        !floating && !wide && cx("relative shrink-0", form ? "w-(--detail-w-form)" : "w-(--detail-w)"),
+        // Sa largeur cède avant les 360 px de la zone principale, jusqu'à 240 px (D-402).
+        !floating && !wide && cx("relative min-w-[240px] shrink", form ? "w-(--detail-w-form)" : "w-(--detail-w)"),
         // Large : 960 px au plus ; il rétrécit pour laisser 360 px au contenu (D-241).
         !floating && wide && "relative w-[960px] min-w-(--detail-w) shrink",
         floating && !fullscreen && cx("absolute top-0 right-0 bottom-0 z-40 max-w-full shadow-lg", form ? "w-(--detail-w-form)" : "w-(--detail-w)"),
@@ -476,7 +513,7 @@ function DetailColumn({ floating, fullscreen, width, form, wide, onWidth, onClos
           aria-orientation="vertical"
           aria-label={m.detailWidth}
           aria-valuemin={DETAIL_MIN}
-          aria-valuemax={DETAIL_MAX}
+          aria-valuemax={Math.round(maxWidth())}
           aria-valuenow={Math.round(width ?? current())}
           tabIndex={0}
           onPointerDown={startDrag}
@@ -486,9 +523,12 @@ function DetailColumn({ floating, fullscreen, width, form, wide, onWidth, onClos
             e.preventDefault();
             onWidth(clamp(current() + (e.key === "ArrowLeft" ? 16 : -16)));
           }}
-          className="absolute top-0 bottom-0 -left-[3px] z-10 w-1.5 cursor-col-resize outline-none hover:bg-line focus-visible:bg-focus"
+          className={cx("absolute top-0 bottom-0 -left-[3px] z-10 w-1.5 cursor-col-resize outline-none hover:bg-line focus-visible:bg-focus", dragging && "bg-line")}
         />
       )}
+      {/* Pendant le glisser, un voile transparent couvre la fenêtre : une iframe sous le pointeur
+          ne prend ni le mouvement ni le relâché (D-402). */}
+      {dragging && <div data-socle-drag-veil="" aria-hidden className="fixed inset-0 z-50 cursor-col-resize" />}
       {floating && (
         <div className="flex h-(--bar-h) shrink-0 items-center border-b border-line pr-2 pl-4 font-heading">
           <span ref={titleRef} tabIndex={-1} className="flex-1 outline-none">

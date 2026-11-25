@@ -2,6 +2,12 @@
 
 Versions selon semver (règle 6 du skill design) : une nouvelle option facultative est une version mineure ; un changement qui casse l'existant est une version majeure, avec une note de migration.
 
+## [1.19.1] — 2026-11-25
+
+### Corrigé
+- `AppShell` : la poignée du panneau de détail ne bloque plus à 480 px ; le panneau s'élargit tant que la zone principale garde 360 px. Si la fenêtre rétrécit, le panneau cède jusqu'à 240 px avant la zone principale (D-402).
+- `AppShell` : le glisser de la poignée capture le pointeur et pose un voile transparent sur la fenêtre. Au-dessus d'une iframe, il suit le pointeur ; un relâché perdu (iframe, hors de la fenêtre) ne laisse plus le glisser actif, et le survol suivant ne déplace plus le panneau (D-402).
+
 ## [1.19.0] — 2026-11-25
 
 ### Ajouté

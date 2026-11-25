@@ -132,28 +132,68 @@ export const PanneauDetail: Story = {
   },
 };
 
-/** Largeur réglable de 240 à 480 px, flèches par 16 px, double-clic : défaut (D-025). */
+/** Largeur réglable de 240 px jusqu'à laisser 360 px au contenu, flèches par 16 px, double-clic : défaut (D-025, D-402). */
 export const DetailRedimensionnable: Story = {
   render: () => <Demo />,
   play: async ({ canvasElement }) => {
     const c = within(canvasElement);
     const handle = c.getByRole("separator", { name: "Largeur du panneau de détail" });
     const panel = c.getByRole("complementary", { name: "Détail" });
+    const main = canvasElement.ownerDocument.querySelector("main") as HTMLElement;
     const w0 = panel.getBoundingClientRect().width;
+    const max = Math.round(w0 + main.getBoundingClientRect().width - 360);
     handle.focus();
     await userEvent.keyboard("{ArrowLeft}{ArrowLeft}");
-    await waitFor(() => expect(Math.round(panel.getBoundingClientRect().width)).toBe(Math.round(Math.min(480, w0 + 32))));
-    for (let i = 0; i < 30; i++) await userEvent.keyboard("{ArrowLeft}");
-    await waitFor(() => expect(Math.round(panel.getBoundingClientRect().width)).toBe(480));
+    await waitFor(() => expect(Math.round(panel.getBoundingClientRect().width)).toBe(Math.round(Math.min(max, w0 + 32))));
+    for (let i = 0; i < 80; i++) await userEvent.keyboard("{ArrowLeft}");
+    await waitFor(() => expect(Math.round(panel.getBoundingClientRect().width)).toBe(max));
+    await expect(Math.round(main.getBoundingClientRect().width)).toBe(360);
     await userEvent.dblClick(handle);
     await waitFor(() => expect(Math.round(panel.getBoundingClientRect().width)).toBe(Math.round(w0)));
     // À la souris : glisser la poignée vers la gauche élargit le panneau.
     const box = handle.getBoundingClientRect();
-    const at = (x: number) => ({ clientX: x, clientY: box.top + 100, bubbles: true, pointerId: 1 });
+    const at = (x: number, buttons = 1) => ({ clientX: x, clientY: box.top + 100, bubbles: true, pointerId: 1, buttons });
     handle.dispatchEvent(new PointerEvent("pointerdown", at(box.left + 3)));
     window.dispatchEvent(new PointerEvent("pointermove", at(box.left - 97)));
-    window.dispatchEvent(new PointerEvent("pointerup", at(box.left - 97)));
-    await waitFor(() => expect(Math.round(panel.getBoundingClientRect().width)).toBe(Math.round(Math.min(480, w0 + 100))));
+    window.dispatchEvent(new PointerEvent("pointerup", at(box.left - 97, 0)));
+    await waitFor(() => expect(Math.round(panel.getBoundingClientRect().width)).toBe(Math.round(Math.min(max, w0 + 100))));
+  },
+};
+
+/** Glisser au-dessus d'une iframe (une page) : un voile couvre la fenêtre ; un relâché perdu
+ *  ne laisse pas le glisser actif, le survol suivant ne déplace plus la poignée (D-402). */
+export const DetailGlisserSurIframe: Story = {
+  render: () => <Demo />,
+  play: async ({ canvasElement }) => {
+    const c = within(canvasElement);
+    const doc = canvasElement.ownerDocument;
+    const frame = doc.createElement("iframe");
+    frame.title = "Page";
+    frame.srcdoc = "<body style='margin:0'>Page</body>";
+    frame.style.cssText = "width:100%;height:400px;border:0";
+    doc.querySelector("main")?.prepend(frame);
+    const handle = c.getByRole("separator", { name: "Largeur du panneau de détail" });
+    const panel = c.getByRole("complementary", { name: "Détail" });
+    const w0 = Math.round(panel.getBoundingClientRect().width);
+    const box = handle.getBoundingClientRect();
+    const at = (x: number, buttons: number) => ({ clientX: x, clientY: box.top + 100, bubbles: true, pointerId: 1, buttons });
+    handle.dispatchEvent(new PointerEvent("pointerdown", at(box.left + 3, 1)));
+    // Pendant le glisser, le voile passe au-dessus de l'iframe.
+    await waitFor(() => expect(doc.querySelector("[data-socle-drag-veil]")).not.toBeNull());
+    window.dispatchEvent(new PointerEvent("pointermove", at(box.left - 57, 1)));
+    await waitFor(() => expect(Math.round(panel.getBoundingClientRect().width)).toBe(w0 + 60));
+    // Le relâché est perdu (hors de la fenêtre) : le mouvement suivant arrive sans bouton pressé.
+    window.dispatchEvent(new PointerEvent("pointermove", at(box.left - 157, 0)));
+    await waitFor(() => expect(doc.querySelector("[data-socle-drag-veil]")).toBeNull());
+    window.dispatchEvent(new PointerEvent("pointermove", at(box.left - 257, 0)));
+    await expect(Math.round(panel.getBoundingClientRect().width)).toBe(w0 + 60);
+    // Un nouveau glisser repart de la largeur atteinte.
+    const box2 = handle.getBoundingClientRect();
+    handle.dispatchEvent(new PointerEvent("pointerdown", { ...at(box2.left + 3, 1), clientY: box.top + 100 }));
+    window.dispatchEvent(new PointerEvent("pointermove", { ...at(box2.left - 37, 1) }));
+    window.dispatchEvent(new PointerEvent("pointerup", at(box2.left - 37, 0)));
+    await waitFor(() => expect(Math.round(panel.getBoundingClientRect().width)).toBe(w0 + 100));
+    frame.remove();
   },
 };
 

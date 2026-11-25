@@ -56,7 +56,7 @@ Aucune variante visuelle. La disposition dépend de la largeur (D-013) et de la 
 | Sidebar dépliée à l'ouverture, état mémorisé (D-016) | verrouillé | `SidebarMemorisee` |
 | Une fois repliée, l'overlay s'ouvre au survol du bouton et se ferme 250 ms après la sortie ; un clic, Mod+B ou Entrée la redéplie (D-017) | verrouillé | `SidebarOverlay` |
 | Panneau de détail : colonne mémorisée sur bureau, overlay sur tablette, plein écran sur mobile (D-018) | verrouillé | `PanneauDetail` |
-| Panneau de détail : largeur réglable sur bureau de 240 à 480 px, mémorisée ; double-clic pour revenir au défaut ; flèches au clavier par pas de 16 px (D-025) | verrouillé | `DetailRedimensionnable` |
+| Panneau de détail : largeur réglable sur bureau de 240 px jusqu'à laisser 360 px au contenu, mémorisée ; le glisser capture le pointeur, même au-dessus d'une iframe (D-402) ; double-clic pour revenir au défaut ; flèches au clavier par pas de 16 px (D-025, D-402) | verrouillé | `DetailRedimensionnable`, `DetailGlisserSurIframe` |
 | Panneau de détail : largeur de départ `default` ou `form`, largeur réglée mémorisée pour chacune (D-240) | réglable par page (`detailWidth`) | `DetailFormulaire` |
 | Agrandir : bouton bascule, panneau de 960 px au plus, contenu d'au moins 360 px, sans poignée, état mémorisé ; deux états (D-241, D-242) | réglable par page (`detailExpandable`) | `DetailLarge` |
 | Onglets de vues : chaque page retient sa dernière vue, Mod+1 à 9 (D-021) | verrouillé | `OngletsDeVues` |

@@ -2860,3 +2860,11 @@
 - Raison : dans Alfred, l'utilisateur veut voir les commandes de fond, les sous-agents et les scripts longs d'une conversation, et arrêter chacun, comme le bloc « Background tasks » de Claude Code. `List` montre ses actions au survol, à la place de la méta (D-066) : la durée et l'arrêt ne pouvaient pas être visibles ensemble.
 - Options écartées : une option « actions toujours visibles » de `List` (casse D-066 pour un seul usage) ; des lignes `PropertyRow` (pas de durée vivante, une seule action par ligne sans libellé coupé) ; la liste des tâches finies (le compte suffit, le relevé garde le détail).
 - Validation : demande de l'utilisateur, choix délégués, 2026-11-25. docs/validation/components/BackgroundTasks-v1.html. Stories `EnCours`, `Arret`, `Resume`, `Vide`, `AppelArret`.
+
+## D-402 — AppShell : panneau de détail redimensionnable librement, glisser fiable
+- Date : 2026-11-25
+- Portée : AppShell (remplace la borne de 480 px de D-025 et D-240)
+- Décision : la poignée règle le panneau de 240 px jusqu'à laisser 360 px à la zone principale (la marge de D-241). La zone principale garde 360 px dès que le panneau est en colonne ; si la fenêtre rétrécit, le panneau cède jusqu'à 240 px. Le glisser capture le pointeur (`setPointerCapture`) et pose un voile transparent sur la fenêtre, au curseur `col-resize`, jusqu'à la fin du geste. Le geste finit au relâché, à l'annulation du pointeur, à la perte de la capture, quand la fenêtre perd le focus, ou au premier mouvement sans bouton pressé.
+- Raison : défauts mesurés dans Alfred, 2026-11-25. 1) Le panneau s'arrêtait à 480 px (borne fixe). 2) Les écouteurs étaient posés sur `window` sans capture : au-dessus de l'iframe d'une page, le mouvement et le relâché partaient dans l'iframe. Le panneau cessait de suivre, le glisser restait actif, et le survol suivant, sans clic, déplaçait le panneau ; un nouveau clic se mêlait à l'ancien glisser.
+- Options écartées : une borne plus haute fixe (ne suit pas la taille de la fenêtre) ; `pointer-events: none` sur les iframes de la page (AppShell ne connaît pas le contenu).
+- Validation : défaut signalé par Alexandre, 2026-11-25, choix délégués. Stories `DetailRedimensionnable`, `DetailGlisserSurIframe`.
