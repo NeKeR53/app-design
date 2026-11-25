@@ -433,6 +433,8 @@ export interface SocleMessages {
   queueMove: (n: number) => string;
   queueMoveHint: string;
   queueMoved: (position: number, total: number) => string;
+  sectionMove: (title: string, position: number, total: number) => string;
+  sectionMoved: (title: string, position: number, total: number) => string;
   queueWaiting: string;
   queueEdit: (n: number) => string;
   queueRemove: (n: number) => string;
@@ -891,6 +893,8 @@ export const frenchMessages: SocleMessages = {
   queueMove: (n) => `Déplacer le message ${n}`,
   queueMoveHint: "Flèches haut et bas pour réordonner",
   queueMoved: (p, n) => `Message déplacé en position ${p} sur ${n}`,
+  sectionMove: (t, p, n) => `Déplacer la section ${t}, position ${p} sur ${n}`,
+  sectionMoved: (t, p, n) => `Section ${t} déplacée en position ${p} sur ${n}`,
   queueWaiting: "En file : part à la fin de l'étape en cours",
   queueEdit: (n) => `Modifier le message ${n}`,
   queueRemove: (n) => `Retirer le message ${n}`,

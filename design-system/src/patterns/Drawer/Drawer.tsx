@@ -3,7 +3,8 @@
  * Décisions : D-057 à D-061. Interrupteur : composant Toggle (D-136).
  * Forme déclarative : D-180 à D-185.
  */
-import { Children, createContext, isValidElement, useContext, useId, type ReactNode } from "react";
+import { Children, createContext, isValidElement, useContext, useId, useMemo, useState, type ReactNode } from "react";
+import { useReorder } from "../../lib/reorder";
 import { ActionBar, type Action } from "../ActionBar/ActionBar";
 import { Badge, type StatusTone } from "../../components/Badge/Badge";
 import { Skeleton, SkeletonGroup } from "../../components/Skeleton/Skeleton";
@@ -15,7 +16,7 @@ import { Button } from "react-aria-components/Button";
 import { Button as SocleButton } from "../../components/Button/Button";
 import { useMessages, useStoredState } from "../../provider/SocleProvider";
 import { buttonReset, cx, focusRing } from "../../lib/cx";
-import { ChevronDown, ChevronRight } from "../../icons";
+import { ChevronDown, ChevronRight, GripVertical } from "../../icons";
 import { DropdownMenu } from "../../components/DropdownMenu/DropdownMenu";
 import { Tooltip } from "../../components/Tooltip/Tooltip";
 import { OverflowTooltip } from "../../components/Tooltip/OverflowTooltip";
@@ -131,6 +132,13 @@ export interface DrawerDeclarativeProps extends DetailPanelCommon {
   onActionDone?: (action: Action) => void;
   /** Une action a échoué ; l'app affiche la notification (D-116). */
   onActionError?: (action: Action, error: unknown) => void;
+  /**
+   * L'utilisateur range les sections à sa main : une poignée devant chaque titre, au survol, à glisser ; ou les flèches
+   * haut et bas sur la poignée (D-399). L'ordre est mémorisé sous `orderKey`.
+   */
+  reorderable?: boolean;
+  /** Clé de mémoire de l'ordre des sections (par exemple le type d'objet) ; défaut : un ordre commun à l'app. */
+  orderKey?: string;
 }
 
 export type DrawerProps = DrawerComposedProps | DrawerDeclarativeProps;
@@ -149,8 +157,24 @@ export function Drawer(props: DrawerProps) {
 }
 
 /* ---------- Forme déclarative (D-180 à D-184) ---------- */
-function Declarative({ header, sections, isLoading, hasError, onRetry, isNotFound, isForbidden, forbidden, onRequestAccess, emptyMessage, onActionDone, onActionError }: DrawerDeclarativeProps) {
+function Declarative({ header, sections, isLoading, hasError, onRetry, isNotFound, isForbidden, forbidden, onRequestAccess, emptyMessage, onActionDone, onActionError, reorderable = false, orderKey }: DrawerDeclarativeProps) {
   const m = useMessages();
+  // Ordre des sections choisi par l'utilisateur (D-399) : les sections connues dans cet ordre, les nouvelles à leur place.
+  const [order, setOrder] = useStoredState<string[]>(`detail:order:${orderKey ?? "default"}`, []);
+  const sorted = useMemo(() => {
+    const list = [...(sections ?? [])];
+    if (!reorderable || !order.length) return list;
+    const rank = new Map(order.map((id, index) => [id, index]));
+    return list
+      .map((section, index) => ({ section, index }))
+      .sort((a, b) => (rank.get(a.section.id) ?? a.index + order.length) - (rank.get(b.section.id) ?? b.index + order.length))
+      .map(({ section }) => section);
+  }, [sections, order, reorderable]);
+  const [moved, setMoved] = useState("");
+  const { scope, ordered, draggedId, startDrag, move } = useReorder(sorted, reorderable ? (ids) => setOrder(ids) : undefined, (id, list) => {
+    const section = list.find((s) => s.id === id);
+    if (section) setMoved(m.sectionMoved(section.title, list.findIndex((s) => s.id === id) + 1, list.length));
+  });
   // Accès refusé : passe avant tout autre état, sans montrer de donnée (D-351).
   if (isForbidden)
     return (
@@ -186,7 +210,44 @@ function Declarative({ header, sections, isLoading, hasError, onRetry, isNotFoun
             <ErrorBanner onRetry={onRetry} message={m.detailNotUpdated} />
           </div>
         )}
-        {sections?.map((s) => <DeclarativeSection key={s.id} section={s} />)}
+        {ordered.map((s, index) => (
+          <DeclarativeSection
+            key={s.id}
+            section={s}
+            {...(reorderable && ordered.length > 1
+              ? {
+                  sortable: {
+                    scope,
+                    dragged: draggedId === s.id,
+                    handle: (
+                      <button
+                        type="button"
+                        aria-label={m.sectionMove(s.title, index + 1, ordered.length)}
+                        aria-keyshortcuts="ArrowUp ArrowDown"
+                        className="socle-btn -ml-1 inline-grid size-5 shrink-0 cursor-grab touch-none place-items-center rounded-sm text-fg-3 opacity-0 group-hover/section:opacity-100 hover:text-fg focus-visible:opacity-100 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-focus focus-visible:outline-solid"
+                        onPointerDown={(event) => {
+                          const frame = event.currentTarget.closest<HTMLElement>("section");
+                          if (frame) startDrag(event, s.id, frame);
+                        }}
+                        onKeyDown={(event) => {
+                          if (event.key !== "ArrowUp" && event.key !== "ArrowDown") return;
+                          event.preventDefault();
+                          move(s.id, event.key === "ArrowUp" ? -1 : 1);
+                        }}
+                      >
+                        <GripVertical size={12} />
+                      </button>
+                    ),
+                  },
+                }
+              : {})}
+          />
+        ))}
+        {reorderable && (
+          <span role="status" className="sr-only">
+            {moved}
+          </span>
+        )}
       </div>
     </ActionHandlers.Provider>
   );
@@ -236,7 +297,13 @@ function Header({ header }: { header: DetailHeader }) {
   );
 }
 
-function DeclarativeSection({ section }: { section: DetailSection }) {
+interface Sortable {
+  scope: string;
+  dragged: boolean;
+  handle: ReactNode;
+}
+
+function DeclarativeSection({ section, sortable }: { section: DetailSection; sortable?: Sortable }) {
   const m = useMessages();
   const fieldValue = useFieldValue();
   const { id, title, fields, content, empty, actions, summary, defaultCollapsed } = section;
@@ -246,6 +313,7 @@ function DeclarativeSection({ section }: { section: DetailSection }) {
     <SectionFrame
       id={id}
       title={title}
+      {...(sortable ? { sortable } : {})}
       {...(actions ? { actions } : {})}
       {...(summary !== undefined ? { summary } : {})}
       {...(defaultCollapsed ? { defaultCollapsed } : {})}
@@ -277,7 +345,7 @@ function Section(props: DrawerSectionProps) {
 }
 
 /** `after` : contenu libre et texte vide de la forme déclarative, hors de la liste `dl`. */
-function SectionFrame({ id, title, footer, summary, actions, defaultCollapsed = false, children, after }: DrawerSectionProps & { after?: ReactNode }) {
+function SectionFrame({ id, title, footer, summary, actions, defaultCollapsed = false, children, after, sortable }: DrawerSectionProps & { after?: ReactNode; sortable?: Sortable }) {
   const [closed, setClosed] = useStoredState<Record<string, boolean>>("detail:sections", {});
   const { onDone, onError } = useContext(ActionHandlers);
   const open = !(closed[id] ?? defaultCollapsed);
@@ -286,8 +354,13 @@ function SectionFrame({ id, title, footer, summary, actions, defaultCollapsed = 
   const anyIcon = Children.toArray(children).some((c) => isValidElement<PropertyRowProps>(c) && Boolean(c.props.icon));
   const sum = typeof summary === "string" ? { label: summary } : summary;
   return (
-    <section aria-labelledby={headId} className="border-b border-line px-(--pad) pt-3 pb-2.5 last:border-b-0">
+    <section
+      aria-labelledby={headId}
+      {...(sortable ? { "data-sortable-id": id, "data-sortable-scope": sortable.scope } : {})}
+      className={cx("group/section border-b border-line px-(--pad) pt-3 pb-2.5 last:border-b-0", sortable?.dragged && "opacity-40")}
+    >
       <div className="mb-1 flex h-6 min-w-0 items-center gap-1.5">
+        {sortable?.handle}
         {/* En-tête d'accordéon (APG) : le bouton est dans un titre de niveau 3, sous le titre de l'objet (h2). */}
         <h3 className="m-0 flex min-w-0 text-[length:inherit] leading-[inherit] font-[inherit]">
           <Button

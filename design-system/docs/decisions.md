@@ -2836,3 +2836,11 @@
 - Décision : options facultatives `isDetailOpen` et `onDetailOpenChange`. Avec `isDetailOpen`, l'app ouvre ou ferme le panneau (colonne sur bureau, overlay sur tablette et mobile) ; AppShell rend chaque ouverture ou fermeture de l'utilisateur par `onDetailOpenChange`. Sans elles, l'état mémorisé de D-018 ne change pas.
 - Raison : dans Alfred, une page qui demandait l'ouverture de son panneau (clic sur un élément) n'avait aucun effet : AppShell gardait seul l'état du panneau.
 - Validation : défaut signalé par Alexandre, 2026-11-24. Story `PanneauPilote`.
+
+## D-399 — Drawer : sections rangées par l'utilisateur
+- Date : 2026-11-25
+- Portée : Drawer (forme déclarative), MessageQueue (mécanique partagée)
+- Décision : option facultative `reorderable` du `Drawer` déclaratif. Une poignée (`GripVertical`, 20 px, `--fg-3`) précède le titre de chaque section ; elle apparaît au survol de la section et reste atteignable au clavier (masquée par l'opacité, jamais par `visibility`). On glisse la poignée (aperçu qui suit le pointeur, à partir de 4 px), ou on presse les flèches haut et bas dessus ; le déplacement est annoncé (« Section Modifications déplacée en position 1 sur 3 »). L'ordre est mémorisé par `SocleProvider` sous `orderKey` ; une section inconnue garde sa place. La mécanique est celle de `MessageQueue` (D-373), mise en commun dans `lib/reorder.ts`.
+- Raison : le panneau de l'agent d'Alfred permettait de ranger ses cartes ; en passant au `Drawer`, ce geste avait disparu (manque noté « Hors design »).
+- Options écartées : un menu « Monter / Descendre » par section (plus lent) ; une poignée toujours visible (charge le panneau).
+- Validation : demande de l'utilisateur, 2026-11-25. Story `SectionsRangees`.

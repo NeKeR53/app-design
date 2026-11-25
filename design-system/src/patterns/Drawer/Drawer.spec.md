@@ -57,6 +57,8 @@ Aucune.
 | `emptyMessage` | `string` | « Sélectionnez un élément pour voir son détail. » | Phrase quand rien n'est sélectionné. |
 | `onActionDone` | `(action) => void` | aucun | Après la réussite d'une action de l'en-tête ou d'une section (par exemple recharger). |
 | `onActionError` | `(action, error) => void` | aucun | Une action a échoué ; l'app affiche la notification (D-116). |
+| `reorderable` | `boolean` | `false` | L'utilisateur range les sections : poignée devant chaque titre (au survol, toujours atteignable au clavier), à glisser, ou flèches haut et bas sur la poignée ; déplacement annoncé (D-399). |
+| `orderKey` | `string` | ordre commun | Clé de mémoire de l'ordre des sections ; une section inconnue garde sa place (D-399). |
 
 `DetailHeader` :
 | Champ | Type | Défaut | Description |
@@ -156,7 +158,7 @@ Uniquement dans le slot `detail` d'AppShell.
 Contient `IconButton`, `DropdownMenu`, `Toggle` (D-136), `Button` (D-100) et `Tooltip`. Forme déclarative : `ActionBar` (D-110), `Badge` (D-160), `SkeletonGroup` et `Skeleton` (D-165), `EmptyState` (D-166), et `FormattedValue` (D-170). Peut contenir `InlineEdit` comme valeur (D-324) et `Accordion` dans une section (D-321).
 
 ## Décisions
-D-007, D-015, D-018, D-025, D-026, D-040, D-047, D-057, D-058, D-059, D-060, D-061, D-084, D-085, D-110, D-113, D-116, D-160, D-165, D-166, D-170, D-171, D-180, D-181, D-182, D-183, D-184, D-185, D-240, D-241, D-242, D-321, D-324
+D-007, D-015, D-018, D-025, D-026, D-040, D-047, D-057, D-058, D-059, D-060, D-061, D-084, D-085, D-110, D-113, D-116, D-160, D-165, D-166, D-170, D-171, D-180, D-181, D-182, D-183, D-184, D-185, D-240, D-241, D-242, D-321, D-324, D-399
 
 ## Questions ouvertes
 Aucune.

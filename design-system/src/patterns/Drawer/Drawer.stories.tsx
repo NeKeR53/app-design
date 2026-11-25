@@ -304,3 +304,45 @@ export const AccesRefuse: Story = {
     await waitFor(() => expect(c.getByTestId("asked").textContent).toBe("true"));
   },
 };
+
+/** Sections rangées par l'utilisateur : poignée au survol, flèches au clavier, ordre mémorisé (D-399). */
+function Rangement({ shown = true }: { shown?: boolean }) {
+  const sections: DetailSection[] = [
+    { id: "plan", title: "Plan", content: "Trois étapes." },
+    { id: "modifs", title: "Modifications", content: "Deux fichiers." },
+    { id: "notes", title: "Notes", content: "Rien à signaler." },
+  ];
+  return shown ? (
+    <div className="w-[300px] border border-line">
+      <Drawer header={{ title: "Conversation" }} sections={sections} reorderable orderKey="rangement" />
+    </div>
+  ) : (
+    <p>Fermé</p>
+  );
+}
+
+export const SectionsRangees: Story = {
+  render: function Render() {
+    const [shown, setShown] = useState(true);
+    return (
+      <>
+        <button type="button" onClick={() => setShown((v) => !v)}>Basculer</button>
+        <Rangement shown={shown} />
+      </>
+    );
+  },
+  play: async ({ canvasElement }) => {
+    const c = within(canvasElement);
+    const titles = () => c.getAllByRole("heading", { level: 3 }).map((h) => h.textContent);
+    await expect(titles()).toEqual(["Plan", "Modifications", "Notes"]);
+    const handle = c.getByRole("button", { name: /^Déplacer la section Modifications/ });
+    handle.focus();
+    await userEvent.keyboard("{ArrowUp}");
+    await waitFor(() => expect(titles()).toEqual(["Modifications", "Plan", "Notes"]));
+    await expect(c.getByRole("status")).toHaveTextContent("Section Modifications déplacée en position 1 sur 3");
+    // Fermé puis rouvert : l'ordre choisi est gardé.
+    await userEvent.click(c.getByRole("button", { name: "Basculer" }));
+    await userEvent.click(c.getByRole("button", { name: "Basculer" }));
+    await waitFor(() => expect(titles()).toEqual(["Modifications", "Plan", "Notes"]));
+  },
+};

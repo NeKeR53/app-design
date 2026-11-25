@@ -2,6 +2,16 @@
 
 Versions selon semver (règle 6 du skill design) : une nouvelle option facultative est une version mineure ; un changement qui casse l'existant est une version majeure, avec une note de migration.
 
+## [1.17.0] — 2026-11-25
+
+Version mineure : options facultatives ; aucune API ne casse.
+
+### Ajouté
+- `Drawer` (forme déclarative) : options `reorderable` et `orderKey`, sections rangées par l'utilisateur, au pointeur ou au clavier, ordre mémorisé (D-399). Story `SectionsRangees`.
+
+### Changé
+- `MessageQueue` : sa mécanique de rangement est mise en commun (`lib/reorder.ts`) ; comportement inchangé.
+
 ## [1.16.0] — 2026-11-24
 
 Version mineure : options facultatives ; aucune API ne casse.
