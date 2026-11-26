@@ -24,6 +24,13 @@ const Frame = ({ children, height = 480, width }: { children: React.ReactNode; h
   </div>
 );
 
+/** Glisser de fichiers simulé dans le DOM. */
+const files = (...names: string[]) => {
+  const data = new DataTransfer();
+  for (const name of names) data.items.add(new File(["date;montant"], name, { type: "text/csv" }));
+  return data;
+};
+
 const actions = (): Action[] => [
   { id: "export", label: "Exporter", primary: true, onPress: fn() },
   { id: "copy", label: "Copier le lien", icon: <Copy />, onPress: fn() },
@@ -101,6 +108,10 @@ export const Zones: Story = {
     await waitFor(() => expect(scroller.scrollTop).toBeGreaterThan(0));
     await expect(bar.getBoundingClientRect().top).toBe(barTop);
     await expect(foot.getBoundingClientRect().top).toBe(footTop);
+    // Sans `onDropFiles`, des fichiers glissés ne montrent aucun cadre (D-418).
+    const page = canvasElement.querySelector<HTMLElement>(".socle-page")!;
+    page.dispatchEvent(new DragEvent("dragover", { bubbles: true, cancelable: true, dataTransfer: files("a.csv") }));
+    await expect(canvasElement.querySelector("[data-page-drop]")).toBeNull();
   },
 };
 
@@ -319,5 +330,57 @@ export const GrilleEtroite: Story = {
     await expect(Math.round(two[1]!.top - two[0]!.bottom)).toBe(24);
     // Jamais sous 240 px par colonne.
     for (const r of [...four, ...three, ...two]) await expect(r.width).toBeGreaterThanOrEqual(240);
+  },
+};
+
+/** Fichiers glissés au-dessus de la page : cadre sur toute la page, barre et pied compris ; le dépôt appelle `onDropFiles` (D-418). */
+export const DepotDeFichiers: Story = {
+  args: { onDropFiles: fn() },
+  render: (args) => (
+    <Frame>
+      <Page toolbar={<Filters />} actions={actions()} actionsLabel="Rapport" footer="128 demandes ce mois-ci" onDropFiles={args.onDropFiles ?? fn()}>
+        <Blocks />
+      </Page>
+    </Frame>
+  ),
+  play: async ({ canvasElement, args }) => {
+    const c = within(canvasElement);
+    const page = canvasElement.querySelector<HTMLElement>(".socle-page")!;
+    const label = "Déposez les fichiers pour les ajouter";
+    page.dispatchEvent(new DragEvent("dragover", { bubbles: true, cancelable: true, dataTransfer: files("releve.csv") }));
+    const frame = await c.findByText(label);
+    await expect(frame).toBeVisible();
+    // Toute la page, à 12 px des bords : la barre d'outils et le pied sont sous le cadre.
+    const box = page.getBoundingClientRect();
+    const drawn = frame.getBoundingClientRect();
+    await expect(Math.round(drawn.top - box.top)).toBe(12);
+    await expect(Math.round(box.bottom - drawn.bottom)).toBe(12);
+    await expect(drawn.top).toBeLessThan(c.getByRole("toolbar", { name: "Rapport" }).getBoundingClientRect().bottom);
+    await expect(getComputedStyle(frame).pointerEvents).toBe("none");
+    // Le glisser sort de la page : le cadre disparaît.
+    page.dispatchEvent(new DragEvent("dragleave", { bubbles: true, relatedTarget: document.body }));
+    await waitFor(() => expect(c.queryByText(label)).toBeNull());
+    // Il revient, puis le dépôt transmet les fichiers et retire le cadre.
+    const data = files("releve-novembre.csv", "releve-decembre.csv");
+    page.dispatchEvent(new DragEvent("dragover", { bubbles: true, cancelable: true, dataTransfer: data }));
+    await c.findByText(label);
+    page.dispatchEvent(new DragEvent("drop", { bubbles: true, cancelable: true, dataTransfer: data }));
+    await waitFor(() => expect(c.queryByText(label)).toBeNull());
+    await expect(args.onDropFiles).toHaveBeenCalledTimes(1);
+    await expect(args.onDropFiles).toHaveBeenCalledWith([...data.files]);
+  },
+};
+
+/** Survol vu par l'app (le système capte le glisser, Tauri) : le cadre s'affiche sans événement du DOM, avec son texte (D-418). */
+export const DepotSignaleParLApp: Story = {
+  render: () => (
+    <Frame>
+      <Page toolbar={<Filters />} actions={actions()} actionsLabel="Rapport" footer="128 demandes ce mois-ci" isDraggingFiles dropLabel="Déposez le relevé pour l'importer">
+        <Blocks />
+      </Page>
+    </Frame>
+  ),
+  play: async ({ canvasElement }) => {
+    await expect(within(canvasElement).getByText("Déposez le relevé pour l'importer")).toBeVisible();
   },
 };

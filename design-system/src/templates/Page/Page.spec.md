@@ -1,9 +1,9 @@
 # Page
-Statut : validé (2026-11-26) — Version : depuis 0.3.0 ; `PageGrid` depuis 1.20.0
-Validation : par délégation de l'utilisateur, 2026-11-23 — docs/validation/components/DetailPage-v1.html ; `PageGrid` et vue d'ensemble : par délégation de l'utilisateur, 2026-11-26 — docs/validation/components/PageGrid-v1.html
+Statut : validé (2026-11-26) — Version : depuis 0.3.0 ; `PageGrid` depuis 1.20.0 ; dépôt de fichiers depuis 1.22.0
+Validation : par délégation de l'utilisateur, 2026-11-23 — docs/validation/components/DetailPage-v1.html ; `PageGrid` et vue d'ensemble : par délégation de l'utilisateur, 2026-11-26 — docs/validation/components/PageGrid-v1.html ; dépôt de fichiers : par délégation de l'utilisateur, 2026-11-26 — docs/validation/components/PageDepot-v1.html (Q1 A, Q2 A)
 
 ## Rôle
-Page composée : gabarit libre de la zone `main` d'AppShell, quand aucun autre gabarit ne convient (tableau de bord, éditeur, graphique, synthèse de quelques blocs). Elle pose les zones standard ; l'app y place des composants du socle, sans HTML stylé (D-217). Ses blocs s'empilent, ou se rangent côte à côte dans `PageGrid` pour tenir sur un écran (D-403, D-404).
+Page composée : gabarit libre de la zone `main` d'AppShell, quand aucun autre gabarit ne convient (tableau de bord, éditeur, graphique, synthèse de quelques blocs). Elle pose les zones standard ; l'app y place des composants du socle, sans HTML stylé (D-217). Ses blocs s'empilent, ou se rangent côte à côte dans `PageGrid` pour tenir sur un écran (D-403, D-404). Elle reçoit les fichiers déposés n'importe où sur la page (D-418).
 Ne pas l'utiliser pour :
 - une collection : `ListPage` ;
 - un élément ouvert : `DetailPage` ;
@@ -16,6 +16,7 @@ Ne pas l'utiliser pour :
 1. **Barre d'outils** (facultative, fixe, trait dessous) : contenu libre à gauche sur une ligne (filtres, choix de période) ; actions à droite, zone `toolbar` (D-111).
 2. **Contenu** (obligatoire, seule zone qui défile) : blocs empilés à 24 px (`PageSection` ou composants du socle), ou rangés côte à côte par `PageGrid`.
 3. **Pied** (facultatif, fixe, trait dessus) : contenu libre en `--fs-sm`, `--fg-3` (total, état d'une sélection, pagination).
+4. **Cadre de dépôt** (quand des fichiers survolent la page, avec `onDropFiles` ou `isDraggingFiles`) : posé sur toute la page, barre d'outils et pied compris, à 12 px des bords ; tirets 1 px `--accent`, rayon `--radius-md`, fond `--accent` à 6 % sur `--surface`, texte centré `--fs-md` `--accent` « Déposez les fichiers pour les ajouter ». Ne capte pas la souris (D-418).
 
 `PageSection` :
 1. titre `h2`, `--fs-lg`, semi-gras (obligatoire) ;
@@ -43,6 +44,9 @@ Aucune.
 | `state` | `"ready" \| "loading" \| "error"` | `"ready"` | État de la page (D-215). |
 | `onRetry` | `() => void` | aucun | « Réessayer » de l'état `error`. |
 | `loadingLabel` | `string` | « Chargement… » | Nom annoncé pendant le chargement. |
+| `onDropFiles` | `(files: File[]) => void` | aucun | Fichiers déposés n'importe où sur la page : cadre « Déposez les fichiers pour les ajouter », puis l'app ajoute (D-418). Sans lui, pas de dépôt DOM. |
+| `isDraggingFiles` | `boolean` | `false` | Survol de fichiers vu par l'app (glisser-déposer du système, Tauri) : affiche le cadre (D-418). |
+| `dropLabel` | `string` | « Déposez les fichiers pour les ajouter » (i18n) | Texte du cadre de dépôt. |
 | `children` | `ReactNode` | — | Les blocs. |
 | `PageSection` : `title` | `string` | — (obligatoire) | Titre du bloc. |
 | `PageSection` : `description` | `string` | aucune | Une phrase. |
@@ -58,6 +62,7 @@ Aucune.
 - Pas de barre d'outils sur plusieurs lignes.
 - Pas de recherche de page en tête : elle va dans la barre d'outils de `ListPage`.
 - Pas de bandeau (D-159), pas de `className` ni de `style`.
+- Pas de zone de dépôt dessinée dans la page, ni de bloc `FileUpload` pour ajouter des fichiers à la page : le dépôt prend toute la page (D-404, D-418).
 - `PageGrid` : pas de colonnes inégales, pas de largeur de colonne réglable, pas de bloc qui s'étend sur deux colonnes, pas de grille dans une grille (D-403).
 
 ## États
@@ -69,6 +74,7 @@ Aucune.
 | Section `loading` | Titre, puis deux lignes de squelette. |
 | Section `error` | Titre, puis message compact « Impossible de charger cette partie » avec « Réessayer ». |
 | Section vide | Titre, puis `EmptyState` compact ; action en zone `empty`. |
+| Fichiers au-dessus de la page (`onDropFiles`, ou `isDraggingFiles`) | Cadre pointillé `--accent` posé sur toute la page, texte « Déposez les fichiers pour les ajouter » (D-418). |
 
 ## Comportement
 | Règle | Niveau de réglage | Test (story) |
@@ -79,6 +85,8 @@ Aucune.
 | États de page et de section (D-215, D-216) | réglable par page | `Chargement`, `Erreur`, `EtatsDeSection` |
 | `PageGrid` : blocs côte à côte, écart de 24 px, même hauteur sur une ligne (D-403) | réglable par page (`columns`) | `Grille`, `GrilleDeCartes` |
 | `PageGrid` : moins de colonnes quand la grille rétrécit, jamais sous 240 px par colonne ; 4 passe à 2 (D-403) | verrouillé | `GrilleEtroite` |
+| Dépôt de fichiers sur toute la page ; un glisser qui sort ou finit ailleurs retire le cadre ; un dépôt déjà pris par un enfant (`FileUpload`, `ChatComposer`) n'est pas compté deux fois ; sans `onDropFiles`, aucun cadre (D-418) | réglable par l'app (`onDropFiles`) | `DepotDeFichiers`, `Zones` |
+| `isDraggingFiles` affiche le cadre sans dépôt DOM ; `dropLabel` change son texte (D-418) | réglable par l'app (`isDraggingFiles`, `dropLabel`) | `DepotSignaleParLApp` |
 
 ## Contenu
 - Titre de section long : à la ligne.
@@ -86,18 +94,20 @@ Aucune.
 - Vue d'ensemble d'abord (D-404) : les informations clés tiennent sur un écran. Les blocs courts et de même rang (chiffres clés, listes courtes) se rangent côte à côte dans `PageGrid` ; pas de longue pile de blocs qu'il faut faire défiler pour comprendre la page.
 - `width="text"` sert à un texte à lire (une note, une procédure). Un tableau de bord, une synthèse ou une page de travail prennent toute la largeur (D-214, D-404).
 - Une action (importer, ajouter, actualiser) est une `Action` de la barre d'outils ou d'une section, jamais un bloc à elle seule (D-404).
+- `dropLabel` : une phrase courte, sans point final, qui dit ce qui se passe : « Déposez le relevé pour l'importer » (D-418).
 
 ## Densité
 Marges `--pad` ; écart de 24 px entre blocs dans les deux densités, et entre les colonnes de `PageGrid`.
 
 ## Clavier
-Ordre de tabulation : barre d'outils (contenu libre, puis actions), contenu, pied. La barre qui défile garde chaque contrôle atteignable au clavier : le focus fait défiler la barre. Dans `PageGrid`, l'ordre suit les blocs, ligne par ligne, de gauche à droite.
+Ordre de tabulation : barre d'outils (contenu libre, puis actions), contenu, pied. La barre qui défile garde chaque contrôle atteignable au clavier : le focus fait défiler la barre. Dans `PageGrid`, l'ordre suit les blocs, ligne par ligne, de gauche à droite. Le dépôt est un geste de souris : au clavier, l'action « Ajouter… » ou « Importer… » de la barre d'outils (D-404, D-418).
 
 ## Accessibilité
 - Barre d'outils : `role="toolbar"` nommé par `actionsLabel` s'il est donné.
 - Pied : `footer`.
 - `PageSection` : `section` nommée par son `h2`.
 - `PageGrid` : aucun rôle, aucune annonce ; l'ordre du document est l'ordre de lecture.
+- Cadre de dépôt : un texte visible, sans rôle ; il ne prend jamais le focus (D-418).
 
 ## Taille d'écran
 Sous 640 px : les icônes de la barre passent dans « … » (D-117) ; la barre défile à l'horizontale ; `width="text"` prend toute la largeur. `PageGrid` suit la largeur de sa grille : avec le panneau de détail ouvert, elle prend moins de colonnes (D-403).
@@ -109,10 +119,10 @@ Chargement en échec : état `error` (page ou section). Action en échec : toast
 Zone `main` d'AppShell. `PageSection` : dans `Page` et `DetailPage`. `PageGrid` : dans le contenu de `Page`, ou dans une `PageSection` (une rangée de `Card`) ; jamais dans `DetailPage` (colonne de lecture), un `Drawer`, une `Modal` ou un `Popover`.
 
 ## Composition
-Contient `ActionBar`, `Skeleton`, `EmptyState`, `Button`. Les zones reçoivent des composants du socle (`Select`, `ComboBox`, `Table`, `List`, `Tabs`…). Ne contient pas d'autre gabarit. `PageGrid` reçoit des `PageSection`, des `Card` et des composants du socle ; pas une autre `PageGrid`.
+Contient `ActionBar`, `Skeleton`, `EmptyState`, `Button`, et le cadre de dépôt partagé avec `ListPage` et `ChatPage`. Les zones reçoivent des composants du socle (`Select`, `ComboBox`, `Table`, `List`, `Tabs`…). Ne contient pas d'autre gabarit. `PageGrid` reçoit des `PageSection`, des `Card` et des composants du socle ; pas une autre `PageGrid`.
 
 ## Décisions
-D-085, D-111, D-113, D-117, D-154, D-159, D-165, D-166, D-213, D-214, D-215, D-216, D-217, D-218, D-403, D-404
+D-085, D-111, D-113, D-117, D-154, D-159, D-165, D-166, D-213, D-214, D-215, D-216, D-217, D-218, D-382, D-403, D-404, D-416, D-418
 
 ## Questions ouvertes
 Aucune.

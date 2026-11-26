@@ -1,5 +1,5 @@
 /*
- * Dépôt de fichiers sur toute une page (ChatPage D-382, ListPage D-416) : survol vu dans le DOM,
+ * Dépôt de fichiers sur toute une page (ChatPage D-382, ListPage D-416, Page D-418) : survol vu dans le DOM,
  * ou signalé par l'app quand le système le capte (Tauri), et cadre « Déposez… » posé sur la page.
  */
 import { useEffect, useState, type DragEvent } from "react";

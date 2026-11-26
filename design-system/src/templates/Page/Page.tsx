@@ -1,5 +1,5 @@
 /*
- * Page composée, bloc titré et grille de blocs. Spec : Page.spec.md. Décisions : D-213 à D-218, D-403.
+ * Page composée, bloc titré et grille de blocs. Spec : Page.spec.md. Décisions : D-213 à D-218, D-403, D-418.
  */
 import { useId, type ReactNode } from "react";
 import { cx } from "../../lib/cx";
@@ -8,6 +8,7 @@ import { ActionBar, type Action } from "../../patterns/ActionBar/ActionBar";
 import { Button } from "../../components/Button/Button";
 import { EmptyState } from "../../components/EmptyState/EmptyState";
 import { Skeleton, SkeletonGroup } from "../../components/Skeleton/Skeleton";
+import { DropOverlay, useFileDrop } from "../../lib/fileDrop";
 
 /** Largeur de la colonne (D-214). */
 export type PageWidth = "full" | "text";
@@ -212,10 +213,16 @@ export interface PageProps {
   state?: "ready" | "loading" | "error";
   onRetry?: () => void;
   loadingLabel?: string;
+  /** Fichiers déposés n'importe où sur la page : cadre « Déposez les fichiers pour les ajouter », puis l'app ajoute (D-418). Sans lui, pas de dépôt DOM. */
+  onDropFiles?: (files: File[]) => void;
+  /** Survol de fichiers vu par l'app (glisser-déposer du système, Tauri) : affiche le cadre (D-418). */
+  isDraggingFiles?: boolean;
+  /** Texte du cadre de dépôt. Défaut : « Déposez les fichiers pour les ajouter » (`messages.pageDropHere`). */
+  dropLabel?: string;
   children: ReactNode;
 }
 
-/** Page composée : barre d'outils, contenu, pied (D-217). */
+/** Page composée : barre d'outils, contenu, pied (D-217) ; dépôt de fichiers sur toute la page (D-418). */
 export function Page({
   toolbar,
   actions,
@@ -228,12 +235,17 @@ export function Page({
   state = "ready",
   onRetry,
   loadingLabel,
+  onDropFiles,
+  isDraggingFiles = false,
+  dropLabel,
   children,
 }: PageProps) {
+  const m = useMessages();
   const hasBar = toolbar !== undefined || (actions && actions.length > 0);
+  const { dropProps, showDrop } = useFileDrop({ onDropFiles, isDraggingFiles });
   const content = state === "loading" ? <PageSkeleton label={loadingLabel} /> : state === "error" ? <PageError onRetry={onRetry} /> : children;
   return (
-    <div className="socle-page flex h-full min-h-0 flex-col bg-surface font-sans text-md text-fg">
+    <div className="socle-page relative flex h-full min-h-0 flex-col bg-surface font-sans text-md text-fg" data-dragging={showDrop || undefined} {...dropProps}>
       {hasBar && (
         <PageToolbar
           width={width}
@@ -256,6 +268,7 @@ export function Page({
           </PageColumn>
         </footer>
       )}
+      {showDrop && <DropOverlay marker="data-page-drop" label={dropLabel ?? m.pageDropHere} />}
     </div>
   );
 }

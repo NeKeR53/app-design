@@ -2988,3 +2988,11 @@
 - Raison : demande d'Alexandre, 2026-11-26 : une page s'organise par zones, et l'agent doit savoir pourquoi et quand prendre chacune ; une liste de zones sans raison se recopie mal dans une page qui ne ressemble pas tout à fait à la recette.
 - Options écartées : les raisons dans `layout-rules.md` seulement (l'agent lit la recette en écrivant la page, pas la règle) ; une section « Pourquoi » à part (la raison se lit mieux sur la ligne de sa zone).
 - Validation : demande de l'utilisateur, transmise par la session de tournage, 2026-11-26 ; choix délégués.
+
+## D-418 — Page : dépôt de fichiers sur toute la page
+- Date : 2026-11-26
+- Portée : Page (`onDropFiles`, `isDraggingFiles`, `dropLabel`)
+- Décision : comme `ListPage` (D-416) : des fichiers glissés au-dessus d'une page composée montrent le cadre pointillé `--accent` sur toute la page, barre d'outils et pied compris, « Déposez les fichiers pour les ajouter » ; le dépôt appelle `onDropFiles`. `isDraggingFiles` montre le cadre quand le système capte le glisser (Tauri) ; `dropLabel` en change le texte. Même code que `ListPage` et `ChatPage` (`lib/fileDrop`).
+- Raison : une page composée (tableau de bord, éditeur, synthèse) reçoit aussi des fichiers : un relevé à importer, une image à ouvrir. Sans cadre, une app desktop qui capte le dépôt du système n'avait rien à montrer, ou posait un bloc `FileUpload` dans la page (D-404).
+- Options écartées : le cadre sous la barre d'outils, comme `ChatPage` (la barre d'une `Page` ne sert pas pendant un glisser, et un cadre plein rappelle celui de `ListPage`) ; « Déposez les fichiers ici » (ne dit pas ce qui se passe) ; un dépôt par `PageSection` (on vise mal, D-416).
+- Validation : par délégation de l'utilisateur, 2026-11-26 — docs/validation/components/PageDepot-v1.html (Q1 A, Q2 A). Stories `DepotDeFichiers`, `DepotSignaleParLApp`, `Zones`.
