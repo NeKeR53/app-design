@@ -2,6 +2,27 @@
 
 Versions selon semver (règle 6 du skill design) : une nouvelle option facultative est une version mineure ; un changement qui casse l'existant est une version majeure, avec une note de migration.
 
+## [1.21.0] — 2026-11-26
+
+### Ajouté
+- Recettes de pages (D-405) : cinq pages complètes, faites seulement avec le socle, chacune avec sa fiche (zones, composants, actions, états, comportement, squelette, à éviter), ses stories (« Recettes/… ») et deux captures de référence, en clair et en sombre. Livrées dans `ai/recipes/` et listées en tête d'`AI.md` ; règle « Recettes de pages » dans `layout-rules.md`.
+  - Base de connaissances : questions et réponses avec sources, document ouvert à la page citée dans le panneau, vue des documents (D-406).
+  - Tableau de bord : chiffres clés, graphique et tableau côte à côte, ce qui attend une action, tout sur un écran (D-407).
+  - File de tri : la file, la décision dans le panneau, la sélection qui passe au suivant (D-408).
+  - Liste et fiche : un carnet de contacts (D-409).
+  - Catalogue : des vignettes et la fiche du produit (D-410).
+- `SourceList` : sources citées d'une réponse, en puces numérotées ; le passage cité en info-bulle, la source ouverte marquée (D-411).
+- `ChatMessage` : option `sources`, la `SourceList` d'une réponse, 8 px sous le texte (D-411).
+- `DocumentViewer` : option `page`, la page à montrer à l'ouverture puis à chaque nouvelle valeur (D-412).
+- `EmptyState` : option `suggestions`, quatre pistes pour commencer au plus (questions d'exemple) (D-413).
+- `ListPage` : variante `layout="grid"`, des vignettes avec aperçu 4:3, et option `thumbnail` (aperçu en grille, visuel de 40 px en liste) (D-414).
+- `ListPage` : option `advanceOnRemove`, la sélection passe à la ligne suivante à l'écran quand la ligne sélectionnée quitte `rows` (D-415).
+- `ListPage` : dépôt de fichiers sur toute la page, `onDropFiles`, `isDraggingFiles`, `dropLabel` (D-416).
+
+### Modifié
+- `ChatPage` : le dépôt de fichiers passe par le code partagé avec `ListPage` ; rien ne change à l'usage (D-416).
+- `check` : chaque recette doit avoir sa fiche, ses stories (dont `Reference`) et ses deux captures.
+
 ## [1.20.0] — 2026-11-26
 
 ### Ajouté

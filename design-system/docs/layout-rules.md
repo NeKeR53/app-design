@@ -54,7 +54,9 @@ Une app décrit ses actions par des données (`Action`) et les passe à `ActionB
 - `header` : titre et description courte.
 - `actions` : une action principale au plus, les autres en secondaire.
 - `toolbar` : recherche et filtres (D-174). Lignes cochées : barre de sélection à la place (D-178).
-- `list` : lignes. On sélectionne au clic ou aux flèches, on ouvre au double-clic ou avec Entrée. L'ouverture ajoute une vue fermable.
+- `list` : lignes, ou vignettes pour des éléments qu'on reconnaît à leur image (`layout="grid"`, D-414). On sélectionne au clic ou aux flèches, on ouvre au double-clic ou avec Entrée. L'ouverture ajoute une vue fermable.
+- File de tri : l'élément traité quitte la liste, la sélection passe au suivant (`advanceOnRemove`, D-415).
+- Fichiers déposés : sur toute la page, jamais dans un bloc de dépôt (D-416).
 - `footer` : compteur et « Afficher plus » ; pagination en option (D-175).
 - `empty` : icône, titre, phrase d'explication et action principale (D-176).
 - Les cellules suivent le type de leur colonne (D-170 à D-172).
@@ -107,6 +109,19 @@ Ce qui reste va dans le gabarit. Une collection est une `ListPage` qui prend tou
 - `header` : logo de l'app, titre, sous-titre. Puis les fournisseurs d'identité et « ou », s'il y en a.
 - Champs : identifiant, mot de passe ; libellés visibles. Puis « Se souvenir de moi » et « Mot de passe oublié ? », puis « Se connecter » en pleine largeur.
 - Un échec de connexion est un seul message en haut du panneau, jamais sous un champ.
+
+## Recettes de pages (D-405)
+Avant d'écrire une page, partir de la recette la plus proche (`ai/recipes/`) : ses zones, ses composants, ses états et sa capture de référence, en clair et en sombre.
+
+| La page… | Recette |
+|---|---|
+| cherche des réponses dans des documents, avec leurs sources | Base de connaissances (D-406) |
+| donne une vue d'ensemble chiffrée sur un écran | Tableau de bord (D-407) |
+| traite des éléments un par un jusqu'à vider la file | File de tri (D-408) |
+| montre une collection et la fiche de l'élément choisi | Liste et fiche (D-409) |
+| montre des éléments qu'on reconnaît à leur image | Catalogue (D-410) |
+
+Une page qui ne ressemble à aucune recette suit les gabarits et la règle « Vue d'ensemble d'abord ».
 
 ## Petites règles
 

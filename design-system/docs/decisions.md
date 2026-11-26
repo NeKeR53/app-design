@@ -2884,3 +2884,99 @@
 - Raison : dans Alfred, une base documentaire écrite par l'agent empilait dans une colonne de 760 px une question, des exemples, une grande zone de dépôt, la liste des documents et la réponse : une page « fouillis » qu'il fallait parcourir pour la comprendre, alors que les onglets, le panneau de détail et la barre du haut avaient la place de chaque chose.
 - Options écartées : une règle propre à Alfred (le défaut vient de la page composée elle-même, toute app le rencontre) ; une limite chiffrée de blocs par page (le bon nombre dépend de leur hauteur).
 - Validation : par délégation de l'utilisateur, 2026-11-26 — docs/validation/components/PageGrid-v1.html.
+
+## D-405 — Recettes de pages : partir d'une page éprouvée
+- Date : 2026-11-26
+- Portée : global (nouvelle catégorie : recettes ; layout-rules, AI.md)
+- Décision : une recette décrit une page complète d'un type courant, assemblée uniquement avec les gabarits et composants du socle : quand la prendre, les zones (barre du haut, vues, `main`, panneau de détail, fenêtres, dépôt), les actions et leur zone, les états (vide, chargement, erreur et ceux du type), le comportement, un squelette de code, ce qu'il faut éviter. Chaque recette a ses stories (« Recettes/… » : une `Reference` sans interaction, puis une story par état et par comportement, avec `play`) et deux captures de référence de la story `Reference`, en clair et en sombre (1440 × 900, densité bureau). Elle vit dans `src/recipes/<Nom>/` (`<Nom>.recipe.md`, `<Nom>.stories.tsx`, `<Nom>-clair.png`, `<Nom>-sombre.png`) et part avec le package dans `ai/recipes/` ; `AI.md` les liste en tête, avant les exports. Une app part de la recette la plus proche avant d'écrire une page. Cinq recettes : Base de connaissances (D-406), Tableau de bord (D-407), File de tri (D-408), Liste et fiche (D-409), Catalogue (D-410).
+- Raison : dans Alfred, quand un gabarit couvrait la page (`ListPage` et `Drawer`), l'agent la réussissait ; sinon (une base documentaire), il improvisait et empilait des `PageSection` dans une colonne étroite. Une recette donne le résultat attendu et la façon d'y arriver ; la capture se compare à la page obtenue.
+- Options écartées : de nouveaux gabarits pour chaque type de page (le socle a déjà ses gabarits ; un type de page est un assemblage, pas un composant) ; des exemples seulement dans la doc de l'app (chaque app réinventerait les mêmes pages) ; des captures sans stories (rien ne vérifierait qu'elles restent vraies).
+- Validation : par délégation de l'utilisateur, 2026-11-26 — docs/validation/components/Recettes-v1.html.
+
+## D-406 — Recette « Base de connaissances »
+- Date : 2026-11-26
+- Portée : recettes (KnowledgeBase)
+- Décision : deux vues dans la barre du haut, « Questions » et « Documents ». Questions : `ChatPage` ; chaque réponse en `Markdown`, ses sources en `SourceList` dans `sources` de `ChatMessage` ; le texte cite par `[[n]](#source-n)`. Une source ouvre le panneau de détail (largeur `form`, agrandissable) : passage cité, puis `DocumentViewer` à la page citée. Documents : `ListPage` en tableau (nom, pages, passages, date, état d'indexation), le document sélectionné dans le panneau. Dépôt de PDF sur toute la page dans les deux vues. États : sans document (vide avec « Ajouter des documents », saisie inactive), sans question (questions d'exemple), recherche (`WorkStatus`), échec (`Alert` dans `alerts`, « Réessayer »), indexation (statut par ligne).
+- Raison : c'est la page que l'agent d'Alfred empilait ; chaque chose y a maintenant sa zone et la vérification d'une réponse se fait d'un coup d'œil, réponse à gauche, source à droite.
+- Options écartées : le document ouvert dans une vue fermable (la réponse disparaît pendant la vérification) ; dans une modale (bloque la lecture de la réponse) ; la liste des documents sous la conversation (pile).
+- Validation : par délégation de l'utilisateur, 2026-11-26 — docs/validation/components/Recettes-v1.html (question 1).
+
+## D-407 — Recette « Tableau de bord »
+- Date : 2026-11-26
+- Portée : recettes (Dashboard)
+- Décision : `Page` sur toute la largeur ; barre d'outils : période en `SegmentedControl` à gauche, « Exporter » à droite. Rangée 1 : quatre `Card variant="metric"` au plus dans `PageGrid columns={4}`, chacune mène à la liste qu'elle résume. Rangée 2 : le graphique de l'app et un `Table` compact côte à côte (`PageGrid columns={2}`). Rangée 3, facultative : ce qui attend une action, en `List` courtes. Tout tient sur 1440 × 900. Le graphique vient d'une librairie de l'app, avec les tokens `--chart-*`, `--line`, `--fg-2`, `--fg-3`. États : page en chargement ou en erreur, bloc en erreur seul, période sans données (`empty` par section, avec l'action qui élargit la période).
+- Raison : une vue d'ensemble se lit sans défiler ; un chiffre sans action ne sert pas (D-361).
+- Options écartées : un graphique dans le socle (une librairie le fait mieux, la recette fixe ses couleurs) ; le graphique en pleine largeur au-dessus du tableau (deux écrans) ; plus de quatre cartes (mur de cartes).
+- Validation : par délégation de l'utilisateur, 2026-11-26 — docs/validation/components/Recettes-v1.html (question 1).
+
+## D-408 — Recette « File de tri »
+- Date : 2026-11-26
+- Portée : recettes (TriageQueue)
+- Décision : vues « À trier » et « Traitées » ; le nombre à trier sur l'entrée de la sidebar (`count`). La file en `ListPage` `layout="list"` (objet, demandeur, reçue en relatif, priorité en statut), filtres de type et de priorité, `advanceOnRemove`. Le panneau de détail montre l'élément : en-tête avec « Traiter » (action `primary`), « Répondre » en icône, les autres décisions dans « … » ; sections « Demande », « Tri » (valeurs changées par l'action de leur ligne), « Historique » replié. Une décision fait quitter la file ; la sélection passe à la suivante.
+- Raison : vérifiée avec les gabarits existants, la file marchait, sauf la suite : après une décision, la sélection pointait vers un élément disparu et le panneau restait vide (D-415).
+- Options écartées : un bouton « Suivant » (un geste de plus par élément) ; des décisions en boutons dans la page (zone de l'élément : le panneau) ; « Marquer comme traitée » en en-tête (trop long pour le panneau étroit : le titre se coupait).
+- Validation : par délégation de l'utilisateur, 2026-11-26 — docs/validation/components/Recettes-v1.html (question 1).
+
+## D-409 — Recette « Liste et fiche »
+- Date : 2026-11-26
+- Portée : recettes (ListDetail)
+- Décision : la collection en `ListPage` (tableau typé, recherche, trois filtres au plus) sur toute la page ; la fiche de l'élément sélectionné dans le panneau de détail (`Drawer` déclaratif : coordonnées, propriétés, notes, derniers échanges) ; créer et modifier par `useOpenForm` ; ouvrir en entier par une vue fermable si besoin. Exemple : un carnet de contacts.
+- Raison : c'est le cas qui marchait déjà dans Alfred ; écrit en recette, il sert de référence aux autres.
+- Options écartées : la fiche dans la page, à côté de la liste (D-404) ; une `DetailPage` à chaque sélection (on perd la liste).
+- Validation : par délégation de l'utilisateur, 2026-11-26 — docs/validation/components/Recettes-v1.html (question 1).
+
+## D-410 — Recette « Catalogue »
+- Date : 2026-11-26
+- Portée : recettes (Catalog)
+- Décision : des éléments reconnus à leur image en `ListPage` `layout="grid"` (D-414) : vignette avec image, nom, gamme, prix, stock ; recherche et filtres ; vues « En vente » et « Archivés ». La fiche dans le panneau de détail (photo en `ImageThumbnail`, prix et stock, description, finitions repliées). Dépôt de photos sur toute la page.
+- Raison : sans grille, un catalogue devenait un tableau sans image, ou un mur de `Card` faites à la main sans clavier ni états.
+- Options écartées : des `Card` dans une `PageGrid` (pas de sélection au clavier, pas d'états de liste) ; une bascule liste et grille (une page choisit sa forme).
+- Validation : par délégation de l'utilisateur, 2026-11-26 — docs/validation/components/Recettes-v1.html (question 1).
+
+## D-411 — SourceList : sources citées d'une réponse
+- Date : 2026-11-26
+- Portée : SourceList (nouveau), ChatMessage (`sources`)
+- Décision : `SourceList` montre les sources d'une réponse en puces numérotées dans l'ordre de citation : « Sources », puis par puce le numéro (carré de 18 px), le titre coupé et le détail (« p. 12 ») ; 28 px de haut, rayon 8 px, 320 px au plus, à la ligne si la place manque. L'info-bulle donne le titre entier, le détail et le passage cité (200 caractères au plus). Un clic appelle `onOpen` ; `currentId` marque la source ouverte (`aria-current`). Sans `onOpen`, les puces se lisent sans être cliquables. `ChatMessage` gagne `sources`, posé 8 px sous le texte d'une réponse. Le texte cite les sources par des liens `[[n]](#source-n)` que `onLinkPress` ouvre.
+- Raison : l'agent d'Alfred listait les sources en `List` sous la réponse ; une source citée doit se voir d'un coup d'œil et s'ouvrir d'un clic.
+- Options écartées : des `Tag` (étiquettes à retirer ou à choisir, pas à ouvrir) ; des `AttachmentChip` (pièces jointes) ; un « + N » au-delà de quelques sources (une réponse en cite peu).
+- Validation : par délégation de l'utilisateur, 2026-11-26 — docs/validation/components/Recettes-v1.html (question 2). Stories `ParDefaut`, `SourceCourante`, `PassageEnInfoBulle`, `TitreLong`, `SansOuverture`, `Etroite`, `Vide` ; `ChatMessage` : `AvecSources`.
+
+## D-412 — DocumentViewer : ouvrir à une page
+- Date : 2026-11-26
+- Portée : DocumentViewer (`page`)
+- Décision : option `page` (PDF, à partir de 1) : à l'ouverture, puis à chaque nouvelle valeur, la zone défile jusqu'à cette page ; elle est bornée au nombre de pages. La même valeur ne fait pas défiler de nouveau : la lecture en cours est gardée.
+- Raison : une source citée doit ouvrir le document à la page citée, pas à la première.
+- Options écartées : surligner le passage (pas de recherche ni de sélection de texte dans la visionneuse, D-310) ; une méthode impérative (une valeur suffit et se teste).
+- Validation : par délégation de l'utilisateur, 2026-11-26 — docs/validation/components/Recettes-v1.html (question 3). Story `PageDemandee`.
+
+## D-413 — EmptyState : pistes pour commencer
+- Date : 2026-11-26
+- Portée : EmptyState (`suggestions`)
+- Décision : option `suggestions` : 4 pistes au plus (les suivantes sont ignorées), sous la phrase et sous l'action, l'une sous l'autre, à 6 px ; chacune est un bouton à texte aligné à gauche, trait `--line`, fond `--surface`, rayon 8 px. Un clic lance ce qu'elle dit (poser la question, lancer la recherche). Groupe nommé « Suggestions ».
+- Raison : les questions d'exemple d'une base documentaire étaient des liens empilés au-dessus de la saisie ; elles servent tant que la conversation est vide, et disparaissent avec l'état vide (D-404).
+- Options écartées : des `Link` dans la phrase (une seule action secondaire par état vide) ; des étiquettes (`Tag`) ; plus de quatre pistes.
+- Validation : par délégation de l'utilisateur, 2026-11-26 — docs/validation/components/Recettes-v1.html (question 4). Stories `Suggestions`, `SuggestionsEtAction`.
+
+## D-414 — ListPage : vignettes
+- Date : 2026-11-26
+- Portée : ListPage (`layout="grid"`, `thumbnail`)
+- Décision : variante `grid` : des vignettes de 200 px de large au moins, autant par ligne que la place le permet, 12 px d'écart ; trait `--line`, rayon 12 px ; aperçu 4:3 sur `--surface-side` (image recadrée par le haut ; sans image, l'icône du type de fichier et son nom en capitales ; ni image ni type, aperçu vide) ; puis titre, sous-titre, méta et statut, lus dans `item` comme pour `list`. Sélection sur toute la vignette, actions en haut à droite au survol, case en haut à gauche en `multiple`. Les flèches suivent la grille à l'écran (GridList `layout="grid"`). Premier chargement : 8 vignettes en squelette. Option `thumbnail` (`(row) => { src?, type? }`) : l'aperçu en `grid`, un visuel de 40 px en `list`.
+- Raison : un catalogue et une bibliothèque de documents se parcourent à l'image ; sans grille, l'app faisait un mur de `Card` sans clavier ni états.
+- Options écartées : un composant de grille à part (les états, la recherche, les filtres et la sélection de `ListPage` seraient à refaire) ; une taille de vignette réglable ; une bascule liste et grille dans la barre.
+- Validation : par délégation de l'utilisateur, 2026-11-26 — docs/validation/components/Recettes-v1.html (question 5). Stories `Grille`, `GrilleClavier`, `GrilleDocuments`, `GrilleChargement`, `ListeAvecVignettes`.
+
+## D-415 — ListPage : passer à la suivante (file de tri)
+- Date : 2026-11-26
+- Portée : ListPage (`advanceOnRemove`)
+- Décision : option `advanceOnRemove` (sélection `single`) : quand la ligne sélectionnée quitte `rows`, `onSelect` reçoit la ligne qui la suivait à l'écran (ordre du tri, des filtres et de la page en cours), ou la précédente si c'était la dernière, ou `null`. Une recherche ou un tri ne déplace pas la sélection : seul un changement de `rows` compte.
+- Raison : vérification de la file de tri (D-408) : après une décision, l'app ne pouvait pas savoir quelle ligne suivait à l'écran, le tri et les filtres étant ceux du gabarit.
+- Options écartées : laisser l'app calculer la suivante (elle ne connaît pas l'ordre affiché) ; une méthode « sélectionner la suivante » appelée par l'app (deux temps au lieu d'un).
+- Validation : par délégation de l'utilisateur, 2026-11-26 — docs/validation/components/Recettes-v1.html (question 6). Story `AvancerApresTraitement`.
+
+## D-416 — ListPage : dépôt de fichiers sur toute la page
+- Date : 2026-11-26
+- Portée : ListPage (`onDropFiles`, `isDraggingFiles`, `dropLabel`), ChatPage (dépôt partagé)
+- Décision : comme `ChatPage` (D-382) : des fichiers glissés au-dessus de la page montrent un cadre pointillé `--accent` sur toute la page, « Déposez les fichiers pour les ajouter » ; le dépôt appelle `onDropFiles`. `isDraggingFiles` montre le cadre quand le système capte le glisser (Tauri). Le code du dépôt est partagé entre les deux gabarits (`lib/fileDrop`), sans changement pour `ChatPage`.
+- Raison : une bibliothèque de documents ou de photos se remplit par glisser-déposer ; sans dépôt sur la page, l'app dessinait un grand bloc `FileUpload` en tête de page.
+- Options écartées : un bloc de dépôt dans la page (D-404) ; un dépôt limité à la liste (on vise mal).
+- Validation : par délégation de l'utilisateur, 2026-11-26 — docs/validation/components/Recettes-v1.html (question 7). Stories `DepotDeFichiers`, `DepotSignaleParLApp`.

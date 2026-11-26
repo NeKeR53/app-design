@@ -39,10 +39,11 @@ Aucune. Le format choisit le contenu de la zone.
 | `onDownload` | `() => void` | aucun | Affiche « Télécharger » ; l'app crée le fichier. |
 | `actions` | `Action[]` | `[]` | Actions de l'app à la fin de la barre (zone `toolbar`, D-111). |
 | `height` | `"fixed" \| "fill"` | `"fixed"` | `fixed` : hauteur bornée entre 360 et 720 px ; `fill` : remplit son conteneur flex. |
+| `page` | `number` | aucune | Page à montrer (PDF, à partir de 1) : à l'ouverture, puis à chaque nouvelle valeur, la zone y défile ; bornée au nombre de pages. Une source citée ouvre ainsi le document à sa page (D-412). |
 
 ## Exclus
 - Pas de texte, de Markdown, de tableur, de vidéo. Pas d'annotation, de recherche dans le PDF, de sélection de texte, d'impression.
-- Pas de saisie du numéro de page, pas de vignettes, pas de rotation.
+- Pas de saisie du numéro de page, pas de vignettes, pas de rotation. L'app choisit la page à montrer par `page` (D-412) ; elle ne surligne pas de passage.
 - Pas de `className`, pas de couleur de page réglable.
 
 ## États
@@ -63,6 +64,7 @@ Aucune. Le format choisit le contenu de la zone.
 | Ctrl/⌘ + molette : zoom continu autour du pointeur (D-313) | verrouillé | décrit, non testé |
 | Pages dessinées à l'approche de la zone visible ; dessin gardé pendant le zoom (D-314) | verrouillé | `Pdf` |
 | « Page n / N » suit la page en haut ; précédente/suivante y font défiler (D-314) | verrouillé | `Pages` |
+| `page` : ouverture à cette page, puis défilement à chaque nouvelle valeur ; la même valeur ne fait pas défiler de nouveau (lecture gardée) ; bornée à [1, N] (D-412) | réglable (`page`) | `PageDemandee` |
 | Sans `loadPdf` : erreur « Aperçu PDF indisponible » (D-311) | verrouillé | `SansPdfJs` |
 | PDF invalide : erreur, « Réessayer » relance la lecture (D-316) | verrouillé | `Erreur` |
 | « Télécharger » appelle `onDownload`, présent aussi en erreur (D-312, D-316) | verrouillé | `Erreur` |
@@ -93,7 +95,7 @@ Corps d'une page de détail, panneau de détail large, modale `xl`. Pas dans une
 Contient `IconButton`, `Separator`, `ActionBar`, `SkeletonGroup`, `EmptyState`, `Button`.
 
 ## Décisions
-D-011, D-035, D-089, D-111, D-165, D-166, D-310 à D-316, D-383
+D-011, D-035, D-089, D-111, D-165, D-166, D-310 à D-316, D-383, D-412
 
 ## Questions ouvertes
 Aucune.

@@ -194,7 +194,8 @@ export function List({
   );
 }
 
-function ItemActions({ actions }: { actions: TableRowAction[] }) {
+/** Actions d'un élément, au survol, au focus ou à la sélection (D-066). Usage interne : List, grille de ListPage. */
+export function ItemActions({ actions }: { actions: TableRowAction[] }) {
   return (
     // Visibles aussi tant que leur menu est ouvert : il reste ancré à « … » (appui long, clic droit).
     <span className="hidden shrink-0 gap-0.5 group-data-focus-visible/item:flex group-data-hovered/item:flex group-data-selected/item:flex group-has-[[aria-haspopup][aria-expanded=true]]/item:flex">

@@ -1,5 +1,5 @@
 /*
- * Gabarit de liste. Spec : ListPage.spec.md. Décisions : D-173 à D-178.
+ * Gabarit de liste. Spec : ListPage.spec.md. Décisions : D-173 à D-178, D-414 à D-416.
  * L'app décrit sa page par des données ; le gabarit dessine les zones et tous les états.
  */
 import { Fragment, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
@@ -19,6 +19,10 @@ import { norm } from "../../lib/results";
 import { ActionBar, arrangeActions, useActionRunner, type Action } from "../../patterns/ActionBar/ActionBar";
 import { useMessages, useStoredState } from "../../provider/SocleProvider";
 import { cx } from "../../lib/cx";
+import { DropOverlay, useFileDrop } from "../../lib/fileDrop";
+import { TileGrid, TilePreview, type ListPageThumbnail, type TileData } from "./TileGrid";
+
+export type { ListPageThumbnail } from "./TileGrid";
 
 /** Une colonne, décrite par sa donnée : le type fixe format, alignement, largeur et tri (D-172). */
 export interface ListPageColumn<Row> extends ValueFormat {
@@ -76,10 +80,12 @@ export interface ListPageProps<Row extends { id: string }> {
   /** Les lignes. `undefined` : premier chargement. */
   rows: ReadonlyArray<Row> | undefined;
   columns: ReadonlyArray<ListPageColumn<Row>>;
-  /** `table` (défaut) ou `list`. */
-  layout?: "table" | "list";
-  /** Pour `list` : l'`id` de la colonne qui donne chaque pièce. Défaut : titre = première colonne. */
+  /** `table` (défaut), `list`, ou `grid` : des vignettes (catalogue, documents) (D-414). */
+  layout?: "table" | "list" | "grid";
+  /** Pour `list` et `grid` : l'`id` de la colonne qui donne chaque pièce. Défaut : titre = première colonne. */
   item?: { title: string; subtitle?: string; meta?: string; status?: string };
+  /** Pour `grid` (aperçu 4:3) et `list` (visuel de 40 px) : l'image de l'élément, ou son type de fichier (D-414). */
+  thumbnail?: (row: Row) => ListPageThumbnail | undefined;
   /** Recherche dans la barre. Défaut : vrai. */
   search?: boolean | { label?: string; text?: (row: Row) => string };
   /** Trois au plus. */
@@ -90,6 +96,11 @@ export interface ListPageProps<Row extends { id: string }> {
   /** Ligne sélectionnée (panneau de détail). */
   selectedId?: string | null;
   onSelect?: (row: Row | null) => void;
+  /**
+   * File de tri (`single`) : quand la ligne sélectionnée quitte `rows` (traitée, déplacée, supprimée), `onSelect`
+   * reçoit la ligne qui la suivait à l'écran, ou la précédente si c'était la dernière, ou `null` (D-415). Défaut : faux.
+   */
+  advanceOnRemove?: boolean;
   /**
    * Actions groupées sur les lignes cochées (`multiple`) (D-178). `selection` vaut `"all"` après
    * « Sélectionner les N éléments » : `rows` sont alors les lignes connues ; en `remote`, l'app agit sur tout.
@@ -130,6 +141,12 @@ export interface ListPageProps<Row extends { id: string }> {
   storageId?: string;
   onActionError?: (action: Action, error: unknown) => void;
   onActionDone?: (action: Action) => void;
+  /** Fichiers déposés n'importe où sur la page (D-416). Sans lui, pas de dépôt DOM. */
+  onDropFiles?: (files: File[]) => void;
+  /** Survol de fichiers vu par l'app (glisser-déposer du système, Tauri) : affiche le cadre de dépôt. */
+  isDraggingFiles?: boolean;
+  /** Texte du cadre de dépôt. Défaut : « Déposez les fichiers pour les ajouter » (i18n). */
+  dropLabel?: string;
 }
 
 type ReadFn<Row> = (row: Row, column: ListPageColumn<Row>) => unknown;
@@ -142,12 +159,14 @@ export function ListPage<Row extends { id: string }>({
   columns,
   layout = "table",
   item,
+  thumbnail,
   search = true,
   filters = [],
   rowActions,
   selectionMode = "single",
   selectedId,
   onSelect,
+  advanceOnRemove = false,
   selectionActions,
   allowSelectAll = false,
   allowColumnChoice = false,
@@ -167,10 +186,14 @@ export function ListPage<Row extends { id: string }>({
   storageId,
   onActionError,
   onActionDone,
+  onDropFiles,
+  isDraggingFiles,
+  dropLabel,
 }: ListPageProps<Row>) {
   const m = useMessages();
   const fmt = useFormatValue();
   const key = `listpage:${storageId ?? title}`;
+  const { dropProps, showDrop } = useFileDrop({ onDropFiles, isDraggingFiles });
   const mode = pagination?.mode ?? "more";
   // Lignes par page au choix (mode `pages`), mémorisées par page (D-177).
   const sizes = mode === "pages" && pagination?.pageSizes ? (pagination.pageSizes === true ? [25, 50, 100] : [...pagination.pageSizes]) : null;
@@ -267,6 +290,27 @@ export function ListPage<Row extends { id: string }>({
   const current = Math.min(page, pages);
   const shown = remote ? matching : mode === "pages" ? matching.slice((current - 1) * pageSize, current * pageSize) : matching.slice(0, current * pageSize);
 
+  // File de tri (D-415) : la ligne sélectionnée quitte `rows` ; la sélection passe à celle qui la suivait à l'écran.
+  // L'ordre lu est celui du rendu précédent (tri, filtres, page), gardé tant que des lignes sont là.
+  const shownKey = rows === undefined ? null : shown.map((r) => r.id).join("\u0000");
+  const lastShown = useRef<string[]>([]);
+  const selectRef = useRef(onSelect);
+  selectRef.current = onSelect;
+  useEffect(() => {
+    if (!advanceOnRemove || selectionMode !== "single" || !selectedId || rows === undefined) return;
+    if (rows.some((r) => r.id === selectedId)) return;
+    const previous = lastShown.current;
+    const at = previous.indexOf(selectedId);
+    if (at < 0) return;
+    const visible = new Map(shown.map((r) => [r.id, r]));
+    const next = previous.slice(at + 1).find((id) => visible.has(id)) ?? previous.slice(0, at).reverse().find((id) => visible.has(id));
+    selectRef.current?.(next ? (visible.get(next) ?? null) : null);
+    // Seul un changement des lignes compte : une recherche ou un tri ne déplace pas la sélection.
+  }, [rows]);
+  useEffect(() => {
+    if (shownKey !== null) lastShown.current = shownKey ? shownKey.split("\u0000") : [];
+  }, [shownKey]);
+
   // Les cases cochées restent dans les lignes qui correspondent : une recherche, un filtre ou un
   // rechargement décoche les lignes masquées. Le compte de la barre de sélection est donc toujours
   // celui des lignes que l'action groupée touchera (D-178).
@@ -342,7 +386,7 @@ export function ListPage<Row extends { id: string }>({
   };
 
   let list: ReactNode;
-  if (layout === "list") {
+  if (layout === "list" || layout === "grid") {
     const pick = (row: Row, id: string | undefined) => {
       const c = id ? byId.get(id) : undefined;
       if (!c) return undefined;
@@ -350,20 +394,28 @@ export function ListPage<Row extends { id: string }>({
       return isEmptyValue(v) ? undefined : fmt(v, c);
     };
     const titleId = item?.title ?? columns[0]?.id;
-    const items: ListItemData[] = shown.map((row) => {
+    const items: TileData[] = shown.map((row) => {
       const statusCol = item?.status ? byId.get(item.status) : undefined;
       const sv = statusCol ? read(row, statusCol) : undefined;
       const subtitle = pick(row, item?.subtitle);
       const meta = pick(row, item?.meta);
+      const thumb = thumbnail?.(row);
       return {
         id: row.id,
         title: pick(row, titleId) ?? row.id,
         ...(subtitle ? { subtitle } : {}),
         ...(meta ? { meta } : {}),
         ...(statusCol && !isEmptyValue(sv) ? { status: { label: fmt(sv, statusCol), tone: statusCol.statuses?.[String(sv)]?.tone ?? "neutral" } } : {}),
+        ...(thumb ? { thumbnail: thumb } : {}),
       };
     });
-    list = <List label={title} items={items} {...selectionProps} {...(rowActions ? { itemActions: (it: ListItemData) => toRowActions(rowById.get(it.id)!) } : {})} />;
+    const actionsOf = rowActions ? { itemActions: (it: { id: string }) => toRowActions(rowById.get(it.id)!) } : {};
+    if (layout === "grid") {
+      list = <TileGrid label={title} items={items} {...selectionProps} {...actionsOf} />;
+    } else {
+      const listItems: ListItemData[] = items.map(({ thumbnail: thumb, ...rest }) => (thumbnail ? { ...rest, visual: <TilePreview thumbnail={thumb} size="row" /> } : rest));
+      list = <List label={title} items={listItems} {...(thumbnail ? { leading: "thumbnail" as const } : {})} {...selectionProps} {...actionsOf} />;
+    }
   } else {
     const tableColumns: TableColumn[] = columns.map((c, i) => {
       const l = valueLayout(c.type);
@@ -527,7 +579,7 @@ export function ListPage<Row extends { id: string }>({
   }
 
   return (
-    <div className="socle-box flex h-full min-h-0 flex-col font-sans text-md text-fg">
+    <div className="socle-box relative flex h-full min-h-0 flex-col font-sans text-md text-fg" data-dragging={showDrop || undefined} {...dropProps}>
       <header className="flex flex-wrap items-start gap-3 px-(--pad) pt-(--pad) pb-2">
         <div className="min-w-0 flex-1">
           <h1 className="m-0 text-lg font-heading">{title}</h1>
@@ -558,6 +610,7 @@ export function ListPage<Row extends { id: string }>({
           {footer}
         </>
       )}
+      {showDrop && <DropOverlay marker="data-list-page-drop" label={dropLabel ?? m.listPageDropHere} />}
     </div>
   );
 }

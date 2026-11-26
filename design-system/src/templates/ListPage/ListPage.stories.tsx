@@ -2,7 +2,8 @@ import type { Meta, StoryObj } from "@storybook/react-vite";
 import { useState } from "react";
 import { expect, fn, userEvent, waitFor, within } from "storybook/test";
 import type { StatusMap } from "../../components/FormattedValue/FormattedValue";
-import { Check, ListDetail, Plus, X } from "../../icons";
+import { Check, ListDetail, Pencil, Plus, X } from "../../icons";
+import { pageImage, productImage } from "../../../.storybook/story-images";
 import type { Action } from "../../patterns/ActionBar/ActionBar";
 import { ListPage, type ListPageColumn, type ListPageFilter, type ListPageProps } from "./ListPage";
 
@@ -632,5 +633,205 @@ export const AccesRefuse: Story = {
     await expect(c.queryByRole("grid")).toBeNull();
     await expect(c.queryByRole("combobox", { name: /Rechercher/ })).toBeNull();
     await expect(c.queryByRole("button", { name: "Nouvelle demande" })).toBeNull();
+  },
+};
+
+/* Grille de vignettes (D-414) : un catalogue de produits, des documents. */
+interface Produit {
+  id: string;
+  nom: string;
+  gamme: string;
+  prix: number;
+  stock: string;
+  photo?: string;
+}
+const STOCKS: StatusMap = {
+  en_stock: { label: "En stock", tone: "success" },
+  bas: { label: "Stock bas", tone: "warning" },
+  epuise: { label: "Épuisé", tone: "danger" },
+};
+const PRODUITS: Produit[] = ["Suspension Halo", "Applique Orbe", "Lampe Duo", "Spot Lune", "Suspension Cloche", "Applique Arc", "Lampe Totem", "Spot Trio", "Suspension Nid", "Applique Fil"].map((nom, i) => ({
+  id: `P-${200 + i}`,
+  nom,
+  gamme: ["Suspensions", "Appliques", "Lampes à poser", "Spots"][i % 4]!,
+  prix: 89 + ((i * 53) % 400),
+  stock: ["en_stock", "en_stock", "bas", "epuise"][i % 4]!,
+  ...(i === 7 ? {} : { photo: productImage(i) }),
+}));
+const produitColumns: ListPageColumn<Produit>[] = [
+  { id: "nom", label: "Nom" },
+  { id: "gamme", label: "Gamme" },
+  { id: "prix", label: "Prix", type: "money" },
+  { id: "stock", label: "Stock", type: "status", statuses: STOCKS },
+];
+
+function Catalogue(over: Partial<ListPageProps<Produit>>) {
+  const [selected, setSelected] = useState<string | null>(null);
+  return (
+    <div className="h-[640px] border border-line bg-surface">
+      <ListPage<Produit>
+        title="Catalogue"
+        rows={PRODUITS}
+        columns={produitColumns}
+        layout="grid"
+        item={{ title: "nom", subtitle: "gamme", meta: "prix", status: "stock" }}
+        thumbnail={(p) => (p.photo ? { src: p.photo } : undefined)}
+        filters={[{ id: "gamme", label: "Gamme", allLabel: "Toutes les gammes", options: ["Suspensions", "Appliques", "Lampes à poser", "Spots"].map((g) => ({ id: g, label: g })) }]}
+        search={{ label: "le catalogue" }}
+        empty={{ title: "Aucun produit", description: "Ajoutez un produit au catalogue." }}
+        actions={[{ id: "new", label: "Nouveau produit", icon: <Plus />, primary: true, onPress: fn() }]}
+        rowActions={() => [{ id: "edit", label: "Modifier", icon: <Pencil />, onPress: fn() }, { id: "archive", label: "Archiver", onPress: fn() }]}
+        selectedId={selected}
+        onSelect={(p) => setSelected(p?.id ?? null)}
+        {...over}
+      />
+    </div>
+  );
+}
+
+/** Vignettes : aperçu 4:3 recadré, nom, gamme, prix et stock ; la sélection se voit sur toute la vignette (D-414). */
+export const Grille: Story = {
+  render: () => <Catalogue />,
+  play: async ({ canvasElement }) => {
+    const c = within(canvasElement);
+    const grid = c.getByRole("grid", { name: "Catalogue" });
+    const tiles = within(grid).getAllByRole("row");
+    await expect(tiles).toHaveLength(10);
+    // Plusieurs vignettes par ligne, de 200 px au moins.
+    await expect(tiles[1]!.getBoundingClientRect().top).toBe(tiles[0]!.getBoundingClientRect().top);
+    await expect(tiles[0]!.getBoundingClientRect().width).toBeGreaterThanOrEqual(200);
+    await expect(within(tiles[0]!).getByText("Suspension Halo")).toBeVisible();
+    await expect(within(tiles[3]!).getByText("Épuisé")).toBeVisible();
+    // Une vignette sans image ni type garde un aperçu vide.
+    await expect(tiles[7]!.querySelector("[data-tile-preview]")!.childElementCount).toBe(0);
+    await expect(tiles[0]!.querySelector("img")).not.toBeNull();
+    await userEvent.click(within(tiles[2]!).getByText("Lampe Duo"));
+    await expect(tiles[2]).toHaveAttribute("aria-selected", "true");
+  },
+};
+
+/** Les flèches suivent la grille à l'écran : droite passe à la voisine, bas à la vignette du dessous. */
+export const GrilleClavier: Story = {
+  render: () => <Catalogue />,
+  play: async ({ canvasElement }) => {
+    const c = within(canvasElement);
+    const tiles = within(c.getByRole("grid", { name: "Catalogue" })).getAllByRole("row");
+    const perRow = tiles.filter((t) => t.getBoundingClientRect().top === tiles[0]!.getBoundingClientRect().top).length;
+    await userEvent.click(within(tiles[0]!).getByText("Suspension Halo"));
+    await userEvent.keyboard("{ArrowRight}");
+    await waitFor(() => expect(tiles[1]).toHaveAttribute("aria-selected", "true"));
+    await userEvent.keyboard("{ArrowDown}");
+    await waitFor(() => expect(tiles[1 + perRow]).toHaveAttribute("aria-selected", "true"));
+  },
+};
+
+/** Documents sans aperçu : l'icône et le type de fichier tiennent la place de l'image. */
+export const GrilleDocuments: Story = {
+  render: () => (
+    <div className="h-[420px] border border-line bg-surface">
+      <ListPage<{ id: string; nom: string; type: string; pages: number; ajoute: string; apercu?: string }>
+        title="Documents"
+        rows={[
+          { id: "1", nom: "Guide des drivers LED", type: "pdf", pages: 48, ajoute: "2026-11-02", apercu: pageImage("Guide des drivers LED") },
+          { id: "2", nom: "Conditions générales de vente", type: "pdf", pages: 6, ajoute: "2026-10-14" },
+          { id: "3", nom: "Tarifs 2026", type: "xlsx", pages: 1, ajoute: "2026-09-30" },
+          { id: "4", nom: "Photos du showroom", type: "zip", pages: 1, ajoute: "2026-09-12" },
+          { id: "5", nom: "Plan de pose", type: "png", pages: 1, ajoute: "2026-08-21" },
+        ]}
+        columns={[
+          { id: "nom", label: "Nom" },
+          { id: "ajoute", label: "Ajouté le", type: "date" },
+        ]}
+        layout="grid"
+        item={{ title: "nom", meta: "ajoute" }}
+        thumbnail={(d) => ({ type: d.type, ...(d.apercu ? { src: d.apercu } : {}) })}
+        empty={{ title: "Aucun document" }}
+      />
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    const tiles = within(within(canvasElement).getByRole("grid", { name: "Documents" })).getAllByRole("row");
+    await expect(tiles[0]!.querySelector("img")).not.toBeNull();
+    await expect(within(tiles[1]!).getByText("PDF")).toBeVisible();
+    await expect(within(tiles[2]!).getByText("XLSX")).toBeVisible();
+  },
+};
+
+/** Premier chargement de la grille : des vignettes en squelette. */
+export const GrilleChargement: Story = {
+  render: () => <Catalogue rows={undefined} />,
+  play: async ({ canvasElement }) => {
+    await expect(canvasElement.querySelectorAll(".aspect-\\[4\\/3\\]").length).toBeGreaterThanOrEqual(8);
+  },
+};
+
+/** En liste, `thumbnail` donne le visuel de 40 px de chaque ligne. */
+export const ListeAvecVignettes: Story = {
+  render: () => <Catalogue layout="list" />,
+  play: async ({ canvasElement }) => {
+    const rows = within(within(canvasElement).getByRole("grid", { name: "Catalogue" })).getAllByRole("row");
+    const img = rows[0]!.querySelector("img")!;
+    await expect(img.getBoundingClientRect().width).toBe(40);
+  },
+};
+
+/** File de tri (D-415) : la demande traitée quitte la liste ; la sélection passe à celle qui la suivait à l'écran. */
+function FileDeTri() {
+  const [rows, setRows] = useState(DOUZE.slice(0, 5));
+  const [selected, setSelected] = useState<string | null>(DOUZE[1]!.id);
+  const traiter = () => setRows((all) => all.filter((r) => r.id !== selected));
+  return (
+    <div className="flex flex-col gap-2">
+      <span>
+        <button type="button" className="socle-btn rounded-md border border-line px-2 py-1 text-sm" onClick={traiter}>
+          Traiter la demande sélectionnée
+        </button>
+      </span>
+      <Frame {...base({ rows, layout: "list", item: { title: "titre", subtitle: "demandeur", status: "etat" }, selectedId: selected, onSelect: (r) => setSelected(r?.id ?? null), advanceOnRemove: true })} />
+      <output data-current-id="">{selected ?? "aucune"}</output>
+    </div>
+  );
+}
+
+export const AvancerApresTraitement: Story = {
+  render: () => <FileDeTri />,
+  play: async ({ canvasElement }) => {
+    const c = within(canvasElement);
+    const shown = () => canvasElement.querySelector("[data-current-id]")!.textContent;
+    await expect(shown()).toBe(DOUZE[1]!.id);
+    await userEvent.click(c.getByRole("button", { name: "Traiter la demande sélectionnée" }));
+    await waitFor(() => expect(shown()).toBe(DOUZE[2]!.id));
+    // Encore une : la suivante à l'écran.
+    await userEvent.click(c.getByRole("button", { name: "Traiter la demande sélectionnée" }));
+    await waitFor(() => expect(shown()).toBe(DOUZE[3]!.id));
+    // La dernière traitée : la sélection remonte à la précédente.
+    await userEvent.click(within(c.getByRole("grid")).getByText(DOUZE[4]!.titre));
+    await userEvent.click(c.getByRole("button", { name: "Traiter la demande sélectionnée" }));
+    await waitFor(() => expect(shown()).toBe(DOUZE[3]!.id));
+  },
+};
+
+/** Fichiers déposés n'importe où sur la page : cadre « Déposez… », puis `onDropFiles` (D-416). */
+export const DepotDeFichiers: Story = {
+  render: (args) => <Frame {...base({ onDropFiles: args.onDropFiles ?? fn() })} />,
+  args: { onDropFiles: fn() },
+  play: async ({ canvasElement, args }) => {
+    const page = canvasElement.querySelector<HTMLElement>(".socle-box.relative")!;
+    const file = new File(["%PDF"], "notice.pdf", { type: "application/pdf" });
+    const data = new DataTransfer();
+    data.items.add(file);
+    page.dispatchEvent(new DragEvent("dragover", { bubbles: true, cancelable: true, dataTransfer: data }));
+    await waitFor(() => expect(within(canvasElement).getByText("Déposez les fichiers pour les ajouter")).toBeVisible());
+    page.dispatchEvent(new DragEvent("drop", { bubbles: true, cancelable: true, dataTransfer: data }));
+    await waitFor(() => expect(within(canvasElement).queryByText("Déposez les fichiers pour les ajouter")).toBeNull());
+    await expect(args.onDropFiles).toHaveBeenCalledWith([file]);
+  },
+};
+
+/** Survol vu par l'app (Tauri) : le cadre s'affiche sans événement du DOM. */
+export const DepotSignaleParLApp: Story = {
+  render: () => <Frame {...base({ onDropFiles: fn(), isDraggingFiles: true, dropLabel: "Déposez les PDF pour les indexer" })} />,
+  play: async ({ canvasElement }) => {
+    await expect(within(canvasElement).getByText("Déposez les PDF pour les indexer")).toBeVisible();
   },
 };

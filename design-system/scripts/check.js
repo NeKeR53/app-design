@@ -1,5 +1,6 @@
 // Garde-fous du dépôt de référence (assets/guardrails.md) :
 // - chaque composant, pattern et gabarit a sa spec (.spec.md) et ses stories (.stories.tsx) ;
+// - chaque recette de page a sa fiche, ses stories (dont Reference) et ses deux captures (D-405) ;
 // - une spec en statut « validé » n'a plus de questions ouvertes ;
 // - index.ts est le seul point d'entrée (champ exports de package.json) ;
 // - la version de package.json est celle de la dernière entrée datée de CHANGELOG.md,
@@ -27,6 +28,26 @@ for (const kind of ["components", "patterns", "templates"]) {
       const pending = open.split(/^## /m)[0].split("\n").filter((l) => /^\s*[-*\d]/.test(l));
       if (validated && pending.length)
         errors.push(`${spec} : statut « validé » avec ${pending.length} question(s) ouverte(s)`);
+    }
+  }
+}
+
+// Recettes de pages (D-405) : chaque recette a sa fiche, ses stories (dont `Reference`) et ses deux captures.
+const recipes = join("src", "recipes");
+if (existsSync(recipes)) {
+  for (const name of readdirSync(recipes)) {
+    const d = join(recipes, name);
+    if (!statSync(d).isDirectory()) continue;
+    for (const file of [`${name}.recipe.md`, `${name}.stories.tsx`, `${name}-clair.png`, `${name}-sombre.png`])
+      if (!existsSync(join(d, file))) errors.push(`${d} : ${file} manquant`);
+    const stories = join(d, `${name}.stories.tsx`);
+    if (existsSync(stories) && !/^export const Reference\b/m.test(readFileSync(stories, "utf8")))
+      errors.push(`${stories} : story « Reference » manquante (source des captures)`);
+    const md = join(d, `${name}.recipe.md`);
+    if (existsSync(md)) {
+      const text = readFileSync(md, "utf8");
+      for (const section of ["Quand la prendre", "Zones", "Actions", "États", "Comportement", "Squelette", "À éviter", "Décisions"])
+        if (!new RegExp(`^## ${section}\\s*$`, "m").test(text)) errors.push(`${md} : section « ${section} » manquante`);
     }
   }
 }

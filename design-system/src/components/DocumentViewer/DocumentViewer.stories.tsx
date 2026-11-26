@@ -1,40 +1,11 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import workerUrl from "pdfjs-dist/build/pdf.worker.min.mjs?url";
+import { useState } from "react";
 import { expect, fn, userEvent, waitFor, within } from "storybook/test";
 import { ExternalArrow } from "../../icons";
 import { DocumentViewer } from "./DocumentViewer";
+import { Button } from "../Button/Button";
+import { loadPdf, makePdf } from "../../../.storybook/story-pdf";
 import type { PdfEngine } from "./pdf";
-
-/** Ce qu'une app écrit une fois : pdf.js chargé à la demande, worker réglé par l'app (D-311). */
-const loadPdf = async (): Promise<PdfEngine> => {
-  const pdfjs = await import("pdfjs-dist");
-  pdfjs.GlobalWorkerOptions.workerSrc = workerUrl;
-  return pdfjs;
-};
-
-/** PDF minimal, fabriqué pour la démo : une page A4 par titre (texte ASCII). */
-function makePdf(titles: string[]): Uint8Array {
-  const objects: string[] = [];
-  objects[1] = "<< /Type /Catalog /Pages 2 0 R >>";
-  objects[2] = `<< /Type /Pages /Kids [${titles.map((_, i) => `${4 + i * 2} 0 R`).join(" ")}] /Count ${titles.length} >>`;
-  objects[3] = "<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>";
-  titles.forEach((title, i) => {
-    const lines = Array.from({ length: 14 }, (_, k) => `72 ${640 - k * 28} ${k % 3 === 2 ? 300 : 451} 10 re f`).join("\n");
-    const stream = `BT /F1 22 Tf 72 740 Td (${title}) Tj ET\nBT /F1 11 Tf 72 700 Td (Page ${i + 1} sur ${titles.length}) Tj ET\n0.82 g\n${lines}`;
-    objects[4 + i * 2] = `<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 3 0 R >> >> /Contents ${5 + i * 2} 0 R >>`;
-    objects[5 + i * 2] = `<< /Length ${stream.length} >>\nstream\n${stream}\nendstream`;
-  });
-  let out = "%PDF-1.4\n";
-  const offsets: number[] = [];
-  for (let k = 1; k < objects.length; k += 1) {
-    offsets.push(out.length);
-    out += `${k} 0 obj\n${objects[k]}\nendobj\n`;
-  }
-  const xref = out.length;
-  out += `xref\n0 ${objects.length}\n0000000000 65535 f \n${offsets.map((o) => `${String(o).padStart(10, "0")} 00000 n \n`).join("")}`;
-  out += `trailer\n<< /Size ${objects.length} /Root 1 0 R >>\nstartxref\n${xref}\n%%EOF`;
-  return new TextEncoder().encode(out);
-}
 
 const invoice = makePdf(["Facture F-2026-114", "Conditions generales", "Annexe"]);
 const pdfBlob = () => new Blob([invoice as BlobPart], { type: "application/pdf" });
@@ -79,6 +50,42 @@ export const Pages: Story = {
     await userEvent.click(c.getByRole("button", { name: "Page suivante" }));
     await waitFor(() => expect(c.getByText("Page 3 / 3")).toBeVisible());
     await expect(c.getByRole("button", { name: "Page suivante" })).toBeDisabled();
+  },
+};
+
+const guide = makePdf(["Guide des drivers LED", "Installation", "Garantie", "Entretien", "Depannage", "Annexe"]);
+
+/** Ouverture à la page demandée, puis à chaque nouvelle page : une source citée ouvre le PDF à sa page (D-412). */
+function PageDemo() {
+  const [page, setPage] = useState(3);
+  const [data] = useState(() => new Blob([guide as BlobPart], { type: "application/pdf" }));
+  return (
+    <div className="flex flex-col gap-3">
+      <div className="flex gap-2">
+        <Button size="sm" onPress={() => setPage(5)}>Aller à la page 5</Button>
+        <Button size="sm" onPress={() => setPage(99)}>Aller à la page 99</Button>
+      </div>
+      <DocumentViewer label="Guide des drivers LED" data={data} name="Guide des drivers LED.pdf" loadPdf={loadPdf} page={page} />
+    </div>
+  );
+}
+
+export const PageDemandee: Story = {
+  render: () => <PageDemo />,
+  play: async ({ canvasElement }) => {
+    const c = within(canvasElement);
+    const zone = () => c.getByRole("document", { name: "Guide des drivers LED, 6 pages" });
+    const topOf = (n: number) => canvasElement.querySelector<HTMLElement>(`[data-page="${n}"]`)!.getBoundingClientRect().top - zone().getBoundingClientRect().top;
+    // Ouvert à la page 3 : elle est en haut de la zone, et la barre le dit.
+    await waitFor(() => expect(c.getByText("Page 3 / 6")).toBeVisible(), { timeout: 8000 });
+    await waitFor(() => expect(Math.abs(topOf(3) - 16)).toBeLessThan(3));
+    // Une nouvelle page demandée y fait défiler.
+    await userEvent.click(c.getByRole("button", { name: "Aller à la page 5" }));
+    await waitFor(() => expect(c.getByText("Page 5 / 6")).toBeVisible());
+    await waitFor(() => expect(Math.abs(topOf(5) - 16)).toBeLessThan(3));
+    // Hors bornes : la dernière page.
+    await userEvent.click(c.getByRole("button", { name: "Aller à la page 99" }));
+    await waitFor(() => expect(c.getByText("Page 6 / 6")).toBeVisible());
   },
 };
 

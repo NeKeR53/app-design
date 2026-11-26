@@ -18,6 +18,8 @@ export interface ChatMessageProps {
   children: ReactNode;
   /** Pièces jointes, au-dessus de la bulle (vignettes, fichiers). */
   attachments?: ReactNode;
+  /** Sources citées par une réponse (`SourceList`), sous le texte (D-411). Réponse de l'assistant seulement. */
+  sources?: ReactNode;
   /** Actions du message : un `MessageActions`. */
   actions?: ReactNode;
   /** Heure, état d'envoi (« Envoyé ») : en `--fg-3`, au bout de la rangée d'actions. */
@@ -53,7 +55,7 @@ const actionRow = cx(
   "pointer-coarse:pointer-events-auto pointer-coarse:opacity-100",
 );
 
-export function ChatMessage({ role, children, attachments, actions, meta, author }: ChatMessageProps) {
+export function ChatMessage({ role, children, attachments, sources, actions, meta, author }: ChatMessageProps) {
   const m = useMessages();
   const entry = useRef<HTMLElement>(null);
   const body = useRef<HTMLDivElement>(null);
@@ -115,6 +117,11 @@ export function ChatMessage({ role, children, attachments, actions, meta, author
             ) : (
               <div ref={body} data-message-body="">
                 {children}
+              </div>
+            )}
+            {sources && !edit && (
+              <div data-message-sources="" className="mt-2">
+                {sources}
               </div>
             )}
           </>

@@ -1,6 +1,6 @@
 /*
  * Aperçu d'un document : PDF (pdf.js, fourni par l'app) ou image.
- * Spec : DocumentViewer.spec.md (D-310 à D-316). Repris de DocumentViewer d'Alfred.
+ * Spec : DocumentViewer.spec.md (D-310 à D-316, D-412). Repris de DocumentViewer d'Alfred.
  */
 import { useEffect, useLayoutEffect, useRef, useState, type KeyboardEvent, type RefObject } from "react";
 import { Toolbar } from "react-aria-components/Toolbar";
@@ -33,6 +33,8 @@ export type DocumentViewerProps = Source & {
   actions?: ReadonlyArray<Action>;
   /** `fixed` : hauteur bornée entre 360 et 720 px ; `fill` : remplit son conteneur flex. */
   height?: "fixed" | "fill";
+  /** Page à montrer (PDF, à partir de 1) : à l'ouverture, puis à chaque nouvelle valeur, la zone y défile. Bornée au nombre de pages (D-412). */
+  page?: number;
 };
 
 type Shown =
@@ -53,7 +55,7 @@ const frame = (height: "fixed" | "fill") =>
   );
 
 export function DocumentViewer(props: DocumentViewerProps) {
-  const { label, name, type, loadPdf, onDownload, actions = [], height = "fixed" } = props;
+  const { label, name, type, loadPdf, onDownload, actions = [], height = "fixed", page } = props;
   const m = useMessages();
   const sourceKey = props.src ?? props.data;
   const [attempt, setAttempt] = useState(0);
@@ -143,6 +145,7 @@ export function DocumentViewer(props: DocumentViewerProps) {
       pdf={shown.pdf}
       onDownload={onDownload}
       actions={actions}
+      page={page}
     />
   );
 }
@@ -227,6 +230,7 @@ function Viewer({
   pdf,
   onDownload,
   actions,
+  page,
 }: {
   frameClass: string;
   label: string;
@@ -235,6 +239,7 @@ function Viewer({
   pdf: { document: PdfDocumentHandle; sizes: PdfPageSize[] } | undefined;
   onDownload: (() => void) | undefined;
   actions: ReadonlyArray<Action>;
+  page: number | undefined;
 }) {
   const m = useMessages();
   const scroller = useRef<HTMLDivElement>(null);
@@ -335,6 +340,20 @@ function Viewer({
     scrollToPage(element, target);
     setCurrent(target);
   };
+
+  // Page demandée par l'app (D-412) : à l'ouverture, une fois la largeur connue (la place des pages en dépend),
+  // puis à chaque nouvelle valeur. La même valeur ne fait pas défiler de nouveau : la lecture en cours est gardée.
+  const wantedPage = useRef<number | undefined>(undefined);
+  useLayoutEffect(() => {
+    wantedPage.current = page;
+  }, [page]);
+  useLayoutEffect(() => {
+    const wanted = wantedPage.current;
+    if (!pdf || !width || wanted === undefined || !Number.isFinite(wanted)) return;
+    wantedPage.current = undefined;
+    goTo(Math.round(wanted));
+    // `goTo` lit le dernier rendu : seules la page voulue, la largeur et l'échelle relancent le défilement.
+  }, [page, pdf, width, scale]);
 
   // Ctrl/⌘ + « + », « − », « 0 » dans la visionneuse (D-313).
   const onKeyDown = (event: KeyboardEvent) => {

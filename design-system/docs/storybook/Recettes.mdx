@@ -1,0 +1,17 @@
+import { Meta } from "@storybook/addon-docs/blocks";
+
+<Meta title="Recettes/Introduction" />
+
+# Recettes de pages
+
+Une recette est une page complète d'un type courant, faite seulement avec les gabarits et les composants du socle (D-405). Une app part de la recette la plus proche avant d'écrire une page.
+
+Chaque recette a sa fiche (`src/recipes/<Nom>/<Nom>.recipe.md`, livrée dans `ai/recipes/`), une story `Reference` sans interaction, une story par état et par comportement, et deux captures de la référence, en clair et en sombre (1440 × 900, densité bureau).
+
+- **Base de connaissances** : questions sur des documents, réponses avec leurs sources ; une source ouvre le PDF à la page citée dans le panneau de détail (D-406).
+- **Tableau de bord** : chiffres clés, graphique et tableau côte à côte, ce qui attend une action ; tout sur un écran (D-407).
+- **File de tri** : des éléments traités un par un ; la décision se prend dans le panneau, la sélection passe au suivant (D-408).
+- **Liste et fiche** : une collection sur toute la page, la fiche de l'élément choisi dans le panneau (D-409).
+- **Catalogue** : des vignettes reconnues à leur image, la fiche dans le panneau, le dépôt de photos sur la page (D-410).
+
+Pour refaire les captures : Storybook lancé, ouvrir chaque story `Reference` à 1440 × 900 en densité bureau (`globals=theme:light;density:desktop`, puis `theme:dark`), capturer la fenêtre, et remplacer `<Nom>-clair.png` et `<Nom>-sombre.png`.
