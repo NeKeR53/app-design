@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PageGrid v1 — vue d'ensemble d'abord</title>
+<style>
+:root { --bg:#f7f7f8; --surface:#fff; --side:#f3f3f3; --fg:#18181b; --fg-2:#52525b; --fg-3:#8a8a93; --line:#e4e4e7; --field:#f2f2f2; --accent:#2563eb; --ok:#15803d; --pad:16px; }
+@media (prefers-color-scheme: dark) { :root { --bg:#111113; --surface:#18181b; --side:#1f1f23; --fg:#f4f4f5; --fg-2:#c4c4cc; --fg-3:#8a8a93; --line:#2e2e33; --field:#26262b; --accent:#60a5fa; --ok:#4ade80; } }
+body.desktop { --pad:12px; }
+body { margin:0; background:var(--bg); color:var(--fg); font:14px/1.45 system-ui, sans-serif; padding:24px 16px; }
+main { max-width:1180px; margin:0 auto; }
+h1 { font-size:20px; } h2 { font-size:16px; margin:0 0 8px; } h3 { font-size:14px; margin:0 0 6px; }
+.badge { display:inline-block; padding:2px 8px; border-radius:6px; background:#dcfce7; color:#166534; font-size:12px; font-weight:600; }
+.cols { display:grid; grid-template-columns:repeat(auto-fit, minmax(340px, 1fr)); gap:16px; }
+.box { border:1px solid var(--line); border-radius:12px; padding:12px 16px; background:var(--surface); margin:16px 0; }
+.muted { color:var(--fg-3); }
+/* Maquette d'AppShell : barre du haut, zone principale, panneau de détail. */
+.shell { border:1px solid var(--line); border-radius:12px; overflow:hidden; background:var(--surface); display:grid; grid-template-rows:auto 1fr; height:420px; }
+.top { display:flex; align-items:center; gap:8px; padding:6px 10px; border-bottom:1px solid var(--line); background:var(--side); font-size:13px; }
+.top b { margin-right:8px; } .tab { padding:3px 8px; border-radius:8px; color:var(--fg-2); } .tab.on { background:var(--surface); color:var(--fg); box-shadow:0 0 0 1px var(--line); }
+.top .sp { flex:1; } .btn { padding:3px 8px; border-radius:8px; background:var(--accent); color:#fff; font-size:12px; } .ib { width:22px; height:22px; border-radius:8px; display:grid; place-items:center; color:var(--fg-2); }
+.body { display:grid; grid-template-columns:1fr; min-height:0; } .body.withpanel { grid-template-columns:1fr 200px; }
+.mainz { overflow:auto; padding:var(--pad); min-width:0; } .panel { border-left:1px solid var(--line); padding:10px; background:var(--surface); font-size:12px; overflow:auto; }
+.narrow { max-width:300px; margin:0 auto; }
+.sec { margin-bottom:24px; } .sec .t { font-weight:600; font-size:14px; } .sec .d { font-size:12px; color:var(--fg-2); }
+.field { border:1px solid var(--line); background:var(--field); border-radius:8px; height:34px; margin-top:6px; }
+.drop { border:1.5px dashed var(--fg-3); border-radius:8px; height:70px; display:grid; place-items:center; color:var(--fg-3); font-size:12px; margin-top:6px; }
+.link { color:var(--accent); font-size:12px; display:block; }
+.li { display:flex; justify-content:space-between; gap:8px; padding:6px 0; border-bottom:1px solid var(--line); font-size:12px; }
+.li.sel { background:var(--field); }
+.st { color:var(--ok); }
+.tb { display:flex; gap:8px; align-items:center; padding-bottom:8px; border-bottom:1px solid var(--line); margin-bottom:8px; font-size:12px; color:var(--fg-3); }
+.search { flex:1; max-width:220px; height:26px; border-radius:8px; background:var(--field); border:1px solid var(--line); }
+/* La grille proposée : colonnes égales, 24 px, 240 px au moins chacune. */
+.pg { container-type:inline-size; } .pg > .g { display:grid; gap:24px; grid-template-columns:1fr; }
+@container (width >= 504px) { .pg.c2 > .g, .pg.c3 > .g, .pg.c4 > .g { grid-template-columns:repeat(2, minmax(0,1fr)); } }
+@container (width >= 768px) { .pg.c3 > .g { grid-template-columns:repeat(3, minmax(0,1fr)); } }
+@container (width >= 1032px) { .pg.c4 > .g { grid-template-columns:repeat(4, minmax(0,1fr)); } }
+.card { border:1px solid var(--line); border-radius:12px; padding:10px 12px; } .card .l { font-size:12px; color:var(--fg-3); } .card .v { font:600 20px ui-monospace, monospace; }
+.resizer { resize:horizontal; overflow:auto; border:1px dashed var(--line); padding:8px; min-width:280px; max-width:100%; width:1100px; box-sizing:border-box; }
+table { border-collapse:collapse; width:100%; } td, th { border-bottom:1px solid var(--line); padding:6px; text-align:left; vertical-align:top; }
+</style>
+</head>
+<body>
+<main>
+<h1>PageGrid et « Vue d'ensemble d'abord » <span class="badge">VALIDÉ le 2026-11-26 (par délégation)</span></h1>
+<p>Besoin : une page composée empilait tous ses blocs dans une colonne. Exemple vu dans une app : une base documentaire (question, exemples, grande zone de dépôt, liste des documents, réponse) dans une colonne de 760 px qu'il fallait faire défiler. Il manquait une règle (répartir d'abord dans les zones qui existent) et un moyen de poser des blocs côte à côte.</p>
+<p><label><input type="checkbox" onchange="document.body.classList.toggle('desktop', this.checked)"> Densité desktop</label></p>
+
+<div class="cols">
+  <section>
+    <h2>Actuellement : une pile dans une colonne de 760 px</h2>
+    <div class="shell">
+      <div class="top"><b>Documents</b><span class="sp"></span><span class="ib">⋯</span></div>
+      <div class="body"><div class="mainz"><div class="narrow">
+        <div class="sec"><div class="t">Poser une question</div><div class="d">Réponse rédigée à partir des documents.</div><div class="field"></div>
+          <span class="muted" style="font-size:12px">Questions d'exemple</span><span class="link">Quelle est la durée de garantie ?</span><span class="link">Quel délai pour une finition ?</span></div>
+        <div class="sec"><div class="t">Ajouter des PDF</div><div class="drop">Déposez des fichiers ici ou choisir des fichiers</div></div>
+        <div class="sec"><div class="t">Documents indexés</div><div class="li"><span>Fiche technique</span><span class="st">Indexé</span></div><div class="li"><span>Guide de pose</span><span class="st">Indexé</span></div><div class="li"><span>Conditions de vente</span><span class="st">Indexé</span></div></div>
+        <div class="sec"><div class="t">Réponse</div><div class="d">…</div></div>
+      </div></div></div>
+    </div>
+    <p class="muted">Deux usages (questionner, gérer les documents) mêlés, une action devenue un bloc, la moitié de l'écran vide de chaque côté.</p>
+  </section>
+  <section>
+    <h2>Proposition : chaque chose dans sa zone</h2>
+    <div class="shell">
+      <div class="top"><b>Base documentaire</b><span class="tab">Questions</span><span class="tab on">Documents</span><span class="sp"></span><span class="ib">↻</span><span class="btn">Ajouter des PDF</span><span class="ib">▯</span></div>
+      <div class="body withpanel"><div class="mainz">
+        <div class="tb"><span class="search"></span><span>État ▾</span><span class="sp"></span><span>12 documents</span></div>
+        <div class="li"><span>Fiche technique</span><span class="muted">4 pages</span><span class="st">Indexé</span></div>
+        <div class="li sel"><span>Guide de pose</span><span class="muted">7 pages</span><span class="st">Indexé</span></div>
+        <div class="li"><span>Conditions de vente</span><span class="muted">3 pages</span><span class="st">Indexé</span></div>
+        <div class="li"><span>Catalogue des finitions</span><span class="muted">12 pages</span><span class="st">Indexé</span></div>
+      </div><div class="panel"><b>Guide de pose</b><p class="muted">Indexé · 7 pages · 48 passages</p><p>Ajouté le 3 nov. 2026</p><p class="link">Ouvrir le PDF</p></div></div>
+    </div>
+    <p class="muted">Vues en onglets (Questions : un chat, ses exemples dans l'état vide ; Documents : une liste pleine largeur), « Ajouter des PDF » dans la barre, le document sélectionné au panneau de détail.</p>
+  </section>
+</div>
+
+<section class="box">
+  <h2>PageGrid : blocs côte à côte (D-403)</h2>
+  <p>Élargissez ou rétrécissez le cadre (poignée en bas à droite) : 4 colonnes à partir de 1032 px, 2 au-dessous (jamais 3 et 1), une seule sous 504 px. Chaque colonne garde 240 px au moins.</p>
+  <div class="resizer">
+    <div class="pg c4"><div class="g">
+      <div class="card"><div class="l">Commandes</div><div class="v">1 284</div></div>
+      <div class="card"><div class="l">En retard</div><div class="v">37</div></div>
+      <div class="card"><div class="l">Chiffre d'affaires</div><div class="v">86 k€</div></div>
+      <div class="card"><div class="l">Devis à relancer</div><div class="v">9</div></div>
+    </div></div>
+    <div style="height:24px"></div>
+    <div class="pg c2"><div class="g">
+      <div class="sec" style="margin:0"><div class="t">Commandes à expédier</div><div class="li"><span>C-1042</span><span>Aujourd'hui</span></div><div class="li"><span>C-1039</span><span>Demain</span></div></div>
+      <div class="sec" style="margin:0"><div class="t">Devis à relancer</div><div class="li"><span>D-311</span><span>14 j</span></div><div class="li"><span>D-307</span><span>21 j</span></div></div>
+    </div></div>
+  </div>
+  <pre><code>&lt;Page toolbar={…} actions={…}&gt;
+  &lt;PageGrid columns={4}&gt;{chiffres.map((c) =&gt; &lt;Card variant="metric" … /&gt;)}&lt;/PageGrid&gt;
+  &lt;PageGrid&gt;
+    &lt;PageSection title="Commandes à expédier"&gt;…&lt;/PageSection&gt;
+    &lt;PageSection title="Devis à relancer"&gt;…&lt;/PageSection&gt;
+  &lt;/PageGrid&gt;
+&lt;/Page&gt;</code></pre>
+</section>
+
+<div class="box"><h3>Déjà décidé</h3><ul>
+<li>D-018 : panneau de détail pour l'élément courant. D-021 : vues en onglets, élément ouvert en vue fermable.</li>
+<li>D-111 : actions par zone (barre du haut, en-tête, section). D-213 : 24 px entre les blocs de <code>Page</code>.</li>
+<li>D-214 : <code>width="text"</code>, colonne de 760 px. D-217 : zones de la page composée. D-361 : <code>Card</code>, « élément d'une grille ».</li></ul></div>
+
+<div class="box"><h3>Décidé (choix délégués)</h3><ol>
+<li>Une grille de page à colonnes égales (<code>PageGrid</code>, 2 à 4) plutôt qu'une grille générique aux colonnes libres : retenue (chaque page dessinerait la sienne).</li>
+<li>Seuils sur la largeur de la grille (container query), pas sur la fenêtre : retenu (le panneau de détail réduit la zone principale).</li>
+<li>Repli 4 → 2 → 1 et 3 → 2 → 1, 240 px au moins par colonne : retenu. 4 → 3 écarté (trois cartes et une orpheline).</li>
+<li>Colonnes inégales et bloc sur deux colonnes : écartés pour l'instant, à proposer si un besoin le montre.</li>
+<li>La règle « Vue d'ensemble d'abord » dans <code>layout-rules.md</code>, pour toutes les apps, plutôt que dans une seule app : retenue (D-404).</li></ol></div>
+
+<section class="box"><h2>Avant / après</h2>
+<table><tr><th>Composant</th><th>Ce qui change</th><th>Type</th><th>Décisions</th></tr>
+<tr><td><code>PageGrid</code> (<code>Page.Grid</code>)</td><td>Nouveau : blocs côte à côte, colonnes égales, 24 px, même hauteur par ligne, repli selon la largeur</td><td>Nouveau composant (1.20.0)</td><td>D-403</td></tr>
+<tr><td><code>layout-rules.md</code>, spec <code>Page</code></td><td>Règle « Vue d'ensemble d'abord » ; <code>width="text"</code> réservé au texte à lire</td><td>Règle ajoutée</td><td>D-404</td></tr>
+<tr><td><code>Card</code></td><td>Sa place est une <code>PageGrid</code></td><td>Spec</td><td>D-403</td></tr></table>
+<p>Avant : aucune page composée ne pouvait poser deux blocs côte à côte ; les cartes passaient par une rangée locale de l'app. Après : stories <code>Grille</code>, <code>GrilleDeCartes</code>, <code>GrilleEtroite</code> (Storybook, Gabarits/Page).</p>
+</section>
+</main>
+</body>
+</html>

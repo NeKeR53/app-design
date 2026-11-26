@@ -65,12 +65,22 @@ Une app décrit ses actions par des données (`Action`) et les passe à `ActionB
 - Les propriétés vont dans le panneau de détail.
 - États : chargement, erreur et introuvable sont rendus par le gabarit ; le lien de retour reste visible.
 
-### Page composée (D-217, D-218)
+### Page composée (D-217, D-218, D-403, D-404)
 - Seulement quand aucun gabarit ne convient : tableau de bord, éditeur, graphique.
 - `toolbar` : une ligne fixe ; contenu libre à gauche, actions (zone `toolbar`) à droite.
-- `content` : blocs (`PageSection` ou composants du socle) espacés de 24 px ; seule zone qui défile.
+- `content` : blocs (`PageSection` ou composants du socle) espacés de 24 px, empilés ou côte à côte dans `PageGrid` (2 à 4 colonnes égales, 240 px au moins chacune) ; seule zone qui défile.
 - `footer` : pied fixe, contenu libre (total, sélection).
 - Pas d'en-tête : le nom de la page est dans la barre du haut. Aucun HTML stylé côté app.
+- Toute la largeur : `width="text"` (760 px) reste pour un texte à lire, jamais pour un tableau de bord.
+
+## Vue d'ensemble d'abord (D-404)
+Une page se comprend d'un coup d'œil. Avant de poser des blocs, on répartit ce qui a déjà sa zone :
+- les vues de la page (« À faire », « Questions », « Documents ») : les onglets de la barre du haut (D-021), jamais des blocs l'un sous l'autre ;
+- les actions de la page (importer, ajouter, exporter, actualiser) : la barre du haut ou l'en-tête du gabarit (D-111), jamais un bloc qui ne porte qu'une action ;
+- l'élément sélectionné : le panneau de détail (D-018), jamais une seconde zone de la page ;
+- un élément à lire ou traiter en entier : une vue fermable (D-021).
+
+Ce qui reste va dans le gabarit. Une collection est une `ListPage` qui prend toute la page. Une page composée tient ses informations clés sur un écran : des blocs courts côte à côte (`PageGrid`) plutôt qu'une longue pile. Une colonne étroite centrée ne sert qu'à lire (DetailPage, texte) ou à converser (ChatPage). Des exemples (questions types, premiers pas) vont dans l'état vide de la zone, et disparaissent avec lui.
 
 ### ChatPage (D-382)
 - Page de chat avec un agent : barre d'outils de `Page` (titre de la conversation, actions), puis le relevé (`ChatTranscript`), seule zone qui défile.

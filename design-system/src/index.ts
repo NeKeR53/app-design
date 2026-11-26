@@ -5,7 +5,7 @@
  * au fur et à mesure qu'ils sont spécifiés (mode `define`) puis codés.
  * Styles : importer `socle-ui/styles.css` une fois dans l'app.
  */
-export const SOCLE_VERSION = "1.19.1";
+export const SOCLE_VERSION = "1.20.0";
 
 export { SocleProvider, useSocle } from "./provider/SocleProvider";
 export { frenchMessages } from "./i18n/messages";
@@ -128,8 +128,8 @@ export type {
   InfoSetting,
   SettingTag,
 } from "./templates/SettingsPage/SettingsPage";
-export { Page, PageSection } from "./templates/Page/Page";
-export type { PageProps, PageSectionProps, PageEmpty, PageWidth } from "./templates/Page/Page";
+export { Page, PageSection, PageGrid } from "./templates/Page/Page";
+export type { PageProps, PageSectionProps, PageGridProps, PageGridColumns, PageEmpty, PageWidth } from "./templates/Page/Page";
 export { ChatPage } from "./templates/ChatPage/ChatPage";
 export type { ChatPageProps } from "./templates/ChatPage/ChatPage";
 export { DetailPage } from "./templates/DetailPage/DetailPage";
