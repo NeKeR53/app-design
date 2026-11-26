@@ -1,20 +1,20 @@
 # Page
-Statut : validé (2026-11-23) — Version : depuis 0.3.0
-Validation : par délégation de l'utilisateur, 2026-11-23 — docs/validation/components/DetailPage-v1.html
+Statut : validé (2026-11-26) — Version : depuis 0.3.0 ; `PageGrid` depuis 1.20.0
+Validation : par délégation de l'utilisateur, 2026-11-23 — docs/validation/components/DetailPage-v1.html ; `PageGrid` et vue d'ensemble : par délégation de l'utilisateur, 2026-11-26 — docs/validation/components/PageGrid-v1.html
 
 ## Rôle
-Page composée : gabarit libre de la zone `main` d'AppShell, quand aucun autre gabarit ne convient (tableau de bord, éditeur, graphique, synthèse de quelques blocs). Elle pose les zones standard ; l'app y place des composants du socle, sans HTML stylé (D-217).
+Page composée : gabarit libre de la zone `main` d'AppShell, quand aucun autre gabarit ne convient (tableau de bord, éditeur, graphique, synthèse de quelques blocs). Elle pose les zones standard ; l'app y place des composants du socle, sans HTML stylé (D-217). Ses blocs s'empilent, ou se rangent côte à côte dans `PageGrid` pour tenir sur un écran (D-403, D-404).
 Ne pas l'utiliser pour :
 - une collection : `ListPage` ;
 - un élément ouvert : `DetailPage` ;
 - une saisie : `FormPage` ;
 - les réglages : `SettingsPage`.
 
-`PageSection` est le bloc titré de `Page` et de `DetailPage`.
+`PageSection` est le bloc titré de `Page` et de `DetailPage`. `PageGrid` range des blocs côte à côte, en colonnes égales.
 
 ## Anatomie
 1. **Barre d'outils** (facultative, fixe, trait dessous) : contenu libre à gauche sur une ligne (filtres, choix de période) ; actions à droite, zone `toolbar` (D-111).
-2. **Contenu** (obligatoire, seule zone qui défile) : blocs empilés à 24 px (`PageSection` ou composants du socle).
+2. **Contenu** (obligatoire, seule zone qui défile) : blocs empilés à 24 px (`PageSection` ou composants du socle), ou rangés côte à côte par `PageGrid`.
 3. **Pied** (facultatif, fixe, trait dessus) : contenu libre en `--fs-sm`, `--fg-3` (total, état d'une sélection, pagination).
 
 `PageSection` :
@@ -22,6 +22,11 @@ Ne pas l'utiliser pour :
 2. description d'une phrase, `--fs-sm`, `--fg-2` (facultative) ;
 3. actions, zone `section`, à droite du titre (facultatives) ;
 4. contenu.
+
+`PageGrid` (D-403) :
+1. colonnes égales, de 2 à 4 (`columns`), écart de 24 px entre colonnes et entre lignes, comme entre les blocs de `Page` (D-213) ;
+2. les blocs dans l'ordre de lecture, ligne par ligne ; ceux d'une même ligne prennent la même hauteur ;
+3. le nombre de colonnes suit la largeur de la grille, pas celle de la fenêtre : une colonne garde 240 px au moins. 2 colonnes à partir de 504 px ; 3 colonnes à partir de 768 px, 2 au-dessous ; 4 colonnes à partir de 1032 px, 2 au-dessous ; une seule sous 504 px.
 
 ## Variantes
 Aucune.
@@ -45,12 +50,15 @@ Aucune.
 | `PageSection` : `state` | `"ready" \| "loading" \| "error"` | `"ready"` | État de la section (D-216). |
 | `PageSection` : `onRetry` | `() => void` | aucun | « Réessayer » de l'état `error`. |
 | `PageSection` : `empty` | `{ title: string; description?: string; action?: Action }` | aucun | Donné, il remplace le contenu par un `EmptyState` compact (D-216). |
+| `PageGrid` : `columns` | `2 \| 3 \| 4` | `2` | Colonnes égales quand la place le permet ; moins de colonnes quand une colonne passerait sous 240 px (D-403). |
+| `PageGrid` : `children` | `ReactNode` | — | Les blocs : `PageSection`, `Card`, un composant du socle. |
 
 ## Exclus
 - Pas d'en-tête : le nom de la page est dans la barre du haut ; un élément ouvert prend `DetailPage` (D-217).
 - Pas de barre d'outils sur plusieurs lignes.
 - Pas de recherche de page en tête : elle va dans la barre d'outils de `ListPage`.
 - Pas de bandeau (D-159), pas de `className` ni de `style`.
+- `PageGrid` : pas de colonnes inégales, pas de largeur de colonne réglable, pas de bloc qui s'étend sur deux colonnes, pas de grille dans une grille (D-403).
 
 ## États
 | État | Rendu |
@@ -69,36 +77,42 @@ Aucune.
 | Barre d'une ligne, qui défile à l'horizontale (D-217) | verrouillé | `BarreEtroite` |
 | `fill` : le contenu remplit la hauteur sans défiler (D-218) | réglable par page | `Remplir` |
 | États de page et de section (D-215, D-216) | réglable par page | `Chargement`, `Erreur`, `EtatsDeSection` |
+| `PageGrid` : blocs côte à côte, écart de 24 px, même hauteur sur une ligne (D-403) | réglable par page (`columns`) | `Grille`, `GrilleDeCartes` |
+| `PageGrid` : moins de colonnes quand la grille rétrécit, jamais sous 240 px par colonne ; 4 passe à 2 (D-403) | verrouillé | `GrilleEtroite` |
 
 ## Contenu
 - Titre de section long : à la ligne.
 - Pied : une ligne courte ; nombres en chiffres tabulaires.
+- Vue d'ensemble d'abord (D-404) : les informations clés tiennent sur un écran. Les blocs courts et de même rang (chiffres clés, listes courtes) se rangent côte à côte dans `PageGrid` ; pas de longue pile de blocs qu'il faut faire défiler pour comprendre la page.
+- `width="text"` sert à un texte à lire (une note, une procédure). Un tableau de bord, une synthèse ou une page de travail prennent toute la largeur (D-214, D-404).
+- Une action (importer, ajouter, actualiser) est une `Action` de la barre d'outils ou d'une section, jamais un bloc à elle seule (D-404).
 
 ## Densité
-Marges `--pad` ; écart de 24 px entre blocs dans les deux densités.
+Marges `--pad` ; écart de 24 px entre blocs dans les deux densités, et entre les colonnes de `PageGrid`.
 
 ## Clavier
-Ordre de tabulation : barre d'outils (contenu libre, puis actions), contenu, pied. La barre qui défile garde chaque contrôle atteignable au clavier : le focus fait défiler la barre.
+Ordre de tabulation : barre d'outils (contenu libre, puis actions), contenu, pied. La barre qui défile garde chaque contrôle atteignable au clavier : le focus fait défiler la barre. Dans `PageGrid`, l'ordre suit les blocs, ligne par ligne, de gauche à droite.
 
 ## Accessibilité
 - Barre d'outils : `role="toolbar"` nommé par `actionsLabel` s'il est donné.
 - Pied : `footer`.
 - `PageSection` : `section` nommée par son `h2`.
+- `PageGrid` : aucun rôle, aucune annonce ; l'ordre du document est l'ordre de lecture.
 
 ## Taille d'écran
-Sous 640 px : les icônes de la barre passent dans « … » (D-117) ; la barre défile à l'horizontale ; `width="text"` prend toute la largeur.
+Sous 640 px : les icônes de la barre passent dans « … » (D-117) ; la barre défile à l'horizontale ; `width="text"` prend toute la largeur. `PageGrid` suit la largeur de sa grille : avec le panneau de détail ouvert, elle prend moins de colonnes (D-403).
 
 ## Erreurs
 Chargement en échec : état `error` (page ou section). Action en échec : toast (D-154).
 
 ## Placement
-Zone `main` d'AppShell. `PageSection` : dans `Page` et `DetailPage`.
+Zone `main` d'AppShell. `PageSection` : dans `Page` et `DetailPage`. `PageGrid` : dans le contenu de `Page`, ou dans une `PageSection` (une rangée de `Card`) ; jamais dans `DetailPage` (colonne de lecture), un `Drawer`, une `Modal` ou un `Popover`.
 
 ## Composition
-Contient `ActionBar`, `Skeleton`, `EmptyState`, `Button`. Les zones reçoivent des composants du socle (`Select`, `ComboBox`, `Table`, `List`, `Tabs`…). Ne contient pas d'autre gabarit.
+Contient `ActionBar`, `Skeleton`, `EmptyState`, `Button`. Les zones reçoivent des composants du socle (`Select`, `ComboBox`, `Table`, `List`, `Tabs`…). Ne contient pas d'autre gabarit. `PageGrid` reçoit des `PageSection`, des `Card` et des composants du socle ; pas une autre `PageGrid`.
 
 ## Décisions
-D-085, D-111, D-113, D-117, D-154, D-159, D-165, D-166, D-213, D-214, D-215, D-216, D-217, D-218
+D-085, D-111, D-113, D-117, D-154, D-159, D-165, D-166, D-213, D-214, D-215, D-216, D-217, D-218, D-403, D-404
 
 ## Questions ouvertes
 Aucune.

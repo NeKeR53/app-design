@@ -1,5 +1,5 @@
 /*
- * Page composée et bloc titré. Spec : Page.spec.md. Décisions : D-213 à D-218.
+ * Page composée, bloc titré et grille de blocs. Spec : Page.spec.md. Décisions : D-213 à D-218, D-403.
  */
 import { useId, type ReactNode } from "react";
 import { cx } from "../../lib/cx";
@@ -125,6 +125,38 @@ export function PageSection({ title, description, actions, state = "ready", onRe
   );
 }
 
+/** Colonnes d'une grille de blocs, quand la place le permet (D-403). */
+export type PageGridColumns = 2 | 3 | 4;
+
+export interface PageGridProps {
+  /** Colonnes égales : 2 (défaut), 3 ou 4. Une colonne garde 240 px au moins ; sinon la grille en prend moins (D-403). */
+  columns?: PageGridColumns;
+  /** Les blocs : des `PageSection`, des `Card`, un composant du socle. Ils se lisent ligne par ligne. */
+  children: ReactNode;
+}
+
+/*
+ * Seuils mesurés sur la largeur de la grille (container query), pas sur la fenêtre : le panneau de détail réduit la
+ * zone principale. n colonnes de 240 px et leurs écarts de 24 px : 504 px pour 2, 768 px pour 3, 1032 px pour 4.
+ * 4 colonnes passent à 2, jamais à 3 : quatre cartes font deux lignes de deux, pas trois et une (D-403).
+ */
+const GRID_COLUMNS: Record<PageGridColumns, string> = {
+  2: "@min-[504px]:grid-cols-2",
+  3: "@min-[504px]:grid-cols-2 @min-[768px]:grid-cols-3",
+  4: "@min-[504px]:grid-cols-2 @min-[1032px]:grid-cols-4",
+};
+
+/** Blocs côte à côte dans une page composée, à l'écart des blocs de `Page` (24 px, D-213, D-403). */
+export function PageGrid({ columns = 2, children }: PageGridProps) {
+  return (
+    <div className="socle-page-grid @container min-w-0">
+      <div data-page-grid={columns} className={cx("grid grid-cols-1 gap-6 [&>*]:min-w-0", GRID_COLUMNS[columns])}>
+        {children}
+      </div>
+    </div>
+  );
+}
+
 /** Barre d'outils d'une ligne : contenu libre à gauche, actions en zone `toolbar` à droite (D-217). Usage interne (Page, ChatPage). */
 export function PageToolbar({
   width,
@@ -229,3 +261,4 @@ export function Page({
 }
 
 Page.Section = PageSection;
+Page.Grid = PageGrid;

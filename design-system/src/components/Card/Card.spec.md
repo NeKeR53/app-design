@@ -76,7 +76,7 @@ Marge intérieure `--pad` : 16 px en web, 12 px en desktop. Textes selon les tai
 - Valeur : chiffres à chasse fixe (`tabular-nums`) pour comparer d'une carte à l'autre.
 
 ## Taille d'écran
-La carte prend la largeur que lui donne la grille de l'app. Le titre passe à la ligne, il n'est pas coupé.
+La carte prend la largeur que lui donne sa `PageGrid` (D-403). Le titre passe à la ligne, il n'est pas coupé.
 
 ## Erreurs
 Une action qui échoue suit `ActionBar` (`onError`, D-116).
@@ -85,12 +85,12 @@ Une action qui échoue suit `ActionBar` (`onError`, D-116).
 L'app choisit la variante, les textes, le niveau de titre, la cible et les actions. Le dessin est fixe.
 
 ## Placement
-Dans une grille de la page composée (`Page`), un tableau de bord, un écran d'accueil. Pas dans une ligne de liste ni dans le panneau de détail.
+Dans une `PageGrid` de la page composée (`Page`) : une rangée de chiffres clés, un tableau de bord, un écran d'accueil (D-403). Pas dans une ligne de liste ni dans le panneau de détail.
 
 ## Composition
 `ActionBar` (zones `section` et `row`), `DropdownMenu`, `IconButton`, icônes Socle.
 
 ## Décisions
-D-001, D-040, D-111, D-115, D-116, D-361.
+D-001, D-040, D-111, D-115, D-116, D-361, D-403.
 
 ## Questions ouvertes

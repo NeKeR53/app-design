@@ -2,6 +2,15 @@
 
 Versions selon semver (règle 6 du skill design) : une nouvelle option facultative est une version mineure ; un changement qui casse l'existant est une version majeure, avec une note de migration.
 
+## [1.20.0] — 2026-11-26
+
+### Ajouté
+- `PageGrid` (aussi `Page.Grid`) : blocs côte à côte dans une page composée, en colonnes égales (`columns` : 2, 3 ou 4 ; défaut 2), à 24 px d'écart ; les blocs d'une ligne prennent la même hauteur. Les colonnes suivent la largeur de la grille : 240 px au moins chacune ; 4 passent à 2, 3 passent à 2, puis une seule sous 504 px (D-403).
+- Règle « Vue d'ensemble d'abord » (`layout-rules.md`, spec `Page`) : vues en onglets, actions dans la barre, élément sélectionné au panneau de détail ; une page composée tient ses informations clés sur un écran, blocs côte à côte plutôt qu'une longue pile ; `width="text"` pour un texte à lire seulement (D-404).
+
+### Modifié
+- `Card` : sa place est une `PageGrid` (spec, « Placement »).
+
 ## [1.19.1] — 2026-11-25
 
 ### Corrigé
