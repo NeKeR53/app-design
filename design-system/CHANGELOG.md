@@ -2,6 +2,14 @@
 
 Versions selon semver (règle 6 du skill design) : une nouvelle option facultative est une version mineure ; un changement qui casse l'existant est une version majeure, avec une note de migration.
 
+## [1.23.0] — 2026-11-26
+
+### Ajouté
+- `Sidebar.TreeItem` : option `defaultExpanded`, le parent s'ouvre déplié ; le choix mémorisé de l'utilisateur l'emporte toujours (D-420). Sans elle, rien ne change.
+
+### Corrigé
+- `Sidebar` : le trait et le coude de D-042 se dessinent de nouveau sous les enfants dépliés d'un `Sidebar.TreeItem` et sous les sous-pages d'un `Sidebar.Item` (D-420).
+
 ## [1.22.0] — 2026-11-26
 
 ### Ajouté

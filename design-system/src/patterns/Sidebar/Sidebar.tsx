@@ -60,6 +60,11 @@ export interface SidebarTreeItemProps {
    * pas répétée dans le menu.
    */
   quickActions?: SidebarAction[];
+  /**
+   * Ouvre l'élément déplié tant que l'utilisateur ne l'a ni replié ni déplié lui-même (D-420). Son choix, mémorisé,
+   * l'emporte toujours. Défaut : replié, sauf si un enfant est la page courante.
+   */
+  defaultExpanded?: boolean;
   /** Enfants, sur un seul niveau (D-042, D-043). */
   children?: ReactNode;
 }
@@ -139,7 +144,7 @@ const useSidebar = () => useContext(SidebarCtx)!;
 /** Position dans l'arbre visuel : profondeur et dernier enfant (pour le coude, D-042). */
 const Depth = createContext<{ depth: number; last: boolean }>({ depth: 0, last: false });
 
-type AnyProps = { id?: string; children?: ReactNode; title?: string };
+type AnyProps = { id?: string; children?: ReactNode; title?: string; defaultExpanded?: boolean };
 function walk(children: ReactNode, fn: (el: ReactElement<AnyProps>, parents: string[]) => void, parents: string[] = []) {
   Children.forEach(children, (child) => {
     if (!isValidElement<AnyProps>(child)) return;
@@ -169,28 +174,32 @@ export function Sidebar({ selectedId, onSelectionChange, account, footer, worksp
   // Clic droit, appui long sur tactile, Maj+F10 ou touche Menu : menu « … » de l'élément (D-007, D-053).
   const { rowMenuProps, onKey: onRowMenuKey } = useRowMenu();
   // Ce que l'utilisateur a déplié ou replié est mémorisé (D-007, D-043, D-056) ;
-  // les sections sont dépliées par défaut, les éléments repliés.
+  // les sections sont dépliées par défaut, les éléments repliés, sauf `defaultExpanded` (D-420).
   const [open, setOpen] = useStoredState<Record<string, boolean>>("sidebar:open", {});
   const [more, setMore] = useStoredState<Record<string, boolean>>("sidebar:show-all", {});
 
-  const { sections, ancestors, expandable } = useMemo(() => {
+  const { sections, ancestors, expandable, preferred } = useMemo(() => {
     const sections = new Set<string>();
     const expandable = new Set<string>();
+    // Éléments ouverts dépliés par l'app (`defaultExpanded`, D-420), relus à chaque rendu, jamais mémorisés.
+    const preferred = new Set<string>();
     let ancestors: string[] = [];
     walk([children, footer], (el, parents) => {
       const id = el.props.id;
       if (!id) return;
       if ((el.type as { [SECTION_MARK]?: boolean })[SECTION_MARK]) sections.add(id);
       else if (el.props.children && typeof el.props.children !== "string") expandable.add(id);
+      if (el.props.defaultExpanded) preferred.add(id);
       if (id === selectedId) ancestors = parents;
     });
-    return { sections, ancestors, expandable };
+    return { sections, ancestors, expandable, preferred };
   }, [children, footer, selectedId]);
 
-  const isExpanded = (id: string) => open[id] ?? (sections.has(id) || ancestors.includes(id));
+  const byDefault = (id: string) => sections.has(id) || ancestors.includes(id) || preferred.has(id);
+  const isExpanded = (id: string) => open[id] ?? byDefault(id);
   const expandedKeys = useMemo(
-    () => new Set<Key>([...sections, ...expandable].filter((id) => open[id] ?? (sections.has(id) || ancestors.includes(id)))),
-    [sections, expandable, open, ancestors],
+    () => new Set<Key>([...sections, ...expandable].filter((id) => open[id] ?? (sections.has(id) || ancestors.includes(id) || preferred.has(id)))),
+    [sections, expandable, open, ancestors, preferred],
   );
 
   const ctx: Ctx = {
@@ -290,10 +299,13 @@ const rowBase = cx(
   "data-focus-visible:outline-2 data-focus-visible:outline-solid data-focus-visible:outline-focus data-focus-visible:-outline-offset-4",
 );
 
-/** Trait et coude qui relient un enfant à son parent (D-042). */
-function Connector() {
+/**
+ * Trait et coude qui relient un enfant à son parent (D-042).
+ * `depth` et `last` arrivent en props : React Aria rend `TreeItemContent` depuis sa collection, hors du
+ * `Depth.Provider` posé par `withDepth`. Seule la ligne (`Item`, `TwoLine`) lit le contexte, au bon endroit (D-420).
+ */
+function Connector({ depth, last }: { depth: number; last: boolean }) {
   // Le trait couvre aussi l'écart transparent des lignes (D-395) : il reste continu d'un enfant à l'autre.
-  const { depth, last } = useContext(Depth);
   if (depth === 0) return null;
   return (
     <span aria-hidden className="pointer-events-none absolute -top-0.5 left-4 h-[calc(100%+4px)] w-3">
@@ -363,7 +375,7 @@ const INDICATORS = {
 
 /* ---------- Sidebar.Item ---------- */
 function Item({ id, icon, label, count, indicator, actions, children }: SidebarItemProps) {
-  const { depth } = useContext(Depth);
+  const { depth, last } = useContext(Depth);
   const hidden = useContext(HiddenNavIds);
   const currentRef = useCurrentPageRef(id);
   if (hidden.has(id)) return null;
@@ -375,7 +387,7 @@ function Item({ id, icon, label, count, indicator, actions, children }: SidebarI
       <TreeItemContent>
         {({ isExpanded }) => (
           <>
-            <Connector />
+            <Connector depth={depth} last={last} />
             {depth === 0 && <span className="mr-2 inline-grid w-4 shrink-0 place-items-center">{icon}</span>}
             <OverflowTooltip text={label} beside />
             {hasKids && (
@@ -406,7 +418,7 @@ function Item({ id, icon, label, count, indicator, actions, children }: SidebarI
 /* ---------- Sidebar.TreeItem ---------- */
 function TwoLine({ id, title, subtitle, meta, status, unread, indicator, actions, quickActions, children }: SidebarTreeItemProps) {
   const m = useMessages();
-  const { depth } = useContext(Depth);
+  const { depth, last } = useContext(Depth);
   const ctx = useSidebar();
   const currentRef = useCurrentPageRef(id);
   const kids = Children.toArray(children).filter(isValidElement) as ReactElement<SidebarTreeItemProps>[];
@@ -417,7 +429,7 @@ function TwoLine({ id, title, subtitle, meta, status, unread, indicator, actions
       <TreeItemContent>
         {({ isExpanded }) => (
           <>
-            <Connector />
+            <Connector depth={depth} last={last} />
             <span className="flex min-w-0 flex-1 flex-col">
               {/* Ligne du titre : hauteur fixe d'une ligne de texte (h-lh). Ni le « … » de 22 px,
                   ni l'icône d'état ne la font grandir, au survol, au focus ou à la sélection (D-368). */}
@@ -486,9 +498,7 @@ function TwoLine({ id, title, subtitle, meta, status, unread, indicator, actions
       {row}
       <TreeItem id={`${id}::summary`} textValue={label} className={cx(rowBase, "h-6 pl-8 text-sm text-fg-3")}>
         <TreeItemContent>
-          <Depth.Provider value={{ depth: depth + 1, last: true }}>
-            <Connector />
-          </Depth.Provider>
+          <Connector depth={depth + 1} last />
           {label}
           {unreadKids > 0 && (
             <span className="text-side-highlight">

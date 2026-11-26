@@ -28,7 +28,7 @@ Ne pas l'utiliser pour :
 ### `Sidebar.TreeItem` — élément sur deux lignes, avec enfants
 1. Ligne 1 : titre, chevron s'il a des enfants, icône d'état facultative à droite (alerte, en cours).
 2. Ligne 2 : sous-titre en `--fg-2`, coupé ; étiquette facultative à droite en `--fg-3`.
-3. Enfants (facultatifs) : des `TreeItem` d'un seul niveau, en retrait. Une fois dépliés, ils sont reliés au parent par un trait vertical de 1 px en `--tree-line` ; le dernier enfant se termine par un coude arrondi de 8 px (D-042). Une fois repliés, ils sont résumés par une ligne de 24 px sous le parent (« 4 éléments · 2 non lus ») ; un clic sur la ligne les déplie (D-043).
+3. Enfants (facultatifs) : des `TreeItem` d'un seul niveau, en retrait. Une fois dépliés, ils sont reliés au parent par un trait vertical de 1 px en `--tree-line` ; le dernier enfant se termine par un coude arrondi de 8 px (D-042). Une fois repliés, ils sont résumés par une ligne de 24 px sous le parent (« 4 éléments · 2 non lus ») ; un clic sur la ligne les déplie (D-043). Par défaut, un parent s'ouvre replié, sauf si un enfant est la page courante ; `defaultExpanded` l'ouvre déplié (D-420).
 4. Bouton « … » (automatique si l'app fournit des actions) : visible au survol, au focus et sur l'élément sélectionné ; il ouvre un `DropdownMenu`. Place : ligne 1, tout à droite, après le point non lu et l'icône d'état ; son icône s'aligne sur le bord droit de l'étiquette de la ligne 2 (D-368).
 
 ### `Sidebar.Section`
@@ -65,6 +65,7 @@ Couleurs : la sidebar lit des rôles dédiés, égaux par défaut aux rôles gé
 | `Sidebar.TreeItem` : `subtitle`, `meta`, `status`, `children`, `actions` | — | aucun | Sous-titre, étiquette, icône d'état, enfants, actions du menu « … ». |
 | `Sidebar.TreeItem` : `quickActions` | `{ icon, label, onPress }[]` | aucune | Actions en bouton-icône avant le « … », au survol, au focus et sur l'élément sélectionné ; deux boutons au plus en tout (une avec `actions`, deux sans). Une action rapide n'est pas répétée dans le menu (D-381). |
 | `Sidebar.TreeItem` : `indicator` | `"activity"` | aucun | Point gris qui pulse, « En cours », à droite du titre, le même que `Sidebar.Item` (D-055, D-385, D-395). |
+| `Sidebar.TreeItem` : `defaultExpanded` | `boolean` | `false` | Ouvre le parent déplié, enfants et trait visibles, sans ligne résumé, tant que l'utilisateur ne l'a ni replié ni déplié : son choix, mémorisé, l'emporte toujours. Relu à chaque rendu, jamais mémorisé (D-420). Exemple : des tâches lancées par une conversation, à suivre d'un coup d'œil. |
 | `Sidebar.TreeItem` : `unread` | `boolean` | `false` | Point de 6 px en `--highlight` (l'accent par défaut) à droite du titre ; compté dans la ligne résumé du parent (D-044). |
 | `Sidebar.Account` : `name`, `detail`, `avatar`, `onSettings` | — | — | Compte et accès aux réglages. |
 | `Sidebar.Account` : `menu` | entrées de `DropdownMenu` | aucune | Menu du compte ; sans entrée, le nom est une simple étiquette (D-046). |
@@ -102,7 +103,8 @@ Couleurs : la sidebar lit des rôles dédiés, égaux par défaut aux rôles gé
 | Un clic sélectionne l'élément et change de page ; il ne touche pas aux onglets (D-021) | verrouillé | `Selection` |
 | Sections : repliées ou dépliées au clic sur le titre ; état mémorisé par section (D-007) | verrouillé | `Sections` |
 | Item : le chevron déplie les sous-pages sans sélectionner ; le parent d'une sous-page sélectionnée reste déplié ; état mémorisé (D-056) | verrouillé | `SousPages` |
-| TreeItem : le chevron replie ou déplie les enfants, sans sélectionner ; la ligne résumé les déplie (D-043) ; état mémorisé | verrouillé | `Enfants` |
+| TreeItem : le chevron replie ou déplie les enfants, sans sélectionner ; la ligne résumé les déplie (D-043) ; état mémorisé ; trait et coude sous les enfants dépliés (D-042) | verrouillé | `Enfants` |
+| TreeItem : `defaultExpanded` ouvre le parent déplié ; le choix mémorisé de l'utilisateur l'emporte (D-420) | réglable par app (`defaultExpanded`) | `DeplieParDefaut`, `ChoixMemoriseLEmporte` |
 | Actions et « … » : visibles au survol, au focus clavier et tant que leur menu est ouvert, jamais sur le seul élément sélectionné ; elles remplacent alors le compteur ou les signes d’état ; sur tactile, appui long (D-007, D-053, D-054, D-386, D-393) | verrouillé | `ActionsAuSurvol` |
 | Hauteur de ligne fixe au survol, au focus et à la sélection ; icône du « … » alignée sur l'étiquette de la ligne 2 (D-368) | verrouillé | `HauteurStable` |
 | Section longue : « Afficher plus (n) » au-delà de `limit` ; choix mémorisé ; l'élément sélectionné reste toujours visible (D-045) | réglable par app (`limit`) | `SectionLongue` |
@@ -148,7 +150,7 @@ Uniquement dans la zone `sidebar` d'AppShell. Une seule sidebar par fenêtre.
 Contient `IconButton`, `Tooltip` et `DropdownMenu`. Utilisée par `AppShell`.
 
 ## Décisions
-D-002, D-003, D-006, D-007, D-016, D-017, D-019, D-021, D-026, D-039, D-040, D-042, D-043, D-044, D-045, D-046, D-052, D-053, D-054, D-055, D-056, D-230, D-231, D-232, D-260, D-337, D-338, D-368, D-369, D-381, D-385, D-386, D-392, D-393, D-395
+D-002, D-003, D-006, D-007, D-016, D-017, D-019, D-021, D-026, D-039, D-040, D-042, D-043, D-044, D-045, D-046, D-052, D-053, D-054, D-055, D-056, D-230, D-231, D-232, D-260, D-337, D-338, D-368, D-369, D-381, D-385, D-386, D-392, D-393, D-395, D-420
 
 ## Questions ouvertes
 Aucune.

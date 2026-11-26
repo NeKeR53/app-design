@@ -2996,3 +2996,19 @@
 - Raison : une page composée (tableau de bord, éditeur, synthèse) reçoit aussi des fichiers : un relevé à importer, une image à ouvrir. Sans cadre, une app desktop qui capte le dépôt du système n'avait rien à montrer, ou posait un bloc `FileUpload` dans la page (D-404).
 - Options écartées : le cadre sous la barre d'outils, comme `ChatPage` (la barre d'une `Page` ne sert pas pendant un glisser, et un cadre plein rappelle celui de `ListPage`) ; « Déposez les fichiers ici » (ne dit pas ce qui se passe) ; un dépôt par `PageSection` (on vise mal, D-416).
 - Validation : par délégation de l'utilisateur, 2026-11-26 — docs/validation/components/PageDepot-v1.html (Q1 A, Q2 A). Stories `DepotDeFichiers`, `DepotSignaleParLApp`, `Zones`.
+
+## D-419 — Sidebar.TreeItem : ligne résumé nommée (abandonnée)
+- Date : 2026-11-26
+- Portée : Sidebar.TreeItem
+- Décision : abandonnée par Alexandre avant toute fusion : pas de `childLabel`, pas de résumé « 3 étapes · 1 à traiter · 1 en cours ». La ligne résumé reste celle de D-043. Le numéro reste pris pour la trace.
+- Raison : Alexandre a refusé cette refonte, et n'a gardé que le correctif du trait et l'ouverture dépliée (D-420).
+- Options écartées : sans objet.
+- Validation : refus de l'utilisateur, 2026-11-26.
+
+## D-420 — Sidebar.TreeItem : ouvrir un parent déplié, et trait sous les enfants dépliés
+- Date : 2026-11-26
+- Portée : Sidebar.TreeItem (`defaultExpanded`), Sidebar.Item (trait de D-042)
+- Décision : (1) option `defaultExpanded?: boolean` sur `Sidebar.TreeItem` : le parent s'ouvre déplié, enfants et trait visibles, sans ligne résumé. Le choix de l'utilisateur, mémorisé (`sidebar:open`), l'emporte toujours ; l'option est relue à chaque rendu et jamais mémorisée. Sans elle, rien ne change. (2) Correctif : le trait et le coude de D-042 se dessinent de nouveau sous les enfants dépliés, d'un `TreeItem` comme d'un `Item`. `Connector` lisait la profondeur dans un contexte que React Aria ne transmet pas au contenu de la ligne ; la ligne la lit et la lui passe.
+- Raison : une app veut parfois que les enfants d'un élément se voient d'emblée (des tâches lancées par une conversation, à suivre d'un coup d'œil) ; seule la page courante ouvrait un parent. Le trait, décidé en D-042, ne s'affichait plus.
+- Options écartées : un état contrôlé (`expandedIds`, `onExpandedChange`) sur `Sidebar`, comme `TreeView` (plus lourd, et la sidebar mémorise déjà les choix) ; `defaultExpandedIds` sur `Sidebar` (l'app décrit ses lignes, l'option se lit mieux sur la ligne) ; `defaultExpanded` aussi sur `Sidebar.Item` (pas demandé : plus petite option) ; effacer le choix mémorisé quand le défaut change (le choix de l'utilisateur prime).
+- Validation : par délégation de l'utilisateur, 2026-11-26 — docs/validation/components/Sidebar-v3.html. Stories `Enfants`, `SousPages`, `DeplieParDefaut`, `ChoixMemoriseLEmporte`.
