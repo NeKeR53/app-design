@@ -2980,3 +2980,11 @@
 - Raison : une bibliothèque de documents ou de photos se remplit par glisser-déposer ; sans dépôt sur la page, l'app dessinait un grand bloc `FileUpload` en tête de page.
 - Options écartées : un bloc de dépôt dans la page (D-404) ; un dépôt limité à la liste (on vise mal).
 - Validation : par délégation de l'utilisateur, 2026-11-26 — docs/validation/components/Recettes-v1.html (question 7). Stories `DepotDeFichiers`, `DepotSignaleParLApp`.
+
+## D-417 — Recettes : chaque zone dit sa responsabilité, quand la prendre et pourquoi
+- Date : 2026-11-26
+- Portée : recettes (complète D-405)
+- Décision : la section « Zones » de chaque recette rappelle la règle « une zone de l'écran, une responsabilité » (D-404), puis donne, pour chaque zone, sa responsabilité dans cette page, son composant, et quand la prendre et pourquoi (colonne « Quand, pourquoi »). Les zones portent les mêmes noms que la règle : onglet fixe (un usage, un contexte), onglet ouvert (un élément ouvert en entier), contenu (le travail de l'onglet), panneau de droite (la vue détail de l'élément sélectionné), barre du haut et en-tête du gabarit (les actions), fenêtre (un geste court), sous-entrées de la sidebar (naviguer par objet), toute la page (le dépôt), état vide (les exemples). `check` exige la colonne.
+- Raison : demande d'Alexandre, 2026-11-26 : une page s'organise par zones, et l'agent doit savoir pourquoi et quand prendre chacune ; une liste de zones sans raison se recopie mal dans une page qui ne ressemble pas tout à fait à la recette.
+- Options écartées : les raisons dans `layout-rules.md` seulement (l'agent lit la recette en écrivant la page, pas la règle) ; une section « Pourquoi » à part (la raison se lit mieux sur la ligne de sa zone).
+- Validation : demande de l'utilisateur, transmise par la session de tournage, 2026-11-26 ; choix délégués.

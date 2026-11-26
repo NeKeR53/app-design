@@ -1,5 +1,5 @@
 # Recette : Tableau de bord
-Statut : validé (2026-11-26, par délégation de l'utilisateur) — Version : depuis 1.21.0
+Statut : validé (2026-11-26, par délégation de l'utilisateur) — Version : depuis 1.21.0 ; zones expliquées depuis 1.21.1
 Décision : D-407. Stories : « Recettes/Tableau de bord ». Captures : [clair](Dashboard-clair.png), [sombre](Dashboard-sombre.png).
 
 ![Tableau de bord, mode clair](Dashboard-clair.png)
@@ -10,16 +10,19 @@ Décision : D-407. Stories : « Recettes/Tableau de bord ». Captures : [clair](
 - Pas pour une collection à parcourir : `ListPage`. Pas pour un rapport à lire : `DetailPage`.
 
 ## Zones
-| Zone | Ce qui y va | Composant |
-|---|---|---|
-| Barre du haut, vues | « Vue d'ensemble », puis les listes détaillées (« Commandes ») | vues de l'`AppShell` (D-021) |
-| `main`, barre d'outils | La période (et un filtre au plus) à gauche ; « Exporter » à droite | `Page` `toolbar` (`SegmentedControl` ou `Select`), `actions` zone `toolbar` |
-| `main`, rangée 1 | Quatre chiffres clés au plus | `PageGrid columns={4}`, `Card variant="metric"` |
-| `main`, rangée 2 | L'évolution (graphique) et le détail (tableau), côte à côte | `PageGrid columns={2}`, `PageSection` ; graphique de l'app ; `Table density="compact"` |
-| `main`, rangée 3 (facultative) | Ce qui attend une action : listes courtes | `PageGrid columns={2}`, `PageSection`, `List` |
-| Panneau de détail | Facultatif : l'élément choisi dans un tableau | `Drawer` déclaratif |
+Une zone de l'écran, une responsabilité (D-404, D-417) : chaque zone ci-dessous dit ce qu'elle porte dans cette page, avec quel composant, quand la prendre et pourquoi.
 
-Toute la largeur : jamais `width="text"`. Trois rangées au plus.
+| Zone | Sa responsabilité ici | Composant | Quand, pourquoi |
+|---|---|---|---|
+| Onglet fixe « Vue d'ensemble » | Suivre l'activité d'un coup d'œil | `Page` sur toute la largeur | L'usage « suivre » a son onglet ; les listes détaillées ont les leurs (« Commandes »). Jamais `width="text"`. |
+| Barre d'outils de la page | La période et un filtre au plus, à gauche ; « Exporter », à droite | `Page` `toolbar` (`SegmentedControl` ou `Select`), `actions` zone `toolbar` | Ce réglage vaut pour toute la page : il est au-dessus d'elle, pas dans un bloc. Il s'applique tout de suite. |
+| Contenu, rangée 1 | Les chiffres clés, quatre au plus | `PageGrid columns={4}`, `Card variant="metric"` | Toujours en haut : c'est ce qu'on lit d'abord. Chaque carte mène à l'onglet qui détaille son chiffre. |
+| Contenu, rangée 2 | L'évolution (graphique) et le détail (tableau), côte à côte | `PageGrid columns={2}`, `PageSection` ; graphique de l'app ; `Table density="compact"` | Côte à côte : on compare sans défiler. Une pile les mettrait sur deux écrans. |
+| Contenu, rangée 3 (facultative) | Ce qui attend une action | `PageGrid columns={2}`, `PageSection`, `List` | Quand des éléments demandent un geste (une commande en retard, un stock bas). Sinon, pas de rangée. |
+| Onglet fixe « Commandes » | La liste que résume un chiffre | `ListPage` | Quand l'utilisateur veut le détail : une carte y mène. La synthèse reste intacte dans son onglet. |
+| Panneau de droite (facultatif) | La vue détail d'un élément choisi dans un tableau | `Drawer` déclaratif | Quand une ligne se choisit. Sinon, pas de panneau : la synthèse garde toute la largeur. |
+
+Trois rangées au plus.
 
 ## Le graphique
 Socle ne dessine pas de graphique : l'app prend une librairie et lui passe les tokens. Une série : `--chart-1` ; plusieurs : `--chart-1` à `--chart-8`, dans cet ordre. Grille et axes en `--line` et `--fg-3`, textes en `--fg-2` et `--fg-3`. Barres de 24 px au plus, bout arrondi de 4 px. Une étiquette directe sur la valeur qui compte, une info-bulle par barre ou par point, un nom accessible qui résume la série. Pas de légende pour une seule série : le titre de la section la nomme.
@@ -77,4 +80,4 @@ Un chiffre sans action n'a pas sa place (D-361).
 - Une recherche ou des filtres de liste dans la barre d'outils : la liste a sa vue.
 
 ## Décisions
-D-021, D-111, D-213, D-216, D-361, D-403, D-404, D-407.
+D-021, D-111, D-213, D-216, D-361, D-403, D-404, D-407, D-417.

@@ -2,6 +2,11 @@
 
 Versions selon semver (règle 6 du skill design) : une nouvelle option facultative est une version mineure ; un changement qui casse l'existant est une version majeure, avec une note de migration.
 
+## [1.21.1] — 2026-11-26
+
+### Modifié
+- Recettes de pages : la section « Zones » de chaque recette dit, pour chaque zone, sa responsabilité dans la page, son composant, et quand la prendre et pourquoi ; les zones portent les noms de la règle « une zone de l'écran, une responsabilité » (D-417). `check` exige ces colonnes. Captures et stories inchangées.
+
 ## [1.21.0] — 2026-11-26
 
 ### Ajouté

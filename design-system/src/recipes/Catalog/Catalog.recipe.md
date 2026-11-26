@@ -1,5 +1,5 @@
 # Recette : Catalogue
-Statut : validé (2026-11-26, par délégation de l'utilisateur) — Version : depuis 1.21.0
+Statut : validé (2026-11-26, par délégation de l'utilisateur) — Version : depuis 1.21.0 ; zones expliquées depuis 1.21.1
 Décision : D-410. Stories : « Recettes/Catalogue ». Captures : [clair](Catalog-clair.png), [sombre](Catalog-sombre.png).
 
 ![Catalogue, mode clair](Catalog-clair.png)
@@ -10,12 +10,16 @@ Décision : D-410. Stories : « Recettes/Catalogue ». Captures : [clair](Catalo
 - Pas pour des éléments qu'on compare propriété par propriété : recette « Liste et fiche » (tableau).
 
 ## Zones
-| Zone | Ce qui y va | Composant |
-|---|---|---|
-| Barre du haut, vues | « En vente », « Archivés » | vues de l'`AppShell` (D-021) |
-| `main` | Les vignettes sur toute la page : image, nom, gamme, prix, stock ; recherche et filtres | `ListPage` `layout="grid"`, `item`, `thumbnail` |
-| Panneau de détail | La fiche du produit : photo, prix et stock, description, finitions | `Drawer` déclaratif, `ImageThumbnail`, `Table density="compact"` |
-| Toute la page | Dépôt de photos | `onDropFiles` de `ListPage` |
+Une zone de l'écran, une responsabilité (D-404, D-417) : chaque zone ci-dessous dit ce qu'elle porte dans cette page, avec quel composant, quand la prendre et pourquoi.
+
+| Zone | Sa responsabilité ici | Composant | Quand, pourquoi |
+|---|---|---|---|
+| Onglet fixe « En vente » | Les produits proposés, en vignettes, avec la recherche et les filtres | `ListPage` `layout="grid"`, `item`, `thumbnail` | L'usage principal. On reconnaît un produit à son image : les vignettes prennent toute la page. |
+| Onglet fixe « Archivés » | Les produits retirés de la vente | `ListPage` | Un autre contexte : il n'encombre pas le catalogue. |
+| Panneau de droite | La vue détail du produit sélectionné : photo, prix et stock, description, finitions | `Drawer` déclaratif, `ImageThumbnail`, `Table density="compact"` | Quand une vignette est choisie. La grille reste visible ; un autre choix change la fiche. |
+| Barre du haut, en-tête du gabarit | Les actions du catalogue : « Nouveau produit », « Importer des photos » | `ActionBar` zone `header` | Une action est toujours au même endroit. Quand le catalogue est vide, l'action principale revient dans son état vide. |
+| Toute la page | Le dépôt de photos | `onDropFiles` de `ListPage` | Quand l'app reçoit des fichiers glissés : on dépose sur la page, sans viser un cadre. |
+| Sous-entrées de la sidebar (facultatives) | Les gammes que l'utilisateur suit | `children` de `Sidebar.Item` (sous-pages, D-056) | Quand il revient toujours aux mêmes gammes : chacune devient un lieu, et la page reste une seule, filtrée. |
 
 ## Actions
 | Action | Où | Forme |
@@ -63,4 +67,4 @@ Pour des documents : `thumbnail={(d) => ({ src: d.apercu, type: "pdf" })}` ; san
 - Des images de tailles libres : l'aperçu est 4:3, recadré.
 
 ## Décisions
-D-021, D-111, D-383, D-404, D-410, D-414, D-416.
+D-021, D-111, D-383, D-404, D-410, D-414, D-416, D-417.

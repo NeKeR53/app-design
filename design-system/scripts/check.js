@@ -48,6 +48,10 @@ if (existsSync(recipes)) {
       const text = readFileSync(md, "utf8");
       for (const section of ["Quand la prendre", "Zones", "Actions", "États", "Comportement", "Squelette", "À éviter", "Décisions"])
         if (!new RegExp(`^## ${section}\\s*$`, "m").test(text)) errors.push(`${md} : section « ${section} » manquante`);
+      // Chaque zone dit sa responsabilité, quand la prendre et pourquoi (D-417).
+      const zones = (text.split(/^## Zones\s*$/m)[1] ?? "").split(/^## /m)[0];
+      if (!/^\| Zone \| Sa responsabilité ici \| Composant \| Quand, pourquoi \|$/m.test(zones))
+        errors.push(`${md} : le tableau des zones doit avoir les colonnes « Zone | Sa responsabilité ici | Composant | Quand, pourquoi » (D-417)`);
     }
   }
 }

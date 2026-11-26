@@ -1,5 +1,5 @@
 # Recette : File de tri
-Statut : validé (2026-11-26, par délégation de l'utilisateur) — Version : depuis 1.21.0
+Statut : validé (2026-11-26, par délégation de l'utilisateur) — Version : depuis 1.21.0 ; zones expliquées depuis 1.21.1
 Décision : D-408. Stories : « Recettes/File de tri ». Captures : [clair](TriageQueue-clair.png), [sombre](TriageQueue-sombre.png).
 
 ![File de tri, mode clair](TriageQueue-clair.png)
@@ -10,12 +10,16 @@ Décision : D-408. Stories : « Recettes/File de tri ». Captures : [clair](Tria
 - Pas pour une collection qu'on consulte sans la vider : recette « Liste et fiche ».
 
 ## Zones
-| Zone | Ce qui y va | Composant |
-|---|---|---|
-| Barre du haut, vues | « À trier », « Traitées » | vues de l'`AppShell` (D-021) |
-| Sidebar | Le nombre d'éléments à trier, sur l'entrée de la page | `count` de `Sidebar.Item` |
-| `main` | La file, de la plus urgente à la plus récente ; recherche, filtres (type, priorité) | `ListPage` `layout="list"`, `advanceOnRemove` |
-| Panneau de détail | L'élément sélectionné : le message, puis le tri (priorité, type, personne, date), puis l'historique replié | `Drawer` déclaratif |
+Une zone de l'écran, une responsabilité (D-404, D-417) : chaque zone ci-dessous dit ce qu'elle porte dans cette page, avec quel composant, quand la prendre et pourquoi.
+
+| Zone | Sa responsabilité ici | Composant | Quand, pourquoi |
+|---|---|---|---|
+| Onglet fixe « À trier » | La file des éléments à traiter, de la plus urgente à la plus récente | `ListPage` `layout="list"`, `advanceOnRemove` | L'usage de tous les jours : trier. La file prend toute la page, avec sa recherche et ses filtres. |
+| Onglet fixe « Traitées » | Les éléments déjà traités | `ListPage` | Un autre contexte : retrouver une décision, sans encombrer la file. |
+| Panneau de droite | La vue détail de l'élément sélectionné : le message, les décisions de tri, l'historique replié | `Drawer` déclaratif | Ouvert pendant tout le tri : on lit et on décide à côté de la file. Après une décision, l'élément suivant s'y ouvre. |
+| En-tête du panneau | Les décisions : « Traiter », « Répondre », les autres dans « … » | `header.actions` du `Drawer`, zone `section` | La décision porte sur l'élément ouvert : elle est en tête de son détail, pas dans la page. Libellés courts : le panneau est étroit. |
+| Entrée de la sidebar, compteur | Le nombre d'éléments à trier | `count` de `Sidebar.Item` | Ce qui attend l'utilisateur se voit sans ouvrir la page. |
+| Fenêtre | Un geste court : assigner, écrire une réponse | formulaire court en `Modal` | Elle passe devant le tri, puis le rend tel quel. |
 
 ## Actions
 | Action | Où | Forme |
@@ -62,4 +66,4 @@ Libellés courts dans l'en-tête du panneau : « Traiter », pas « Marquer comm
 - Des champs de saisie dans le panneau : une valeur se change par l'action de sa ligne.
 
 ## Décisions
-D-021, D-059, D-111, D-113, D-183, D-404, D-408, D-415.
+D-021, D-059, D-111, D-113, D-183, D-404, D-408, D-415, D-417.
