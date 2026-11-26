@@ -3,6 +3,7 @@ import { expect, fn, userEvent, waitFor, within } from "storybook/test";
 import { ChatMessage } from "./ChatMessage";
 import { MessageActions } from "./MessageActions";
 import { Markdown } from "../Markdown/Markdown";
+import { SourceList } from "../SourceList/SourceList";
 
 const meta: Meta<typeof ChatMessage> = {
   title: "Composants/ChatTranscript/ChatMessage",
@@ -216,5 +217,30 @@ export const Inactif: Story = {
     await expect(c.getByRole("button", { name: "Modifier le message" })).toBeDisabled();
     await expect(c.getByRole("button", { name: "Copier le message" })).toBeEnabled();
     await expect(c.getByRole("button", { name: "Citer dans la réponse" })).toBeEnabled();
+  },
+};
+
+/** Sources citées par la réponse, 8 px sous le texte ; un lien `[1]` du texte ouvre la même source (D-411). */
+export const AvecSources: Story = {
+  render: () => {
+    const open = fn();
+    const sources = [
+      { id: "s1", title: "Rapport trimestriel", detail: "p. 4", excerpt: "Le chiffre d'affaires progresse de 4 % sur le trimestre." },
+      { id: "s2", title: "Budget 2026", detail: "p. 12" },
+    ];
+    return (
+      <ChatMessage role="assistant" sources={<SourceList sources={sources} onOpen={(s) => open(s.id)} />}>
+        <Markdown onLinkPress={(href) => open(href.replace("#source-", "s"))}>{"Le chiffre d'affaires progresse de 4 % [1](#source-1). Les coûts restent dans le budget [2](#source-2)."}</Markdown>
+      </ChatMessage>
+    );
+  },
+  play: async ({ canvasElement }) => {
+    const c = within(canvasElement);
+    const text = canvasElement.querySelector<HTMLElement>("[data-message-body]")!;
+    const list = c.getByRole("list", { name: "Sources" });
+    const gap = list.getBoundingClientRect().top - text.getBoundingClientRect().bottom;
+    await expect(gap).toBeGreaterThanOrEqual(8);
+    await expect(gap).toBeLessThanOrEqual(24);
+    await expect(c.getAllByRole("button", { name: /^Source/ })).toHaveLength(2);
   },
 };

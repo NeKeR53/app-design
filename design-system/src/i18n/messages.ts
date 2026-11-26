@@ -463,6 +463,13 @@ export interface SocleMessages {
   transcriptShowEarlier: string;
   /* ChatPage (D-382) */
   chatPageDropHere: string;
+  /* SourceList (D-411) */
+  sourcesLabel: string;
+  sourceName: (n: number, title: string, detail?: string) => string;
+  /* EmptyState, suggestions (D-413) */
+  suggestionsLabel: string;
+  /* ListPage, dépôt de fichiers (D-416) */
+  listPageDropHere: string;
   messageYou: string;
   messageAssistant: string;
   messageActions: string;
@@ -930,6 +937,10 @@ export const frenchMessages: SocleMessages = {
   transcriptNewMessages: "Nouveaux messages",
   transcriptShowEarlier: "Afficher les messages précédents",
   chatPageDropHere: "Déposez les fichiers pour les joindre",
+  sourcesLabel: "Sources",
+  sourceName: (n, t, d) => `Source ${n} : ${t}${d ? `, ${d}` : ""}`,
+  suggestionsLabel: "Suggestions",
+  listPageDropHere: "Déposez les fichiers pour les ajouter",
   messageYou: "Vous",
   messageAssistant: "Assistant",
   messageActions: "Actions du message",

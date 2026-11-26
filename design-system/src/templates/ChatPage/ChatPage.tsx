@@ -3,7 +3,8 @@
  * Barre d'outils de Page, relevé en enfant, pied aligné sur la colonne de 760 px de ChatTranscript,
  * zone de dépôt de fichiers sur toute la page (DOM, ou survol signalé par l'app).
  */
-import { useEffect, useState, type DragEvent, type ReactNode } from "react";
+import type { ReactNode } from "react";
+import { DropOverlay, useFileDrop } from "../../lib/fileDrop";
 import type { Action } from "../../patterns/ActionBar/ActionBar";
 import { useMessages } from "../../provider/SocleProvider";
 import { PageToolbar } from "../Page/Page";
@@ -35,8 +36,6 @@ export interface ChatPageProps {
   dropLabel?: string;
 }
 
-const hasFiles = (event: DragEvent) => event.dataTransfer.types.includes("Files");
-
 /** Page de chat : barre d'outils, relevé, pied aligné sur la colonne du relevé (D-382). */
 export function ChatPage({
   children,
@@ -54,44 +53,8 @@ export function ChatPage({
   dropLabel,
 }: ChatPageProps) {
   const m = useMessages();
-  const [domDragging, setDomDragging] = useState(false);
   const hasBar = toolbar !== undefined || (actions && actions.length > 0);
-  const canDrop = Boolean(onDropFiles);
-
-  // Un glisser qui finit hors de la page (abandon, dépôt ailleurs) ne laisse pas le cadre affiché.
-  useEffect(() => {
-    if (!domDragging) return;
-    const reset = () => setDomDragging(false);
-    window.addEventListener("dragend", reset);
-    window.addEventListener("drop", reset);
-    return () => {
-      window.removeEventListener("dragend", reset);
-      window.removeEventListener("drop", reset);
-    };
-  }, [domDragging]);
-
-  const onDragOver = (event: DragEvent<HTMLDivElement>) => {
-    if (!canDrop || !hasFiles(event)) return;
-    event.preventDefault();
-    event.dataTransfer.dropEffect = "copy";
-    setDomDragging(true);
-  };
-  const onDragLeave = (event: DragEvent<HTMLDivElement>) => {
-    // Passer d'un enfant à l'autre déclenche aussi « dragleave » : seule la sortie de la page compte.
-    if (event.relatedTarget instanceof Node && event.currentTarget.contains(event.relatedTarget)) return;
-    setDomDragging(false);
-  };
-  const onDrop = (event: DragEvent<HTMLDivElement>) => {
-    if (!canDrop) return;
-    setDomDragging(false);
-    // Déjà pris par ChatComposer (son propre dépôt) : pas de second ajout.
-    if (event.defaultPrevented) return;
-    event.preventDefault();
-    const files = [...event.dataTransfer.files];
-    if (files.length) onDropFiles?.(files);
-  };
-
-  const showDrop = isDraggingFiles || domDragging;
+  const { dropProps, showDrop } = useFileDrop({ onDropFiles, isDraggingFiles });
 
   return (
     <div className="socle-chat-page flex h-full min-h-0 flex-col bg-surface font-sans text-md text-fg">
@@ -109,9 +72,7 @@ export function ChatPage({
         data-chat-page-main=""
         data-dragging={showDrop || undefined}
         className="relative flex min-h-0 flex-1 flex-col [container-type:size]"
-        onDragOver={onDragOver}
-        onDragLeave={onDragLeave}
-        onDrop={onDrop}
+        {...dropProps}
       >
         <div className="flex min-h-0 flex-1 flex-col">{children}</div>
         {(alerts || question || composer || options) && (
@@ -130,14 +91,7 @@ export function ChatPage({
             )}
           </div>
         )}
-        {showDrop && (
-          <div
-            data-chat-page-drop=""
-            className="pointer-events-none absolute inset-3 z-60 grid place-items-center rounded-md border border-dashed border-accent bg-[color-mix(in_oklch,var(--accent)_6%,var(--surface))] text-center text-md text-accent"
-          >
-            {dropLabel ?? m.chatPageDropHere}
-          </div>
-        )}
+        {showDrop && <DropOverlay marker="data-chat-page-drop" label={dropLabel ?? m.chatPageDropHere} />}
       </div>
     </div>
   );

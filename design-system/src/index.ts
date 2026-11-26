@@ -5,7 +5,7 @@
  * au fur et à mesure qu'ils sont spécifiés (mode `define`) puis codés.
  * Styles : importer `socle-ui/styles.css` une fois dans l'app.
  */
-export const SOCLE_VERSION = "1.20.0";
+export const SOCLE_VERSION = "1.21.0";
 
 export { SocleProvider, useSocle } from "./provider/SocleProvider";
 export { frenchMessages } from "./i18n/messages";
@@ -53,7 +53,7 @@ export type { ProgressBarProps } from "./components/ProgressBar/ProgressBar";
 export { Skeleton, SkeletonGroup } from "./components/Skeleton/Skeleton";
 export type { SkeletonProps, SkeletonGroupProps } from "./components/Skeleton/Skeleton";
 export { EmptyState } from "./components/EmptyState/EmptyState";
-export type { EmptyStateProps } from "./components/EmptyState/EmptyState";
+export type { EmptyStateProps, EmptyStateSuggestion } from "./components/EmptyState/EmptyState";
 export { Link } from "./components/Link/Link";
 export type { LinkProps } from "./components/Link/Link";
 export { Code } from "./components/Code/Code";
@@ -258,7 +258,7 @@ export const RadioGroup = RadioButtonGroup;
 export type RadioGroupProps = RadioButtonGroupProps;
 /* Tri à trois états, portée de la sélection (D-345, D-347). */
 export type { TableSortProps, TableBaseProps } from "./components/Table/Table";
-export type { ListPageSelection } from "./templates/ListPage/ListPage";
+export type { ListPageSelection, ListPageThumbnail } from "./templates/ListPage/ListPage";
 /* Nouveaux composants P2 et P3 (FileUpload, SegmentedControl, Pagination, Spinner, Card). */
 export { FileUpload } from "./components/FileUpload/FileUpload";
 export type { FileUploadProps } from "./components/FileUpload/FileUpload";
@@ -322,3 +322,7 @@ export { BackgroundTasks } from "./components/BackgroundTasks/BackgroundTasks";
 export type { BackgroundTask, BackgroundTaskKind, BackgroundTasksProps } from "./components/BackgroundTasks/BackgroundTasks";
 export { ChoicePrompt } from "./components/ChoicePrompt/ChoicePrompt";
 export type { ChoicePromptProps, ChoiceOption, ChoicePromptAnswer } from "./components/ChoicePrompt/ChoicePrompt";
+
+/* Sources citées (D-411) */
+export { SourceList } from "./components/SourceList/SourceList";
+export type { SourceListProps, SourceItem } from "./components/SourceList/SourceList";

@@ -12,6 +12,7 @@ Design system React partagé par les apps web et desktop (Tauri). Package : `soc
 
 - Principes : [docs/principles.md](docs/principles.md)
 - Où va une information : [docs/layout-rules.md](docs/layout-rules.md)
+- Recettes de pages (base de connaissances, tableau de bord, file de tri, liste et fiche, catalogue) : `src/recipes/`, livrées dans `ai/recipes/` (D-405)
 - Journal des décisions : [docs/decisions.md](docs/decisions.md)
 - Intégrer Socle dans une app : [docs/claude-md-app.md](docs/claude-md-app.md)
 

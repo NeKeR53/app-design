@@ -56,7 +56,7 @@ const preview: Preview = {
     layout: "fullscreen",
     options: {
       storySort: {
-        order: ["Fondations", "Composants", "Patterns", "Gabarits", "Règles"],
+        order: ["Fondations", "Composants", "Patterns", "Gabarits", "Recettes", "Règles"],
       },
     },
   },

@@ -89,3 +89,52 @@ export const AccesRefuse: Story = {
     await expect(within(canvasElement).getAllByRole("heading", { name: "Vous n'avez pas accès à cette liste" })).toHaveLength(2);
   },
 };
+
+const QUESTIONS = [
+  "Quelle est la durée de garantie des drivers ?",
+  "Quel délai pour une suspension en finition sur mesure ?",
+  "Peut-on poser l'applique Halo dans une salle de bain ?",
+  "Quels documents faut-il joindre à un retour ?",
+  "Cinquième question, ignorée",
+];
+
+/** Pistes pour commencer : des questions d'exemple sous la phrase, 4 au plus (D-413). */
+export const Suggestions: Story = {
+  args: {
+    title: "Posez une question à vos documents",
+    description: "La réponse cite ses sources : un clic ouvre le document à la bonne page.",
+    icon: undefined,
+  },
+  render: (args) => {
+    const onPress = fn();
+    return <EmptyState {...args} suggestions={QUESTIONS.map((q, i) => ({ id: String(i), label: q, onPress: () => onPress(q) }))} />;
+  },
+  play: async ({ canvasElement }) => {
+    const c = within(canvasElement);
+    const list = c.getByRole("list", { name: "Suggestions" });
+    const buttons = within(list).getAllByRole("button");
+    await expect(buttons).toHaveLength(4);
+    await expect(c.queryByText("Cinquième question, ignorée")).toBeNull();
+    // Texte à gauche, sur toute la largeur du bloc.
+    await expect(getComputedStyle(buttons[0]!).textAlign).toBe("left");
+    await userEvent.click(buttons[1]!);
+    await expect(buttons[1]).toHaveTextContent("Quel délai pour une suspension en finition sur mesure ?");
+  },
+};
+
+/** Avec une action principale, les pistes passent dessous ; en `compact`, l'écart se resserre. */
+export const SuggestionsEtAction: Story = {
+  args: { title: "Aucune recherche enregistrée", description: "Lancez une recherche fréquente :", icon: undefined },
+  render: (args) => (
+    <div className="flex flex-col gap-4">
+      <EmptyState {...args} action={<Primary />} suggestions={[{ id: "a", label: "Factures impayées", onPress: fn() }, { id: "b", label: "Clients sans contact depuis 6 mois", onPress: fn() }]} />
+      <EmptyState {...args} size="compact" suggestions={[{ id: "a", label: "Factures impayées", onPress: fn() }]} />
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    const c = within(canvasElement);
+    const action = c.getByRole("button", { name: "Nouveau projet" });
+    const first = c.getAllByRole("button", { name: "Factures impayées" })[0]!;
+    await expect(first.getBoundingClientRect().top).toBeGreaterThan(action.getBoundingClientRect().bottom);
+  },
+};

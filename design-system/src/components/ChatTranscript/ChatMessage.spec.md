@@ -13,7 +13,8 @@ Ne pas l'utiliser pour :
 2. Corps (obligatoire) :
    - utilisateur : bulle à droite, 85 % de la colonne au plus, `--surface-side`, rayon `--radius-md`, marges 8 × 12 px, texte `--fs-md`, retours à la ligne gardés ;
    - assistant : sans bulle, pleine largeur, texte `--fs-md`, interligne 1,6 (l'app passe `Markdown`).
-3. Rangée d'actions (facultatif) : `actions` (un `MessageActions`) puis `meta` en `--fg-3`, `--fs-sm`.
+3. Sources (facultatif, assistant seulement) : `SourceList`, 8 px sous le texte (D-411).
+4. Rangée d'actions (facultatif) : `actions` (un `MessageActions`) puis `meta` en `--fg-3`, `--fs-sm`.
    - utilisateur : 4 px sous la bulle, à 6 px du bord droit ; un pont de 4 px garde le survol ;
    - assistant : dans la marge basse de 28 px, 4 px sous le texte, à 6 px du bord gauche.
 
@@ -29,6 +30,7 @@ Ne pas l'utiliser pour :
 | `role` | `"user" \| "assistant"` | — (obligatoire) | Auteur du message. |
 | `children` | `ReactNode` | — (obligatoire) | Texte, ou `Markdown` pour une réponse. |
 | `attachments` | `ReactNode` | aucun | Pièces jointes (`AttachmentChip`). |
+| `sources` | `ReactNode` | aucun | Sources citées par la réponse (`SourceList`), 8 px sous le texte ; masquées pendant la modification. Réponse de l'assistant seulement (D-411). |
 | `actions` | `ReactNode` | aucun | Un `MessageActions`. |
 | `meta` | `ReactNode` | aucun | Heure, état d'envoi (« Envoyé · 14:02 »). |
 | `author` | `string` | « Vous » / « Assistant » (i18n) | Nom de l'`article`, lu par le lecteur d'écran. |
@@ -54,6 +56,7 @@ Ne pas l'utiliser pour :
 | Actions de l'assistant dans sa marge basse, à gauche, 4 px sous le texte | verrouillé | `Assistant` |
 | Actions visibles au survol et dès que le focus entre dans le message | verrouillé | `ActionsAuFocus` |
 | « Modifier » remplace le corps par un champ (voir `MessageActions`) | réglable par l'app (`onEdit`) | `Modifier` |
+| Sources sous le texte de la réponse, 8 px d'écart (D-411) | réglable par l'app (`sources`) | `AvecSources` |
 
 ## Contenu
 - `meta` : heure courte et état d'envoi, séparés par « · » ; pas de phrase.
@@ -78,10 +81,10 @@ Sans objet : l'état d'envoi « Échec » passe par `meta`.
 Dans `ChatTranscript` seulement.
 
 ## Composition
-Contient `Button` (modification). Reçoit `MessageActions`, `Markdown`, `AttachmentChip`.
+Contient `Button` (modification). Reçoit `MessageActions`, `Markdown`, `AttachmentChip`, `SourceList`.
 
 ## Décisions
-D-375
+D-375, D-411
 
 ## Questions ouvertes
 Aucune.

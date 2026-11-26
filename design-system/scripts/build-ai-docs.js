@@ -3,6 +3,7 @@
 //   ai/AI.md          ← point d'entrée : mise en place, règles, liste des exports
 //   ai/specs/<X>.md   ← spec de chaque composant, pattern et gabarit exporté
 //   ai/docs/*.md      ← principes, règles de placement, journal des décisions
+//   ai/recipes/       ← recettes de pages : <Nom>.md et ses captures <Nom>-clair.png, <Nom>-sombre.png (D-405)
 import { cpSync, existsSync, mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 
@@ -34,6 +35,37 @@ for (const kind of ["components", "patterns", "templates"]) {
   }
 }
 
+// Recettes de pages (D-405) : la fiche et ses deux captures, à plat dans ai/recipes/ (la fiche les cite par leur nom).
+const recipesDir = join(root, "src", "recipes");
+const recipes = [];
+if (existsSync(recipesDir)) {
+  mkdirSync(join(out, "recipes"), { recursive: true });
+  for (const name of readdirSync(recipesDir)) {
+    const md = join(recipesDir, name, `${name}.recipe.md`);
+    if (!existsSync(md)) continue;
+    const text = readFileSync(md, "utf8");
+    cpSync(md, join(out, "recipes", `${name}.md`));
+    for (const suffix of ["clair", "sombre"]) {
+      const png = join(recipesDir, name, `${name}-${suffix}.png`);
+      if (existsSync(png)) cpSync(png, join(out, "recipes", `${name}-${suffix}.png`));
+    }
+    const title = text.match(/^# Recette : (.+)$/m)?.[1]?.trim() ?? name;
+    const when = ((text.split(/^## Quand la prendre\s*$/m)[1] ?? "").split(/^## /m)[0].match(/^- (.+)$/m)?.[1] ?? "").trim();
+    recipes.push({ name, title, when });
+  }
+  recipes.sort((a, b) => a.title.localeCompare(b.title, "fr"));
+}
+const recipesSection = recipes.length
+  ? `## Recettes de pages
+Avant d'écrire une page, pars de la recette la plus proche : ses zones, ses composants, ses actions, ses états, son squelette et sa capture de référence, en clair et en sombre (D-405). Compare ta page à la capture.
+
+| Recette | Quand la prendre | Fiche | Captures |
+|---|---|---|---|
+${recipes.map((r) => `| ${r.title} | ${r.when.replace(/\|/g, "\\|")} | [${r.name}](recipes/${r.name}.md) | [clair](recipes/${r.name}-clair.png), [sombre](recipes/${r.name}-sombre.png) |`).join("\n")}
+
+`
+  : "";
+
 // Anciens noms dépréciés : « export const Dialog = Modal; » dans index.ts (D-336).
 const deprecated = [...index.matchAll(/^export const ([A-Z]\w*) = ([A-Z]\w*);/gm)].map((m) => [m[1], m[2]]);
 const deprecatedSection = deprecated.length
@@ -55,9 +87,10 @@ Ce fichier est livré avec le package. Il décrit la version installée : lis-le
 - Ne jamais créer un composant qui en remplace un existant, ni copier, ni surcharger son style : pas de \`className\` ni de \`style\` sur un composant de \`${pkg.name}\`, pas de couleur en dur.
 - Si la spec ne prévoit pas ce qui est demandé (option, variante, état, comportement) : répondre « Hors design », ne rien implémenter localement, et proposer \`/design propose\`.
 - Placer les informations selon [docs/layout-rules.md](docs/layout-rules.md).
+- Avant d'écrire une page, partir de la recette la plus proche (section suivante, [recipes/](recipes/)).
 - Avant d'utiliser un composant, lire sa spec dans [specs/](specs/) : options, comportements, contenu, accessibilité.
 
-## Mise en place
+${recipesSection}## Mise en place
 1. À la racine de l'app : \`import "${pkg.name}/styles.css";\` puis envelopper l'app dans \`<SocleProvider>\` (accent, densité, plateforme, préfixe de mémorisation, libellés traduits avec \`messages\`, thème d'organisation avec \`theme\`).
 2. Avec Tailwind, dans le CSS principal : \`@import "tailwindcss";\` puis \`@import "${pkg.name}/theme.css";\` (seules les couleurs Socle existent).
 3. Garde-fous, selon le linter de l'app :
@@ -76,6 +109,7 @@ ${entries.map((e) => `### ${e.name}\n${e.options || "Voir la spec."}\n`).join("\
 - [Principes](docs/principles.md)
 - [Règles de placement](docs/layout-rules.md)
 - [Journal des décisions](docs/decisions.md)
+- [Recettes de pages](recipes/)
 `;
 writeFileSync(join(out, "AI.md"), ai);
-console.log(`ai/ écrit : AI.md, ${entries.length} specs, 3 docs`);
+console.log(`ai/ écrit : AI.md, ${entries.length} specs, 3 docs, ${recipes.length} recettes`);
