@@ -2,6 +2,11 @@
 
 Versions selon semver (règle 6 du skill design) : une nouvelle option facultative est une version mineure ; un changement qui casse l'existant est une version majeure, avec une note de migration.
 
+## [1.23.1] — 2026-11-26
+
+### Corrigé
+- `Sidebar.TreeItem` : le point de non-lu passe de 6 px à 8 px, la taille du point « En cours » (D-395) ; les deux points tombent dans la même colonne (D-421). Les autres points du kit ne changent pas.
+
 ## [1.23.0] — 2026-11-26
 
 ### Ajouté

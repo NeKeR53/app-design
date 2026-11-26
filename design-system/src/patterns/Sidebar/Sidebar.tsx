@@ -456,7 +456,8 @@ function TwoLine({ id, title, subtitle, meta, status, unread, indicator, actions
                         {INDICATORS[indicator].icon}
                       </HintTooltip>
                     )}
-                    {unread && <span role="img" aria-label={m.unread} className="size-1.5 shrink-0 rounded-full bg-highlight" />}
+                    {/* Point de non-lu de 8 px, la taille du point « En cours » : les deux tombent dans la même colonne (D-421). */}
+                    {unread && <span role="img" aria-label={m.unread} className="size-2 shrink-0 rounded-full bg-highlight" />}
                     {status === "warning" && (
                       <span role="img" aria-label={m.toDo} className="text-warning">
                         <AlertTriangle size={14} />
