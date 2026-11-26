@@ -1,5 +1,5 @@
 # Recette : Base de connaissances
-Statut : validé (2026-11-26, par délégation de l'utilisateur) — Version : depuis 1.21.0
+Statut : validé (2026-11-26, par délégation de l'utilisateur) — Version : depuis 1.21.0 ; zones expliquées depuis 1.21.1
 Décision : D-406. Stories : « Recettes/Base de connaissances ». Captures : [clair](KnowledgeBase-clair.png), [sombre](KnowledgeBase-sombre.png).
 
 ![Base de connaissances, mode clair](KnowledgeBase-clair.png)
@@ -10,15 +10,17 @@ Décision : D-406. Stories : « Recettes/Base de connaissances ». Captures : [c
 - Pas pour une conversation avec un agent sans documents : `ChatPage` seule.
 
 ## Zones
-| Zone | Ce qui y va | Composant |
-|---|---|---|
-| Barre du haut, vues | « Questions », « Documents » | vues de l'`AppShell` (D-021) |
-| Barre du haut, actions | « Nouvelle conversation » (vue Questions) | `ActionBar` zone `topbar` |
-| `main`, vue Questions | Les questions et les réponses, la saisie en bas | `ChatPage`, `ChatTranscript`, `ChatMessage`, `Markdown`, `SourceList`, `ChatComposer` |
-| `main`, vue Documents | Les documents et leur état d'indexation, la recherche, le filtre d'état | `ListPage` en tableau |
-| Panneau de détail, vue Questions | La source ouverte : passage cité, puis le document à la page citée | `Drawer` déclaratif, `DocumentViewer` avec `page` |
-| Panneau de détail, vue Documents | Le document sélectionné : propriétés, aperçu, actions | `Drawer` déclaratif, `DocumentViewer` |
-| Toute la page | Dépôt de PDF, dans les deux vues | `onDropFiles` de `ChatPage` et de `ListPage` |
+Une zone de l'écran, une responsabilité (D-404, D-417) : chaque zone ci-dessous dit ce qu'elle porte dans cette page, avec quel composant, quand la prendre et pourquoi.
+
+| Zone | Sa responsabilité ici | Composant | Quand, pourquoi |
+|---|---|---|---|
+| Onglet fixe « Questions », le premier | Poser une question, lire la réponse et ses sources | `ChatPage` : `ChatTranscript`, `ChatMessage` avec `sources` (`SourceList`), `Markdown`, `ChatComposer` | L'usage de tous les jours : il s'ouvre en premier. Un usage par onglet : la conversation garde toute la page, sans documents ni dépôt au-dessus. |
+| Panneau de droite, onglet « Questions » | La vue détail de la source citée : le passage, puis le PDF à la page citée | `Drawer` déclaratif ; `DocumentViewer` avec `page` | Quand l'utilisateur clique sur une source (puce ou lien `[n]`). La réponse reste visible à côté : on vérifie sans quitter la conversation, et une autre source change le détail. |
+| Onglet fixe « Documents » | Gérer les documents : les voir, chercher, filtrer, ajouter, réindexer | `ListPage` en tableau | Un autre usage du même domaine, donc son onglet. La collection prend toute la page, avec sa recherche et ses filtres. |
+| Panneau de droite, onglet « Documents » | La vue détail du document sélectionné : état, pages, passages, aperçu, actions | `Drawer` déclaratif ; `DocumentViewer` | Quand l'utilisateur choisit un document. La liste reste à côté ; un autre choix change le détail. |
+| Barre du haut, en-tête du gabarit | Les actions : « Ajouter des documents » (en-tête de la liste), « Nouvelle conversation » (barre du haut) | `ActionBar` zones `header` et `topbar` | Une action est toujours au même endroit, en haut. Jamais un bloc d'ajout au milieu de la page : il prendrait la place du travail. |
+| Toute la page | Le dépôt de PDF, dans les deux onglets | `onDropFiles` de `ChatPage` et de `ListPage` | Quand l'app reçoit des fichiers glissés. On dépose là où l'on est, sans viser un cadre. |
+| État vide du relevé | Les questions d'exemple | `EmptyState` avec `suggestions` | Tant qu'aucune question n'est posée. Les exemples partent avec l'état vide : ils n'encombrent plus la page ensuite. |
 
 Le panneau a la largeur d'un formulaire (`detailWidth="form"`) et s'agrandit (`detailExpandable`) : un PDF s'y lit.
 
@@ -79,4 +81,4 @@ Une app dont la coquille est fournie garde la même répartition : chaque vue es
 - Les documents dans la vue Questions : ils ont leur vue.
 
 ## Décisions
-D-021, D-111, D-382, D-404, D-406, D-411, D-412, D-413, D-416.
+D-021, D-111, D-382, D-404, D-406, D-411, D-412, D-413, D-416, D-417.

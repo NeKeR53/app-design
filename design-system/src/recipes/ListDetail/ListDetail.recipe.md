@@ -1,5 +1,5 @@
 # Recette : Liste et fiche
-Statut : validé (2026-11-26, par délégation de l'utilisateur) — Version : depuis 1.21.0
+Statut : validé (2026-11-26, par délégation de l'utilisateur) — Version : depuis 1.21.0 ; zones expliquées depuis 1.21.1
 Décision : D-409. Stories : « Recettes/Liste et fiche ». Captures : [clair](ListDetail-clair.png), [sombre](ListDetail-sombre.png).
 
 ![Liste et fiche, mode clair](ListDetail-clair.png)
@@ -10,12 +10,17 @@ Décision : D-409. Stories : « Recettes/Liste et fiche ». Captures : [clair](L
 - Pas pour une file qu'on vide : recette « File de tri ». Pas pour des éléments qu'on reconnaît à leur image : recette « Catalogue ».
 
 ## Zones
-| Zone | Ce qui y va | Composant |
-|---|---|---|
-| Barre du haut, vues | Facultatives : des vues de la collection (« Clients », « Fournisseurs ») ; un élément ouvert en entier | vues de l'`AppShell` (D-021) |
-| `main` | La collection sur toute la page : tableau, recherche, trois filtres au plus | `ListPage` (tableau) |
-| Panneau de détail | La fiche de l'élément sélectionné : coordonnées, propriétés, notes, derniers échanges | `Drawer` déclaratif |
-| Fenêtre | Créer, modifier : une saisie courte | `useOpenForm` (six champs au plus) ; `FormPage` au-delà |
+Une zone de l'écran, une responsabilité (D-404, D-417) : chaque zone ci-dessous dit ce qu'elle porte dans cette page, avec quel composant, quand la prendre et pourquoi.
+
+| Zone | Sa responsabilité ici | Composant | Quand, pourquoi |
+|---|---|---|---|
+| Contenu | La collection : chercher, filtrer, comparer | `ListPage` en tableau | Toujours : c'est la tâche de la page. Elle prend toute la largeur. |
+| Panneau de droite | La vue détail de l'élément sélectionné : sa fiche (coordonnées, propriétés, notes, derniers échanges) | `Drawer` déclaratif | Quand l'utilisateur choisit un élément. La fiche se lit à côté de la liste ; un autre choix change la fiche. |
+| Barre du haut, en-tête du gabarit | Les actions de la collection : « Nouveau contact », « Importer un fichier » | `ActionBar` zone `header` | Une action est toujours au même endroit. Quand la liste est vide, l'action principale revient dans son état vide. |
+| Fenêtre | Créer, modifier | formulaire court en `Modal` (six champs au plus) ; `FormPage` au-delà | Un geste court qui se termine : il passe devant la liste, puis la rend telle quelle. |
+| Onglet ouvert (facultatif) | Un élément ouvert en entier | `DetailPage` dans une vue fermable | Quand l'élément se lit ou se traite en entier (un dossier, une facture). La liste reste intacte dans son onglet. |
+| Onglets fixes (facultatifs) | Des contextes de la collection : « Clients », « Fournisseurs » | vues de la barre du haut | Quand l'utilisateur passe d'un contexte à l'autre. Sinon, un filtre suffit. |
+| Sous-entrées de la sidebar (facultatives) | Des objets que l'utilisateur suit : un client, une société | `children` de `Sidebar.Item` (sous-pages, D-056) | Quand il revient toujours aux mêmes objets : l'objet devient un lieu, et la page reste une seule. |
 
 ## Actions
 | Action | Où | Forme |
@@ -61,4 +66,4 @@ Décision : D-409. Stories : « Recettes/Liste et fiche ». Captures : [clair](L
 - Un rendu de cellule libre : le type de la colonne décide (D-172).
 
 ## Décisions
-D-021, D-111, D-170 à D-178, D-180 à D-185, D-404, D-409.
+D-021, D-111, D-170 à D-178, D-180 à D-185, D-404, D-409, D-417.

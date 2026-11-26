@@ -111,7 +111,7 @@ Ce qui reste va dans le gabarit. Une collection est une `ListPage` qui prend tou
 - Un échec de connexion est un seul message en haut du panneau, jamais sous un champ.
 
 ## Recettes de pages (D-405)
-Avant d'écrire une page, partir de la recette la plus proche (`ai/recipes/`) : ses zones, ses composants, ses états et sa capture de référence, en clair et en sombre.
+Avant d'écrire une page, partir de la recette la plus proche (`ai/recipes/`) : ses zones, ses composants, ses états et sa capture de référence, en clair et en sombre. Pour chaque zone, la recette dit sa responsabilité, quand la prendre et pourquoi (D-417).
 
 | La page… | Recette |
 |---|---|
