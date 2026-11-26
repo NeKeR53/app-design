@@ -470,6 +470,8 @@ export interface SocleMessages {
   suggestionsLabel: string;
   /* ListPage, dépôt de fichiers (D-416) */
   listPageDropHere: string;
+  /* Page, dépôt de fichiers (D-418) */
+  pageDropHere: string;
   messageYou: string;
   messageAssistant: string;
   messageActions: string;
@@ -941,6 +943,7 @@ export const frenchMessages: SocleMessages = {
   sourceName: (n, t, d) => `Source ${n} : ${t}${d ? `, ${d}` : ""}`,
   suggestionsLabel: "Suggestions",
   listPageDropHere: "Déposez les fichiers pour les ajouter",
+  pageDropHere: "Déposez les fichiers pour les ajouter",
   messageYou: "Vous",
   messageAssistant: "Assistant",
   messageActions: "Actions du message",

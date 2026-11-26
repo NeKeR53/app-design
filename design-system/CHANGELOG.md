@@ -2,6 +2,11 @@
 
 Versions selon semver (règle 6 du skill design) : une nouvelle option facultative est une version mineure ; un changement qui casse l'existant est une version majeure, avec une note de migration.
 
+## [1.22.0] — 2026-11-26
+
+### Ajouté
+- `Page` : dépôt de fichiers sur toute la page, `onDropFiles`, `isDraggingFiles`, `dropLabel` ; même cadre que `ListPage`, posé sur la barre d'outils, le contenu et le pied (D-418). Libellé `messages.pageDropHere`. Sans ces options, rien ne change.
+
 ## [1.21.1] — 2026-11-26
 
 ### Modifié

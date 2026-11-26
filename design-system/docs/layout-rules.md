@@ -74,6 +74,7 @@ Une app décrit ses actions par des données (`Action`) et les passe à `ActionB
 - `footer` : pied fixe, contenu libre (total, sélection).
 - Pas d'en-tête : le nom de la page est dans la barre du haut. Aucun HTML stylé côté app.
 - Toute la largeur : `width="text"` (760 px) reste pour un texte à lire, jamais pour un tableau de bord.
+- Fichiers déposés : sur toute la page, jamais dans un bloc de dépôt ; le survol vu par le système (Tauri) passe par `isDraggingFiles` (D-418).
 
 ## Vue d'ensemble d'abord (D-404)
 Une page se comprend d'un coup d'œil. Avant de poser des blocs, on répartit ce qui a déjà sa zone :
