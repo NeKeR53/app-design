@@ -392,7 +392,7 @@
 - Date : 2026-11-21
 - Portée : Sidebar
 - Décision : deux signes facultatifs.
-  - Non-lu : un point `--accent` de 6 px à droite du titre d'un `TreeItem` (option `unread`). Dans la ligne résumé, le nombre de non-lus est en `--accent-text`. Le lecteur d'écran annonce « non lu ».
+  - Non-lu : un point `--accent` de 6 px (8 px depuis D-421) à droite du titre d'un `TreeItem` (option `unread`). Dans la ligne résumé, le nombre de non-lus est en `--accent-text`. Le lecteur d'écran annonce « non lu ».
   - Compteur : un nombre en `--fs-sm`, `--fg-3` (`--fg-2` sur l'élément sélectionné), à droite d'un `Sidebar.Item` (option `count`). Au-delà de 99, il affiche « 99+ ».
 - Raison : ce sont des signes de sens (D-001) ; le bleu reste réservé au non-lu, et le compteur reste gris pour ne pas charger la navigation.
 - Options écartées : aucun signe ; compteur en pastille colorée.
@@ -3012,3 +3012,11 @@
 - Raison : une app veut parfois que les enfants d'un élément se voient d'emblée (des tâches lancées par une conversation, à suivre d'un coup d'œil) ; seule la page courante ouvrait un parent. Le trait, décidé en D-042, ne s'affichait plus.
 - Options écartées : un état contrôlé (`expandedIds`, `onExpandedChange`) sur `Sidebar`, comme `TreeView` (plus lourd, et la sidebar mémorise déjà les choix) ; `defaultExpandedIds` sur `Sidebar` (l'app décrit ses lignes, l'option se lit mieux sur la ligne) ; `defaultExpanded` aussi sur `Sidebar.Item` (pas demandé : plus petite option) ; effacer le choix mémorisé quand le défaut change (le choix de l'utilisateur prime).
 - Validation : par délégation de l'utilisateur, 2026-11-26 — docs/validation/components/Sidebar-v3.html. Stories `Enfants`, `SousPages`, `DeplieParDefaut`, `ChoixMemoriseLEmporte`.
+
+## D-421 — Sidebar.TreeItem : point de non-lu de 8 px, la taille du point « En cours »
+- Date : 2026-11-26
+- Portée : Sidebar.TreeItem, option `unread` (modifie D-044)
+- Décision : le point de non-lu passe de 6 px à 8 px, la taille du point « En cours » (D-395). Sa couleur (`--highlight`), sa place à droite du titre et son annonce « non lu » ne changent pas. Les deux points tombent dans la même colonne. Les autres points du kit ne changent pas : `NotificationCenter` (6 px), `Tabs` (6 px), `Badge` (7 px).
+- Raison : dans Alfred, une coordinatrice et ses délégués, l'un sous l'autre, montraient un point gris de 8 px (« Au travail ») et un point bleu de 6 px (« À consulter ») : deux tailles pour deux signes de même rang, et des centres décalés de 1 px. 8 px est la dernière taille décidée par l'utilisateur (D-395) ; le point de non-lu de `List` fait déjà 8 px ; un point gris qui pulse ne doit pas rétrécir.
+- Options écartées : ramener le point « En cours » à 6 px (contraire à D-395 ; un point qui pulse se perd à 6 px) ; une seule taille pour tous les points du kit (hors du besoin : ceux de `NotificationCenter`, `Tabs` et `Badge` ne partagent jamais une colonne avec ceux de la sidebar).
+- Validation : par délégation de l'utilisateur, 2026-11-26 — docs/validation/components/Sidebar-v4.html. Story `PointsDeMemeTaille`.

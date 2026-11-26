@@ -339,6 +339,30 @@ export const EnCours: Story = {
   },
 };
 
+/** « En cours », non lu et alerte, l'un sous l'autre : les deux points font 8 px et tombent dans la même colonne (D-395, D-421). */
+export const PointsDeMemeTaille: Story = {
+  render: () => (
+    <div className="h-[300px] w-(--side-w)">
+      <Sidebar selectedId="x" onSelectionChange={() => {}} account={<Sidebar.Account name="Camille Martin" onSettings={() => {}} />}>
+        <Sidebar.Section id="conv" title="Conversations">
+          <Sidebar.TreeItem id="a" title="Analyse des logs" subtitle="Claude Code" indicator="activity" />
+          <Sidebar.TreeItem id="b" title="Tickets en onglets" subtitle="Claude Code" unread />
+          <Sidebar.TreeItem id="c" title="Module Prefect" subtitle="Codex" status="warning" />
+        </Sidebar.Section>
+      </Sidebar>
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    const c = within(canvasElement);
+    const activity = c.getByRole("row", { name: /^Analyse des logs/ }).querySelector("[data-activity]")!.getBoundingClientRect();
+    const unread = within(c.getByRole("row", { name: /^Tickets en onglets/ })).getByRole("img", { name: "Non lu" }).getBoundingClientRect();
+    await expect([activity.width, activity.height]).toEqual([8, 8]);
+    await expect([unread.width, unread.height]).toEqual([8, 8]);
+    // Même colonne : les deux points ont le même centre horizontal.
+    await expect(unread.left + unread.width / 2).toBeCloseTo(activity.left + activity.width / 2, 1);
+  },
+};
+
 const created = fn();
 
 /** « + » sur le titre d'une section : au survol seulement, il ne replie pas la section (D-392). */
