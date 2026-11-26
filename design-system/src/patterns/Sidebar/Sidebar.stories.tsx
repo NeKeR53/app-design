@@ -35,7 +35,7 @@ const Doc = () => (
   </svg>
 );
 
-function Demo({ initial = "home" }: { initial?: string }) {
+function Demo({ initial = "home", deplie = false }: { initial?: string; deplie?: boolean }) {
   const [sel, setSel] = useState(initial);
   return (
     <div className="flex h-[640px]">
@@ -75,7 +75,7 @@ function Demo({ initial = "home" }: { initial?: string }) {
           <Sidebar.Item id="valid" icon={<Doc />} label="À valider" count={3} />
           <Sidebar.Item id="arch" icon={<Doc />} label="Archives" indicator="locked" />
           <Sidebar.Section id="todo" title="À traiter" limit={3}>
-            <Sidebar.TreeItem id="t1" title="Relance fournisseur" subtitle="Validation du devis attendue" meta="Achats" status="warning" actions={<DropdownMenu.Item label="Archiver" />}>
+            <Sidebar.TreeItem id="t1" title="Relance fournisseur" subtitle="Validation du devis attendue" meta="Achats" status="warning" actions={<DropdownMenu.Item label="Archiver" />} defaultExpanded={deplie}>
               <Sidebar.TreeItem id="t1a" title="Devis Atelier Nord" subtitle="Envoyé le 12 nov." meta="Achats" unread />
               <Sidebar.TreeItem id="t1b" title="Devis Méca Services" subtitle="Reçu le 14 nov." meta="Achats" />
             </Sidebar.TreeItem>
@@ -91,6 +91,8 @@ function Demo({ initial = "home" }: { initial?: string }) {
   );
 }
 const sel = (c: HTMLElement) => within(c).getByTestId("sel").textContent;
+/** Traits du connecteur d'une ligne (D-042) : 2 pour un enfant (trait + branche), 1 pour le dernier (coude), 0 sinon. */
+const lines = (row: Element) => row.querySelectorAll(".border-tree-line").length;
 
 export const ParDefaut: Story = { render: () => <Demo /> };
 
@@ -129,6 +131,37 @@ export const Enfants: Story = {
     await userEvent.click(summary);
     await waitFor(() => expect(c.getByRole("row", { name: /Devis Atelier Nord/ })).toBeVisible());
     await expect(c.queryByRole("row", { name: /2 éléments/ })).toBeNull();
+    // Trait et coude sous les enfants dépliés (D-042, corrigé par D-420) : trait + branche, puis coude.
+    await expect({ enfant1: lines(c.getByRole("row", { name: /Devis Atelier Nord/ })), dernier: lines(c.getByRole("row", { name: /Devis Méca Services/ })) }).toEqual({ enfant1: 2, dernier: 1 });
+  },
+};
+
+/** `defaultExpanded` : le parent s'ouvre déplié, avec le trait ; pas de ligne résumé (D-420). */
+export const DeplieParDefaut: Story = {
+  render: () => <Demo deplie />,
+  play: async ({ canvasElement }) => {
+    const c = within(canvasElement);
+    await expect(c.getByRole("row", { name: /Devis Atelier Nord/ })).toBeVisible();
+    await expect(c.queryByRole("row", { name: /2 éléments/ })).toBeNull();
+    await expect(c.getByRole("button", { name: /^Replier Relance fournisseur/ })).toBeVisible();
+    await expect(lines(c.getByRole("row", { name: /Devis Méca Services/ }))).toBe(1);
+    await expect(localStorage.getItem("storybook:sidebar:open")).toBeNull();
+  },
+};
+
+/** Le choix de l'utilisateur, mémorisé, l'emporte sur `defaultExpanded` (D-420). */
+export const ChoixMemoriseLEmporte: Story = {
+  render: () => <Demo deplie />,
+  beforeEach: () => {
+    localStorage.setItem("storybook:sidebar:open", JSON.stringify({ t1: false }));
+  },
+  play: async ({ canvasElement }) => {
+    const c = within(canvasElement);
+    await expect(c.queryByRole("row", { name: /Devis Atelier Nord/ })).toBeNull();
+    await expect(c.getByRole("row", { name: /2 éléments/ })).toBeVisible();
+    await userEvent.click(c.getByRole("row", { name: /2 éléments/ }));
+    await waitFor(() => expect(c.getByRole("row", { name: /Devis Atelier Nord/ })).toBeVisible());
+    await expect(localStorage.getItem("storybook:sidebar:open")).toContain('"t1":true');
   },
 };
 
@@ -138,6 +171,8 @@ export const SousPages: Story = {
   play: async ({ canvasElement }) => {
     const c = within(canvasElement);
     await expect(c.getByRole("row", { name: /Rapports/ })).toHaveAttribute("aria-selected", "true");
+    // Trait et coude sous les sous-pages (D-042, corrigé par D-420).
+    await expect({ rapports: lines(c.getByRole("row", { name: /Rapports/ })), modeles: lines(c.getByRole("row", { name: /Modèles/ })) }).toEqual({ rapports: 2, modeles: 1 });
     await userEvent.click(c.getByRole("button", { name: /Replier Documents/ }));
     await waitFor(() => expect(c.queryByRole("row", { name: /Modèles/ })).toBeNull());
     await expect(sel(canvasElement)).toBe("rep");
