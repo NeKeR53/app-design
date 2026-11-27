@@ -36,6 +36,8 @@
   --color-warning: var(--warning);
   --color-danger: var(--danger);
   --color-danger-fg: var(--danger-fg);
+  --color-win-close: var(--win-close);
+  --color-win-close-fg: var(--win-close-fg);
   --color-info: var(--info);
   --color-tip-bg: var(--tip-bg);
   --color-tip-fg: var(--tip-fg);

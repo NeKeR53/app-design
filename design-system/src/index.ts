@@ -5,12 +5,12 @@
  * au fur et à mesure qu'ils sont spécifiés (mode `define`) puis codés.
  * Styles : importer `socle-ui/styles.css` une fois dans l'app.
  */
-export const SOCLE_VERSION = "1.23.1";
+export const SOCLE_VERSION = "1.24.0";
 
 export { SocleProvider, useSocle } from "./provider/SocleProvider";
 export { frenchMessages } from "./i18n/messages";
 export type { SocleMessages } from "./i18n/messages";
-export type { SocleProviderProps, Platform, Density, ColorScheme } from "./provider/SocleProvider";
+export type { SocleProviderProps, Platform, Density, ColorScheme, WindowControls } from "./provider/SocleProvider";
 export { THEME_TOKENS } from "./provider/theme";
 export type { SocleTheme, ThemeToken, ThemeMode, ThemeIcons } from "./provider/theme";
 export { ICON_NAMES } from "./icons";

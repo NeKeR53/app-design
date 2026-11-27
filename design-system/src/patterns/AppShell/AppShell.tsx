@@ -1,12 +1,12 @@
 /*
  * Cadre commun de toutes les apps. Spec : AppShell.spec.md.
- * Décisions : D-003, D-016 à D-021, D-025 à D-027, D-220 à D-222, D-240 à D-242, D-370 (D-250 à D-252 retirées par D-253).
+ * Décisions : D-003, D-016 à D-021, D-025 à D-027, D-220 à D-222, D-240 à D-242, D-370, D-422 (D-250 à D-252 retirées par D-253).
  */
 import { Children, isValidElement, useEffect, useId, useLayoutEffect, useRef, useState, type KeyboardEvent as ReactKeyboardEvent, type PointerEvent as ReactPointerEvent, type ReactElement, type ReactNode } from "react";
 import { Button } from "react-aria-components/Button";
 import { Dialog as AriaDialog } from "react-aria-components/Dialog";
 import { Modal, ModalOverlay } from "react-aria-components/Modal";
-import { useMessages, useSocle, useStoredState } from "../../provider/SocleProvider";
+import { useMessages, useSocle, useStoredState, type WindowControls as WindowControlsActions } from "../../provider/SocleProvider";
 import { buttonReset, cx, focusRing } from "../../lib/cx";
 import { ChevronLeft, ChevronRight, ListDetail, Maximize, Minimize, MoreHorizontal, PanelLeft, X } from "../../icons";
 import { IconButton } from "../../components/IconButton/IconButton";
@@ -108,7 +108,7 @@ function useMedia(query: string): boolean {
 }
 
 export function AppShell({ pageTitle, views, activeView, onViewChange, onViewClose, actions, sidebar, detail, detailWidth: detailKind = "default", detailExpandable = false, isDetailOpen, onDetailOpenChange, tabbar, history = true, children }: AppShellProps) {
-  const { isMac, platform, isFullscreen } = useSocle();
+  const { isMac, platform, isFullscreen, windowControls } = useSocle();
   const m = useMessages();
   const isMobile = useMedia("(max-width: 640px)");
   const isTablet = useMedia("(min-width: 641px) and (max-width: 1024px)");
@@ -276,7 +276,7 @@ export function AppShell({ pageTitle, views, activeView, onViewChange, onViewClo
         </a>
       )}
       {/* ---------- Barre supérieure ---------- */}
-      <header data-socle-zone="bar" className="flex min-w-0 border-b border-line" {...dragRegion}>
+      <header data-socle-zone="bar" className="relative flex min-w-0 border-b border-line" {...dragRegion}>
         <div
           className={cx(
             "flex shrink-0 items-center gap-0.5 px-2",
@@ -317,6 +317,7 @@ export function AppShell({ pageTitle, views, activeView, onViewChange, onViewClo
             {detail && <IconButton icon={<ListDetail />} label={m.detailPanel} shortcut="Mod+." isSelected={showDetail} onChange={toggleDetail} />}
           </div>
         </div>
+        {winControls && windowControls && <WindowButtons controls={windowControls} />}
       </header>
 
       {/* ---------- Corps ---------- */}
@@ -390,6 +391,54 @@ export function AppShell({ pageTitle, views, activeView, onViewChange, onViewClo
           </AriaDialog>
         </Modal>
       </ModalOverlay>
+    </div>
+  );
+}
+
+/** Tracés des boutons de fenêtre, à la manière de Windows 11 : 10 × 10 px, trait de 1 px (D-422). */
+const winGlyph = { width: 10, height: 10, viewBox: "0 0 10 10", fill: "none", stroke: "currentColor", strokeWidth: 1, "aria-hidden": true } as const;
+const MinimizeGlyph = () => (
+  <svg {...winGlyph}>
+    <path d="M0 5.5h10" />
+  </svg>
+);
+const MaximizeGlyph = () => (
+  <svg {...winGlyph}>
+    <rect x="0.5" y="0.5" width="9" height="9" rx="1" />
+  </svg>
+);
+const RestoreGlyph = () => (
+  <svg {...winGlyph}>
+    <rect x="0.5" y="2.5" width="7" height="7" rx="1" />
+    <path d="M2.5 2.5V1.5a1 1 0 0 1 1-1h5a1 1 0 0 1 1 1v5a1 1 0 0 1-1 1h-1" />
+  </svg>
+);
+const CloseGlyph = () => (
+  <svg {...winGlyph}>
+    <path d="M0.5 0.5l9 9M9.5 0.5l-9 9" />
+  </svg>
+);
+
+/**
+ * Boutons de fenêtre Windows (D-020, D-422) : réduire, agrandir ou restaurer, fermer, 46 px de large chacun, toute la
+ * hauteur de la barre, collés au bord droit, dans les 138 px réservés. Le survol de « Fermer » passe au rouge de Windows.
+ * Ce ne sont pas des zones de déplacement. Hors de la tabulation, comme ceux du système (Alt+F4, Win+flèches au clavier).
+ */
+function WindowButtons({ controls }: { controls: WindowControlsActions }) {
+  const m = useMessages();
+  const maximized = controls.isMaximized ?? false;
+  const base = cx(buttonReset, "grid h-full w-[46px] place-items-center text-fg outline-none");
+  return (
+    <div data-socle-window-controls="" className="absolute top-0 right-0 bottom-0 flex">
+      <Button excludeFromTabOrder aria-label={m.minimizeWindow} onPress={controls.onMinimize} className={cx(base, "data-hovered:bg-hover data-pressed:bg-selected")}>
+        <MinimizeGlyph />
+      </Button>
+      <Button excludeFromTabOrder aria-label={maximized ? m.restoreWindow : m.maximizeWindow} onPress={controls.onToggleMaximize} className={cx(base, "data-hovered:bg-hover data-pressed:bg-selected")}>
+        {maximized ? <RestoreGlyph /> : <MaximizeGlyph />}
+      </Button>
+      <Button excludeFromTabOrder aria-label={m.closeWindow} onPress={controls.onClose} className={cx(base, "data-hovered:bg-win-close data-hovered:text-win-close-fg data-pressed:bg-win-close/90 data-pressed:text-win-close-fg")}>
+        <CloseGlyph />
+      </Button>
     </div>
   );
 }

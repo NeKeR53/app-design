@@ -30,6 +30,8 @@
   --warning: #b45309;
   --danger: #c62828;
   --danger-fg: #ffffff;         /* texte sur fond danger (D-104) */
+  --win-close: #c42b1c;         /* survol de « Fermer », bouton de fenêtre Windows, mêmes valeurs en sombre (D-422) */
+  --win-close-fg: #ffffff;
   --info: #1d4ed8;
 
   /* Couleurs ANSI d'un terminal ou d'un journal (D-281) : au moins 4,5:1 sur --surface. */
