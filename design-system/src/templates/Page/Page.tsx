@@ -212,7 +212,12 @@ export function PageToolbar({
   return (
     <div role="toolbar" {...(actionsLabel ? { "aria-label": actionsLabel } : {})} className="shrink-0 border-b border-line">
       <PageColumn width={width} layout="flex items-center gap-2 py-2.5">
-        <div data-page-toolbar className="flex min-w-0 flex-1 items-center gap-2 overflow-x-auto whitespace-nowrap [scrollbar-width:thin] [&>*]:shrink-0">
+        <div
+          data-page-toolbar
+          // Le contrôle atteint au clavier défile jusqu'à la vue, anneau compris (D-425) : le navigateur
+          // ne fait pas défiler un contrôle à moitié visible.
+          onFocus={(e) => (e.target as HTMLElement).scrollIntoView?.({ block: "nearest", inline: "nearest" })}
+          className="socle-focus-room flex min-w-0 flex-1 items-center gap-2 overflow-x-auto whitespace-nowrap [scrollbar-width:thin] [&>*]:shrink-0">
           {toolbar}
         </div>
         {actions && actions.length > 0 && (
@@ -291,7 +296,7 @@ export function Page({
           onActionDone={onActionDone}
         />
       )}
-      <div data-page-content className={cx("min-h-0 flex-1", fill && state === "ready" ? "flex flex-col overflow-hidden" : "overflow-auto")}>
+      <div data-page-content className={cx("min-h-0 flex-1", fill && state === "ready" ? "flex flex-col overflow-hidden" : "socle-focus-scroll overflow-auto")}>
         <PageColumn width={width} layout={cx(fill && state === "ready" ? "flex min-h-0 flex-1 flex-col pt-(--pad) [&>*]:min-h-0 [&>*]:flex-1" : "flex flex-col gap-6 py-(--pad)")}>
           {content}
         </PageColumn>

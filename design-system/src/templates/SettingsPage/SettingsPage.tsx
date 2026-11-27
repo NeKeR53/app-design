@@ -537,7 +537,7 @@ function CategoryBody({ category, narrow }: { category: SettingsCategory; narrow
 const navItem = cx(
   "socle-btn flex h-(--row-h) w-full min-w-0 shrink-0 cursor-default items-center gap-2 rounded-md px-2 text-left text-md text-fg-2 outline-none select-none",
   "hover:bg-hover hover:text-fg aria-[current=page]:bg-selected aria-[current=page]:text-fg",
-  "focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-focus focus-visible:outline-solid",
+  "focus-visible:outline-2 focus-visible:-outline-offset-2 outline-focus focus-visible:outline-solid",
 );
 
 /** Largeur du gabarit : la requête de conteneur de D-208. */
@@ -604,7 +604,7 @@ export function SettingsPage({ groups, selectedId, onSelectionChange, footerLink
       {showNav && (
         <nav
           aria-label={m.settingsSections}
-          className={cx("flex min-h-0 min-w-0 flex-col gap-0.5 overflow-auto px-2 py-3", narrow ? "w-full bg-surface" : "border-r border-line bg-surface-side")}
+          className={cx("socle-focus-scroll flex min-h-0 min-w-0 flex-col gap-0.5 overflow-auto px-2 py-3", narrow ? "w-full bg-surface" : "border-r border-line bg-surface-side")}
         >
           {/* La recherche prend la largeur de la navigation, pas ses 320 px de barre d'outils (D-202). */}
           <div className="mb-2.5 min-w-0 shrink-0 [&_[role=search]]:w-full" onKeyDown={onSearchKey}>
@@ -650,7 +650,7 @@ export function SettingsPage({ groups, selectedId, onSelectionChange, footerLink
           ref={contentRef}
           aria-labelledby={titleId}
           className={cx(
-            "min-h-0 min-w-0 flex-1 overflow-auto pb-8",
+            "socle-focus-scroll min-h-0 min-w-0 flex-1 overflow-auto pb-8",
             narrow ? "px-4 pt-3" : "px-(--settings-pad) pt-5",
           )}
         >

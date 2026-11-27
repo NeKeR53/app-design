@@ -111,7 +111,7 @@ const NO_ITEMS: MentionItem[] = [];
 const VARIANTS = {
   plain: "min-h-7 max-h-60 flex-1 p-1 text-lg leading-5",
   field:
-    "min-h-(--row-h) max-h-60 w-full rounded-md border border-line-strong bg-surface px-2.5 py-1.5 text-md leading-(--lh) transition-colors duration-[var(--dur-fast)] ease-standard hover:border-fg-3 focus:outline-2 focus:outline-solid focus:outline-focus focus:outline-offset-1",
+    "min-h-(--row-h) max-h-60 w-full rounded-md border border-line-strong bg-surface px-2.5 py-1.5 text-md leading-(--lh) transition-colors duration-[var(--dur-fast)] ease-standard hover:border-fg-3 focus:outline-2 focus:outline-solid outline-focus focus:outline-offset-1",
 };
 
 export function MentionInput({

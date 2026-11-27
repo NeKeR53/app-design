@@ -18,7 +18,7 @@ import {
 } from "react";
 import { type AnsiSegment, type AnsiStyle, parseAnsi } from "../../lib/ansi";
 import { copyText } from "../../lib/clipboard";
-import { cx } from "../../lib/cx";
+import { cx, nativeInsetFocusRing } from "../../lib/cx";
 import { Toolbar } from "react-aria-components/Toolbar";
 import { ArrowDownToLine, Check, ChevronDown, ChevronUp, Clock, Copy, ListX, WrapText } from "../../icons";
 import { useMessages } from "../../provider/SocleProvider";
@@ -672,7 +672,8 @@ export function LogViewer({
           }}
           style={{ "--log-gutter": `${digits + 2}ch` } as CSSProperties}
           className={cx(
-            "min-h-0 min-w-0 flex-1 overflow-auto py-1 font-mono text-[12.5px] leading-[18px] outline-none focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-focus",
+            "min-h-0 min-w-0 flex-1 overflow-auto py-1 font-mono text-[12.5px] leading-[18px]",
+            nativeInsetFocusRing,
             viewEmpty && "hidden",
           )}
         >

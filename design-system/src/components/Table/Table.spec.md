@@ -55,7 +55,7 @@ Variante signature d'un thème d'organisation (`theme.signature.tableHeader`, D-
 | Ligne par défaut | Sans fond. |
 | Ligne survolée | Fond `--hover`. |
 | Ligne sélectionnée | Fond `--selected`, fixe au survol (D-039). Texte tertiaire en `--fg-2` (AA). |
-| Focus clavier | Anneau de focus `--accent` sur la ligne ou la cellule. |
+| Focus clavier | Anneau commun (`--focus`, 2 px) tracé dans la ligne, ou dans la cellule atteinte aux flèches ; jamais l'anneau du navigateur. La zone qui défile s'arrête à `--focus-room` du contrôle (D-425). |
 | Ligne de groupe | Sans fond ; survol `--hover` ; jamais sélectionnée. Repliée : chevron tourné vers la droite, lignes masquées, titre gardé (D-272). |
 | Chargement | Premier chargement : 6 lignes squelettes. Nouvelle recherche : anciens résultats gardés, barre de 2 px `--accent` en haut de la zone, `aria-busy` (D-084). |
 | Vide | Géré par le gabarit (`empty` de ListPage) : icône, titre, phrase, action principale. |

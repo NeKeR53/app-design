@@ -25,7 +25,7 @@ En ligne (défaut) ; bloc (`block`).
 - Pas de variante sans fond (D-168), pas de `className`.
 
 ## États
-Bloc : focus clavier avec anneau `--accent`.
+Bloc : focus clavier avec l'anneau commun (`--focus`, 2 px, à 1 px du bord, D-425).
 
 ## Comportement
 | Règle | Niveau de réglage | Test (story) |

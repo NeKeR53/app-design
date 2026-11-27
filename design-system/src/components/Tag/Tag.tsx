@@ -10,7 +10,7 @@ import { Label } from "react-aria-components/Label";
 import { Tag as RACTag, TagGroup as RACTagGroup, TagList, type Selection } from "react-aria-components/TagGroup";
 import { Text } from "react-aria-components/Text";
 import { useMessages } from "../../provider/SocleProvider";
-import { buttonReset, cx } from "../../lib/cx";
+import { buttonReset, cx, focusRing } from "../../lib/cx";
 import { Check, X } from "../../icons";
 import { defined } from "../Field/Field";
 
@@ -53,7 +53,7 @@ const TAG = cx(
   "transition-colors duration-[var(--dur-fast)] ease-standard",
   "data-selected:bg-selected data-selected:font-medium",
   "data-disabled:opacity-40",
-  "outline-none data-focus-visible:outline-2 data-focus-visible:outline-solid data-focus-visible:outline-focus data-focus-visible:outline-offset-1",
+  focusRing,
 );
 
 const toIds = (s: Selection): string[] => (s === "all" ? [] : Array.from(s, String));
@@ -84,7 +84,7 @@ export function TagGroup({
     >
       <Label className={cx("w-fit text-sm font-medium text-fg", hideLabel && "sr-only")}>{label}</Label>
       <TagList
-        className="flex flex-wrap gap-1 outline-none"
+        className={cx("flex flex-wrap gap-1", focusRing)}
         {...defined({ renderEmptyState: emptyText ? () => <span className="text-sm text-fg-3">{emptyText}</span> : undefined })}
       >
         {children}
@@ -126,9 +126,9 @@ export function Tag({ id, children, isDisabled }: TagProps) {
               excludeFromTabOrder
               className={cx(
                 buttonReset,
-                "inline-grid size-[18px] shrink-0 cursor-default place-items-center rounded-[3px] text-fg-3 outline-none",
+                "inline-grid size-[18px] shrink-0 cursor-default place-items-center rounded-[3px] text-fg-3",
                 "data-hovered:bg-line-strong data-hovered:text-fg data-disabled:opacity-100",
-                "data-focus-visible:outline-2 data-focus-visible:outline-solid data-focus-visible:outline-focus",
+                focusRing,
               )}
             >
               <X size={12} aria-hidden />

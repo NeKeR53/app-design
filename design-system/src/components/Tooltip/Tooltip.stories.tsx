@@ -2,6 +2,7 @@ import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect, userEvent, waitFor, within } from "storybook/test";
 import { Button } from "react-aria-components/Button";
 import { Tooltip } from "./Tooltip";
+import { cx, focusRing } from "../../lib/cx";
 
 const meta: Meta<typeof Tooltip> = {
   title: "Composants/Tooltip",
@@ -12,7 +13,7 @@ export default meta;
 type Story = StoryObj<typeof Tooltip>;
 
 const Target = ({ label }: { label: string }) => (
-  <Button className="rounded-md border border-line px-3 py-1 text-md text-fg outline-none data-focus-visible:outline-2 data-focus-visible:outline-accent">{label}</Button>
+  <Button className={cx("rounded-md border border-line px-3 py-1 text-md text-fg", focusRing)}>{label}</Button>
 );
 const body = () => within(document.body);
 

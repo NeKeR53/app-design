@@ -2,6 +2,23 @@
 
 Versions selon semver (règle 6 du skill design) : une nouvelle option facultative est une version mineure ; un changement qui casse l'existant est une version majeure, avec une note de migration.
 
+## [1.26.0] — 2026-11-27
+
+### Ajouté
+- Token `--focus-room` (`--focus-w` + `--focus-offset`, 3 px) et classes `socle-focus-room` et `socle-focus-scroll` : un conteneur qui défile réserve la place de l'anneau de focus (D-425).
+- Story `Fondations/Anneau de focus` : parcours au clavier de tous les contrôles, avec la mesure de l'anneau (un seul, entier, 2 px, `--focus`).
+
+### Corrigé
+- Anneau de focus (D-425) : un seul anneau, entier, aux mêmes tokens partout.
+  - Barre d'outils de `Page` : l'anneau d'une barre de recherche, d'un `Select` ou d'un bouton n'est plus rogné en haut et en bas (il ne restait que deux traits bleus, à gauche et à droite). Le contrôle atteint au clavier défile jusqu'à la vue.
+  - Anneau rogné : barre de `MarkdownEditor`, croix d'une mention dans `MentionInput`. Les zones qui défilent (contenu de `Page`, `DetailPage`, `SettingsPage`, `Modal`, `Popover`, `AppShell`, `Table`, `ChatTranscript`, `ChatPage`, tuiles) arrêtent le contrôle atteint au clavier à 3 px du bord.
+  - Anneau absent : `Code` en bloc, aperçu de `MarkdownEditor`, lignes de `LogViewer`, résumé d'erreurs des formulaires et ses liens, alerte de `LoginPage`, tableau de `Markdown`, lien d'évitement d'`AppShell`, groupe d'étiquettes vide.
+  - `Table` : la cellule atteinte aux flèches a l'anneau Socle, plus celui du navigateur.
+  - `DatePicker` : un seul anneau, sur le cadre ; le bouton calendrier se signale par son fond. `SearchInput` : « Effacer » et « +n » font de même.
+  - `Terminal`, `InlineEdit` : anneau commun de 2 px à 1 px du bord, au lieu d'un trait de 1 px collé au bord accent. `AgentActivity` : anneau à 1 px du bord, comme partout.
+  - L'anneau ne passe plus par la couleur du texte quand il apparaît (blanc sur une case cochée, noir sur un bouton) : sa couleur est posée au repos.
+- Classes internes `nativeFocusRing`, `nativeInsetFocusRing` et `focusWithinRing` dans `lib/cx`, à côté de `focusRing` et `insetFocusRing`.
+
 ## [1.25.0] — 2026-11-27
 
 ### Ajouté

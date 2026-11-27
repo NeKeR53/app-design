@@ -45,7 +45,7 @@ Aucune.
 |---|---|
 | Par défaut | Bord `--line-strong`. |
 | Survol | Bord `--fg-3`. |
-| Focus | Anneau `--accent` de 2 px, décalé de 1 px. |
+| Focus | Anneau `--focus` (accent) de 2 px, décalé de 1 px ; un seul, sur le cadre ; un bouton dans le cadre se signale par son fond (D-425). |
 | Erreur | Bord `--danger` ; la phrase d'erreur remplace l'aide. Le focus garde l'anneau `--accent`. |
 | Lecture seule | Fond `--surface-side`, bord `--line`, cadenas de 14 px en `--fg-3` à droite ; texte sélectionnable ; pas de survol (D-131). |
 | Désactivé | Opacité 40 % sur tout le champ, libellé compris. |

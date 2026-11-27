@@ -13,7 +13,7 @@ import { CharCount, FieldLabel, ReadOnlyLock, fieldBox, fieldRoot, type FieldBas
 import { IconButton } from "../IconButton/IconButton";
 import { Markdown } from "../Markdown/Markdown";
 import { Bold, CodeIcon, Eye, Heading1, Heading2, Heading3, Italic, LinkIcon, ListDetail, ListOrdered, TextQuote } from "../../icons";
-import { cx } from "../../lib/cx";
+import { cx, nativeInsetFocusRing } from "../../lib/cx";
 import { useMessages } from "../../provider/SocleProvider";
 import type { SocleMessages } from "../../i18n/messages";
 import { COMMAND_SHORTCUTS, type MarkdownCommand } from "./commands";
@@ -249,7 +249,7 @@ export function MarkdownEditor({
         className={cx(fieldBox({ isReadOnly }), "@container relative flex flex-col overflow-hidden p-0", fill && "min-h-0 flex-1")}
       >
         {!isReadOnly && (
-          <Toolbar aria-label={m.formatting} className="flex flex-none flex-wrap items-center gap-0.5 border-b border-line px-1 py-0.5">
+          <Toolbar aria-label={m.formatting} className="flex flex-none flex-wrap items-center gap-0.5 border-b border-line px-1 py-(--focus-room)">
             {GROUPS.map((group, i) => (
               <span key={i} className="contents">
                 {i > 0 && <Separator orientation="vertical" />}
@@ -282,7 +282,7 @@ export function MarkdownEditor({
                 role="region"
                 aria-label={m.preview}
                 tabIndex={0}
-                className="absolute inset-0 overflow-auto px-3 py-2 outline-none focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-focus @max-[560px]:static @max-[560px]:max-h-(--md-max-height)"
+                className={cx("absolute inset-0 overflow-auto px-3 py-2 @max-[560px]:static @max-[560px]:max-h-(--md-max-height)", nativeInsetFocusRing)}
               >
                 {rendered}
               </div>
@@ -293,7 +293,7 @@ export function MarkdownEditor({
               role="region"
               aria-label={m.preview}
               tabIndex={0}
-              className="max-h-(--md-max-height) min-h-[calc(var(--md-min-rows)*1.6em+16px)] overflow-auto px-3 py-2 outline-none focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-focus"
+              className={cx("max-h-(--md-max-height) min-h-[calc(var(--md-min-rows)*1.6em+16px)] overflow-auto px-3 py-2", nativeInsetFocusRing)}
             >
               {rendered}
             </div>

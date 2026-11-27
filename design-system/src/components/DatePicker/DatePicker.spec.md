@@ -51,6 +51,7 @@ Ceux de `Field` (par défaut, survol, focus, erreur, lecture seule, désactivé,
 | Segment qui a le focus | Fond `--accent`, texte `--accent-fg`. |
 | Segment vide | Exemple de la langue (« jj », « mm », « aaaa ») en `--fg-3`. |
 | Volet ouvert | Anneau de focus sur le cadre. |
+| Bouton calendrier au clavier | Fond `--hover` ; l'anneau reste sur le cadre, jamais un second anneau (D-425). |
 | Jour d'aujourd'hui | Trait intérieur `--line-strong`, graisse 600. |
 | Jour choisi | Fond `--accent`, texte `--accent-fg`. |
 | Jours d'une plage | Fond `--accent` à 14 % ; début et fin en `--accent`. |

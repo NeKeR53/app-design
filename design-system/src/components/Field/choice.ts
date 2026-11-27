@@ -10,9 +10,9 @@ export const choiceRow = "socle-box group/choice flex min-h-(--target-min) w-fit
 export const alignFirstLine = (size: 16 | 18) =>
   size === 16 ? "mt-[calc((var(--fs-md)*var(--lh)_-_16px)/2)]" : "mt-[calc((var(--fs-md)*var(--lh)_-_18px)/2)]";
 
-/** Anneau de focus clavier autour de l'indicateur. */
+/** Anneau de focus clavier autour de l'indicateur ; couleur posée au repos, sans fondu depuis le blanc de la coche (D-425). */
 export const indicatorFocus =
-  "group-data-focus-visible/choice:outline-2 group-data-focus-visible/choice:outline-solid group-data-focus-visible/choice:outline-focus group-data-focus-visible/choice:outline-offset-1";
+  "outline-focus group-data-focus-visible/choice:outline-2 group-data-focus-visible/choice:outline-solid group-data-focus-visible/choice:outline-offset-1";
 
 /** Case ou rond (D-135) : bord marqué, accent quand c'est coché, rouge en erreur. */
 export const indicator = cx(

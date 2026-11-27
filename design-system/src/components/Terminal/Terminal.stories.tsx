@@ -171,7 +171,9 @@ export const SortieClavier: Story = {
     await waitFor(() => expect(canvasElement.querySelector(".xterm-helper-textarea")).not.toBeNull(), { timeout: 4000 });
     const input = canvasElement.querySelector<HTMLTextAreaElement>(".xterm-helper-textarea")!;
     input.focus();
-    await expect(canvas.getByRole("region", { name: "Console" }).getAttribute("class")).toContain("focus-within:border-focus");
+    // Anneau commun sur le cadre (D-425) : 2 px, à 1 px du bord.
+    const frame = getComputedStyle(canvas.getByRole("region", { name: "Console" }));
+    await expect([frame.outlineStyle, frame.outlineWidth, frame.outlineOffset]).toEqual(["solid", "2px", "1px"]);
     await userEvent.keyboard("{F6}");
     await expect(canvas.getByRole("button", { name: "Après" })).toHaveFocus();
     input.focus();

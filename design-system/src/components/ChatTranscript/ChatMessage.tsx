@@ -6,7 +6,7 @@
  */
 import { createContext, useLayoutEffect, useRef, useState, type ReactNode, type RefObject } from "react";
 import { Button } from "../Button/Button";
-import { cx } from "../../lib/cx";
+import { cx, nativeFocusRing } from "../../lib/cx";
 import { useMessages } from "../../provider/SocleProvider";
 
 export type ChatMessageRole = "user" | "assistant";
@@ -185,7 +185,7 @@ function MessageEditor({ edit, onClose }: { edit: MessageEdit; onClose: () => vo
         }}
         className={cx(
           "socle-box block max-h-[50vh] w-full resize-none overflow-auto rounded-md border border-line-strong bg-field px-3 py-2 font-sans text-md leading-[1.6] text-fg",
-          "outline-none focus-visible:outline-2 focus-visible:outline-solid focus-visible:outline-focus focus-visible:outline-offset-1",
+          nativeFocusRing,
         )}
       />
       <div className="flex gap-2">

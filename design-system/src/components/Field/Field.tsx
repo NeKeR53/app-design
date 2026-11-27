@@ -41,14 +41,14 @@ export function fieldBox({ isReadOnly = false }: { isReadOnly?: boolean | undefi
   return cx(
     "socle-box m-0 w-full min-w-0 rounded-md border font-sans text-md text-fg outline-none",
     "transition-colors duration-[var(--dur-fast)] ease-standard",
-    "data-focused:outline-2 data-focused:outline-solid data-focused:outline-focus data-focused:outline-offset-1",
-    "data-focus-visible:outline-2 data-focus-visible:outline-solid data-focus-visible:outline-focus data-focus-visible:outline-offset-1",
+    "outline-focus data-focused:outline-2 data-focused:outline-solid data-focused:outline-offset-1",
+    "data-focus-visible:outline-2 data-focus-visible:outline-solid outline-focus data-focus-visible:outline-offset-1",
     isReadOnly
       ? "border-line bg-surface-side"
       : cx(
           "border-line-strong bg-surface data-hovered:border-fg-3",
           "data-invalid:border-danger data-invalid:data-hovered:border-danger group-data-invalid/field:border-danger",
-          "group-data-open/field:outline-2 group-data-open/field:outline-solid group-data-open/field:outline-focus group-data-open/field:outline-offset-1",
+          "group-data-open/field:outline-2 group-data-open/field:outline-solid outline-focus group-data-open/field:outline-offset-1",
         ),
   );
 }

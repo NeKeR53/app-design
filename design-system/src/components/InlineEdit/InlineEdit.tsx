@@ -106,7 +106,8 @@ export function InlineEdit({
     <span
       className={cx(
         "socle-box relative block min-w-0 border-transparent hover:border-line-strong",
-        "has-[button:focus-visible]:border-focus has-[button:focus-visible]:outline-1 has-[button:focus-visible]:outline-solid has-[button:focus-visible]:outline-focus",
+        // Anneau commun (D-425) sur la valeur : le bouton qui reçoit le focus est masqué.
+        "outline-focus has-[button:focus-visible]:outline-2 has-[button:focus-visible]:outline-solid has-[button:focus-visible]:outline-offset-1",
         box,
       )}
       onClick={(e) => {

@@ -86,7 +86,7 @@ export function MessageQueue({ items, onReorder, onEdit, onRemove, onSendNow, is
                 type="button"
                 aria-label={m.queueMove(index + 1)}
                 aria-describedby={`${hintId}-move`}
-                className="socle-btn inline-grid size-5 shrink-0 cursor-grab touch-none place-items-center rounded-md text-fg-2 hover:text-fg focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-focus focus-visible:outline-solid"
+                className="socle-btn inline-grid size-5 shrink-0 cursor-grab touch-none place-items-center rounded-md text-fg-2 hover:text-fg focus-visible:outline-2 focus-visible:-outline-offset-2 outline-focus focus-visible:outline-solid"
                 onPointerDown={(event) => {
                   const row = event.currentTarget.closest("li");
                   if (row) startDrag(event, item.id, row);

@@ -7,7 +7,7 @@ import { useContext, useId, useLayoutEffect, useRef, type KeyboardEvent, type Re
 import { Label, Slider as RACSlider, SliderFill, SliderOutput, SliderStateContext, SliderThumb, SliderTrack } from "react-aria-components/Slider";
 import { I18nProvider } from "react-aria-components/I18nProvider";
 import { useMessages } from "../../provider/SocleProvider";
-import { cx } from "../../lib/cx";
+import { cx, focusRing } from "../../lib/cx";
 import { defined, fieldRoot, type FieldWidth } from "../Field/Field";
 
 /** Une valeur, ou une plage `[début, fin]` à deux poignées. */
@@ -50,7 +50,7 @@ export interface SliderProps<T extends SliderValue = number> {
 const thumbClass = cx(
   "top-1/2 size-4 cursor-default rounded-full border-2 border-primary bg-surface",
   "transition-[outline-color] duration-[var(--dur-fast)] ease-standard",
-  "outline-none data-focus-visible:outline-2 data-focus-visible:outline-solid data-focus-visible:outline-focus data-focus-visible:outline-offset-1",
+  focusRing,
   "data-dragging:bg-field",
 );
 

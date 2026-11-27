@@ -6,7 +6,7 @@
 import { useEffect, useRef } from "react";
 import { Button } from "react-aria-components/Button";
 import { useMessages } from "../../provider/SocleProvider";
-import { buttonReset, cx, focusRing } from "../../lib/cx";
+import { buttonReset, cx, focusRing, nativeFocusRing } from "../../lib/cx";
 import { Check } from "../../icons";
 
 export type StepStatus = "todo" | "current" | "done" | "error";
@@ -136,7 +136,7 @@ export function ProgressIndicator({ label, steps, current, onSelect, orientation
                 className={cx(
                   itemClass,
                   // Même anneau que focusRing, sur :focus-visible (élément sans React Aria).
-                  "outline-none focus-visible:outline-2 focus-visible:outline-solid focus-visible:outline-focus focus-visible:outline-offset-1",
+                  nativeFocusRing,
                 )}
               >
                 {content}

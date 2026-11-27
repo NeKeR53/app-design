@@ -5,7 +5,7 @@
 import { useCallback, useEffect, useId, useLayoutEffect, useRef, useState, type KeyboardEvent, type ReactNode } from "react";
 import { Popover } from "react-aria-components/Popover";
 import { useMessages, useSocle } from "../../provider/SocleProvider";
-import { buttonReset, cx } from "../../lib/cx";
+import { buttonReset, cx, focusWithinRing } from "../../lib/cx";
 import { ariaShortcut, formatShortcut } from "../../lib/shortcut";
 import { TruncatedText } from "../../lib/truncated";
 import { Search, X } from "../../icons";
@@ -245,7 +245,9 @@ export function SearchInput({ label, onChange, tagMode = false, tags: tagsProp, 
       className={cx(
         // Largeur fixe de 320 px ; toute la largeur sur mobile (D-078). Bord fin (D-073).
         "socle-box relative flex min-h-(--row-h) w-80 max-tablet:w-full cursor-text items-center gap-1 rounded-md border border-line-strong bg-surface pr-1 pl-2.5 font-sans text-md text-fg-3",
-        "hover:border-fg-3 focus-within:outline-2 focus-within:outline-offset-1 focus-within:outline-focus focus-within:outline-solid",
+        "hover:border-fg-3",
+        // Un seul anneau, sur le cadre : le champ natif n'en a pas (D-425).
+        focusWithinRing,
         expanded && "flex-wrap py-[3px]",
       )}
     >
@@ -262,7 +264,7 @@ export function SearchInput({ label, onChange, tagMode = false, tags: tagsProp, 
                 setExpanded(true);
                 inputRef.current?.focus();
               }}
-              className={cx(buttonReset, "inline-flex h-[calc(var(--row-h)-10px)] shrink-0 items-center rounded-sm bg-selected px-1.5 text-sm text-fg-2")}
+              className={cx(buttonReset, "inline-flex h-[calc(var(--row-h)-10px)] shrink-0 items-center rounded-sm bg-selected px-1.5 text-sm text-fg-2 outline-none focus-visible:bg-line-strong focus-visible:text-fg")}
             >
               +{more}
             </button>
@@ -334,7 +336,7 @@ export function SearchInput({ label, onChange, tagMode = false, tags: tagsProp, 
           aria-label={m.clearAll}
           onMouseDown={(e) => e.preventDefault()}
           onClick={clearAll}
-          className={cx(buttonReset, "inline-grid size-[22px] shrink-0 place-items-center rounded-sm text-fg-2 hover:bg-selected hover:text-fg")}
+          className={cx(buttonReset, "inline-grid size-[22px] shrink-0 place-items-center rounded-sm text-fg-2 outline-none hover:bg-selected hover:text-fg focus-visible:bg-selected focus-visible:text-fg")}
         >
           <X size={14} />
         </button>

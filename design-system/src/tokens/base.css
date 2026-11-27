@@ -127,6 +127,8 @@
   --line-w: 1px;
   --focus-w: 2px;
   --focus-offset: 1px;
+  /* Place que prend l'anneau hors du contrôle : un conteneur qui défile la réserve (D-425). */
+  --focus-room: calc(var(--focus-w) + var(--focus-offset));
   --shadow-sm: 0 1px 2px rgb(0 0 0 / 0.12);
   --shadow-md: 0 6px 20px rgb(0 0 0 / 0.10);
   --shadow-lg: 0 12px 32px rgb(0 0 0 / 0.14);

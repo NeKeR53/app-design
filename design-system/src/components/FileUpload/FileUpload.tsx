@@ -49,7 +49,7 @@ const ZONE = cx(
   "socle-box flex w-full flex-col items-center gap-1 rounded-md border-[1.5px] border-dashed border-line-strong px-4 py-3.5 text-center text-sm text-fg-2",
   "transition-colors duration-[var(--dur-fast)] ease-standard",
   "data-drop-target:border-solid data-drop-target:border-focus data-drop-target:bg-hover",
-  "data-focus-visible:outline-2 data-focus-visible:outline-solid data-focus-visible:outline-focus data-focus-visible:outline-offset-1",
+  "data-focus-visible:outline-2 data-focus-visible:outline-solid outline-focus data-focus-visible:outline-offset-1",
   "group-data-invalid/field:border-danger",
 );
 

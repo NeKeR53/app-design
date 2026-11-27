@@ -3,6 +3,7 @@
  */
 import type { ReactNode } from "react";
 import { useMessages } from "../../provider/SocleProvider";
+import { cx, nativeFocusRing } from "../../lib/cx";
 
 export interface CodeProps {
   children: ReactNode;
@@ -21,7 +22,7 @@ export function Code({ children, block = false, label }: CodeProps) {
       role="region"
       aria-label={label ?? m.codeSample}
       tabIndex={0}
-      className="m-0 overflow-auto rounded-md bg-field px-3 py-2.5 font-mono text-sm whitespace-pre text-fg outline-none focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-focus"
+      className={cx("m-0 overflow-auto rounded-md bg-field px-3 py-2.5 font-mono text-sm whitespace-pre text-fg", nativeFocusRing)}
     >
       <code>{children}</code>
     </pre>

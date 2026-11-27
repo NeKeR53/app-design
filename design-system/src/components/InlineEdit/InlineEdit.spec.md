@@ -46,7 +46,7 @@ Ne pas l'utiliser pour :
 |---|---|
 | Repos | Texte seul, sans bord. |
 | Survol | Bord de 1 px `--line-strong`, rayon 8 px (D-322). |
-| Focus clavier | Bord et anneau accent. |
+| Focus clavier | Anneau commun (`--focus`, 2 px, à 1 px du bord), sans bord en plus (D-425). |
 | Saisie | Cadre de champ (D-130) à la même place ; texte dans la même police. |
 | Attente | Champ en lecture seule, curseur d'attente, `aria-busy`. |
 | Erreur | Bord `--danger`, message sous le champ ; la saisie reste ouverte. |

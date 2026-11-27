@@ -7,7 +7,7 @@
 import { type ReactNode, useId, useState } from "react";
 import { Button } from "react-aria-components/Button";
 import { BookOpen, Brain, ChevronDown, Folder, Pencil, Search, SquareTerminal, Wrench } from "../../icons";
-import { buttonReset, cx, focusRing } from "../../lib/cx";
+import { buttonReset, cx, focusRing, nativeFocusRing } from "../../lib/cx";
 import { useMessages } from "../../provider/SocleProvider";
 import { Link } from "../Link/Link";
 
@@ -118,7 +118,7 @@ function Output({ text, attachments, title, id }: { text: string | undefined; at
           value={text}
           className={cx(
             "socle-box block max-h-[320px] w-full resize-none overflow-auto rounded-md border-0 bg-surface-side p-3 font-mono text-sm leading-[1.6] whitespace-pre-wrap text-fg [overflow-wrap:anywhere] [scrollbar-gutter:stable]",
-            "outline-none focus-visible:outline-2 focus-visible:outline-solid focus-visible:outline-focus focus-visible:outline-offset-2",
+            nativeFocusRing,
           )}
         />
       )}

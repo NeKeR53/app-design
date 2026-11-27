@@ -113,7 +113,7 @@ export function Popover({
                 <IconButton icon={<X />} label={m.close} isDisabled={isBusy} onPress={() => setOpen(false)} />
               </header>
             )}
-            <div ref={body} className={cx("min-h-0 flex-1 overflow-auto px-3.5 pb-3.5", title ? "pt-1" : "pt-3.5")}>
+            <div ref={body} className={cx("socle-focus-scroll min-h-0 flex-1 overflow-auto px-3.5 pb-3.5", title ? "pt-1" : "pt-3.5")}>
               {children}
             </div>
             <FocusFirstField body={body} />

@@ -149,7 +149,7 @@ export function TileGrid({ label, items, selectionMode = "single", selectedKeys,
           {...(onSelectionChange ? { onSelectionChange: (k: Selection) => onSelectionChange(k === "all" ? new Set(items.map((i) => i.id)) : k) } : {})}
           {...(onAction ? { onAction: (k: Key) => onAction(String(k)) } : {})}
           data-tile-grid=""
-          className="grid min-h-0 flex-1 auto-rows-max grid-cols-[repeat(auto-fill,minmax(200px,1fr))] content-start gap-3 overflow-auto p-1.5 outline-none"
+          className="grid min-h-0 flex-1 auto-rows-max grid-cols-[repeat(auto-fill,minmax(200px,1fr))] content-start gap-3 overflow-auto p-1.5 outline-none socle-focus-scroll"
         >
           {items.map(renderTile)}
         </GridList>

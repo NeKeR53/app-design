@@ -214,7 +214,7 @@ export function CodeField({
               className={cx(
                 CELL,
                 isReadOnly ? "border-line bg-surface-side" : cx("bg-surface", isInvalid ? "border-danger" : "border-line-strong group-hover/cells:border-fg-3"),
-                "data-active:outline-2 data-active:outline-solid data-active:outline-focus data-active:outline-offset-1",
+                "data-active:outline-2 data-active:outline-solid outline-focus data-active:outline-offset-1",
               )}
             >
               {code[i] ?? ""}

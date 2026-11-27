@@ -44,7 +44,7 @@ Aucune.
 |---|---|
 | Par défaut | Texte `--fg`, interligne 1,6 (D-301). |
 | Survol d'un lien | Soulignement de 2 px (D-167). |
-| Focus | Anneau `--accent` sur un lien, un bloc de code, un tableau ou le bouton « Copier le bloc ». |
+| Focus | Anneau commun (`--focus`, 2 px) sur un lien, un bloc de code, un tableau ou le bouton « Copier le bloc » (D-425). |
 | Bloc copié | Coche, libellé « Bloc copié » pendant 2 s ; échec : « Copie impossible » (D-304). |
 | Vide | Rien n'est rendu. L'app affiche son état vide (`EmptyState`) si besoin. |
 

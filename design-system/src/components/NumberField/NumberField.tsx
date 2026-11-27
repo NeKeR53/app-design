@@ -47,7 +47,7 @@ export interface NumberFieldProps extends FieldBaseProps {
 type Loose<T> = { [K in keyof T]?: T[K] | undefined };
 
 const focusWithin =
-  "data-focus-within:outline-2 data-focus-within:outline-solid data-focus-within:outline-focus data-focus-within:outline-offset-1";
+  "outline-focus data-focus-within:outline-2 data-focus-within:outline-solid data-focus-within:outline-offset-1";
 
 const stepButton = cx(
   buttonReset,

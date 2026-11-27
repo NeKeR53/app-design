@@ -110,7 +110,7 @@ export function orderedMentions(text: string, references: readonly MentionRefere
 export const PILL_CLASS =
   "mx-0.5 inline-flex max-w-[min(100%,32ch)] min-h-5 items-center overflow-hidden rounded-full bg-selected pl-1.5 align-baseline font-sans text-sm leading-5 whitespace-nowrap text-fg select-all";
 const PILL_REMOVE_CLASS =
-  "socle-btn ml-0.5 inline-grid size-5 shrink-0 cursor-default place-items-center rounded-full text-fg-2 hover:bg-surface hover:text-fg focus-visible:outline-2 focus-visible:outline-solid focus-visible:outline-focus";
+  "socle-btn ml-0.5 inline-grid size-5 shrink-0 cursor-default place-items-center rounded-full text-fg-2 hover:bg-surface hover:text-fg outline-focus focus-visible:outline-2 focus-visible:outline-solid focus-visible:-outline-offset-2"; // dans la pastille, qui rogne : anneau tracé dedans (D-425)
 
 export interface EditorState {
   text: string;

@@ -6,7 +6,7 @@
 import { useEffect, useMemo, useRef, useState, type ReactNode, type RefObject } from "react";
 import { Radio, RadioGroup } from "react-aria-components/RadioGroup";
 import { Tooltip as RACTooltip, TooltipTriggerStateContext, type TooltipTriggerState } from "react-aria-components/Tooltip";
-import { cx } from "../../lib/cx";
+import { cx, focusRing } from "../../lib/cx";
 import { TOOLTIP_CLASS, TOOLTIP_DELAY } from "../Tooltip/Tooltip";
 
 export interface SegmentedOption {
@@ -49,7 +49,7 @@ const SEGMENT = cx(
   "data-hovered:text-fg",
   "data-selected:bg-surface data-selected:font-medium data-selected:text-fg data-selected:shadow-sm",
   "data-disabled:opacity-40 data-disabled:data-hovered:text-fg-2",
-  "outline-none data-focus-visible:outline-2 data-focus-visible:outline-solid data-focus-visible:outline-focus data-focus-visible:outline-offset-1",
+  focusRing,
 );
 
 /** Info-bulle d'un segment à icône seule : après 500 ms de survol, ou tout de suite au focus clavier (D-031). */

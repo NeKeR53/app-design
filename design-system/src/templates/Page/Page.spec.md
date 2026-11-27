@@ -1,5 +1,5 @@
 # Page
-Statut : validé (2026-11-26) — Version : depuis 0.3.0 ; `PageGrid` depuis 1.20.0 ; dépôt de fichiers depuis 1.22.0 ; `PageSection` encadrée et pied depuis 1.25.0
+Statut : validé (2026-11-26) — Version : depuis 0.3.0 ; `PageGrid` depuis 1.20.0 ; dépôt de fichiers depuis 1.22.0 ; `PageSection` encadrée et pied depuis 1.25.0 ; place de l’anneau de focus dans la barre depuis 1.26.0
 Validation : par délégation de l'utilisateur, 2026-11-23 — docs/validation/components/DetailPage-v1.html ; `PageGrid` et vue d'ensemble : par délégation de l'utilisateur, 2026-11-26 — docs/validation/components/PageGrid-v1.html ; dépôt de fichiers : par délégation de l'utilisateur, 2026-11-26 — docs/validation/components/PageDepot-v1.html (Q1 A, Q2 A) ; `PageSection` encadrée et pied : par délégation de l'utilisateur, 2026-11-27 — docs/validation/components/PageSection-v1.html (Q1 A, Q2 A)
 
 ## Rôle
@@ -109,7 +109,7 @@ Aucune.
 Marges `--pad` ; `PageSection` encadrée : marge intérieure `--pad` (16 px en web, 12 px en desktop) ; écart de 24 px entre blocs dans les deux densités, et entre les colonnes de `PageGrid`.
 
 ## Clavier
-Ordre de tabulation : barre d'outils (contenu libre, puis actions), contenu, pied. La barre qui défile garde chaque contrôle atteignable au clavier : le focus fait défiler la barre. Dans `PageGrid`, l'ordre suit les blocs, ligne par ligne, de gauche à droite. Le dépôt est un geste de souris : au clavier, l'action « Ajouter… » ou « Importer… » de la barre d'outils (D-404, D-418).
+Ordre de tabulation : barre d'outils (contenu libre, puis actions), contenu, pied. La barre qui défile garde chaque contrôle atteignable au clavier : le focus fait défiler la barre jusqu'au contrôle entier. Elle réserve `--focus-room` autour de ses contrôles : l'anneau de focus n'est jamais rogné (D-425). Dans `PageGrid`, l'ordre suit les blocs, ligne par ligne, de gauche à droite. Le dépôt est un geste de souris : au clavier, l'action « Ajouter… » ou « Importer… » de la barre d'outils (D-404, D-418).
 
 ## Accessibilité
 - Barre d'outils : `role="toolbar"` nommé par `actionsLabel` s'il est donné.

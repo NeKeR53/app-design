@@ -79,7 +79,7 @@ export function ChatPage({
           <div data-chat-page-footer="" className="mx-auto box-border flex w-full max-w-[calc(760px+32px)] shrink-0 flex-col gap-2 px-4 pb-4">
             {alerts && <div className="flex flex-col gap-2 empty:hidden">{alerts}</div>}
             {question && (
-              <div data-chat-page-question="" className="max-h-[min(40cqh,360px)] overflow-auto overscroll-contain empty:hidden">
+              <div data-chat-page-question="" className="socle-focus-scroll max-h-[min(40cqh,360px)] overflow-auto overscroll-contain empty:hidden">
                 {question}
               </div>
             )}

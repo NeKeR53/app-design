@@ -239,7 +239,7 @@ export function Modal({ isOpen, onOpenChange, title, description, children, foot
               ref={bodyRef}
               onScroll={update}
               data-dialog-body=""
-              className={cx("min-h-0 flex-1 overflow-auto overscroll-contain", !flush && "flex flex-col gap-3 px-(--dlg-pad) pt-2 pb-(--dlg-pad)")}
+              className={cx("socle-focus-scroll min-h-0 flex-1 overflow-auto overscroll-contain", !flush && "flex flex-col gap-3 px-(--dlg-pad) pt-2 pb-(--dlg-pad)")}
             >
               <FocusFirstField body={bodyRef} />
               {children}

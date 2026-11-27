@@ -62,7 +62,7 @@ Fonctions exportées : `isLongPaste(text)` (2 000 caractères ou 20 lignes), `cl
 |---|---|
 | Repos, vide | Texte d'attente de l'app ; envoi inactif (opacité 40 %). |
 | Repos, rempli | Envoi actif, « Envoyer ». |
-| Focus dans le cadre | Bord teinté d'accent (55 % d'accent dans `--line-strong`). |
+| Focus dans le cadre | Bord teinté d'accent (55 % d'accent dans `--line-strong`) ; exception à l'anneau commun, contraste ≥ 3:1 dans les deux modes (D-425). |
 | Pendant une réponse | Texte d'attente « ⌘↩ pour mettre en file » ; « Arrêter » paraît ; l'envoi devient « Envoyer maintenant ». |
 | Vide après un échec (`canResume`) | Envoi actif, « Relancer ». |
 | Pièces en préparation (`isPending`) | Roue à la place de la flèche, `aria-disabled`. |

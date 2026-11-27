@@ -209,7 +209,7 @@ export function Table<T extends { id: string }>({
       ) : (
         <ResizableTableContainer
           key={version}
-          className="relative min-h-0 flex-1 overflow-auto"
+          className="socle-focus-scroll relative min-h-0 flex-1 overflow-auto"
           onResizeEnd={(map) => {
             const next = { ...widths };
             const resizable = new Set(columns.slice(1).map((c) => c.id));
@@ -315,7 +315,7 @@ export function Table<T extends { id: string }>({
                   )}
                 >
                   {multiple && (
-                    <Cell className={cx(rowH, "border-b border-line px-3")}>
+                    <Cell className={cx(rowH, "border-b border-line px-3", insetFocusRing)}>
                       <Checkbox slot="selection" className={cx(checkboxClass, "invisible group-data-hovered/row:visible group-data-focus-visible/row:visible data-selected:visible [.socle-has-checked_&]:visible pointer-coarse:visible")}>
                         {({ isSelected, isIndeterminate }) => <Box isSelected={isSelected} isIndeterminate={isIndeterminate} />}
                       </Checkbox>
@@ -346,6 +346,8 @@ export function Table<T extends { id: string }>({
                           i === 0 ? "text-fg" : "text-fg-2",
                           isEmpty && "text-fg-3",
                           col.align === "end" && "text-end tabular-nums",
+                          // Cellule atteinte aux flèches : anneau Socle, pas celui du navigateur (D-425).
+                          insetFocusRing,
                         )}
                       >
                         {i === 0 && rowIcon ? (
@@ -360,7 +362,7 @@ export function Table<T extends { id: string }>({
                     );
                   })}
                   {withActions && (
-                    <Cell className={cx(rowH, "border-b border-line pr-2")}>
+                    <Cell className={cx(rowH, "border-b border-line pr-2", insetFocusRing)}>
                       <RowActions actions={rowActions!(row).slice(0, 2)} rowTitle={rowTitle(row)} />
                     </Cell>
                   )}

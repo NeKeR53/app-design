@@ -52,7 +52,7 @@ const cellBase = cx(
   "data-outside-month:text-fg-3",
   "data-unavailable:text-fg-3 data-unavailable:line-through data-unavailable:data-hovered:bg-transparent",
   "data-disabled:opacity-40 data-disabled:data-hovered:bg-transparent",
-  "data-focus-visible:z-10 data-focus-visible:outline-2 data-focus-visible:outline-solid data-focus-visible:outline-focus data-focus-visible:outline-offset-1",
+  "data-focus-visible:z-10 data-focus-visible:outline-2 data-focus-visible:outline-solid outline-focus data-focus-visible:outline-offset-1",
 );
 /** Un jour choisi : fond accent. */
 const cellSingle = "data-selected:bg-accent data-selected:text-accent-fg data-selected:data-hovered:bg-accent";

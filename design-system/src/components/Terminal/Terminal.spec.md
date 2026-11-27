@@ -8,7 +8,7 @@ Ne pas l'utiliser pour : un journal à lire, chercher ou filtrer (prendre `LogVi
 
 ## Anatomie
 1. **Écran** (obligatoire) : xterm.js sur `--surface`, police `--font-mono` 13 px, interligne 1,2, 5 000 lignes d'historique (D-282).
-2. **Cadre** : 1 px `--line`, rayon 8 px ; `--accent` tant que le terminal a le focus (D-282).
+2. **Cadre** : 1 px `--line`, rayon 8 px ; anneau commun de focus tant que le terminal a le focus (D-282, D-425).
 3. **Barre d'état** (obligatoire), 28 px, sur `--surface-side`, `--fs-sm`, `--fg-2` : état (`Badge`), aide à droite, taille « colonnes × lignes ».
 
 ## Variantes
@@ -55,7 +55,7 @@ const loadXterm = async () => {
 | Session terminée | Point neutre, « Session terminée : <raison> ». |
 | Connexion interrompue | Point et texte `--danger`, « Connexion interrompue : <raison> ». |
 | Moteur introuvable | Point et texte `--danger`, « Terminal indisponible : <raison> ». |
-| Focus | Cadre `--accent`. |
+| Focus | Anneau commun sur le cadre (`--focus`, 2 px, à 1 px du bord) ; le cadre garde son trait `--line` (D-425). |
 | Lecture seule | Aide « Lecture seule » ; saisie ignorée. |
 | Copie | Aide « Sélection copiée » ou « Copie impossible », 1,6 s. |
 

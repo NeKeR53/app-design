@@ -46,7 +46,7 @@ Les options communes de `Field` (`label`, `hideLabel`, `description`, `error`, `
 |---|---|
 | Par défaut | Cadre `--surface`, bord `--line-strong` (D-130). |
 | Survol | Bord `--fg-3`. |
-| Focus | Anneau `--accent` de 2 px autour du cadre. |
+| Focus | Anneau `--accent` de 2 px autour du cadre. Aperçu atteint au clavier : anneau commun tracé dedans. Boutons de la barre : anneau entier, la barre a 3 px de marge verticale (`--focus-room`, D-425). |
 | Chargement de CodeMirror | Texte affiché tel quel, en chasse fixe ; barre désactivée. |
 | Désactivé | Opacité 40 %, rien n'est joignable. |
 | Lecture seule | Fond `--surface-side`, bord `--line`, cadenas ; barre masquée ; texte sélectionnable (D-131). |

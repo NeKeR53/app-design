@@ -44,7 +44,7 @@ Aucune variante visuelle : fond `--surface`, bord `--line-strong` ; au survol, b
 | État | Rendu |
 |---|---|
 | Vide | Loupe, texte d'aide, raccourci. |
-| Focus | Anneau `--accent` ; le raccourci disparaît. |
+| Focus | Un seul anneau, sur le cadre (`--focus`, 2 px, à 1 px du bord) ; le champ natif n'en a pas ; le raccourci disparaît. « Effacer » et « +n » au clavier : fond plus foncé, pas de second anneau (D-425). |
 | Avec étiquettes | Étiquettes puis texte en cours ; × « Tout effacer ». |
 | Étiquette en focus | Fond plus foncé et anneau ; Retour arrière ou Suppr la retire. |
 | Suggestions ouvertes | Liste flottante ; une suggestion mise en avant (`--hover`). |

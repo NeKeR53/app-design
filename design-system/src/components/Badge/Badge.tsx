@@ -60,7 +60,7 @@ export function BadgeDot({ label, tone = "neutral" }: BadgeDotProps) {
   return (
     <Tooltip content={label} placement="top">
       <Focusable>
-        <span role="img" aria-label={label} tabIndex={inGrid ? -1 : 0} className={cx("inline-grid size-6 shrink-0 cursor-default place-items-center rounded-sm align-middle outline-none", "focus-visible:outline-2 focus-visible:outline-solid focus-visible:outline-focus focus-visible:outline-offset-1")}>
+        <span role="img" aria-label={label} tabIndex={inGrid ? -1 : 0} className={cx("inline-grid size-6 shrink-0 cursor-default place-items-center rounded-sm align-middle outline-none", "focus-visible:outline-2 focus-visible:outline-solid outline-focus focus-visible:outline-offset-1")}>
           <Dot tone={tone} />
         </span>
       </Focusable>

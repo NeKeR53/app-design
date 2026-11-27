@@ -9,7 +9,7 @@ import { Focusable } from "react-aria-components/Focusable";
 import { Button } from "../Button/Button";
 import { Tooltip } from "../Tooltip/Tooltip";
 import { ArrowDown } from "../../icons";
-import { buttonReset, cx, focusRing } from "../../lib/cx";
+import { buttonReset, cx, focusRing, nativeInsetFocusRing } from "../../lib/cx";
 import { useMessages } from "../../provider/SocleProvider";
 
 export interface ChatTranscriptProps {
@@ -219,8 +219,8 @@ export function ChatTranscript({ children, label, followKey, scrollKey, announce
           // relative : la zone qui défile est le bloc de référence des éléments en position absolue du relevé (textes
           // pour lecteur d’écran, `sr-only`). Sans cela, ils se placent hors d’elle et allongent la page entière, qui
           // défile alors avec la saisie (D-387).
-          "relative min-h-0 flex-1 overflow-auto overscroll-contain px-4 pt-3 pb-4 [overflow-anchor:none] [scrollbar-gutter:stable_both-edges]",
-          "outline-none focus-visible:outline-2 focus-visible:outline-solid focus-visible:outline-focus focus-visible:-outline-offset-2",
+          "socle-focus-scroll relative min-h-0 flex-1 overflow-auto overscroll-contain px-4 pt-3 pb-4 [overflow-anchor:none] [scrollbar-gutter:stable_both-edges]",
+          nativeInsetFocusRing,
         )}
       >
         <div ref={column} className={cx("mx-auto max-w-[760px] [overflow-wrap:anywhere]", isEmpty && "flex min-h-full flex-col justify-center")}>
@@ -265,7 +265,7 @@ function ContextLine({ text, detail }: { text: string; detail?: string | undefin
           <Focusable>
             <span
               tabIndex={0}
-              className="cursor-default rounded-sm px-1 outline-none focus-visible:outline-2 focus-visible:outline-solid focus-visible:outline-focus focus-visible:outline-offset-1"
+              className="cursor-default rounded-sm px-1 outline-none focus-visible:outline-2 focus-visible:outline-solid outline-focus focus-visible:outline-offset-1"
             >
               {text}
             </span>

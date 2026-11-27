@@ -114,7 +114,7 @@ function SwatchTip({ anchor, text, isHovered, isFocusVisible }: { anchor: RefObj
 const swatchItemClass = cx(
   "relative size-6 cursor-default rounded-sm outline-none",
   "data-selected:shadow-[0_0_0_2px_var(--surface),0_0_0_4px_var(--fg)]",
-  "data-focus-visible:outline-2 data-focus-visible:outline-solid data-focus-visible:outline-focus data-focus-visible:outline-offset-[6px]",
+  "outline-focus data-focus-visible:outline-2 data-focus-visible:outline-solid data-focus-visible:outline-offset-[6px]",
   "data-disabled:opacity-40",
 );
 

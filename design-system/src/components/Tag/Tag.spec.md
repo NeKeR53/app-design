@@ -60,7 +60,7 @@ Retrait et sélection se combinent : Suppr retire alors toutes les étiquettes c
 | Repos | Fond `--field`. |
 | Survol (étiquette à choisir) | Fond `--hover`. |
 | Choisie | Fond `--selected`, coche, `--fw-medium`. |
-| Focus clavier | Anneau `--focus` 2 px, décalé de 1 px. |
+| Focus clavier | Anneau `--focus` 2 px, décalé de 1 px ; sur le groupe quand il est vide (D-425). |
 | Désactivée | Opacité 40 % ; croix inactive. |
 | Survol de la croix | Fond `--line-strong`, croix `--fg`. |
 

@@ -5,7 +5,7 @@
 import { type Ref, useCallback, useEffect, useImperativeHandle, useRef, useState } from "react";
 import { useMessages, useSocle } from "../../provider/SocleProvider";
 import { copyText } from "../../lib/clipboard";
-import { cx } from "../../lib/cx";
+import { cx, focusWithinRing } from "../../lib/cx";
 import { Badge, type StatusTone } from "../Badge/Badge";
 import { openTerminal, type OpenedTerminal, type TerminalEngine, type TerminalEngineSource } from "./terminalEngine";
 
@@ -206,7 +206,7 @@ export function Terminal({ label, engine, connection, onResize, state, reason, r
       aria-label={label}
       className={cx(
         "socle-box socle-terminal flex min-w-0 flex-col overflow-hidden rounded-md border border-solid border-line bg-surface font-sans",
-        "focus-within:border-focus focus-within:outline-1 focus-within:outline-solid focus-within:outline-focus",
+        focusWithinRing,
         fill ? "min-h-0 flex-1" : "h-[min(560px,max(280px,calc(100dvh-240px)))]",
       )}
     >

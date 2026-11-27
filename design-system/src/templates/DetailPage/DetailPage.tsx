@@ -146,7 +146,7 @@ export function DetailPage({
           </div>
         </PageColumn>
       </header>
-      <div data-page-content className="min-h-0 flex-1 overflow-auto">
+      <div data-page-content className="socle-focus-scroll min-h-0 flex-1 overflow-auto">
         <PageColumn width={width} layout="[&>section]:py-5 [&>section+section]:border-t [&>section+section]:border-line">
           {content}
         </PageColumn>

@@ -7,7 +7,7 @@ import { Button } from "react-aria-components/Button";
 import { Dialog as AriaDialog } from "react-aria-components/Dialog";
 import { Modal, ModalOverlay } from "react-aria-components/Modal";
 import { useMessages, useSocle, useStoredState, type WindowControls as WindowControlsActions } from "../../provider/SocleProvider";
-import { buttonReset, cx, focusRing } from "../../lib/cx";
+import { buttonReset, cx, focusRing, nativeFocusRing } from "../../lib/cx";
 import { ChevronLeft, ChevronRight, ListDetail, Maximize, Minimize, MoreHorizontal, PanelLeft, X } from "../../icons";
 import { IconButton } from "../../components/IconButton/IconButton";
 import { Tabs, useTabPanelProps, type TabItem } from "../../components/Tabs/Tabs";
@@ -269,7 +269,7 @@ export function AppShell({ pageTitle, views, activeView, onViewChange, onViewClo
           className={cx(
             "sr-only rounded-md bg-surface font-medium text-fg shadow-lg",
             "focus:not-sr-only focus:absolute focus:top-1.5 focus:left-1.5 focus:z-[60] focus:px-3 focus:py-1.5",
-            focusRing,
+            nativeFocusRing,
           )}
         >
           {m.skipToContent}
@@ -338,7 +338,7 @@ export function AppShell({ pageTitle, views, activeView, onViewChange, onViewClo
           </div>
         )}
         {/* Panneau en colonne : le contenu garde au moins 360 px (D-241, D-402). */}
-        <main {...panelProps} id={mainDomId} data-socle-zone="main" className={cx("min-w-0 flex-1 overflow-auto outline-none", Boolean(detail) && showDetail && !floating && "min-w-[360px]")}>{children}</main>
+        <main {...panelProps} id={mainDomId} data-socle-zone="main" className={cx("socle-focus-scroll min-w-0 flex-1 overflow-auto outline-none", Boolean(detail) && showDetail && !floating && "min-w-[360px]")}>{children}</main>
         {detail && showDetail && (
           <DetailColumn
             floating={floating}
@@ -586,7 +586,7 @@ function DetailColumn({ floating, fullscreen, width, form, wide, onWidth, onClos
           <IconButton icon={<X />} label={m.closeDetail} onPress={onClose} />
         </div>
       )}
-      <div className="min-h-0 flex-1 overflow-auto">{children}</div>
+      <div className="socle-focus-scroll min-h-0 flex-1 overflow-auto">{children}</div>
     </aside>
   );
 }

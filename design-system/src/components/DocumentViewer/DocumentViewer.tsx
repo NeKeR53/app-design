@@ -5,7 +5,7 @@
 import { useEffect, useLayoutEffect, useRef, useState, type KeyboardEvent, type RefObject } from "react";
 import { Toolbar } from "react-aria-components/Toolbar";
 import { Download, FitWidth, ChevronLeft, ChevronRight, ZoomIn, ZoomOut } from "../../icons";
-import { cx } from "../../lib/cx";
+import { cx, nativeInsetFocusRing } from "../../lib/cx";
 import { useMessages } from "../../provider/SocleProvider";
 import { ActionBar, type Action } from "../../patterns/ActionBar/ActionBar";
 import { Button } from "../Button/Button";
@@ -391,7 +391,7 @@ function Viewer({
         onScroll={pdf ? trackPage : undefined}
         className={cx(
           "flex min-h-0 flex-1 flex-col items-center-safe gap-3 overflow-auto overscroll-contain bg-surface-side p-4",
-          "outline-none focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-focus focus-visible:outline-solid",
+          nativeInsetFocusRing,
         )}
       >
         {pdf?.sizes.map((size, index) => (

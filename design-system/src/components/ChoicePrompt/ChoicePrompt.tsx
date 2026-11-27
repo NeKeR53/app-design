@@ -7,7 +7,7 @@ import { useId, useLayoutEffect, useRef, useState, type KeyboardEvent } from "re
 import { ListBox, ListBoxItem } from "react-aria-components/ListBox";
 import { Button as RACButton } from "react-aria-components/Button";
 import { Button } from "../Button/Button";
-import { buttonReset, cx } from "../../lib/cx";
+import { buttonReset, cx, nativeFocusRing, insetFocusRing } from "../../lib/cx";
 import { useMessages } from "../../provider/SocleProvider";
 
 export interface ChoiceOption {
@@ -40,7 +40,7 @@ export interface ChoicePromptProps {
 /** Ligne d'option : 32 px au moins, rayon 8 px, survol `--surface-side` (mesures de l'app de référence). */
 const optionRow = "flex min-h-8 w-full cursor-default items-center gap-2 rounded-md px-2 py-1 text-start text-md";
 /** Anneau de focus à l'intérieur de la ligne. */
-const insetFocus = "outline-none data-focus-visible:outline-2 data-focus-visible:outline-solid data-focus-visible:outline-focus data-focus-visible:-outline-offset-2";
+const insetFocus = insetFocusRing;
 
 export function ChoicePrompt({ question, kind = "question", detail, options, allowOther, onChoose, isDisabled = false }: ChoicePromptProps) {
   const m = useMessages();
@@ -189,7 +189,7 @@ function OtherAnswer({
         }}
         className={cx(
           "socle-box block max-h-[40vh] w-full resize-none overflow-auto rounded-md border border-line-strong bg-field px-3 py-1.5 font-sans text-md leading-[1.5] text-fg",
-          "outline-none focus-visible:outline-2 focus-visible:outline-solid focus-visible:outline-focus focus-visible:outline-offset-1",
+          nativeFocusRing,
         )}
       />
       <div className="flex justify-end gap-2">

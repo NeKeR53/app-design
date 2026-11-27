@@ -30,7 +30,7 @@
 - **Plateformes** : macOS et Windows, pour le desktop Tauri comme pour le web. Les raccourcis, leur affichage, les contrôles de fenêtre et les conventions de chaque système sont pris en compte.
 - **Accessibilité** : WCAG 2.2 niveau AA :
   - contrastes suffisants dans les deux modes, y compris pour le texte secondaire ;
-  - tout est utilisable au clavier, avec un focus visible ;
+  - tout est utilisable au clavier, avec un focus visible : un seul anneau de 2 px `--focus`, à 1 px du bord, jamais rogné par un conteneur qui défile (D-425) ;
   - zones cliquables d'au moins 24 px ;
   - libellés accessibles, y compris pour les boutons-icônes.
 

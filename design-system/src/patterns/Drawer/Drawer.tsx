@@ -224,7 +224,7 @@ function Declarative({ header, sections, isLoading, hasError, onRetry, isNotFoun
                         type="button"
                         aria-label={m.sectionMove(s.title, index + 1, ordered.length)}
                         aria-keyshortcuts="ArrowUp ArrowDown"
-                        className="socle-btn -mr-1 inline-grid size-5 shrink-0 cursor-grab touch-none place-items-center rounded-sm text-fg-3 opacity-0 group-hover/section:opacity-100 hover:text-fg focus-visible:opacity-100 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-focus focus-visible:outline-solid"
+                        className="socle-btn -mr-1 inline-grid size-5 shrink-0 cursor-grab touch-none place-items-center rounded-sm text-fg-3 opacity-0 group-hover/section:opacity-100 hover:text-fg focus-visible:opacity-100 focus-visible:outline-2 focus-visible:-outline-offset-2 outline-focus focus-visible:outline-solid"
                         onPointerDown={(event) => {
                           const frame = event.currentTarget.closest<HTMLElement>("section");
                           if (frame) startDrag(event, s.id, frame);

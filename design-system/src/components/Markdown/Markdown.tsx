@@ -11,7 +11,7 @@ import { Separator } from "../Separator/Separator";
 import { IconButton } from "../IconButton/IconButton";
 import { Link } from "../Link/Link";
 import { Check, Copy } from "../../icons";
-import { cx, focusRing } from "../../lib/cx";
+import { cx, nativeFocusRing } from "../../lib/cx";
 import { useMessages } from "../../provider/SocleProvider";
 
 export type MarkdownHeadingLevel = 1 | 2 | 3 | 4 | 5 | 6;
@@ -151,7 +151,7 @@ export const Markdown = memo(function Markdown({ children, headingLevel = 2, onL
           </span>
         ) : null,
       table: ({ children: content }) => (
-        <div role="region" aria-label={m.table} tabIndex={0} className={cx("mb-3 max-w-full overflow-auto rounded-sm", focusRing)}>
+        <div role="region" aria-label={m.table} tabIndex={0} className={cx("mb-3 max-w-full overflow-auto rounded-sm", nativeFocusRing)}>
           <table className="min-w-full border-separate border-spacing-0">{content}</table>
         </div>
       ),

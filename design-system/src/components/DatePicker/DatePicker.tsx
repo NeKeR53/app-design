@@ -65,13 +65,14 @@ export interface DateRangePickerProps extends Omit<DateFieldOptions, "name"> {
 
 /** Cadre : anneau de focus quand un segment a le focus (D-130). */
 const focusWithin =
-  "data-focus-within:outline-2 data-focus-within:outline-solid data-focus-within:outline-focus data-focus-within:outline-offset-1";
+  "outline-focus data-focus-within:outline-2 data-focus-within:outline-solid data-focus-within:outline-offset-1";
 
 const triggerClass = cx(
   buttonReset,
   "ml-auto grid size-6 shrink-0 cursor-default place-items-center rounded-sm text-fg-2",
   "data-hovered:bg-hover data-hovered:text-fg data-pressed:bg-selected",
-  focusRing,
+  // Dans le cadre, qui porte déjà l'anneau : le bouton se signale par son fond, pas par un second anneau (D-425).
+  "outline-none data-focus-visible:bg-hover data-focus-visible:text-fg",
 );
 
 const inputClass = "flex min-w-0 items-center tabular-nums";

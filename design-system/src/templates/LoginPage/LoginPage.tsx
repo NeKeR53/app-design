@@ -6,7 +6,7 @@
  */
 import { useEffect, useId, useRef, useState, type FormEvent, type ReactNode } from "react";
 import { Input, TextField as RACTextField } from "react-aria-components/TextField";
-import { cx } from "../../lib/cx";
+import { cx, nativeFocusRing } from "../../lib/cx";
 import { useMessages } from "../../provider/SocleProvider";
 import { CircleAlert, Eye, EyeOff } from "../../icons";
 import { Button } from "../../components/Button/Button";
@@ -165,7 +165,7 @@ export function LoginPage({
             ref={alertRef}
             role="alert"
             tabIndex={-1}
-            className="flex items-start gap-2 rounded-md border border-[color-mix(in_srgb,var(--danger)_45%,var(--line))] bg-[color-mix(in_srgb,var(--danger)_8%,var(--surface))] px-3 py-2.5 text-fg outline-none focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-focus"
+            className={"flex items-start gap-2 rounded-md border border-[color-mix(in_srgb,var(--danger)_45%,var(--line))] bg-[color-mix(in_srgb,var(--danger)_8%,var(--surface))] px-3 py-2.5 text-fg " + nativeFocusRing}
           >
             <span className="mt-0.5 text-danger">
               <CircleAlert />

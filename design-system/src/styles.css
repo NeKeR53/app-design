@@ -36,6 +36,26 @@
   }
 }
 
+/*
+ * Place de l'anneau de focus (D-425). Un conteneur qui défile (overflow autre que visible) rogne
+ * tout ce qui dépasse de sa boîte, sur les deux axes : l'anneau d'un contrôle collé à son bord
+ * perdait son haut et son bas (barre d'outils de Page). Deux classes :
+ * - socle-focus-room : le conteneur n'a pas de marge intérieure ; la place de l'anneau (--focus-room)
+ *   devient sa marge intérieure, reprise en marge extérieure : la mise en page ne bouge pas.
+ * - socle-focus-scroll : le conteneur a déjà sa marge ; quand le focus fait défiler, le contrôle
+ *   s'arrête à --focus-room du bord, et son anneau reste entier.
+ */
+@layer base {
+  .socle-focus-room {
+    padding: var(--focus-room);
+    margin: calc(-1 * var(--focus-room));
+    scroll-padding: var(--focus-room);
+  }
+  .socle-focus-scroll {
+    scroll-padding: var(--focus-room);
+  }
+}
+
 /* Barre de rechargement des résultats (D-084) ; fixe si l'utilisateur réduit les animations. */
 @layer base {
   .socle-reload {

@@ -16,6 +16,7 @@ import { RadioButtonGroup } from "../components/RadioButtonGroup/RadioButtonGrou
 import { Select, type SelectOption, type SelectSection } from "../components/Select/Select";
 import { TextArea } from "../components/TextArea/TextArea";
 import { TextInput } from "../components/TextInput/TextInput";
+import { cx, nativeFocusRing } from "./cx";
 
 /* ---------- Modèle (D-190, D-191) ---------- */
 
@@ -601,7 +602,7 @@ export function ErrorSummary({ model }: { model: FormModel }): ReactNode {
       role="alert"
       tabIndex={-1}
       aria-labelledby={id}
-      className="socle-box mb-4 rounded-md border border-danger bg-surface px-3 py-2.5 text-md outline-none focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-focus"
+      className={cx("socle-box mb-4 rounded-md border border-danger bg-surface px-3 py-2.5 text-md", nativeFocusRing)}
     >
       <p id={id} className="m-0 flex items-center gap-1.5 font-medium text-danger">
         <AlertTriangle size={14} className="shrink-0" aria-hidden />
@@ -616,7 +617,7 @@ export function ErrorSummary({ model }: { model: FormModel }): ReactNode {
                 e.preventDefault();
                 model.focusField(f.name);
               }}
-              className="rounded-sm text-danger underline underline-offset-2 outline-none hover:no-underline focus-visible:outline-2 focus-visible:outline-focus"
+              className={cx("rounded-sm text-danger underline underline-offset-2 hover:no-underline", nativeFocusRing)}
             >
               {f.label}
             </a>

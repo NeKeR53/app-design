@@ -296,7 +296,7 @@ const rowBase = cx(
   "border-y-2 border-transparent bg-clip-padding",
   // Anneau de focus posé sur le bord du fond, dans la ligne : il ne touche jamais la ligne voisine (D-395).
   // Pas `focusRing` suivi d'un décalage : son `outline-offset-1` l'emporterait.
-  "data-focus-visible:outline-2 data-focus-visible:outline-solid data-focus-visible:outline-focus data-focus-visible:-outline-offset-4",
+  "outline-focus data-focus-visible:outline-2 data-focus-visible:outline-solid data-focus-visible:-outline-offset-4",
 );
 
 /**
