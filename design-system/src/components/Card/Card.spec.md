@@ -8,6 +8,7 @@ Validation : docs/validation/components/Nouveaux-P2-P3-v1.html (C1 et C2, option
 Ne pas l'utiliser pour :
 - une liste d'éléments du même type : prendre `List` ou `Table` ;
 - une section d'une page : prendre `PageSection` ;
+- un bloc de grille avec titre, actions dans l'en-tête et pied collé en bas (un élément suivi) : prendre `PageSection` avec `framed` et `footer` (D-423) ;
 - un contenu qui flotte (menu, info, fenêtre) : prendre `Popover` ou `Modal`.
 
 ## Anatomie
@@ -46,7 +47,8 @@ Ne pas l'utiliser pour :
 | État | Rendu |
 |---|---|
 | Repos | Surface, trait fin. |
-| Survol (cliquable) | Fond `--hover`, curseur main. |
+| Survol (cliquable) | Fond `--hover` en fondu `--dur-fast`, curseur main. |
+| Changement de thème | Le fond change d'un coup, en même temps que les textes : pas de fondu au repos (D-424). |
 | Pression (cliquable) | Fond `--selected`. |
 | Focus clavier (cliquable) | Anneau `--focus` de 2 px autour de toute la carte. |
 
@@ -91,6 +93,6 @@ Dans une `PageGrid` de la page composée (`Page`) : une rangée de chiffres clé
 `ActionBar` (zones `section` et `row`), `DropdownMenu`, `IconButton`, icônes Socle.
 
 ## Décisions
-D-001, D-040, D-111, D-115, D-116, D-361, D-403.
+D-001, D-040, D-111, D-115, D-116, D-361, D-403, D-423, D-424.
 
 ## Questions ouvertes

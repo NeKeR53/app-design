@@ -65,10 +65,14 @@ const TONE: Record<CardDeltaTone, string> = {
 const TREND_OF_TONE = { positive: "up", negative: "down", neutral: "flat" } as const;
 const TREND_ICON = { up: ArrowUp, down: ArrowDown, flat: Minus } as const;
 
-/** Surface, trait fin, rayon 12 px, sans ombre (D-001, D-040). Cliquable : survol `--hover`, anneau `--focus` autour de la carte. */
+/**
+ * Surface, trait fin, rayon 12 px, sans ombre (D-001, D-040). Cliquable : survol `--hover`, anneau `--focus` autour de la carte.
+ * Le fondu ne vaut que pendant le survol (D-424) : au repos, un changement de thème passe le fond d'un coup, en même
+ * temps que les textes ; un fond en fondu sous des textes déjà changés passait sous le contraste minimal.
+ */
 const ROOT = cx(
   "socle-box relative flex min-w-0 flex-col gap-2 rounded-lg border border-line bg-surface p-(--pad) font-sans text-md text-fg",
-  "transition-colors duration-[var(--dur-fast)] ease-standard",
+  "has-[[data-card-target][data-hovered]]:transition-colors has-[[data-card-target][data-hovered]]:duration-[var(--dur-fast)] has-[[data-card-target][data-hovered]]:ease-standard",
   "has-[[data-card-target][data-hovered]]:bg-hover",
   "has-[[data-card-target][data-pressed]]:bg-selected",
   "has-[[data-card-target][data-focus-visible]]:outline-2 has-[[data-card-target][data-focus-visible]]:outline-solid has-[[data-card-target][data-focus-visible]]:outline-focus has-[[data-card-target][data-focus-visible]]:outline-offset-1",

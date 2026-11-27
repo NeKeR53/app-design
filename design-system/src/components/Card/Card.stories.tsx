@@ -178,3 +178,29 @@ export const MetriqueCliquable: Story = {
     await expect(within(canvasElement).getByRole("link", { name: "En retard" })).toHaveAttribute("href", "#retards");
   },
 };
+
+/**
+ * Pas de fondu au repos (D-424) : au changement de thème, le fond change d'un coup, en même temps que les textes.
+ * Le fondu de couleur ne vaut que pendant le survol d'une carte cliquable.
+ */
+export const ThemeSansFondu: Story = {
+  render: () => (
+    <div className="flex flex-col gap-4">
+      <Card title="Atelier de Lyon">
+        <p className="m-0">Trois postes ouverts.</p>
+      </Card>
+      <Card title="Rapport trimestriel" href="#rapport">
+        <p className="m-0">Ventes, marges et retours.</p>
+      </Card>
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    const [plain, clickable] = [...canvasElement.querySelectorAll<HTMLElement>(".rounded-lg")];
+    for (const card of [plain!, clickable!]) await expect(getComputedStyle(card).transitionDuration).toBe("0s");
+    const link = within(canvasElement).getByRole("link", { name: "Rapport trimestriel" });
+    await userEvent.hover(link);
+    await waitFor(() => expect(getComputedStyle(clickable!).transitionProperty).toContain("background-color"));
+    await userEvent.unhover(link);
+    await waitFor(() => expect(getComputedStyle(clickable!).transitionDuration).toBe("0s"));
+  },
+};

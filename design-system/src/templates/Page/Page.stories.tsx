@@ -7,6 +7,8 @@ import type { Action } from "../../patterns/ActionBar/ActionBar";
 import { Select } from "../../components/Select/Select";
 import { Table } from "../../components/Table/Table";
 import { Code } from "../../components/Code/Code";
+import { Badge } from "../../components/Badge/Badge";
+import { ProgressBar } from "../../components/ProgressBar/ProgressBar";
 import { ArrowDown } from "../../icons";
 import { Copy } from "../../../.storybook/story-icons";
 
@@ -295,6 +297,109 @@ export const GrilleDeCartes: Story = {
     await expect(firstRow(rects)).toBe(4);
     await expect(new Set(rects.map((r) => Math.round(r.height))).size).toBe(1);
     await expect(Math.round(rects[1]!.left - rects[0]!.right)).toBe(24);
+  },
+};
+
+/** Pied d'un élément suivi : ligne d'état et barre d'avancement. */
+function TrackedFooter({ status, tone, when, progress }: { status: string; tone: "success" | "danger" | "info"; when: string; progress: number }) {
+  return (
+    <div className="flex flex-col gap-2">
+      <div className="flex items-center justify-between gap-2 text-sm text-fg-3">
+        <Badge tone={tone}>{status}</Badge>
+        <span>{when}</span>
+      </div>
+      <ProgressBar label={`Exécution n° ${120 + progress}`} value={progress} showValue={progress < 100} {...(tone === "danger" ? { tone: "danger" as const } : {})} />
+    </div>
+  );
+}
+
+const trackedActions: Action[] = [
+  { id: "run", label: "Relancer", icon: <ArrowDown size={16} />, onPress: fn() },
+  { id: "copy", label: "Copier le lien", icon: <Copy />, onPress: fn() },
+];
+
+function TrackedBlocks() {
+  return (
+    <>
+      <PageSection framed title="Import des commandes" description="Production · tous les jours" actions={trackedActions} footer={<TrackedFooter status="Réussi" tone="success" when="il y a 2 h" progress={100} />} />
+      <PageSection
+        framed
+        title="Export comptable"
+        description="Production · chaque lundi"
+        actions={trackedActions}
+        footer={<TrackedFooter status="En échec" tone="danger" when="il y a 3 jours" progress={100} />}
+      >
+        <p className="m-0 text-sm text-danger">La connexion au serveur a expiré après 30 secondes. Le fichier du lundi n'a pas été envoyé.</p>
+      </PageSection>
+      <PageSection framed title="Sauvegarde nocturne" description="Recette" actions={trackedActions} footer={<TrackedFooter status="En cours" tone="info" when="lancée il y a 4 min" progress={40} />}>
+        <p className="m-0 text-sm text-fg-3">Exécution précédente : réussie.</p>
+      </PageSection>
+    </>
+  );
+}
+
+/**
+ * Blocs encadrés d'une grille (D-423) : trait fin, titre `--fs-md`, marge `--pad`. Le pied (ligne d'état, barre
+ * d'avancement) est collé en bas : les trois pieds sont alignés, quelle que soit la hauteur du contenu.
+ */
+export const GrilleDeBlocsEncadres: Story = {
+  render: () => (
+    <Frame width={1100} height={320}>
+      <Page>
+        <PageGrid columns={3}>
+          <TrackedBlocks />
+        </PageGrid>
+      </Page>
+    </Frame>
+  ),
+  play: async ({ canvasElement }) => {
+    const rects = cells(canvasElement);
+    await expect(firstRow(rects)).toBe(3);
+    await expect(new Set(rects.map((r) => Math.round(r.height))).size).toBe(1);
+    const sections = [...canvasElement.querySelectorAll<HTMLElement>("[data-page-grid] > section")];
+    for (const section of sections) {
+      const s = getComputedStyle(section);
+      await expect(s.borderTopWidth).toBe("1px");
+      await expect(s.borderTopLeftRadius).toBe("12px");
+      // Titre compact : la taille de texte de base, pas celle d'un titre de section.
+      const h2 = section.querySelector("h2")!;
+      const fsMd = getComputedStyle(section).getPropertyValue("--fs-md").trim();
+      await expect(getComputedStyle(h2).fontSize).toBe(fsMd);
+    }
+    // Pieds collés en bas : même bas, à la marge intérieure du bloc.
+    const feet = sections.map((section) => section.querySelector<HTMLElement>("[data-section-footer]")!.getBoundingClientRect());
+    await expect(new Set(feet.map((r) => Math.round(r.bottom))).size).toBe(1);
+    const pad = parseFloat(getComputedStyle(sections[0]!).paddingBottom);
+    await expect(Math.round(sections[0]!.getBoundingClientRect().bottom - feet[0]!.bottom)).toBe(Math.round(pad + 1));
+    // Le bloc le plus court a de la place libre au-dessus de son pied.
+    const firstHead = sections[0]!.querySelector("h2")!.getBoundingClientRect();
+    await expect(feet[0]!.top - firstHead.bottom).toBeGreaterThan(24);
+  },
+};
+
+/** Le pied ne montre que des données prêtes : caché pendant le chargement, l'erreur et l'état vide (D-423). Sans `framed`, pas de cadre. */
+export const PiedDeBloc: Story = {
+  render: () => (
+    <Frame width={1100} height={360}>
+      <Page>
+        <PageGrid columns={3}>
+          <PageSection framed title="Chargement" state="loading" footer={<TrackedFooter status="Réussi" tone="success" when="hier" progress={100} />} />
+          <PageSection framed title="Erreur" state="error" onRetry={fn()} footer={<TrackedFooter status="Réussi" tone="success" when="hier" progress={100} />} />
+          <PageSection framed title="Vide" empty={{ title: "Aucune exécution" }} footer={<TrackedFooter status="Réussi" tone="success" when="hier" progress={100} />} />
+        </PageGrid>
+        <PageSection title="Sans cadre" footer={<TrackedFooter status="Réussi" tone="success" when="hier" progress={100} />}>
+          <p className="m-0">Un bloc sans `framed` garde son dessin ; son pied vient après le contenu.</p>
+        </PageSection>
+      </Page>
+    </Frame>
+  ),
+  play: async ({ canvasElement }) => {
+    const c = within(canvasElement);
+    await expect(c.queryAllByRole("progressbar")).toHaveLength(1);
+    const plain = c.getByRole("region", { name: "Sans cadre" });
+    await expect(getComputedStyle(plain).borderTopWidth).toBe("0px");
+    await expect(plain).not.toHaveAttribute("data-framed");
+    await expect(within(plain).getByRole("progressbar")).toBeVisible();
   },
 };
 
