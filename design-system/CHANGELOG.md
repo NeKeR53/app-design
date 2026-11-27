@@ -2,6 +2,14 @@
 
 Versions selon semver (règle 6 du skill design) : une nouvelle option facultative est une version mineure ; un changement qui casse l'existant est une version majeure, avec une note de migration.
 
+## [1.25.0] — 2026-11-27
+
+### Ajouté
+- `PageSection` : options `framed` (bloc encadré et compact pour une `PageGrid` : trait fin, rayon 12 px, marge `--pad`, titre `--fs-md`) et `footer` (pied collé en bas : les pieds d'une ligne de grille sont alignés ; caché pendant le chargement, l'erreur et l'état vide) (D-423). Sans elles, rien ne change.
+
+### Corrigé
+- `Card` : le fond ne passe plus d'un thème à l'autre en fondu ; le fondu ne vaut que pendant le survol d'une carte cliquable. Les textes ne passent plus sous le contraste minimal pendant un changement de thème (D-424).
+
 ## [1.24.0] — 2026-11-27
 
 ### Ajouté

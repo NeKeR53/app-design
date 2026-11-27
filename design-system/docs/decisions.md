@@ -3029,3 +3029,19 @@
 - Raison : D-020 prévoyait ces boutons, mais rien ne les dessinait : une app sans barre native (Tauri `decorations: false`) n'avait aucun moyen de réduire ou fermer sa fenêtre, et une app avec barre native gardait une bande vide de 138 px. Les actions passent par le provider, comme `isFullscreen` (D-370) : c'est un état de la fenêtre, et Socle ne dépend pas de Tauri.
 - Options écartées : import de l'API de fenêtre Tauri dans Socle (Socle reste générique) ; option sur `AppShell` (chaque écran devrait la passer) ; rouge `--danger` pour « Fermer » (en sombre il devient saumon, loin de Windows) ; boutons dans la tabulation (Windows ne le fait pas, et ils allongeraient le parcours de la barre) ; info-bulles (le nom accessible suffit ; à revoir si une app le demande).
 - Validation : par délégation de l'utilisateur, 2026-11-27 — docs/validation/components/AppShell-windows-v1.html. Stories `WindowsFenetre`, `WindowsSansBoutons`, `MacIgnoreWindowControls`.
+
+## D-423 — PageSection : bloc encadré et pied collé en bas
+- Date : 2026-11-27
+- Portée : Page (`PageSection` : `framed`, `footer`)
+- Décision : deux options facultatives de `PageSection`. `framed` dessine un bloc compact pour une `PageGrid` : fond `--surface`, trait 1 px `--line`, rayon 12 px, sans ombre (comme `Card`, D-001, D-040), marge intérieure `--pad`, titre `h2` en `--fs-md`, 8 px sous l'en-tête. `footer` ajoute un pied après le contenu (12 px au-dessus), collé en bas quand le bloc est plus haut que son contenu : dans une ligne de `PageGrid`, les pieds sont alignés. Le pied est caché pendant le chargement, l'erreur et l'état vide. Les actions restent dans l'en-tête (zone `section`). Sans ces options, le dessin et le balisage ne changent pas.
+- Raison : un tableau de suivi (jobs, déploiements) range des blocs titrés, avec des actions d'en-tête, une ligne d'état et une barre d'avancement en bas. Une `PageSection` dans une `PageGrid` n'avait ni cadre ni bas : le bloc paraissait grand (titre `--fs-lg`, sans limite visible) et la barre flottait au milieu quand un voisin de ligne était plus haut. `Card` n'a ni description, ni actions d'en-tête, ni pied.
+- Options écartées : `footer` et `description` sur `Card` (ses actions vont dans le pied ou dans « … » : il aurait fallu un nouvel emplacement d'actions, et `Card` doublait `PageSection`) ; un nouveau composant de bloc de grille (doublon) ; un pied toujours collé, sans cadre (la limite du bloc ne se voit pas, et le bloc reste grand) ; le pied visible pendant le chargement (il montrerait des données périmées).
+- Validation : par délégation de l'utilisateur, 2026-11-27 — docs/validation/components/PageSection-v1.html (Q1 A, Q2 A). Stories `GrilleDeBlocsEncadres`, `PiedDeBloc`.
+
+## D-424 — Card : pas de fondu du fond au changement de thème
+- Date : 2026-11-27
+- Portée : Card (corrige D-361)
+- Décision : le fondu de couleur de `Card` (`--dur-fast`) ne vaut plus que pendant le survol d'une carte cliquable. Au repos, un changement de thème (clair, sombre) passe le fond d'un coup, en même temps que les textes.
+- Raison : le fondu s'appliquait aussi au changement de thème. Le fond passait d'un thème à l'autre en 120 ms, alors que le titre, le contenu et les étiquettes changeaient tout de suite : pendant le fondu, du texte sombre sur un fond encore sombre (ou l'inverse) tombait sous un contraste de 3:1. Une carte simple ne change jamais de fond : elle n'avait pas besoin du fondu.
+- Options écartées : retirer tout fondu (le survol d'une carte cliquable perd sa douceur, sans gain) ; couper les transitions de toute l'app pendant un changement de thème (mécanisme global, hors du besoin) ; mettre aussi les textes en fondu (chaque composant enfant devrait suivre).
+- Validation : par délégation de l'utilisateur, 2026-11-27 — docs/validation/components/PageSection-v1.html (constat et correctif). Story `ThemeSansFondu`.

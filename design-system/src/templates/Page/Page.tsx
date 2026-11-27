@@ -89,11 +89,31 @@ export interface PageSectionProps {
   onRetry?: () => void;
   /** Donné, il remplace le contenu par un état vide compact (D-216). */
   empty?: PageEmpty;
+  /**
+   * Bloc encadré (D-423) : trait fin, rayon 12 px, marge `--pad`, titre en `--fs-md`. Pour un bloc compact d'une
+   * `PageGrid` (un élément suivi, un résumé). Défaut : `false`, bloc sans cadre.
+   */
+  framed?: boolean;
+  /**
+   * Pied du bloc (D-423) : collé en bas quand le bloc est plus haut que son contenu (ligne d'une `PageGrid`). Une ligne
+   * d'état, une barre d'avancement. Caché pendant le chargement, l'erreur et l'état vide.
+   */
+  footer?: ReactNode;
   children?: ReactNode;
 }
 
-/** Bloc titré de Page et DetailPage (D-213). Ne se replie pas. */
-export function PageSection({ title, description, actions, state = "ready", onRetry, empty, children }: PageSectionProps) {
+/** Bloc titré de Page et DetailPage (D-213). Ne se replie pas. Encadré et pied collé en bas : D-423. */
+export function PageSection({
+  title,
+  description,
+  actions,
+  state = "ready",
+  onRetry,
+  empty,
+  framed = false,
+  footer,
+  children,
+}: PageSectionProps) {
   const id = useId();
   const body =
     state === "loading" ? (
@@ -110,18 +130,33 @@ export function PageSection({ title, description, actions, state = "ready", onRe
     ) : (
       children
     );
+  // Le pied ne montre que des données prêtes : il disparaît avec le contenu (chargement, erreur, vide).
+  const hasFooter = footer != null && footer !== false && state === "ready" && !empty;
   return (
-    <section aria-labelledby={id} className="socle-page-section min-w-0">
-      <div className="mb-2.5 flex items-start gap-3">
+    <section
+      aria-labelledby={id}
+      {...(framed ? { "data-framed": "" } : {})}
+      className={cx(
+        "socle-page-section min-w-0",
+        framed && "socle-box rounded-lg border border-line bg-surface p-(--pad)",
+        (framed || hasFooter) && "flex flex-col",
+      )}
+    >
+      <div className={cx("flex items-start gap-3", framed ? "mb-2" : "mb-2.5")}>
         <div className="min-w-0 flex-1">
-          <h2 id={id} className="m-0 text-lg leading-snug font-heading text-fg">
+          <h2 id={id} className={cx("m-0 leading-snug font-heading text-fg", framed ? "text-md" : "text-lg")}>
             {title}
           </h2>
           {description && <p className="m-0 mt-0.5 text-sm text-fg-2">{description}</p>}
         </div>
         {actions && actions.length > 0 && state === "ready" && <ActionBar actions={actions} zone="section" subject={title} />}
       </div>
-      {body}
+      {framed || hasFooter ? <div className="min-w-0">{body}</div> : body}
+      {hasFooter && (
+        <div data-section-footer="" className={cx("mt-auto min-w-0", children != null && children !== false && "pt-3")}>
+          {footer}
+        </div>
+      )}
     </section>
   );
 }
