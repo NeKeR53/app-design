@@ -1,6 +1,6 @@
 # DetailPage
-Statut : validé (2026-11-23) — Version : depuis 0.3.0
-Validation : par délégation de l'utilisateur, 2026-11-23 — docs/validation/components/DetailPage-v1.html
+Statut : validé (2026-11-23) — Version : depuis 0.3.0 ; `isRefreshing` depuis 1.27.0
+Validation : par délégation de l'utilisateur, 2026-11-23 — docs/validation/components/DetailPage-v1.html ; `isRefreshing` : par délégation de l'utilisateur, 2026-11-27 — docs/validation/components/Relecture-Graphique-Suivi-v1.html (Q1 A)
 
 ## Rôle
 Gabarit de la zone `main` d'AppShell pour un élément ouvert en entier : une demande, une facture, un document. Il montre le contenu principal de l'élément, en sections.
@@ -34,6 +34,7 @@ Aucune.
 | `width` | `"text" \| "full"` | `"text"` | Colonne de 760 px centrée, ou toute la largeur (D-214). |
 | `state` | `"ready" \| "loading" \| "error" \| "not-found"` | `"ready"` | État de la page (D-215). |
 | `onRetry` | `() => void` | aucun | « Réessayer » de l'état `error`. |
+| `isRefreshing` | `boolean` | `false` | Relecture en fond : l'élément reste affiché, barre de 2 px sous l'en-tête, `aria-busy` sur le contenu. Ignoré hors de `ready` (D-426). |
 | `notFound` | `{ title: string; description?: string; icon?: ReactNode; action?: Action }` | « Élément introuvable » | État `not-found` : `EmptyState`, action en zone `empty`. |
 | `children` | `ReactNode` | — | Les sections. |
 
@@ -53,7 +54,8 @@ Aucune.
 | `loading` | Après 200 ms (D-165) : squelettes du titre et de la méta si `title` est absent, squelettes de deux sections à la place du contenu. Actions masquées. |
 | `error` | Message centré « Impossible de charger la page » avec « Réessayer » (`role="alert"`) à la place du contenu (D-085). Actions masquées. |
 | `not-found` | `EmptyState` à la place du contenu ; titre de l'en-tête masqué s'il est absent. Actions masquées. |
-| rechargement | Le contenu reste ; l'attente se voit sur l'action qui recharge (`ActionBar`, D-116). |
+| rechargement par une action | Le contenu reste ; l'attente se voit sur l'action qui recharge (`ActionBar`, D-116). |
+| relecture en fond (`isRefreshing`) | Le contenu et l'en-tête restent ; une barre de 2 px `--accent` défile en haut du contenu, sous le trait de l'en-tête, sans le déplacer ; le contenu porte `aria-busy` et la barre est nommée « Mise à jour… » (D-426). Fixe, à demi opaque, si l'utilisateur réduit les animations. |
 
 Dans tous les états, le lien de retour reste visible et actif (D-215).
 
@@ -66,6 +68,7 @@ Dans tous les états, le lien de retour reste visible et actif (D-215).
 | États chargement, erreur, introuvable ; retour toujours visible (D-215) | verrouillé | `Chargement`, `Erreur`, `Introuvable` |
 | Largeur de lecture par défaut, pleine largeur en option (D-214) | réglable par page | `PleineLargeur` |
 | États d'une section (D-216) | réglable par section | `EtatsDeSection` |
+| Relecture en fond : contenu gardé, barre de 2 px sous l'en-tête, `aria-busy` (D-426) | réglable par page (`isRefreshing`) | `Relecture` |
 
 ## Contenu
 - Titre long : à la ligne, jamais tronqué (D-212).
@@ -98,7 +101,7 @@ Uniquement dans la zone `main` d'AppShell, ouvert depuis une liste (vue fermable
 Contient `Link` (retour), `Badge`, `ActionBar`, `PageSection`, `Skeleton`, `EmptyState`, `Button`. Se combine avec `Drawer` à côté. Ne contient pas de `ListPage`, `FormPage` ni `Page`.
 
 ## Décisions
-D-018, D-021, D-085, D-111, D-116, D-117, D-159, D-165, D-166, D-210, D-211, D-212, D-213, D-214, D-215, D-216
+D-018, D-021, D-085, D-111, D-116, D-117, D-159, D-165, D-166, D-210, D-211, D-212, D-213, D-214, D-215, D-216, D-426
 
 ## Questions ouvertes
 Aucune.

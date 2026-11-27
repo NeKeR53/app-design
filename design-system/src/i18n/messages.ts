@@ -96,6 +96,12 @@ export interface SocleMessages {
   progressOf: (value: string, max: string) => string;
   /* Gabarits DetailPage et Page */
   backTo: (label: string) => string;
+  /** Barre de relecture d'une page, d'un bloc, d'une carte (D-426). */
+  refreshing: string;
+  /** Graphique (D-428) : nom du tableau de données lu par les lecteurs d'écran. */
+  chartDataTable: (label: string) => string;
+  /** Graphique (D-428) : aucune donnée. */
+  chartNoData: string;
   pageLoadErrorTitle: string;
   pageLoadErrorText: string;
   sectionLoadError: string;
@@ -615,6 +621,9 @@ export const frenchMessages: SocleMessages = {
   codeSample: "Extrait de code",
   progressOf: (v, max) => `${v} sur ${max}`,
   backTo: (l) => `Retour à ${l}`,
+  refreshing: "Mise à jour…",
+  chartDataTable: (l) => `Données du graphique : ${l}`,
+  chartNoData: "Aucune donnée",
   pageLoadErrorTitle: "Impossible de charger la page",
   pageLoadErrorText: "Le service ne répond pas. Réessayez dans un instant.",
   sectionLoadError: "Impossible de charger cette partie",

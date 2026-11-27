@@ -1,12 +1,14 @@
 /*
  * Recette « Tableau de bord » (D-407). Doc : Dashboard.recipe.md.
  * Page composée sur toute la largeur : période dans la barre d'outils, quatre chiffres clés (Card metric) sur une
- * rangée de PageGrid, puis le graphique et le tableau côte à côte. Tout tient sur un écran.
+ * rangée de PageGrid, puis le graphique (Chart, D-428) et le tableau côte à côte. Tout tient sur un écran.
+ * UI d'abord (D-427) : au premier chargement, la barre et les titres sont là ; chaque bloc montre sa propre attente.
  */
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { useLayoutEffect, useRef, useState, type ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 import { expect, userEvent, waitFor, within } from "storybook/test";
 import { Card } from "../../components/Card/Card";
+import { Chart } from "../../components/Chart/Chart";
 import { FormattedValue } from "../../components/FormattedValue/FormattedValue";
 import { List } from "../../components/List/List";
 import { SegmentedControl } from "../../components/SegmentedControl/SegmentedControl";
@@ -48,79 +50,26 @@ const LOW_STOCK = [
   { id: "P-211", title: "Applique Arc", subtitle: "Appliques · noir", meta: "5 restants", status: { label: "Stock bas", tone: "warning" as const } },
 ];
 
-/* ---------- Le graphique de l'app ----------
- * Socle ne dessine pas de graphique : l'app prend sa librairie et les tokens `--chart-*`, `--line`, `--fg-3`.
- * Ici, un histogramme minimal en SVG tient ce rôle : une série, barres de 24 px au plus, bout arrondi de 4 px,
- * grille fine, étiquette directe sur la dernière valeur, info-bulle par barre.
- */
-function WeeklyChart({ weeks, values }: { weeks: number[]; values: number[] }) {
-  const box = useRef<HTMLDivElement>(null);
-  const [width, setWidth] = useState(520);
-  useLayoutEffect(() => {
-    const el = box.current;
-    if (!el) return;
-    const measure = () => setWidth(Math.max(240, Math.floor(el.clientWidth)));
-    measure();
-    const observer = new ResizeObserver(measure);
-    observer.observe(el);
-    return () => observer.disconnect();
-  }, []);
-  const height = 232;
-  const left = 36;
-  const bottom = 24;
-  const top = 16;
-  const max = 350;
-  const plotH = height - bottom - top;
-  const slot = (width - left) / values.length;
-  const bar = Math.min(24, slot - 8);
-  const y = (v: number) => top + plotH - (v / max) * plotH;
-  const last = values.length - 1;
-  return (
-    <div ref={box} className="w-full">
-      <svg width={width} height={height} role="img" aria-label={`Commandes par semaine, de la semaine ${weeks[0]} à la semaine ${weeks[last]} : de ${values[0]} à ${values[last]}.`} className="block font-sans">
-        {[0, 100, 200, 300].map((t) => (
-          <g key={t}>
-            <line x1={left} x2={width} y1={y(t)} y2={y(t)} stroke="var(--line)" strokeWidth={1} />
-            <text x={left - 8} y={y(t) + 4} textAnchor="end" fontSize="11" fill="var(--fg-3)">
-              {t}
-            </text>
-          </g>
-        ))}
-        {values.map((v, i) => {
-          const x = left + i * slot + (slot - bar) / 2;
-          const h = y(0) - y(v);
-          const r = 4;
-          return (
-            <g key={weeks[i]}>
-              <path d={`M${x},${y(0)} V${y(v) + r} Q${x},${y(v)} ${x + r},${y(v)} H${x + bar - r} Q${x + bar},${y(v)} ${x + bar},${y(v) + r} V${y(0)} Z`} fill="var(--chart-1)">
-                <title>{`Semaine ${weeks[i]} : ${v} commandes`}</title>
-              </path>
-              <text x={x + bar / 2} y={height - 6} textAnchor="middle" fontSize="11" fill="var(--fg-3)">
-                {`S${weeks[i]}`}
-              </text>
-              {i === last && h > 0 && (
-                <text x={x + bar / 2} y={y(v) - 6} textAnchor="middle" fontSize="11" fontWeight="600" fill="var(--fg-2)">
-                  {v}
-                </text>
-              )}
-            </g>
-          );
-        })}
-      </svg>
-    </div>
-  );
-}
-
 /* ---------- La page ---------- */
 
-type DashboardState = "ready" | "loading" | "error" | "empty" | "chart-error";
+type DashboardState = "ready" | "loading" | "refreshing" | "error" | "empty" | "chart-error";
 
 function Dashboard({ state = "ready" }: { state?: DashboardState }) {
   const [period, setPeriod] = useState("30j");
   const [opened, setOpened] = useState<string | null>(null);
   const empty = state === "empty";
-  const card = (label: string, value: ReactNode, delta?: { text: string; tone: "positive" | "negative" | "neutral"; trend?: "up" | "down" | "flat" }) => (
-    <Card variant="metric" label={label} value={value} {...(delta && !empty ? { delta } : {})} onPress={() => setOpened(label)} />
+  const loading = state === "loading";
+  const section = loading ? "loading" : "ready";
+  const card = (label: string, value: ReactNode, delta?: { text: string; tone: "positive" | "negative" | "neutral"; trend?: "up" | "down" | "flat" }, trend?: { values: number[]; label: string }) => (
+    <Card
+      variant="metric"
+      label={label}
+      value={value}
+      isLoading={loading}
+      {...(delta && !empty ? { delta } : {})}
+      {...(trend && !empty ? { trend: trend.values, trendLabel: trend.label } : {})}
+      onPress={() => setOpened(label)}
+    />
   );
   return (
     <RecipeShell
@@ -155,27 +104,34 @@ function Dashboard({ state = "ready" }: { state?: DashboardState }) {
           }
           actions={[{ id: "exporter", label: "Exporter", icon: <Download />, onPress: () => undefined }]}
           actionsLabel="Ventes"
-          state={state === "loading" ? "loading" : state === "error" ? "error" : "ready"}
+          state={state === "error" ? "error" : "ready"}
+          isRefreshing={state === "refreshing"}
           onRetry={() => undefined}
         >
           <PageGrid columns={4}>
-            {card("Commandes", empty ? "0" : <FormattedValue value={1284} type="number" />, { text: "+12 % sur 30 jours", tone: "positive" })}
-            {card("Chiffre d'affaires", empty ? "0 €" : <FormattedValue value={86420} type="money" decimals={0} />, { text: "+8 % sur 30 jours", tone: "positive" })}
-            {card("Panier moyen", empty ? "—" : <FormattedValue value={67.3} type="money" />, { text: "−3 % sur 30 jours", tone: "negative" })}
-            {card("Retours", empty ? "—" : <FormattedValue value={0.021} type="percent" decimals={1} />, { text: "−0,4 pt sur 30 jours", tone: "positive", trend: "down" })}
+            {card("Commandes", empty ? "0" : <FormattedValue value={1284} type="number" />, { text: "+12 % sur 30 jours", tone: "positive" }, { values: ORDERS, label: "Commandes sur 12 semaines, de 212 à 312" })}
+            {card("Chiffre d'affaires", empty ? "0 €" : <FormattedValue value={86420} type="money" decimals={0} />, { text: "+8 % sur 30 jours", tone: "positive" }, { values: [71, 74, 72, 76, 75, 79, 78, 81, 80, 83, 84, 86], label: "Chiffre d'affaires sur 12 semaines, de 71 k€ à 86 k€" })}
+            {card("Panier moyen", empty ? "—" : <FormattedValue value={67.3} type="money" />, { text: "−3 % sur 30 jours", tone: "negative" }, { values: [70.1, 69.8, 70.4, 69.5, 69.9, 69.2, 68.8, 69.1, 68.4, 68.0, 67.9, 67.3], label: "Panier moyen sur 12 semaines, de 70,10 € à 67,30 €" })}
+            {card("Retours", empty ? "—" : <FormattedValue value={0.021} type="percent" decimals={1} />, { text: "−0,4 pt sur 30 jours", tone: "positive", trend: "down" }, { values: [2.6, 2.5, 2.7, 2.5, 2.4, 2.4, 2.3, 2.4, 2.2, 2.2, 2.1, 2.1], label: "Retours sur 12 semaines, de 2,6 % à 2,1 %" })}
           </PageGrid>
           <PageGrid columns={2}>
             <PageSection
               title="Commandes par semaine"
               description="Les 12 dernières semaines."
-              state={state === "chart-error" ? "error" : "ready"}
+              state={state === "chart-error" ? "error" : section}
               onRetry={() => undefined}
               {...(empty ? { empty: { title: "Aucune commande sur la période", description: "Choisissez une période plus longue.", action: { id: "12m", label: "Voir 12 mois", onPress: () => setPeriod("12m") } } } : {})}
             >
-              <WeeklyChart weeks={WEEKS} values={ORDERS} />
+              <Chart
+                type="bar"
+                label={`Commandes par semaine, de la semaine ${WEEKS[0]} à la semaine ${WEEKS[WEEKS.length - 1]} : de ${ORDERS[0]} à ${ORDERS[ORDERS.length - 1]}`}
+                categories={WEEKS.map((w) => `S${w}`)}
+                series={[{ id: "commandes", label: "Commandes", values: ORDERS }]}
+              />
             </PageSection>
             <PageSection
               title="Meilleures ventes"
+              state={section}
               description="Sur 30 jours, par chiffre d'affaires."
               actions={[{ id: "tout", label: "Voir tout", primary: true, onPress: () => setOpened("Meilleures ventes") }]}
               {...(empty ? { empty: { title: "Aucune vente sur la période" } } : {})}
@@ -200,6 +156,7 @@ function Dashboard({ state = "ready" }: { state?: DashboardState }) {
           <PageGrid columns={2}>
             <PageSection
               title="Commandes en attente"
+              state={section}
               description="À expédier ou en retard."
               actions={[{ id: "toutes", label: "Voir tout", primary: true, onPress: () => setOpened("Commandes en attente") }]}
               {...(empty ? { empty: { title: "Aucune commande en attente" } } : {})}
@@ -208,6 +165,7 @@ function Dashboard({ state = "ready" }: { state?: DashboardState }) {
             </PageSection>
             <PageSection
               title="Stock bas"
+              state={section}
               description="Sous le seuil d'alerte."
               actions={[{ id: "catalogue", label: "Voir le catalogue", primary: true, onPress: () => setOpened("Stock bas") }]}
               {...(empty ? { empty: { title: "Aucun produit sous le seuil" } } : {})}
@@ -245,7 +203,7 @@ export const UnEcran: Story = {
     const tops = new Set(cards.map((b) => Math.round(b.closest("[data-page-grid] > *")!.getBoundingClientRect().top)));
     if (window.innerWidth >= 1400) await expect(tops.size).toBe(1);
     // Graphique et tableau côte à côte.
-    const chart = c.getByRole("img", { name: /^Commandes par semaine/ });
+    const chart = c.getByRole("group", { name: /^Commandes par semaine/ });
     const table = c.getByRole("grid", { name: "Meilleures ventes" });
     if (window.innerWidth >= 1200) await expect(Math.abs(chart.getBoundingClientRect().top - table.getBoundingClientRect().top)).toBeLessThan(80);
   },
@@ -262,11 +220,27 @@ export const ChiffreQuiMene: Story = {
   },
 };
 
-/** Premier chargement : la barre reste, des squelettes à la place des blocs. */
+/**
+ * Premier chargement, UI d'abord (D-427) : la barre, les libellés des cartes et les titres des blocs sont là tout de
+ * suite ; chaque valeur et chaque bloc montrent leur propre attente. La page ne passe pas en `loading`.
+ */
 export const Chargement: Story = {
   args: { state: "loading" },
   play: async ({ canvasElement }) => {
-    await waitFor(() => expect(within(canvasElement).getByRole("radio", { name: "30 jours" })).toBeVisible());
+    const c = within(canvasElement);
+    await expect(c.getByRole("radio", { name: "30 jours" })).toBeVisible();
+    await expect(c.getByRole("button", { name: "Commandes" })).toBeVisible();
+    await expect(canvasElement.querySelectorAll("[data-card-value-loading]")).toHaveLength(4);
+    await expect(c.getByRole("heading", { name: "Commandes par semaine" })).toBeVisible();
+  },
+};
+
+/** Relecture (nouvelle période, actualisation) : tout reste affiché ; une barre de 2 px sous la barre d'outils (D-426). */
+export const Relecture: Story = {
+  args: { state: "refreshing" },
+  play: async ({ canvasElement }) => {
+    await expect(canvasElement.querySelector("[data-page-content]")).toHaveAttribute("aria-busy", "true");
+    await expect(within(canvasElement).getByRole("img", { name: /^Commandes sur 12 semaines/ })).toBeVisible();
   },
 };
 

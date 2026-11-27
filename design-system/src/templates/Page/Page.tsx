@@ -1,5 +1,5 @@
 /*
- * Page composée, bloc titré et grille de blocs. Spec : Page.spec.md. Décisions : D-213 à D-218, D-403, D-418.
+ * Page composée, bloc titré et grille de blocs. Spec : Page.spec.md. Décisions : D-213 à D-218, D-403, D-418, D-426.
  */
 import { useId, type ReactNode } from "react";
 import { cx } from "../../lib/cx";
@@ -9,6 +9,7 @@ import { Button } from "../../components/Button/Button";
 import { EmptyState } from "../../components/EmptyState/EmptyState";
 import { Skeleton, SkeletonGroup } from "../../components/Skeleton/Skeleton";
 import { DropOverlay, useFileDrop } from "../../lib/fileDrop";
+import { ReloadBar } from "../../lib/results";
 
 /** Largeur de la colonne (D-214). */
 export type PageWidth = "full" | "text";
@@ -99,6 +100,11 @@ export interface PageSectionProps {
    * d'état, une barre d'avancement. Caché pendant le chargement, l'erreur et l'état vide.
    */
   footer?: ReactNode;
+  /**
+   * Relecture en fond (D-426) : le contenu reste affiché, une barre de 2 px défile en haut du bloc (sous le titre, ou
+   * sur le bord haut du cadre avec `framed`) et le bloc porte `aria-busy`. Ignoré hors de l'état `ready`. Défaut : `false`.
+   */
+  isRefreshing?: boolean;
   children?: ReactNode;
 }
 
@@ -112,9 +118,12 @@ export function PageSection({
   empty,
   framed = false,
   footer,
+  isRefreshing = false,
   children,
 }: PageSectionProps) {
   const id = useId();
+  const m = useMessages();
+  const refreshing = isRefreshing && state === "ready";
   const body =
     state === "loading" ? (
       <SkeletonGroup>
@@ -136,13 +145,21 @@ export function PageSection({
     <section
       aria-labelledby={id}
       {...(framed ? { "data-framed": "" } : {})}
+      {...(refreshing ? { "aria-busy": true } : {})}
       className={cx(
-        "socle-page-section min-w-0",
+        "socle-page-section relative min-w-0",
         framed && "socle-box rounded-lg border border-line bg-surface p-(--pad)",
         (framed || hasFooter) && "flex flex-col",
       )}
     >
-      <div className={cx("flex items-start gap-3", framed ? "mb-2" : "mb-2.5")}>
+      {refreshing && framed && <ReloadBar placement="overlay" label={m.refreshing} />}
+      <div className={cx("relative flex items-start gap-3", framed ? "mb-2" : "mb-2.5")}>
+        {/* Sans cadre, la barre passe sous l'en-tête, dans l'écart qui le sépare du contenu (D-426). */}
+        {refreshing && !framed && (
+          <div className="pointer-events-none absolute inset-x-0 top-full mt-1">
+            <ReloadBar placement="flush" label={m.refreshing} />
+          </div>
+        )}
         <div className="min-w-0 flex-1">
           <h2 id={id} className={cx("m-0 leading-snug font-heading text-fg", framed ? "text-md" : "text-lg")}>
             {title}
@@ -249,10 +266,18 @@ export interface PageProps {
   width?: PageWidth;
   /** Le contenu remplit la hauteur sans défiler (D-218). */
   fill?: boolean;
-  /** État de la page (D-215). */
+  /**
+   * État de la page (D-215). `loading` remplace tout le contenu : seulement quand aucun bloc ne peut se dessiner avant
+   * la lecture. Sinon, chaque bloc montre sa propre attente (`PageSection state="loading"`, D-427).
+   */
   state?: "ready" | "loading" | "error";
   onRetry?: () => void;
   loadingLabel?: string;
+  /**
+   * Relecture en fond (D-426) : le contenu reste affiché, une barre de 2 px défile en haut du contenu, sous la barre
+   * d'outils, et le contenu porte `aria-busy`. Ignoré hors de l'état `ready`. Défaut : `false`.
+   */
+  isRefreshing?: boolean;
   /** Fichiers déposés n'importe où sur la page : cadre « Déposez les fichiers pour les ajouter », puis l'app ajoute (D-418). Sans lui, pas de dépôt DOM. */
   onDropFiles?: (files: File[]) => void;
   /** Survol de fichiers vu par l'app (glisser-déposer du système, Tauri) : affiche le cadre (D-418). */
@@ -275,11 +300,13 @@ export function Page({
   state = "ready",
   onRetry,
   loadingLabel,
+  isRefreshing = false,
   onDropFiles,
   isDraggingFiles = false,
   dropLabel,
   children,
 }: PageProps) {
+  const refreshing = isRefreshing && state === "ready";
   const m = useMessages();
   const hasBar = toolbar !== undefined || (actions && actions.length > 0);
   const { dropProps, showDrop } = useFileDrop({ onDropFiles, isDraggingFiles });
@@ -296,7 +323,11 @@ export function Page({
           onActionDone={onActionDone}
         />
       )}
-      <div data-page-content className={cx("min-h-0 flex-1", fill && state === "ready" ? "flex flex-col overflow-hidden" : "socle-focus-scroll overflow-auto")}>
+      <div
+        data-page-content
+        {...(refreshing ? { "aria-busy": true } : {})}
+        className={cx("min-h-0 flex-1", fill && state === "ready" ? "flex flex-col overflow-hidden" : "socle-focus-scroll overflow-auto")}>
+        {refreshing && <ReloadBar placement="flush" label={m.refreshing} />}
         <PageColumn width={width} layout={cx(fill && state === "ready" ? "flex min-h-0 flex-1 flex-col pt-(--pad) [&>*]:min-h-0 [&>*]:flex-1" : "flex flex-col gap-6 py-(--pad)")}>
           {content}
         </PageColumn>

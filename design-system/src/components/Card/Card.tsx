@@ -7,8 +7,11 @@ import { Button as RACButton } from "react-aria-components/Button";
 import { Link as RACLink } from "react-aria-components/Link";
 import { buttonReset, cx } from "../../lib/cx";
 import { useMessages } from "../../provider/SocleProvider";
+import { Sparkline } from "../Chart/Chart";
 import { ArrowDown, ArrowUp, Minus } from "../../icons";
 import { ActionBar, type Action } from "../../patterns/ActionBar/ActionBar";
+import { ReloadBar } from "../../lib/results";
+import { Skeleton } from "../Skeleton/Skeleton";
 
 export type CardHeadingLevel = 2 | 3 | 4 | 5 | 6;
 export type CardDeltaTone = "positive" | "negative" | "neutral";
@@ -53,6 +56,23 @@ export interface CardMetricProps extends CardCommonProps {
   value: ReactNode;
   /** Évolution facultative. */
   delta?: CardDelta;
+  /**
+   * Valeur pas encore lue (D-426) : un squelette de la taille du chiffre remplace la valeur et l'évolution. Le libellé
+   * et la cible restent. À la place d'un « … » ou d'un « — » écrit par l'app. Défaut : `false`.
+   */
+  isLoading?: boolean;
+  /**
+   * Relecture en fond (D-426) : la valeur reste affichée, une barre de 2 px défile sur le bord haut de la carte et la
+   * carte porte `aria-busy`. Ignoré avec `isLoading`. Défaut : `false`.
+   */
+  isRefreshing?: boolean;
+  /**
+   * Petite courbe sous la valeur (D-428) : les valeurs de la période, dans l'ordre. Rendue par `Sparkline`, nommée
+   * par `trendLabel`. Cachée pendant `isLoading`.
+   */
+  trend?: ReadonlyArray<number>;
+  /** Nom accessible de la petite courbe : « Commandes sur 12 semaines, de 212 à 312 ». Obligatoire avec `trend`. */
+  trendLabel?: string;
 }
 
 export type CardProps = CardDefaultProps | CardMetricProps;
@@ -107,6 +127,7 @@ function Delta({ delta }: { delta: CardDelta }) {
 }
 
 export function Card(props: CardProps) {
+  const m = useMessages();
   const { headingLevel = 3, href, onPress, actions } = props;
   const metric = props.variant === "metric";
   const name = metric ? props.label : props.title;
@@ -137,8 +158,15 @@ export function Card(props: CardProps) {
       </div>
     ) : null;
 
+  const loading = metric && props.isLoading === true;
+  const refreshing = metric && !loading && props.isRefreshing === true;
+
   return (
-    <div className={ROOT} {...(clickable ? { "data-clickable": "" } : {})}>
+    <div
+      className={ROOT}
+      {...(clickable ? { "data-clickable": "" } : {})}
+      {...(loading || refreshing ? { "aria-busy": true } : {})}>
+      {refreshing && <ReloadBar placement="overlay" label={m.refreshing} />}
       {(heading || menu) && (
         <div className="flex min-w-0 items-start justify-between gap-2">
           {heading}
@@ -146,10 +174,18 @@ export function Card(props: CardProps) {
         </div>
       )}
       {metric ? (
-        <>
-          <div className="text-2xl leading-tight font-semibold text-fg tabular-nums">{props.value}</div>
-          {props.delta && <Delta delta={props.delta} />}
-        </>
+        loading ? (
+          // Squelette de la hauteur du chiffre (`--fs-2xl`, interligne serré) : la carte ne change pas de taille (D-426).
+          <div role="status" aria-label={m.loading} data-card-value-loading="" className="flex h-[1.25em] items-center text-2xl">
+            <Skeleton width="45%" height="0.8em" />
+          </div>
+        ) : (
+          <>
+            <div className="text-2xl leading-tight font-semibold text-fg tabular-nums">{props.value}</div>
+            {props.delta && <Delta delta={props.delta} />}
+            {props.trend && props.trend.length > 1 && <Sparkline values={props.trend} label={props.trendLabel ?? props.label} />}
+          </>
+        )
       ) : (
         props.children !== undefined && <div className="min-w-0">{props.children}</div>
       )}

@@ -55,6 +55,11 @@ export const Package = () => (
     <path d="M3 8l9 5 9-5M12 13v8" />
   </Icon>
 );
+export const Activity = () => (
+  <Icon>
+    <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
+  </Icon>
+);
 export const Book = () => (
   <Icon>
     <path d="M4 19.5V5a2 2 0 0 1 2-2h14v16H6a2 2 0 0 0-2 2.5" />

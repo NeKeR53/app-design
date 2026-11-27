@@ -5,7 +5,7 @@
  * au fur et à mesure qu'ils sont spécifiés (mode `define`) puis codés.
  * Styles : importer `socle-ui/styles.css` une fois dans l'app.
  */
-export const SOCLE_VERSION = "1.26.0";
+export const SOCLE_VERSION = "1.27.0";
 
 export { SocleProvider, useSocle } from "./provider/SocleProvider";
 export { frenchMessages } from "./i18n/messages";
@@ -272,6 +272,8 @@ export { Spinner } from "./components/Spinner/Spinner";
 export type { SpinnerProps, SpinnerSize } from "./components/Spinner/Spinner";
 export { Card } from "./components/Card/Card";
 export type { CardProps, CardDefaultProps, CardMetricProps, CardDelta, CardDeltaTone, CardHeadingLevel } from "./components/Card/Card";
+export { Chart, Sparkline } from "./components/Chart/Chart";
+export type { ChartProps, ChartSeries, ChartType, ChartSize, SparklineProps } from "./components/Chart/Chart";
 /* Nouveaux composants P4 (SplitButton, Slider, ColorPicker ; D-365 à D-367). */
 export { SplitButton } from "./components/SplitButton/SplitButton";
 export type { SplitButtonProps, SplitButtonItem, SplitButtonVariant } from "./components/SplitButton/SplitButton";

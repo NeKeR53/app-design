@@ -2,6 +2,20 @@
 
 Versions selon semver (règle 6 du skill design) : une nouvelle option facultative est une version mineure ; un changement qui casse l'existant est une version majeure, avec une note de migration.
 
+## [1.27.0] — 2026-11-27
+
+### Ajouté
+- `Chart` et `Sparkline` : graphiques en barres, en lignes et petite courbe, dessinés par Socle en SVG aux tokens `--chart-*`, sans dépendance (D-428 à D-430). Légende dès deux séries, étiquette directe, info-bulle au survol et au clavier (un arrêt de Tab, flèches, Début, Fin, Échap), tableau des valeurs pour les lecteurs d'écran.
+- `isRefreshing` (facultatif) sur `Page`, `DetailPage`, `PageSection` et `Card variant="metric"` : le contenu reste, une barre de 2 px défile en haut de la zone qui relit, sans rien déplacer, et la zone porte `aria-busy` (D-426).
+- `Card variant="metric"` : `isLoading` (squelette à la hauteur du chiffre, à la place d'un « … ») ; `trend` et `trendLabel` (petite courbe sous l'évolution) (D-426, D-428).
+- Recette « Tableau de suivi » (`TrackingBoard`) : une grille de `PageSection framed`, un bloc par élément suivi, état et avancement en pied, actions en tête ; captures en clair et en sombre (D-431).
+- layout-rules : section « Attente et relecture : UI d'abord » (D-426, D-427) ; ligne « Tableau de suivi » dans le choix des recettes.
+- Messages : `refreshing` (« Mise à jour… »), `chartDataTable`, `chartNoData`.
+
+### Corrigé
+- Recette « Tableau de bord » : le premier chargement n'utilise plus `Page state="loading"`. La barre et les titres s'affichent tout de suite, chaque carte et chaque bloc attendent à leur place (D-427). Le graphique est un `Chart` ; les cartes ont leur petite courbe ; relecture en `isRefreshing`.
+- Captures des recettes refaites : la sidebar du cadre des recettes a l'entrée « Suivi ».
+
 ## [1.26.0] — 2026-11-27
 
 ### Ajouté

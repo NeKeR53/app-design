@@ -1,6 +1,6 @@
 # Page
-Statut : validé (2026-11-26) — Version : depuis 0.3.0 ; `PageGrid` depuis 1.20.0 ; dépôt de fichiers depuis 1.22.0 ; `PageSection` encadrée et pied depuis 1.25.0 ; place de l’anneau de focus dans la barre depuis 1.26.0
-Validation : par délégation de l'utilisateur, 2026-11-23 — docs/validation/components/DetailPage-v1.html ; `PageGrid` et vue d'ensemble : par délégation de l'utilisateur, 2026-11-26 — docs/validation/components/PageGrid-v1.html ; dépôt de fichiers : par délégation de l'utilisateur, 2026-11-26 — docs/validation/components/PageDepot-v1.html (Q1 A, Q2 A) ; `PageSection` encadrée et pied : par délégation de l'utilisateur, 2026-11-27 — docs/validation/components/PageSection-v1.html (Q1 A, Q2 A)
+Statut : validé (2026-11-26) — Version : depuis 0.3.0 ; `PageGrid` depuis 1.20.0 ; dépôt de fichiers depuis 1.22.0 ; `PageSection` encadrée et pied depuis 1.25.0 ; place de l’anneau de focus dans la barre depuis 1.26.0 ; `isRefreshing` depuis 1.27.0
+Validation : par délégation de l'utilisateur, 2026-11-23 — docs/validation/components/DetailPage-v1.html ; `PageGrid` et vue d'ensemble : par délégation de l'utilisateur, 2026-11-26 — docs/validation/components/PageGrid-v1.html ; dépôt de fichiers : par délégation de l'utilisateur, 2026-11-26 — docs/validation/components/PageDepot-v1.html (Q1 A, Q2 A) ; `PageSection` encadrée et pied : par délégation de l'utilisateur, 2026-11-27 — docs/validation/components/PageSection-v1.html (Q1 A, Q2 A) ; `isRefreshing` et « UI d'abord » : par délégation de l'utilisateur, 2026-11-27 — docs/validation/components/Relecture-Graphique-Suivi-v1.html (Q1 A, Q2 A, Q3 A)
 
 ## Rôle
 Page composée : gabarit libre de la zone `main` d'AppShell, quand aucun autre gabarit ne convient (tableau de bord, éditeur, graphique, synthèse de quelques blocs). Elle pose les zones standard ; l'app y place des composants du socle, sans HTML stylé (D-217). Ses blocs s'empilent, ou se rangent côte à côte dans `PageGrid` pour tenir sur un écran (D-403, D-404). Elle reçoit les fichiers déposés n'importe où sur la page (D-418).
@@ -44,9 +44,10 @@ Aucune.
 | `footer` | `ReactNode` | aucun | Pied fixe. |
 | `width` | `"full" \| "text"` | `"full"` | Toute la largeur, ou colonne de 760 px centrée (D-214). |
 | `fill` | `boolean` | `false` | Le contenu prend la hauteur sans défiler (D-218). |
-| `state` | `"ready" \| "loading" \| "error"` | `"ready"` | État de la page (D-215). |
+| `state` | `"ready" \| "loading" \| "error"` | `"ready"` | État de la page (D-215). `loading` remplace tout le contenu : seulement quand aucun bloc ne peut se dessiner avant la lecture. Sinon, chaque bloc montre sa propre attente (D-427). |
 | `onRetry` | `() => void` | aucun | « Réessayer » de l'état `error`. |
 | `loadingLabel` | `string` | « Chargement… » | Nom annoncé pendant le chargement. |
+| `isRefreshing` | `boolean` | `false` | Relecture en fond : le contenu reste, barre de 2 px sous la barre d'outils, `aria-busy` sur le contenu. Ignoré hors de `ready` (D-426). |
 | `onDropFiles` | `(files: File[]) => void` | aucun | Fichiers déposés n'importe où sur la page : cadre « Déposez les fichiers pour les ajouter », puis l'app ajoute (D-418). Sans lui, pas de dépôt DOM. |
 | `isDraggingFiles` | `boolean` | `false` | Survol de fichiers vu par l'app (glisser-déposer du système, Tauri) : affiche le cadre (D-418). |
 | `dropLabel` | `string` | « Déposez les fichiers pour les ajouter » (i18n) | Texte du cadre de dépôt. |
@@ -59,6 +60,7 @@ Aucune.
 | `PageSection` : `empty` | `{ title: string; description?: string; action?: Action }` | aucun | Donné, il remplace le contenu par un `EmptyState` compact (D-216). |
 | `PageSection` : `framed` | `boolean` | `false` | Bloc encadré et compact, pour une `PageGrid` (D-423). |
 | `PageSection` : `footer` | `ReactNode` | aucun | Pied du bloc, collé en bas : une ligne d'état, une barre d'avancement (D-423). |
+| `PageSection` : `isRefreshing` | `boolean` | `false` | Relecture en fond du bloc : contenu gardé, barre de 2 px sous l'en-tête (sur le bord haut du cadre avec `framed`), `aria-busy`. Ignoré hors de `ready` (D-426). |
 | `PageGrid` : `columns` | `2 \| 3 \| 4` | `2` | Colonnes égales quand la place le permet ; moins de colonnes quand une colonne passerait sous 240 px (D-403). |
 | `PageGrid` : `children` | `ReactNode` | — | Les blocs : `PageSection`, `Card`, un composant du socle. |
 
@@ -75,9 +77,11 @@ Aucune.
 | État | Rendu |
 |---|---|
 | `ready` | Zones et blocs. |
-| `loading` | Squelettes de deux blocs à la place du contenu, après 200 ms (D-165). La barre et le pied restent. |
+| `loading` | Squelettes de deux blocs à la place du contenu, après 200 ms (D-165). La barre et le pied restent. Rare : « UI d'abord » (D-427), les blocs se dessinent tout de suite et chacun attend à sa place (section `loading`, `Card` `isLoading`). |
+| Relecture (`isRefreshing`) | Le contenu reste ; une barre de 2 px `--accent` défile en haut du contenu, sous la barre d'outils, sans le déplacer ; le contenu porte `aria-busy`, la barre est nommée « Mise à jour… » (D-426). Fixe, à demi opaque, si l'utilisateur réduit les animations. |
 | `error` | « Impossible de charger la page » avec « Réessayer » à la place du contenu (`role="alert"`). |
 | Section `loading` | Titre, puis deux lignes de squelette. |
+| Section en relecture (`isRefreshing`) | Titre, contenu et pied restent ; la barre de 2 px passe sous l'en-tête (dans l'écart qui le sépare du contenu), ou sur le bord haut du cadre, dans son rayon, avec `framed` ; la section porte `aria-busy` (D-426). |
 | Section `error` | Titre, puis message compact « Impossible de charger cette partie » avec « Réessayer ». |
 | Section vide | Titre, puis `EmptyState` compact ; action en zone `empty`. |
 | Fichiers au-dessus de la page (`onDropFiles`, ou `isDraggingFiles`) | Cadre pointillé `--accent` posé sur toute la page, texte « Déposez les fichiers pour les ajouter » (D-418). |
@@ -92,6 +96,7 @@ Aucune.
 | `PageGrid` : blocs côte à côte, écart de 24 px, même hauteur sur une ligne (D-403) | réglable par page (`columns`) | `Grille`, `GrilleDeCartes` |
 | `PageSection` : pied collé en bas, pieds d'une ligne alignés, cadre et titre compacts avec `framed` (D-423) | réglable par bloc (`framed`, `footer`) | `GrilleDeBlocsEncadres` |
 | `PageSection` : pied caché pendant le chargement, l'erreur et l'état vide ; sans `framed`, pas de cadre (D-423) | verrouillé | `PiedDeBloc` |
+| Relecture en fond de la page et d'un bloc : contenu gardé, barre de 2 px qui ne déplace rien, `aria-busy` ; ignorée hors de `ready` (D-426) | réglable par page et par bloc (`isRefreshing`) | `Relecture` |
 | `PageGrid` : moins de colonnes quand la grille rétrécit, jamais sous 240 px par colonne ; 4 passe à 2 (D-403) | verrouillé | `GrilleEtroite` |
 | Dépôt de fichiers sur toute la page ; un glisser qui sort ou finit ailleurs retire le cadre ; un dépôt déjà pris par un enfant (`FileUpload`, `ChatComposer`) n'est pas compté deux fois ; sans `onDropFiles`, aucun cadre (D-418) | réglable par l'app (`onDropFiles`) | `DepotDeFichiers`, `Zones` |
 | `isDraggingFiles` affiche le cadre sans dépôt DOM ; `dropLabel` change son texte (D-418) | réglable par l'app (`isDraggingFiles`, `dropLabel`) | `DepotSignaleParLApp` |
@@ -100,6 +105,7 @@ Aucune.
 - Titre de section long : à la ligne.
 - Pied : une ligne courte ; nombres en chiffres tabulaires.
 - Pied d'une `PageSection` (D-423) : ce qui se compare d'un bloc à l'autre, sur la même ligne de la grille (état, date, avancement). Le reste (une erreur, une note) va dans le contenu.
+- UI d'abord (D-427) : la barre d'outils, les titres des blocs et les libellés des cartes s'affichent tout de suite ; seul le bloc qui attend montre son attente (`PageSection state="loading"`, `Card` `isLoading`). Une relecture garde ce qui est affiché (`isRefreshing`, D-426).
 - Vue d'ensemble d'abord (D-404) : les informations clés tiennent sur un écran. Les blocs courts et de même rang (chiffres clés, listes courtes) se rangent côte à côte dans `PageGrid` ; pas de longue pile de blocs qu'il faut faire défiler pour comprendre la page.
 - `width="text"` sert à un texte à lire (une note, une procédure). Un tableau de bord, une synthèse ou une page de travail prennent toute la largeur (D-214, D-404).
 - Une action (importer, ajouter, actualiser) est une `Action` de la barre d'outils ou d'une section, jamais un bloc à elle seule (D-404).
@@ -131,7 +137,7 @@ Zone `main` d'AppShell. `PageSection` : dans `Page` et `DetailPage`. `PageGrid` 
 Contient `ActionBar`, `Skeleton`, `EmptyState`, `Button`, et le cadre de dépôt partagé avec `ListPage` et `ChatPage`. Les zones reçoivent des composants du socle (`Select`, `ComboBox`, `Table`, `List`, `Tabs`…). Ne contient pas d'autre gabarit. `PageGrid` reçoit des `PageSection`, des `Card` et des composants du socle ; pas une autre `PageGrid`.
 
 ## Décisions
-D-085, D-111, D-113, D-117, D-154, D-159, D-165, D-166, D-213, D-214, D-215, D-216, D-217, D-218, D-382, D-403, D-404, D-416, D-418, D-423
+D-085, D-111, D-113, D-117, D-154, D-159, D-165, D-166, D-213, D-214, D-215, D-216, D-217, D-218, D-382, D-403, D-404, D-416, D-418, D-423, D-426, D-427
 
 ## Questions ouvertes
 Aucune.

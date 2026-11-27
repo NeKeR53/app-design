@@ -54,12 +54,35 @@ export function highlight(text: string, terms: string[] | undefined): ReactNode 
   return out;
 }
 
-/** Barre de 2 px qui défile en haut de la zone pendant un rechargement (D-084). */
-export function ReloadBar() {
+/**
+ * Barre de 2 px qui défile en haut de la zone pendant un rechargement (D-084).
+ * `sticky` (défaut) : en tête d'une zone qui défile, collée en haut. `overlay` : posée en haut d'un bloc positionné,
+ * rognée par son rayon (Card, PageSection encadrée). `flush` : collée en haut d'une zone qui défile, sans prendre de
+ * hauteur (Page, DetailPage, D-426). Aucune ne déplace le contenu, sauf `sticky` (2 px, comme avant).
+ */
+export function ReloadBar({ label, placement = "sticky" }: { label?: string | undefined; placement?: "sticky" | "overlay" | "flush" }) {
   const m = useMessages();
+  const bar = <span className="socle-reload absolute inset-y-0 w-[30%] bg-accent" />;
+  const common = { role: "progressbar" as const, "aria-label": label ?? m.loadingResults };
+  if (placement === "overlay")
+    return (
+      <div className="pointer-events-none absolute inset-0 z-[3] overflow-hidden rounded-[inherit]">
+        <div {...common} data-reload-bar="" className="absolute inset-x-0 top-0 h-0.5 overflow-hidden">
+          {bar}
+        </div>
+      </div>
+    );
+  if (placement === "flush")
+    return (
+      <div className="pointer-events-none sticky top-0 z-[3] h-0">
+        <div {...common} data-reload-bar="" className="absolute inset-x-0 top-0 h-0.5 overflow-hidden">
+          {bar}
+        </div>
+      </div>
+    );
   return (
-    <div role="progressbar" aria-label={m.loadingResults} className="pointer-events-none sticky top-0 z-[3] h-0.5 overflow-hidden">
-      <span className="socle-reload absolute inset-y-0 w-[30%] bg-accent" />
+    <div {...common} data-reload-bar="" className="pointer-events-none sticky top-0 z-[3] h-0.5 overflow-hidden">
+      {bar}
     </div>
   );
 }

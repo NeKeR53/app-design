@@ -121,8 +121,15 @@ Avant d'écrire une page, partir de la recette la plus proche (`ai/recipes/`) : 
 | traite des éléments un par un jusqu'à vider la file | File de tri (D-408) |
 | montre une collection et la fiche de l'élément choisi | Liste et fiche (D-409) |
 | montre des éléments qu'on reconnaît à leur image | Catalogue (D-410) |
+| surveille des éléments qui tournent seuls (tâches, jobs, déploiements) : état, dernière exécution, actions | Tableau de suivi (D-431) |
 
 Une page qui ne ressemble à aucune recette suit les gabarits et la règle « Vue d'ensemble d'abord ».
+
+## Attente et relecture : UI d'abord (D-426, D-427)
+- Premier chargement : la structure s'affiche tout de suite (barre d'outils, titres des blocs, libellés des cartes, en-tête). Seul ce qui attend montre son attente, à sa place : `PageSection state="loading"`, `Card` `isLoading`, squelettes de `Table`, `List`, `ListPage`, `Drawer`.
+- L'état `loading` d'une page entière (`Page`, `DetailPage`) est réservé au cas où rien ne peut se dessiner avant la lecture : l'élément ouvert lui-même est inconnu.
+- Relecture : ce qui est affiché reste. Une barre de 2 px défile en haut de la zone qui relit (`isRefreshing` de `Page`, `DetailPage`, `PageSection`, `Card`, `isLoading` de `Table`, `List`, `Drawer` avec des données) ; jamais de squelettes ni de page vide.
+- Graphiques : `Chart` et `Sparkline` (D-428) ; un autre type de graphique est hors design.
 
 ## Petites règles
 

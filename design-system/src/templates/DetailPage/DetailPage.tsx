@@ -1,5 +1,5 @@
 /*
- * Gabarit d'un élément ouvert en entier. Spec : DetailPage.spec.md. Décisions : D-210 à D-216.
+ * Gabarit d'un élément ouvert en entier. Spec : DetailPage.spec.md. Décisions : D-210 à D-216, D-426.
  */
 import { Fragment, type ReactNode } from "react";
 import { Link as RACLink } from "react-aria-components/Link";
@@ -10,6 +10,7 @@ import { useMessages } from "../../provider/SocleProvider";
 import { ActionBar, type Action } from "../../patterns/ActionBar/ActionBar";
 import { Badge, type StatusTone } from "../../components/Badge/Badge";
 import { Skeleton, SkeletonGroup } from "../../components/Skeleton/Skeleton";
+import { ReloadBar } from "../../lib/results";
 import { PageColumn, PageEmptyState, PageError, PageSection, PageSkeleton, type PageEmpty, type PageWidth } from "../Page/Page";
 
 export interface DetailPageBack {
@@ -37,6 +38,11 @@ export interface DetailPageProps {
   /** État de la page (D-215). */
   state?: "ready" | "loading" | "error" | "not-found";
   onRetry?: () => void;
+  /**
+   * Relecture en fond (D-426) : l'élément reste affiché, une barre de 2 px défile sous l'en-tête et le contenu porte
+   * `aria-busy`. Ignoré hors de l'état `ready`. Défaut : `false`.
+   */
+  isRefreshing?: boolean;
   /** État `not-found` : titre, phrase, action (zone `empty`). */
   notFound?: PageEmpty;
   /** Les sections : `DetailPage.Section`. */
@@ -77,11 +83,13 @@ export function DetailPage({
   width = "text",
   state = "ready",
   onRetry,
+  isRefreshing = false,
   notFound,
   children,
 }: DetailPageProps) {
   const m = useMessages();
   const ready = state === "ready";
+  const refreshing = isRefreshing && ready;
   const showTitle = title !== undefined && title !== "";
   const content =
     state === "loading" ? (
@@ -146,7 +154,8 @@ export function DetailPage({
           </div>
         </PageColumn>
       </header>
-      <div data-page-content className="socle-focus-scroll min-h-0 flex-1 overflow-auto">
+      <div data-page-content {...(refreshing ? { "aria-busy": true } : {})} className="socle-focus-scroll min-h-0 flex-1 overflow-auto">
+        {refreshing && <ReloadBar placement="flush" label={m.refreshing} />}
         <PageColumn width={width} layout="[&>section]:py-5 [&>section+section]:border-t [&>section+section]:border-line">
           {content}
         </PageColumn>

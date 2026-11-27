@@ -313,3 +313,22 @@ export const PleineLargeur: Story = {
     await expect(Math.round(col.getBoundingClientRect().width)).toBe(760 + 2 * pad);
   },
 };
+
+/** Relecture en fond (D-426) : l'élément reste affiché ; une barre de 2 px sous l'en-tête, `aria-busy` sur le contenu. */
+export const Relecture: Story = {
+  render: () => (
+    <Frame>
+      <DetailPage {...base} actions={actions()} isRefreshing>
+        <Sections />
+      </DetailPage>
+    </Frame>
+  ),
+  play: async ({ canvasElement }) => {
+    const content = canvasElement.querySelector<HTMLElement>("[data-page-content]")!;
+    await expect(content).toHaveAttribute("aria-busy", "true");
+    const bar = within(content).getByRole("progressbar", { name: "Mise à jour…" });
+    await expect(Math.round(bar.getBoundingClientRect().top)).toBe(Math.round(content.getBoundingClientRect().top));
+    await expect(within(canvasElement).getByRole("heading", { level: 1 })).toBeVisible();
+    await expect(within(canvasElement).getByText("En attente")).toBeVisible();
+  },
+};

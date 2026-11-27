@@ -6,9 +6,9 @@ import type { ReactNode } from "react";
 import { AppShell } from "../src/patterns/AppShell/AppShell";
 import { Sidebar } from "../src/patterns/Sidebar/Sidebar";
 import type { TabItem } from "../src/components/Tabs/Tabs";
-import { Book, Home, Inbox, Package, Users } from "./story-icons";
+import { Activity, Book, Home, Inbox, Package, Users } from "./story-icons";
 
-export type RecipePage = "ventes" | "demandes" | "contacts" | "catalogue" | "documentation";
+export type RecipePage = "ventes" | "demandes" | "contacts" | "catalogue" | "suivi" | "documentation";
 
 export interface RecipeShellProps {
   page: RecipePage;
@@ -46,6 +46,7 @@ export function RecipeShell({ page, queueCount = 9, children, ...shell }: Recipe
             <Sidebar.Item id="demandes" icon={<Inbox />} label="Demandes" {...(queueCount ? { count: queueCount } : {})} tabbar />
             <Sidebar.Item id="contacts" icon={<Users />} label="Contacts" tabbar />
             <Sidebar.Item id="catalogue" icon={<Package />} label="Catalogue" tabbar />
+            <Sidebar.Item id="suivi" icon={<Activity />} label="Suivi" tabbar />
             <Sidebar.Item id="documentation" icon={<Book />} label="Documentation" />
           </Sidebar>
         }

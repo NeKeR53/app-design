@@ -489,3 +489,57 @@ export const DepotSignaleParLApp: Story = {
     await expect(within(canvasElement).getByText("Déposez le relevé pour l'importer")).toBeVisible();
   },
 };
+
+/**
+ * Relecture en fond (D-426) : la page et ses blocs restent affichés. `Page isRefreshing` : une barre de 2 px sous la
+ * barre d'outils, sans déplacer le contenu, et `aria-busy` sur le contenu. `PageSection isRefreshing` : la barre sous
+ * le titre du bloc, ou sur le bord haut du cadre avec `framed`. Hors de l'état `ready`, l'option est ignorée.
+ */
+export const Relecture: Story = {
+  render: () => {
+    const [page, setPage] = useState(false);
+    return (
+      <Frame width={1100} height={520}>
+        <Page
+          toolbar={<span className="text-sm text-fg-2">Période : 30 jours</span>}
+          actions={[{ id: "toggle", label: page ? "Arrêter la relecture" : "Relire la page", primary: true, onPress: () => setPage((v) => !v) }]}
+          isRefreshing={page}>
+          <PageGrid columns={3}>
+            <PageSection framed title="Bloc encadré qui relit" isRefreshing footer={<TrackedFooter status="Réussi" tone="success" when="il y a 2 h" progress={100} />}>
+              <p className="m-0 text-sm text-fg-2">Les données restent ; la barre suit le bord haut du cadre.</p>
+            </PageSection>
+            <PageSection framed title="Bloc encadré au repos" footer={<TrackedFooter status="Réussi" tone="success" when="hier" progress={100} />} />
+            <PageSection framed title="Chargement : l'option est ignorée" state="loading" isRefreshing />
+          </PageGrid>
+          <PageSection title="Bloc sans cadre qui relit" description="La barre passe sous le titre." isRefreshing>
+            <p className="m-0">Le contenu ne bouge pas.</p>
+          </PageSection>
+        </Page>
+      </Frame>
+    );
+  },
+  play: async ({ canvasElement }) => {
+    const c = within(canvasElement);
+    const framed = c.getByRole("region", { name: "Bloc encadré qui relit" });
+    await expect(framed).toHaveAttribute("aria-busy", "true");
+    const bar = within(framed).getByRole("progressbar", { name: "Mise à jour…" });
+    // Sur le bord haut du cadre, à l'intérieur du trait.
+    await expect(Math.abs(bar.getBoundingClientRect().top - framed.getBoundingClientRect().top)).toBeLessThanOrEqual(1);
+    await expect(bar.getBoundingClientRect().height).toBe(2);
+    await expect(c.getByRole("region", { name: "Bloc encadré au repos" })).not.toHaveAttribute("aria-busy");
+    await expect(c.getByRole("region", { name: "Chargement : l'option est ignorée" })).not.toHaveAttribute("aria-busy");
+    // Sans cadre : la barre est entre le titre et le contenu, le contenu ne bouge pas.
+    const plain = c.getByRole("region", { name: "Bloc sans cadre qui relit" });
+    const plainBar = within(plain).getByRole("progressbar");
+    const head = within(plain).getByRole("heading").getBoundingClientRect();
+    await expect(plainBar.getBoundingClientRect().top).toBeGreaterThanOrEqual(head.bottom);
+    // Page : la barre ne déplace pas le contenu.
+    const content = canvasElement.querySelector<HTMLElement>("[data-page-content]")!;
+    const firstTop = framed.getBoundingClientRect().top;
+    await userEvent.click(c.getByRole("button", { name: "Relire la page" }));
+    await waitFor(() => expect(content).toHaveAttribute("aria-busy", "true"));
+    await expect(framed.getBoundingClientRect().top).toBe(firstTop);
+    const pageBar = content.querySelector<HTMLElement>(":scope > div > [data-reload-bar]")!;
+    await expect(Math.round(pageBar.getBoundingClientRect().top)).toBe(Math.round(content.getBoundingClientRect().top));
+  },
+};
