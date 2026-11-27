@@ -1,0 +1,8 @@
+# Fins de ligne LF partout, même sous Windows : les contrôles et les fichiers générés comparent le texte exact.
+* text=auto eol=lf
+*.png binary
+*.jpg binary
+*.webp binary
+*.ico binary
+*.woff binary
+*.woff2 binary
