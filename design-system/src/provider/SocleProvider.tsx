@@ -18,6 +18,21 @@ export type Platform = "web" | "macos" | "windows";
 export type Density = "web" | "desktop";
 export type ColorScheme = "system" | "light" | "dark";
 
+/**
+ * Boutons de fenêtre dessinés par l'AppShell sous Windows (D-422) : réduire, agrandir ou restaurer, fermer.
+ * L'app branche ces actions sur l'API de fenêtre de son environnement (Tauri…) ; Socle n'en dépend pas.
+ */
+export interface WindowControls {
+  /** Réduit la fenêtre dans la barre des tâches. */
+  onMinimize: () => void;
+  /** Agrandit la fenêtre, ou la restaure si elle est agrandie. */
+  onToggleMaximize: () => void;
+  /** Ferme la fenêtre (l'app fait la même fermeture que pour Alt+F4). */
+  onClose: () => void;
+  /** La fenêtre est agrandie : le bouton du milieu devient « Restaurer ». Défaut : `false`. */
+  isMaximized?: boolean;
+}
+
 export interface SocleProviderProps {
   /** Couleur d'accent de l'app, en hexadécimal (#rrggbb). Défaut : bleu T2 (D-012). */
   accent?: string;
@@ -30,6 +45,11 @@ export interface SocleProviderProps {
    * et la barre du haut ne déplace plus la fenêtre (D-020). L'app le pilote ; défaut : `false`.
    */
   isFullscreen?: boolean;
+  /**
+   * Windows : actions des boutons de fenêtre (D-422). Avec elle, l'AppShell dessine réduire, agrandir ou restaurer
+   * et fermer dans la place réservée en haut à droite (D-020) ; sans elle, la place reste vide. Ignorée hors Windows.
+   */
+  windowControls?: WindowControls;
   /** Préfixe des données mémorisées (sidebar, largeur du détail, dernière vue). Défaut : `socle`. */
   storageKey?: string;
   /** Libellés internes traduits (D-089). Défaut : français ; une entrée absente garde la valeur française. */
@@ -45,6 +65,8 @@ interface SocleContextValue {
   platform: Platform;
   /** La fenêtre est en plein écran (option `isFullscreen` du provider, D-020). */
   isFullscreen: boolean;
+  /** Actions des boutons de fenêtre Windows (option `windowControls` du provider, D-422), sinon `null`. */
+  windowControls: WindowControls | null;
   /** Vrai sur macOS (web compris) : sert à l'affichage des raccourcis (D-006). */
   isMac: boolean;
   storageKey: string;
@@ -119,7 +141,7 @@ function accentCss(vars: NonNullable<ReturnType<typeof accentVariables>>): strin
   );
 }
 
-export function SocleProvider({ accent, density, platform, isFullscreen = false, storageKey = "socle", messages, notifications, theme, children }: SocleProviderProps) {
+export function SocleProvider({ accent, density, platform, isFullscreen = false, windowControls, storageKey = "socle", messages, notifications, theme, children }: SocleProviderProps) {
   const resolvedPlatform = useMemo(() => platform ?? detectPlatform(), [platform]);
   const isMac = resolvedPlatform === "macos" || (resolvedPlatform === "web" && detectIsMac());
   const defaultDensity: Density = density ?? (resolvedPlatform === "web" ? "web" : "desktop");
@@ -224,6 +246,7 @@ export function SocleProvider({ accent, density, platform, isFullscreen = false,
     () => ({
       platform: resolvedPlatform,
       isFullscreen,
+      windowControls: windowControls ?? null,
       isMac,
       storageKey,
       density: currentDensity,
@@ -233,7 +256,7 @@ export function SocleProvider({ accent, density, platform, isFullscreen = false,
       messages: merged,
       notifications: notifications ?? null,
     }),
-    [resolvedPlatform, isFullscreen, isMac, storageKey, currentDensity, setDensity, userScheme, setColorScheme, merged, notifications],
+    [resolvedPlatform, isFullscreen, windowControls, isMac, storageKey, currentDensity, setDensity, userScheme, setColorScheme, merged, notifications],
   );
   // La confirmation (D-127) et la région des toasts (D-154) sont affichées ici, une seule fois pour toute l'app.
   return (
@@ -251,6 +274,7 @@ export function SocleProvider({ accent, density, platform, isFullscreen = false,
 const FALLBACK: SocleContextValue = {
   platform: "web",
   isFullscreen: false,
+  windowControls: null,
   isMac: false,
   storageKey: "socle",
   density: "web",

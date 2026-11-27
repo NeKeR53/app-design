@@ -188,6 +188,7 @@
 - Raison : une seule bande en haut, comme dans l'inspiration, tout en respectant les conventions de chaque système.
 - Options écartées : barre de titre native au-dessus de l'app.
 - Validation : docs/validation/05-layout.html
+- Boutons Windows : dessinés depuis la 1.24.0, avec l'option `windowControls` (D-422).
 
 ## D-021 — Onglets de vues dans la barre de titre
 - Date : 2026-11-21
@@ -3020,3 +3021,11 @@
 - Raison : dans Alfred, une coordinatrice et ses délégués, l'un sous l'autre, montraient un point gris de 8 px (« Au travail ») et un point bleu de 6 px (« À consulter ») : deux tailles pour deux signes de même rang, et des centres décalés de 1 px. 8 px est la dernière taille décidée par l'utilisateur (D-395) ; le point de non-lu de `List` fait déjà 8 px ; un point gris qui pulse ne doit pas rétrécir.
 - Options écartées : ramener le point « En cours » à 6 px (contraire à D-395 ; un point qui pulse se perd à 6 px) ; une seule taille pour tous les points du kit (hors du besoin : ceux de `NotificationCenter`, `Tabs` et `Badge` ne partagent jamais une colonne avec ceux de la sidebar).
 - Validation : par délégation de l'utilisateur, 2026-11-26 — docs/validation/components/Sidebar-v4.html. Story `PointsDeMemeTaille`.
+
+## D-422 — AppShell : boutons de fenêtre Windows dessinés par Socle
+- Date : 2026-11-27
+- Portée : AppShell, SocleProvider, tokens ; complète D-020
+- Décision : sous Windows, si l'app donne l'option facultative `windowControls` de `SocleProvider` (`onMinimize`, `onToggleMaximize`, `onClose`, `isMaximized`), l'AppShell dessine réduire, agrandir ou restaurer et fermer dans les 138 px réservés à droite de la barre (D-020). Chaque bouton fait 46 px de large et toute la hauteur de la barre ; les glyphes font 10 px, trait de 1 px, à la manière de Windows 11 (restaurer : deux carrés décalés). Survol gris (`--hover`), appui `--selected` ; « Fermer » passe au rouge de Windows au survol (nouveaux tokens `--win-close` #c42b1c et `--win-close-fg` blanc, mêmes valeurs en sombre). Les boutons ne sont pas des zones de déplacement. Noms : « Réduire », « Agrandir » / « Restaurer », « Fermer » (`messages`). Ils sont hors de la tabulation et de F6, comme ceux du système. Sans l'option, la place reste vide, comme avant ; hors Windows, l'option est ignorée.
+- Raison : D-020 prévoyait ces boutons, mais rien ne les dessinait : une app sans barre native (Tauri `decorations: false`) n'avait aucun moyen de réduire ou fermer sa fenêtre, et une app avec barre native gardait une bande vide de 138 px. Les actions passent par le provider, comme `isFullscreen` (D-370) : c'est un état de la fenêtre, et Socle ne dépend pas de Tauri.
+- Options écartées : import de l'API de fenêtre Tauri dans Socle (Socle reste générique) ; option sur `AppShell` (chaque écran devrait la passer) ; rouge `--danger` pour « Fermer » (en sombre il devient saumon, loin de Windows) ; boutons dans la tabulation (Windows ne le fait pas, et ils allongeraient le parcours de la barre) ; info-bulles (le nom accessible suffit ; à revoir si une app le demande).
+- Validation : par délégation de l'utilisateur, 2026-11-27 — docs/validation/components/AppShell-windows-v1.html. Stories `WindowsFenetre`, `WindowsSansBoutons`, `MacIgnoreWindowControls`.

@@ -19,6 +19,11 @@ export interface SocleMessages {
   detailWidth: string;
   expandDetail: string;
   more: string;
+  /* Boutons de fenêtre Windows (D-422) */
+  minimizeWindow: string;
+  maximizeWindow: string;
+  restoreWindow: string;
+  closeWindow: string;
   /* Sidebar */
   mainNavigation: string;
   expandItem: (label: string) => string;
@@ -544,6 +549,10 @@ export const frenchMessages: SocleMessages = {
   detailWidth: "Largeur du panneau de détail",
   expandDetail: "Agrandir le panneau de détail",
   more: "Plus",
+  minimizeWindow: "Réduire",
+  maximizeWindow: "Agrandir",
+  restoreWindow: "Restaurer",
+  closeWindow: "Fermer",
   mainNavigation: "Navigation principale",
   expandItem: (l) => `Déplier ${l}`,
   collapseItem: (l) => `Replier ${l}`,

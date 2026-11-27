@@ -2,6 +2,11 @@
 
 Versions selon semver (règle 6 du skill design) : une nouvelle option facultative est une version mineure ; un changement qui casse l'existant est une version majeure, avec une note de migration.
 
+## [1.24.0] — 2026-11-27
+
+### Ajouté
+- `SocleProvider` : option `windowControls` (`onMinimize`, `onToggleMaximize`, `onClose`, `isMaximized`). Sous Windows, l'`AppShell` dessine réduire, agrandir ou restaurer et fermer dans les 138 px réservés à droite de la barre, 46 px chacun, survol rouge sur « Fermer » (D-422). Type `WindowControls` exporté. Libellés `messages.minimizeWindow`, `maximizeWindow`, `restoreWindow`, `closeWindow`. Tokens `--win-close` et `--win-close-fg`. Sans l'option, rien ne change ; hors Windows, elle est ignorée.
+
 ## [1.23.1] — 2026-11-26
 
 ### Corrigé

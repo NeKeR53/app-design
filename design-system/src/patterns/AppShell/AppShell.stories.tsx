@@ -422,6 +422,100 @@ export const MacPleinEcran: Story = {
   },
 };
 
+/** Fenêtre Windows pilotée par la story : l'état agrandi suit le bouton du milieu, comme `onResized` dans une app. */
+function WindowsDemo({ onAction }: { onAction?: (a: string) => void }) {
+  const [maximized, setMaximized] = useState(false);
+  return (
+    <SocleProvider
+      platform="windows"
+      storageKey="storybook:win"
+      windowControls={{
+        onMinimize: () => onAction?.("minimize"),
+        onToggleMaximize: () => {
+          onAction?.("toggle-maximize");
+          setMaximized((v) => !v);
+        },
+        onClose: () => onAction?.("close"),
+        isMaximized: maximized,
+      }}
+    >
+      <Demo />
+    </SocleProvider>
+  );
+}
+
+/**
+ * Windows avec `windowControls` : réduire, agrandir (puis restaurer) et fermer, en haut à droite, 46 px chacun,
+ * toute la hauteur de la barre ; ils ne déplacent pas la fenêtre et restent hors de la tabulation (D-020, D-422).
+ */
+export const WindowsFenetre: Story = {
+  render: () => <WindowsDemo onAction={(a) => ((window as unknown as { __winActions?: string[] }).__winActions ??= []).push(a)} />,
+  play: async ({ canvasElement }) => {
+    const w = window as unknown as { __winActions?: string[] };
+    w.__winActions = [];
+    const c = within(canvasElement);
+    const banner = c.getByRole("banner");
+    const reduce = c.getByRole("button", { name: "Réduire" });
+    const close = c.getByRole("button", { name: "Fermer" });
+    // 46 px × hauteur de la barre, collés au bord droit, dans les 138 px réservés.
+    const bar = banner.getBoundingClientRect();
+    for (const b of [reduce, c.getByRole("button", { name: "Agrandir" }), close]) {
+      const r = b.getBoundingClientRect();
+      await expect(r.width).toBe(46);
+      await expect(r.height).toBe(bar.height - 1);
+      await expect(b).not.toHaveAttribute("data-tauri-drag-region");
+      await expect(b).toHaveAttribute("tabindex", "-1");
+    }
+    await expect(Math.round(close.getBoundingClientRect().right)).toBe(Math.round(bar.right));
+    await expect(Math.round(bar.right - reduce.getBoundingClientRect().left)).toBe(138);
+    // Les actions de la page s'arrêtent avant les boutons.
+    const actions = banner.querySelector<HTMLElement>("[data-socle-fit]")!;
+    await expect(actions.getBoundingClientRect().right).toBeLessThanOrEqual(reduce.getBoundingClientRect().left);
+    // Survol de « Fermer » : rouge de Windows, glyphe blanc.
+    await userEvent.hover(close);
+    await waitFor(() => expect(getComputedStyle(close).backgroundColor).toBe("rgb(196, 43, 28)"));
+    await expect(getComputedStyle(close).color).toBe("rgb(255, 255, 255)");
+    await userEvent.unhover(close);
+    // Les actions arrivent à l'app ; « Agrandir » devient « Restaurer ».
+    await userEvent.click(reduce);
+    await userEvent.click(c.getByRole("button", { name: "Agrandir" }));
+    await waitFor(() => expect(c.getByRole("button", { name: "Restaurer" })).toBeInTheDocument());
+    await userEvent.click(c.getByRole("button", { name: "Restaurer" }));
+    await waitFor(() => expect(c.getByRole("button", { name: "Agrandir" })).toBeInTheDocument());
+    await userEvent.click(close);
+    await expect(w.__winActions).toEqual(["minimize", "toggle-maximize", "toggle-maximize", "close"]);
+  },
+};
+
+/** Windows sans `windowControls` : la place est réservée, aucun bouton n'est dessiné (comportement d'avant D-422). */
+export const WindowsSansBoutons: Story = {
+  render: () => (
+    <SocleProvider platform="windows" storageKey="storybook:win-none">
+      <Demo />
+    </SocleProvider>
+  ),
+  play: async ({ canvasElement }) => {
+    const c = within(canvasElement);
+    await expect(c.queryByRole("button", { name: "Réduire" })).toBeNull();
+    await expect(c.queryByRole("button", { name: "Fermer" })).toBeNull();
+    const actions = c.getByRole("banner").querySelector<HTMLElement>("[data-socle-fit]")!.parentElement!;
+    await expect(getComputedStyle(actions).paddingRight).toBe("138px");
+  },
+};
+
+/** macOS : `windowControls` est ignorée, macOS garde ses boutons du système (D-422). */
+export const MacIgnoreWindowControls: Story = {
+  render: () => (
+    <SocleProvider platform="macos" storageKey="storybook:mac-wc" windowControls={{ onMinimize: () => {}, onToggleMaximize: () => {}, onClose: () => {} }}>
+      <Demo />
+    </SocleProvider>
+  ),
+  play: async ({ canvasElement }) => {
+    await expect(within(canvasElement).queryByRole("button", { name: "Réduire" })).toBeNull();
+    await expect(getComputedStyle(collapseZone(canvasElement)).paddingLeft).toBe("78px");
+  },
+};
+
 /** L'app ouvre le panneau : un élément choisi dans la page l'ouvre, le bouton le referme (D-398). */
 function PiloteDemo() {
   const [open, setOpen] = useState(false);
