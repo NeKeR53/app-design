@@ -133,7 +133,7 @@ export interface ListPageProps<Row extends { id: string }> {
   hasError?: boolean;
   onRetry?: () => void;
   /** Date de la dernière lecture réussie : en erreur avec des lignes, le bandeau dit l'âge des données (D-434). */
-  updatedAt?: Date | number | string;
+  updatedAt?: Date | number | string | undefined;
   /** Données côté serveur : rien n'est filtré, trié ni découpé ici (D-174). */
   remote?: boolean;
   /** `remote` : nombre total d'éléments qui correspondent. */

@@ -54,7 +54,7 @@ Ne pas l'utiliser pour :
 | `onRequestAccess` | `() => void` | aucun | Bouton « Demander l'accès » de l'accès refusé. |
 | `isLoading` | `boolean` | `false` | Rechargement avec des lignes déjà là : barre fine (D-084). |
 | `hasError` / `onRetry` | `boolean` / `() => void` | `false` | Le dernier chargement a échoué (D-085). |
-| `updatedAt` | `Date \| number \| string` | aucune | Date de la dernière lecture réussie. En erreur avec des lignes, le bandeau dit l'âge des données : « Dernière mise à jour il y a 12 minutes. » (D-434). |
+| `updatedAt` | `Date \| number \| string \| undefined` | aucune | Date de la dernière lecture réussie. En erreur avec des lignes, le bandeau dit l'âge des données : « Dernière mise à jour il y a 12 minutes. » (D-434). |
 | `remote` | `boolean` | `false` | Données côté serveur : le gabarit ne filtre, ne trie, ne découpe rien ; il signale chaque changement à `onStateChange` (D-174). |
 | `total` | `number` | nombre de lignes | En mode `remote` : nombre total d'éléments qui correspondent. |
 | `onStateChange` | `(state: ListPageState) => void` | aucun | `{ query, filters, sort, page }` à chaque changement ; plus `pageSize` avec `pageSizes`, et `selection: "all"` en `remote` après « Sélectionner les N éléments ». |

@@ -20,7 +20,7 @@ export interface ResultsStateProps {
    * Date des résultats affichés (dernière lecture réussie) : en erreur avec des résultats, le bandeau dit leur âge,
    * « Dernière mise à jour il y a 12 minutes » (D-434). `Date`, horodatage ou texte ISO.
    */
-  updatedAt?: Date | number | string;
+  updatedAt?: Date | number | string | undefined;
   /** Critères de la recherche en cours : « aucun résultat » (D-086) et texte trouvé en gras (D-087). */
   searchTerms?: string[];
   onClearSearch?: () => void;
