@@ -41,13 +41,13 @@ export interface SegmentedControlProps {
 const GROUP =
   "socle-box inline-flex h-(--row-h) max-w-full items-stretch gap-0.5 rounded-md bg-field p-0.5 font-sans text-md data-disabled:opacity-40";
 
-/** Segment : rayon 4 px (contrôle dans un contrôle, D-040) ; choisi : carte claire `--surface` et `shadow-sm`. */
+/** Segment : rayon 4 px (contrôle dans un contrôle, D-040) ; choisi : carte `--segment-selected` (plus claire que le rail, D-436) et `shadow-sm`. */
 const SEGMENT = cx(
   "relative inline-flex min-w-0 cursor-default items-center justify-center gap-1.5 rounded-sm px-2.5 text-fg-2 select-none",
   "[[data-density=desktop]_&]:px-2",
   "transition-colors duration-[var(--dur-fast)] ease-standard",
   "data-hovered:text-fg",
-  "data-selected:bg-surface data-selected:font-medium data-selected:text-fg data-selected:shadow-sm",
+  "data-selected:bg-segment-selected data-selected:font-medium data-selected:text-fg data-selected:shadow-sm",
   "data-disabled:opacity-40 data-disabled:data-hovered:text-fg-2",
   focusRing,
 );

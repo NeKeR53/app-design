@@ -354,7 +354,7 @@ export const Chargement: Story = {
   },
 };
 
-/** Erreur au premier chargement, puis erreur avec des lignes déjà là (D-085). */
+/** Erreur au premier chargement, puis erreur avec des lignes déjà là (D-085) : avec `updatedAt`, l'âge des données (D-434). */
 export const Erreur: Story = {
   render: () => {
     const retry = fn();
@@ -364,7 +364,7 @@ export const Erreur: Story = {
           <Frame {...base({ rows: undefined, hasError: true, onRetry: retry })} />
         </div>
         <div data-testid="b">
-          <Frame {...base({ hasError: true, onRetry: retry })} />
+          <Frame {...base({ hasError: true, onRetry: retry, updatedAt: new Date(Date.now() - 12 * 60_000) })} />
         </div>
       </div>
     );
@@ -373,6 +373,7 @@ export const Erreur: Story = {
     const c = within(canvasElement);
     await expect(within(c.getByTestId("a")).getByRole("alert")).toHaveTextContent("Impossible de charger les résultats");
     await expect(within(c.getByTestId("b")).getByRole("alert")).toHaveTextContent("Résultats non mis à jour");
+    await expect(within(c.getByTestId("b")).getByRole("alert")).toHaveTextContent("Dernière mise à jour il y a 12 minutes.");
     await expect(within(c.getByTestId("b")).getAllByRole("rowheader")).toHaveLength(12);
   },
 };

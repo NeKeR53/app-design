@@ -1,12 +1,15 @@
 /*
  * Recette « Tableau de suivi » (D-431). Doc : TrackingBoard.recipe.md.
  * Page composée sur toute la largeur : filtre d'état dans la barre d'outils, une grille de blocs encadrés
- * (PageSection framed), un par élément suivi : état, dernière exécution et barre d'avancement en pied, actions en tête.
+ * (PageSection framed), un par élément suivi : état et dernière exécution en pied (barre d'avancement pendant une
+ * exécution seulement, D-432), actions en tête (« Arrêter » à icône pleine, D-437), durée et sa courbe chiffrée (D-435).
+ * Tableau court (deux lignes de blocs au plus) : les dernières exécutions dessous, sur toute la largeur (D-438).
  */
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { useState } from "react";
 import { expect, userEvent, waitFor, within } from "storybook/test";
 import { Badge, type StatusTone } from "../../components/Badge/Badge";
+import { Table } from "../../components/Table/Table";
 import { Sparkline } from "../../components/Chart/Chart";
 import { ProgressBar } from "../../components/ProgressBar/ProgressBar";
 import { SegmentedControl } from "../../components/SegmentedControl/SegmentedControl";
@@ -58,28 +61,43 @@ const STATUS: Record<RunStatus, { label: string; tone: StatusTone }> = {
   queued: { label: "Planifiée", tone: "pending" },
 };
 
+/** Dernières exécutions, tous éléments confondus (plus récente d'abord). */
+interface Run {
+  id: string;
+  item: string;
+  status: RunStatus;
+  when: string;
+  duration: string;
+}
+
+const RUNS: Run[] = [
+  { id: "r1", item: "Sauvegarde nocturne", status: "running", when: "il y a 4 min", duration: "—" },
+  { id: "r2", item: "Import des commandes", status: "success", when: "il y a 12 min", duration: "4 min" },
+  { id: "r3", item: "Import des commandes", status: "success", when: "il y a 1 h", duration: "4,3 min" },
+  { id: "r4", item: "Déploiement du site", status: "success", when: "il y a 2 h", duration: "5,1 min" },
+  { id: "r5", item: "Import des commandes", status: "success", when: "il y a 2 h", duration: "4 min" },
+  { id: "r6", item: "Renouvellement des certificats", status: "success", when: "hier à 03:00", duration: "1,2 min" },
+  { id: "r7", item: "Export comptable", status: "failed", when: "il y a 3 jours", duration: "30 min" },
+];
+
 const minutes = (v: number) => `${new Intl.NumberFormat("fr-FR", { maximumFractionDigits: 1 }).format(v)} min`;
 
 /* ---------- Un bloc par élément suivi ---------- */
 
-/** Pied : l'état et la dernière exécution sur une ligne, l'avancement dessous. Il se compare d'un bloc à l'autre. */
+/**
+ * Pied : l'état et la dernière exécution sur une ligne, toujours la dernière : elle se compare d'un bloc à l'autre.
+ * La barre d'avancement n'existe que pendant une exécution, au-dessus de cette ligne (D-432) : une barre pleine
+ * après coup ne dit rien.
+ */
 function RunFooter({ item }: { item: Tracked }) {
   const s = STATUS[item.status];
-  const done = item.status === "success" || item.status === "failed";
   return (
     <div className="flex flex-col gap-2">
+      {item.status === "running" && <ProgressBar label="Exécution en cours" value={item.progress ?? 0} showValue />}
       <div className="flex items-center justify-between gap-2 text-sm text-fg-3">
         <Badge tone={s.tone}>{s.label}</Badge>
         <span>{item.when}</span>
       </div>
-      {item.status !== "queued" && (
-        <ProgressBar
-          label={item.status === "running" ? "Exécution en cours" : "Dernière exécution"}
-          {...(item.status === "running" ? { value: item.progress ?? 0 } : { value: 100 })}
-          showValue={!done}
-          {...(item.status === "failed" ? { tone: "danger" as const } : {})}
-        />
-      )}
     </div>
   );
 }
@@ -100,10 +118,13 @@ function TrackedBlock({ item, onRun, refreshing }: { item: Tracked; onRun: (id: 
         <p className="m-0 text-sm text-danger">{item.error}</p>
       ) : (
         <div className="flex flex-col gap-1">
-          <p className="m-0 text-sm text-fg-2">
-            Dernière durée : <span className="tabular-nums">{minutes(last)}</span>
-          </p>
-          <Sparkline values={item.durations} label={`Durée des ${item.durations.length} dernières exécutions, de ${minutes(item.durations[0]!)} à ${minutes(last)}`} />
+          <p className="m-0 text-sm text-fg-3">Durée des {item.durations.length} dernières exécutions</p>
+          <Sparkline
+            values={item.durations}
+            formatValue={minutes}
+            fromZero
+            label={`Durée des ${item.durations.length} dernières exécutions, de ${minutes(item.durations[0]!)} à ${minutes(last)}`}
+          />
         </div>
       )}
     </PageSection>
@@ -171,15 +192,41 @@ function TrackingBoard({ state = "ready" }: { state?: BoardState }) {
               }
             />
           ) : (
-            <PageGrid columns={3}>
-              {items.map((item) =>
-                state === "block-error" && item.id === "index" ? (
-                  <PageSection key={item.id} framed title={item.name} description={item.where} state="error" onRetry={() => undefined} />
-                ) : (
-                  <TrackedBlock key={item.id} item={item} onRun={setRerun} refreshing={rerun === item.id} />
-                ),
+            <>
+              <PageGrid columns={3}>
+                {items.map((item) =>
+                  state === "block-error" && item.id === "index" ? (
+                    <PageSection key={item.id} framed title={item.name} description={item.where} state="error" onRetry={() => undefined} />
+                  ) : (
+                    <TrackedBlock key={item.id} item={item} onRun={setRerun} refreshing={rerun === item.id} />
+                  ),
+                )}
+              </PageGrid>
+              {/* Tableau court (deux lignes de blocs au plus) : les dernières exécutions occupent le bas de l'écran (D-438). */}
+              {items.length <= 6 && filter === "all" && (
+                <PageSection
+                  framed
+                  title="Dernières exécutions"
+                  actions={[{ id: "history", label: "Voir l'historique", primary: true, onPress: () => setView("historique") }]}
+                >
+                  <Table<Run>
+                    label="Dernières exécutions"
+                    density="compact"
+                    selectionMode="none"
+                    columns={[
+                      { id: "item", label: "Tâche" },
+                      { id: "status", label: "État", width: 120 },
+                      { id: "when", label: "Début", width: 140 },
+                      { id: "duration", label: "Durée", align: "end", width: 96 },
+                    ]}
+                    rows={RUNS}
+                    renderCell={(row, id) =>
+                      id === "item" ? row.item : id === "status" ? <Badge tone={STATUS[row.status].tone}>{STATUS[row.status].label}</Badge> : id === "when" ? row.when : row.duration
+                    }
+                  />
+                </PageSection>
               )}
-            </PageGrid>
+            </>
           )}
         </Page>
       )}
@@ -208,6 +255,36 @@ export const GrilleAlignee: Story = {
     await expect(sections).toHaveLength(6);
     const feet = sections.slice(0, 3).map((s) => Math.round(s.querySelector("[data-section-footer]")!.getBoundingClientRect().bottom));
     if (window.innerWidth >= 1200) await expect(new Set(feet).size).toBe(1);
+  },
+};
+
+/** La barre d'avancement n'existe que pendant une exécution (D-432) ; « Arrêter » remplace « Relancer » (D-437). */
+export const AvancementPendantLExecution: Story = {
+  play: async ({ canvasElement }) => {
+    const c = within(canvasElement);
+    await expect(within(c.getByRole("region", { name: "Sauvegarde nocturne" })).getByRole("progressbar", { name: "Exécution en cours" })).toBeVisible();
+    await expect(within(c.getByRole("region", { name: "Sauvegarde nocturne" })).getByRole("button", { name: /Arrêter/ })).toBeVisible();
+    for (const name of ["Import des commandes", "Export comptable", "Index de recherche"])
+      await expect(within(c.getByRole("region", { name })).queryByRole("progressbar")).toBeNull();
+  },
+};
+
+/** La courbe porte la dernière valeur et son unité, depuis zéro (D-435). */
+export const CourbeChiffree: Story = {
+  play: async ({ canvasElement }) => {
+    const block = within(canvasElement).getByRole("region", { name: "Import des commandes" });
+    await expect(block.querySelector("[data-sparkline-value]")).toHaveTextContent("3,9 min");
+  },
+};
+
+/** Tableau court : les dernières exécutions sous la grille, sur toute la largeur ; « Voir l'historique » y mène (D-438). */
+export const TableauCourt: Story = {
+  play: async ({ canvasElement }) => {
+    const c = within(canvasElement);
+    const recent = c.getByRole("region", { name: "Dernières exécutions" });
+    await expect(within(recent).getAllByRole("row").length).toBeGreaterThan(5);
+    await userEvent.click(within(recent).getByRole("button", { name: "Voir l'historique" }));
+    await waitFor(() => expect(c.getByRole("region", { name: "Historique" })).toBeVisible());
   },
 };
 

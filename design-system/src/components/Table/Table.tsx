@@ -118,6 +118,7 @@ export function Table<T extends { id: string }>({
   isLoading,
   hasError,
   onRetry,
+  updatedAt,
   searchTerms,
   onClearSearch,
   density = "default",
@@ -203,7 +204,7 @@ export function Table<T extends { id: string }>({
     >
       <InGridContext.Provider value={true}>
       {isLoading && rows.length > 0 && <ReloadBar />}
-      {hasError && rows.length > 0 && <ErrorBanner onRetry={onRetry} />}
+      {hasError && rows.length > 0 && <ErrorBanner onRetry={onRetry} updatedAt={updatedAt} />}
       {hasError && rows.length === 0 ? (
         <LoadError onRetry={onRetry} />
       ) : (

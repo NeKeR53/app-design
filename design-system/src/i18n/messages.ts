@@ -71,6 +71,8 @@ export interface SocleMessages {
   loadingResults: string;
   retry: string;
   notUpdated: string;
+  /** Âge des résultats gardés après un échec : « Dernière mise à jour il y a 12 minutes. » (D-434). */
+  lastUpdated: (when: string) => string;
   loadErrorTitle: string;
   loadErrorText: string;
   noResultsFor: string;
@@ -600,6 +602,7 @@ export const frenchMessages: SocleMessages = {
   loadingResults: "Chargement des résultats",
   retry: "Réessayer",
   notUpdated: "Résultats non mis à jour : le service ne répond pas.",
+  lastUpdated: (when) => `Dernière mise à jour ${when}.`,
   loadErrorTitle: "Impossible de charger les résultats",
   loadErrorText: "Le service ne répond pas. Vos critères sont gardés.",
   noResultsFor: "Aucun résultat pour",

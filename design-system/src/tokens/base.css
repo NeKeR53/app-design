@@ -70,6 +70,7 @@
   --side-fg-3: var(--fg-3);              /* texte tertiaire de la sidebar : sections, méta */
   --side-hover: var(--hover);
   --side-selected: var(--selected);      /* fond de l'entrée active */
+  --segment-selected: var(--surface);    /* segment choisi d'un SegmentedControl : plus clair que le rail (D-436) */
   --side-selected-fg: var(--side-fg);    /* texte de l'entrée active */
   --side-indicator: var(--accent);       /* barre de l'entrée active (navIndicator « bar ») */
   --side-line: var(--line);              /* traits de la sidebar */
@@ -161,6 +162,7 @@
     --field: #2a2a2a;
     --hover: #303030;
     --selected: #3d3d3d;
+    --segment-selected: #474747; /* plus clair que le rail --field, jamais un creux (D-436) */
     --line: #333333;
     --line-strong: #4a4a4a;
     --fg: #ececec;
@@ -222,6 +224,7 @@
   --field: #2a2a2a;
   --hover: #303030;
   --selected: #3d3d3d;
+  --segment-selected: #474747;
   --line: #333333;
   --line-strong: #4a4a4a;
   --fg: #ececec;

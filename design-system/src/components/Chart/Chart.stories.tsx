@@ -151,3 +151,16 @@ export const PetiteCourbe: Story = {
     await expect(img.querySelector("path")!.getAttribute("stroke")).toBe("var(--chart-1)");
   },
 };
+
+/** Courbe seule, hors de `Card metric` : la dernière valeur et son unité à droite, échelle depuis zéro avec un trait de base (D-435). */
+export const PetiteCourbeChiffree: Story = {
+  render: () => (
+    <div className="w-64">
+      <Sparkline values={[4.1, 3.8, 4.4, 4.0, 3.9, 4.2, 4.6, 4.1]} formatValue={(v) => `${v.toLocaleString("fr-FR")} min`} fromZero label="Durée des 8 dernières exécutions, de 4,1 à 4,1 min" />
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    await expect(canvasElement.querySelector("[data-sparkline-value]")).toHaveTextContent("4,1 min");
+    await expect(within(canvasElement).getByRole("img").querySelector("line")).not.toBeNull();
+  },
+};

@@ -14,7 +14,7 @@ Ne pas l'utiliser pour :
 ## Anatomie
 1. Groupe (obligatoire) : fond `--field`, marge intérieure de 2 px, rayon 8 px, hauteur `--row-h`.
 2. Segments (2 à 4) : texte court, ou icône et texte, ou icône seule. Rayon 4 px (contrôle dans un contrôle, D-040).
-3. Segment choisi : carte claire, fond `--surface`, ombre `shadow-sm`, texte `--fg` en graisse moyenne.
+3. Segment choisi : carte, fond `--segment-selected` (`--surface` en clair, #474747 en sombre : toujours plus clair que le rail, jamais un creux), ombre `shadow-sm`, texte `--fg` en graisse moyenne (D-436).
 
 ## Variantes
 | Contenu | Rendu |
@@ -45,7 +45,7 @@ Ne pas l'utiliser pour :
 |---|---|
 | Repos | Texte `--fg-2`. |
 | Survol | Texte `--fg`. |
-| Choisi | Carte claire `--surface`, `shadow-sm`, texte `--fg` moyen. |
+| Choisi | Carte `--segment-selected`, `shadow-sm`, texte `--fg` moyen (D-436). Contrastes en sombre : texte non choisi `--fg-2` sur `--field` 6,2:1, texte choisi 7,7:1 (AA). |
 | Focus clavier | Anneau `--focus` de 2 px autour du segment. |
 | Option désactivée | 40 %, sautée par les flèches. |
 | Groupe désactivé | 40 %, aucun segment actif. |
@@ -87,6 +87,6 @@ Barre d'outils d'une page composée ou d'une liste (`toolbar`), en-tête d'un pa
 `RadioGroup` et `Radio` de React Aria, `Tooltip` de React Aria avec le style de l'info-bulle Socle.
 
 ## Décisions
-D-001, D-007, D-031, D-040, D-358.
+D-001, D-007, D-031, D-040, D-358, D-436.
 
 ## Questions ouvertes

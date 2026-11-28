@@ -132,6 +132,8 @@ export interface ListPageProps<Row extends { id: string }> {
   /** Le dernier chargement a échoué (D-085). */
   hasError?: boolean;
   onRetry?: () => void;
+  /** Date de la dernière lecture réussie : en erreur avec des lignes, le bandeau dit l'âge des données (D-434). */
+  updatedAt?: Date | number | string;
   /** Données côté serveur : rien n'est filtré, trié ni découpé ici (D-174). */
   remote?: boolean;
   /** `remote` : nombre total d'éléments qui correspondent. */
@@ -179,6 +181,7 @@ export function ListPage<Row extends { id: string }>({
   onRequestAccess,
   isLoading = false,
   hasError = false,
+  updatedAt,
   onRetry,
   remote = false,
   total: totalProp,
@@ -375,6 +378,7 @@ export function ListPage<Row extends { id: string }>({
     isLoading: firstLoad || isLoading,
     hasError,
     ...(onRetry ? { onRetry } : {}),
+    ...(updatedAt !== undefined ? { updatedAt } : {}),
     searchTerms: criteria ? terms : [],
     onClearSearch: clearCriteria,
   };

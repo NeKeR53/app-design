@@ -1,12 +1,13 @@
 /**
  * États des résultats, communs à Table et List (D-077, D-084 à D-087). Usage interne.
  */
-import type { ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { Button } from "react-aria-components/Button";
 import { AlertTriangle } from "../icons";
 import { buttonReset, cx, focusRing } from "./cx";
 import { useMessages } from "../provider/SocleProvider";
 import { EmptyState } from "../components/EmptyState/EmptyState";
+import { toDate, useFormatValue } from "../components/FormattedValue/FormattedValue";
 
 /** Options d'état partagées par Table et List. */
 export interface ResultsStateProps {
@@ -15,6 +16,11 @@ export interface ResultsStateProps {
   /** Le dernier chargement a échoué : message, ou bandeau au-dessus des anciens résultats (D-085). */
   hasError?: boolean;
   onRetry?: () => void;
+  /**
+   * Date des résultats affichés (dernière lecture réussie) : en erreur avec des résultats, le bandeau dit leur âge,
+   * « Dernière mise à jour il y a 12 minutes » (D-434). `Date`, horodatage ou texte ISO.
+   */
+  updatedAt?: Date | number | string;
   /** Critères de la recherche en cours : « aucun résultat » (D-086) et texte trouvé en gras (D-087). */
   searchTerms?: string[];
   onClearSearch?: () => void;
@@ -97,14 +103,26 @@ export function RetryButton({ onRetry, children }: { onRetry?: (() => void) | un
 }
 
 /** Bandeau au-dessus des anciens résultats quand une nouvelle recherche échoue (D-085). */
-export function ErrorBanner({ onRetry, message }: { onRetry?: (() => void) | undefined; message?: string }) {
+export function ErrorBanner({ onRetry, message, updatedAt }: { onRetry?: (() => void) | undefined; message?: string; updatedAt?: Date | number | string | undefined }) {
   const m = useMessages();
+  const format = useFormatValue();
+  const date = updatedAt === undefined ? null : toDate(updatedAt);
+  // L'âge se relit chaque minute : « il y a 12 minutes » ne reste pas figé pendant que le service ne répond pas.
+  const [, tick] = useState(0);
+  useEffect(() => {
+    if (!date) return;
+    const t = setInterval(() => tick((n) => n + 1), 60_000);
+    return () => clearInterval(t);
+  }, [date === null]);
   return (
     <div role="alert" className="my-2 flex items-center gap-2 rounded-md bg-field px-3 py-2 text-sm text-fg-2">
       <span className="text-warning">
         <AlertTriangle size={14} />
       </span>
-      {message ?? m.notUpdated}
+      <span>
+        {message ?? m.notUpdated}
+        {date && <span data-results-age=""> {m.lastUpdated(format(date, { type: "relative" }))}</span>}
+      </span>
       <Button {...(onRetry ? { onPress: onRetry } : {})} className={cx(buttonReset, "ml-auto rounded-sm px-1.5 py-0.5 text-sm text-accent-text data-hovered:underline", focusRing)}>
         {m.retry}
       </Button>

@@ -3100,4 +3100,61 @@
 - Décision : `Page` sur toute la largeur ; barre d'outils : filtre d'état en `SegmentedControl` (Toutes, En échec (n), En cours (n)) à gauche, « Actualiser » à droite. Contenu : `PageGrid columns={3}`, un `PageSection framed` par élément suivi, dans l'ordre de l'app (jamais trié par état). En-tête du bloc : nom, « où · quand » en description, « Relancer » (ou « Arrêter », confirmé, pendant une exécution) et « Ouvrir le journal » en icônes, le reste dans « … ». Contenu du bloc : la dernière erreur en `--danger`, sinon la dernière durée et sa `Sparkline`. Pied du bloc : `Badge` d'état et date relative sur une ligne, `ProgressBar` dessous. Pied de page : total et fraîcheur. Onglet « Historique » : `ListPage`. États : UI d'abord (un seul bloc « Tâches » en `loading` tant que la liste n'est pas lue, puis un bloc par élément), relecture périodique silencieuse, « Actualiser » en `Page isRefreshing`, « Relancer » en `PageSection isRefreshing`, échec d'un bloc seul, filtre vide et liste vide en `empty`. Captures de référence en clair et en sombre ; les captures des autres recettes sont refaites (la sidebar du cadre gagne l'entrée « Suivi »).
 - Raison : ni « Tableau de bord » (des chiffres) ni « Liste et fiche » (une collection) ne couvrent une grille d'éléments qu'on surveille ; Jenkins, Prefect et Portainer en ont besoin dans Alfred, et les pages faites sans recette posaient une carte seule dans un grand vide.
 - Options écartées : `Card` par élément (ni description, ni actions d'en-tête, ni pied, D-423) ; `Table` d'éléments (l'état et l'avancement se comparent mal en lignes, les actions se cachent au survol) ; une rangée de chiffres clés au-dessus de la grille (les compteurs du filtre suffisent) ; tri par état (les blocs sautent pendant une relecture).
+- Note : la règle de la barre d'avancement est remplacée par D-432.
 - Validation : par délégation de l'utilisateur, 2026-11-27 — docs/validation/components/Relecture-Graphique-Suivi-v1.html (Q3 A). Stories `Recettes/Tableau de suivi`.
+
+## D-432 — Tableau de suivi : la barre d'avancement seulement pendant une exécution
+- Date : 2026-11-28
+- Portée : recettes (TrackingBoard) ; layout-rules
+- Décision : le pied d'un bloc a toujours, en dernière ligne, le `Badge` d'état et la date relative. La `ProgressBar` (« Exécution en cours », valeur affichée) n'apparaît que pendant une exécution, au-dessus de cette ligne. Après une exécution, réussie ou en échec, et pour une exécution planifiée : aucune barre. Remplace la règle de D-431 « pleine et sans valeur après ».
+- Raison : test réel des règles d'Alfred (2026-11-27) : une barre pleine « Dernière exécution » sous chaque bloc fini ne dit rien et se confond avec un avancement ; l'état le dit déjà.
+- Options écartées : barre pleine colorée selon l'état (doublon du `Badge`) ; barre vide grisée pour garder la hauteur (bruit) ; barre sous la ligne d'état (la ligne qui se compare d'un bloc à l'autre ne serait plus alignée).
+- Validation : par délégation de l'utilisateur, 2026-11-28 — docs/validation/components/Test-Regles-Alfred-v1.html (Q1 A). Story `AvancementPendantLExecution`.
+
+## D-433 — Drawer : un champ `tags` se rend en étiquettes
+- Date : 2026-11-28
+- Portée : Drawer (champs déclaratifs) ; FormattedValue (note)
+- Décision : un champ déclaratif `type: "tags"` dont la valeur est une liste se rend en `TagGroup` de lecture (pastilles neutres, D-362), nommé par le libellé du champ (libellé masqué : la ligne l'affiche déjà). Doublons retirés. Dans une ligne à `details` (un bouton), le texte « a, b, c » reste. Dans `ListPage` et `FormattedValue`, `tags` reste un texte.
+- Raison : test réel : la fiche d'un document montrait « client, juridique, 2027 » comme une phrase ; dans une fiche, les étiquettes ont la place et se lisent comme des mots-clés distincts.
+- Options écartées : pastilles dans les colonnes de liste aussi (bruit sur chaque ligne, D-170) ; un nouveau composant d'étiquette statique (doublon de `TagGroup`).
+- Validation : par délégation de l'utilisateur, 2026-11-28 — docs/validation/components/Test-Regles-Alfred-v1.html (Q2 A). Story `Declaratif`.
+
+## D-434 — Erreur avec des résultats : l'âge des données
+- Date : 2026-11-28
+- Portée : ListPage, Table, List (bandeau d'erreur, D-085) ; layout-rules
+- Décision : nouvelle option facultative `updatedAt` (`Date`, horodatage ou ISO) : la date de la dernière lecture réussie. En erreur avec des résultats, le bandeau ajoute « Dernière mise à jour il y a 12 minutes. » (date relative de `FormattedValue`), relue chaque minute. Sans `updatedAt`, rien ne change. Une app qui garde des données la passe toujours.
+- Raison : test réel : « Résultats non mis à jour » ne dit pas si les lignes datent d'une minute ou d'un jour ; l'utilisateur ne sait pas s'il peut s'y fier.
+- Options écartées : un pied de liste libre (la fraîcheur n'a de sens qu'en cas d'échec, sinon la liste est à jour) ; une heure absolue (« à 09:42 ») : l'âge se juge mieux.
+- Validation : par délégation de l'utilisateur, 2026-11-28 — docs/validation/components/Test-Regles-Alfred-v1.html (Q3 A). Story `Gabarits/ListPage/Erreur`.
+
+## D-435 — Courbe : une valeur et son unité, ou pas de courbe
+- Date : 2026-11-28
+- Portée : Chart (`Sparkline`) ; recettes (TrackingBoard) ; layout-rules
+- Décision : `Sparkline` gagne deux options facultatives. `formatValue` écrit la dernière valeur et son unité à droite de la courbe (`--fg` moyen, chiffres de largeur égale). `fromZero` met l'échelle à zéro et trace un trait de base `--line-strong`. Règle : une courbe porte au moins sa valeur courante et son unité (le chiffre de la carte dans `Card metric`, sinon `formatValue`) ; une durée, une taille ou un compte partent de zéro ; sinon, pas de courbe. Dans le Tableau de suivi, une légende `--fg-3` (« Durée des 12 dernières exécutions ») la précède.
+- Raison : test réel : des courbes sans valeur ni repère, mises à l'échelle du plus petit au plus grand, dessinaient un écart de 4,1 à 4,6 min comme de grands sauts ; elles décoraient sans informer.
+- Options écartées : axes et graduations dans la petite courbe (c'est le rôle de `Chart`) ; valeurs min et max écrites (trop de texte pour 32 px) ; `fromZero` par défaut (changerait les cartes existantes : version majeure).
+- Validation : par délégation de l'utilisateur, 2026-11-28 — docs/validation/components/Test-Regles-Alfred-v1.html (Q4 A). Stories `PetiteCourbeChiffree`, `CourbeChiffree`.
+
+## D-436 — SegmentedControl en sombre : le segment choisi plus clair que le rail
+- Date : 2026-11-28
+- Portée : SegmentedControl ; tokens (`--segment-selected`)
+- Décision : nouveau token `--segment-selected`, fond du segment choisi : `--surface` en clair (rendu inchangé), #474747 en sombre. Mesures en sombre : texte non choisi `--fg-2` sur `--field` 6,2:1, texte choisi `--fg` sur #474747 7,7:1 (AA) ; le segment choisi est plus clair que le rail.
+- Raison : test réel : en sombre, le segment choisi prenait `--surface` (#181818), plus sombre que le rail (#2a2a2a) ; il se lisait comme un creux, et les libellés non choisis, plus clairs autour, semblaient mal contrastés. Le contraste du texte était déjà AA ; c'est le choix qui se lisait mal.
+- Options écartées : éclaircir `--fg-2` (changerait tout le texte secondaire) ; couleur d'accent sur le segment choisi (exclu par la spec, D-001) ; `--selected` (#3d3d3d, trop proche du rail).
+- Validation : par délégation de l'utilisateur, 2026-11-28 — docs/validation/components/Test-Regles-Alfred-v1.html (Q5 A). Story `Sombre`.
+
+## D-437 — Arrêter : une icône d'arrêt pleine
+- Date : 2026-11-28
+- Portée : recettes (TrackingBoard) ; layout-rules
+- Décision : « Arrêter » une exécution utilise une icône d'arrêt pleine (carré plein : lucide `<Square fill="currentColor" />`, ou `CircleStop`), avec le libellé en info-bulle (bouton-icône de l'`ActionBar`) et une confirmation. Jamais un carré vide.
+- Raison : test réel : l'agent a pris lucide `Square`, un carré vide qui ressemble à une case à cocher à côté des autres icônes.
+- Options écartées : un bouton à texte « Arrêter » (casse l'alignement des icônes d'en-tête de bloc, D-113) ; une icône ✕ (se lit « fermer »).
+- Validation : par délégation de l'utilisateur, 2026-11-28 — docs/validation/components/Test-Regles-Alfred-v1.html (Q6 A). Story `AvancementPendantLExecution`.
+
+## D-438 — Tableau de suivi court : les dernières exécutions sous la grille
+- Date : 2026-11-28
+- Portée : recettes (TrackingBoard) ; layout-rules (page composée courte)
+- Décision : quand la grille tient en deux lignes au plus (6 éléments ou moins) et que le filtre est « Toutes », un `PageSection framed` « Dernières exécutions » prend toute la largeur sous la grille : `Table density="compact" selectionMode="none"` (Tâche, État, Début, Durée), 8 lignes au plus, action primaire « Voir l'historique » vers l'onglet « Historique ». Au-delà, ce bloc disparaît. Règle générale : une page composée courte ne laisse pas la moitié de l'écran vide ; un bloc utile pleine largeur dessous, jamais des blocs étirés.
+- Raison : test réel : six blocs occupaient la moitié haute, la moitié basse restait vide (D-404 : les informations clés sur un écran, sans vide inutile). Les dernières exécutions sont ce qu'on regarde juste après les états.
+- Options écartées : blocs étirés ou courbes plus hautes (on grossit sans informer) ; deux colonnes au lieu de trois (pile plus haute, mêmes informations) ; une rangée de chiffres clés (écartée par D-431).
+- Validation : par délégation de l'utilisateur, 2026-11-28 — docs/validation/components/Test-Regles-Alfred-v1.html (Q7 A). Story `TableauCourt`.

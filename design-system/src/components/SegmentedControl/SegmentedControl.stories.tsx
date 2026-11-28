@@ -156,3 +156,28 @@ export const Densite: Story = {
     await expect(c.getByRole("radiogroup", { name: "Desktop" }).getBoundingClientRect().height).toBe(28);
   },
 };
+
+/** Sombre : le segment choisi est plus clair que le rail, jamais un creux ; libellés non choisis au-dessus de 4,5:1 (D-436). */
+export const Sombre: Story = {
+  globals: { theme: "dark" },
+  render: () => <SegmentedControl label="État" options={[{ value: "all", label: "Toutes" }, { value: "failed", label: "En échec (1)" }, { value: "running", label: "En cours (2)" }]} defaultValue="all" />,
+  play: async ({ canvasElement }) => {
+    const rgb = (c: string) => c.match(/\d+(\.\d+)?/g)!.slice(0, 3).map(Number);
+    const lum = (c: string) => {
+      const [r, g, b] = rgb(c).map((v) => (v / 255 <= 0.03928 ? v / 255 / 12.92 : ((v / 255 + 0.055) / 1.055) ** 2.4));
+      return 0.2126 * r! + 0.7152 * g! + 0.0722 * b!;
+    };
+    const ratio = (a: string, b: string) => {
+      const [hi, lo] = [lum(a), lum(b)].sort((x, y) => y - x);
+      return (hi! + 0.05) / (lo! + 0.05);
+    };
+    const group = within(canvasElement).getByRole("radiogroup", { name: "État" });
+    const rail = getComputedStyle(group).backgroundColor;
+    const label = (name: string) => within(group).getByRole("radio", { name }).closest("label")!;
+    const on = getComputedStyle(label("Toutes"));
+    const off = getComputedStyle(label("En échec (1)"));
+    await expect(lum(on.backgroundColor)).toBeGreaterThan(lum(rail));
+    await expect(ratio(off.color, rail)).toBeGreaterThanOrEqual(4.5);
+    await expect(ratio(on.color, on.backgroundColor)).toBeGreaterThanOrEqual(4.5);
+  },
+};

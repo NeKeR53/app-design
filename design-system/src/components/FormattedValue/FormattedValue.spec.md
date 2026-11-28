@@ -65,7 +65,7 @@ Fonctions exportées, pour les gabarits et l'app :
 ## Exclus
 - Pas de rendu personnalisé ni de fonction de format fournie par l'app : une donnée qui ne rentre dans aucun type se convertit en texte avant (`value` d'une colonne).
 - Pas d'heure seule, pas d'unité physique (km, kg) dans cette version.
-- `tags` n'a pas de pastilles : un texte suffit en liste et se lit d'un coup d'œil.
+- `tags` n'a pas de pastilles : un texte suffit en liste et se lit d'un coup d'œil. Dans une fiche (`Drawer`, champ déclaratif), les étiquettes ont la place : `TagGroup` de lecture (D-433).
 - Pas d'info-bulle sur une date relative : la cellule ne doit pas devenir un arrêt de tabulation.
 - Pas de `className` ni de `style`.
 

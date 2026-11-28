@@ -2,6 +2,21 @@
 
 Versions selon semver (règle 6 du skill design) : une nouvelle option facultative est une version mineure ; un changement qui casse l'existant est une version majeure, avec une note de migration.
 
+## [1.28.0] — 2026-11-28
+
+Corrections du test réel des règles d'Alfred (2026-11-27). Toutes les options sont facultatives ; le rendu par défaut ne change pas, sauf les corrections ci-dessous.
+
+### Ajouté
+- `ListPage`, `Table`, `List` : `updatedAt` (facultatif). En erreur avec des résultats, le bandeau dit l'âge des données : « Dernière mise à jour il y a 12 minutes. » (D-434). Message `lastUpdated`.
+- `Sparkline` : `formatValue` (dernière valeur et son unité à droite) et `fromZero` (échelle depuis zéro, trait de base) (D-435).
+- Token `--segment-selected` (fond du segment choisi de `SegmentedControl`) (D-436).
+- layout-rules : règles sur la barre d'avancement, la courbe, l'icône d'arrêt, l'âge des données et la page composée courte (D-432 à D-438).
+
+### Corrigé
+- `Drawer` : un champ déclaratif `type: "tags"` se rend en étiquettes (`TagGroup` de lecture), plus en texte « a, b, c » (D-433).
+- `SegmentedControl` en sombre : le segment choisi est plus clair que le rail (#474747 au lieu de `--surface`), il ne se lit plus comme un creux (D-436).
+- Recette « Tableau de suivi » : la barre d'avancement n'existe que pendant une exécution (D-432) ; « Arrêter » à icône pleine (D-437) ; courbe chiffrée depuis zéro (D-435) ; « Dernières exécutions » sous une grille courte (D-438). Captures refaites.
+
 ## [1.27.0] — 2026-11-27
 
 ### Ajouté

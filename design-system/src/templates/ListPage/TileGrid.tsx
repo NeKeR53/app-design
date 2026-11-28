@@ -72,7 +72,7 @@ export function TilePreview({ thumbnail, size = "tile" }: { thumbnail: ListPageT
   );
 }
 
-export function TileGrid({ label, items, selectionMode = "single", selectedKeys, onSelectionChange, onAction, itemActions, isLoading, hasError, onRetry, searchTerms, onClearSearch }: TileGridProps) {
+export function TileGrid({ label, items, selectionMode = "single", selectedKeys, onSelectionChange, onAction, itemActions, isLoading, hasError, onRetry, updatedAt, searchTerms, onClearSearch }: TileGridProps) {
   const terms = searchTerms?.filter(Boolean) ?? [];
   const firstLoad = isLoading && items.length === 0;
   const empty = !isLoading && !hasError && items.length === 0 && terms.length > 0;
@@ -131,7 +131,7 @@ export function TileGrid({ label, items, selectionMode = "single", selectedKeys,
   return (
     <div className="socle-box relative flex min-h-0 flex-1 flex-col font-sans text-md text-fg" {...rowMenuProps}>
       {isLoading && items.length > 0 && <ReloadBar />}
-      {hasError && items.length > 0 && <ErrorBanner onRetry={onRetry} />}
+      {hasError && items.length > 0 && <ErrorBanner onRetry={onRetry} updatedAt={updatedAt} />}
       {hasError && items.length === 0 ? (
         <LoadError onRetry={onRetry} />
       ) : firstLoad ? (

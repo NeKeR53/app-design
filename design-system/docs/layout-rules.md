@@ -134,6 +134,11 @@ Une page qui ne ressemble à aucune recette suit les gabarits et la règle « Vu
 ## Petites règles
 
 - Sur un fond de sélection, le texte tertiaire passe en texte secondaire (contraste AA).
+- Une barre d'avancement montre un travail en cours : jamais pleine après coup pour dire « fini » ; l'état le dit (`Badge`) (D-432).
+- Une courbe (`Sparkline`) porte au moins sa valeur courante et son unité : dans `Card metric`, le chiffre de la carte ; ailleurs, `formatValue`. Une durée, une taille, un compte partent de zéro (`fromZero`). Sinon, pas de courbe (D-435).
+- Arrêter une exécution : icône d'arrêt pleine (carré plein), libellé en info-bulle ; jamais un carré vide, qui se lit comme une case à cocher (D-437).
+- Des données gardées après un échec de lecture disent leur âge : « Dernière mise à jour il y a 12 minutes » (`updatedAt` de `ListPage`, `Table`, `List`) (D-434).
+- Une page composée courte (deux lignes de blocs au plus) ne laisse pas la moitié de l'écran vide : un bloc pleine largeur utile dessous (les derniers événements, les dernières exécutions), jamais des blocs étirés ou des graphiques grossis pour remplir (D-438).
 - Une info-bulle se place du côté où il y a de la place ; elle n'est jamais coupée par un bord.
 - Une ombre est réservée à ce qui flotte ; le reste se sépare par des traits.
 - Rayons (D-040) : 8 px pour un contrôle (bouton, bouton-icône, onglet, élément de sidebar ou de menu, champ, info-bulle) ; 4 px pour un petit contrôle placé dans un autre (× d'un onglet, case à cocher) ; 12 px pour un conteneur (carte, menu flottant, modale). Aucun autre rayon.

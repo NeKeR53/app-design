@@ -6,6 +6,7 @@ export const COLOR_TOKENS = [
   ["--field", "Champs, boutons secondaires"],
   ["--hover", "Survol"],
   ["--selected", "Sélection (texte tertiaire → secondaire dessus)"],
+  ["--segment-selected", "Segment choisi (SegmentedControl), plus clair que le rail"],
   ["--line", "Traits de séparation"],
   ["--fg", "Texte principal"],
   ["--fg-2", "Texte secondaire"],

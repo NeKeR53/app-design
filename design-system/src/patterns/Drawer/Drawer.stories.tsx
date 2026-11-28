@@ -176,7 +176,9 @@ export const Declaratif: Story = {
     await expect(c.getByText(/12\s480,00\s€/)).toBeVisible();
     await expect(c.getByText("14 mars 2019")).toBeVisible();
     await expect(c.getByRole("link", { name: new RegExp(CLIENT.mail) })).toHaveAttribute("href", `mailto:${CLIENT.mail}`);
-    await expect(c.getByText("Bois, Grands comptes")).toBeVisible();
+    // Étiquettes : un TagGroup de lecture nommé par le libellé du champ, pas un texte « a, b » (D-433).
+    const tags = c.getByRole("grid", { name: "Étiquettes" });
+    await expect(within(tags).getAllByRole("row").map((r) => r.textContent)).toEqual(["Bois", "Grands comptes"]);
     // Section sans champ ni contenu : texte vide ; texte libre : paragraphe.
     await expect(c.getByText(/Trois sites/)).toBeVisible();
     await expect(c.getByRole("button", { name: /Notes/ })).toHaveAttribute("aria-expanded", "false");

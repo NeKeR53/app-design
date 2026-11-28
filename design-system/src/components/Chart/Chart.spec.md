@@ -41,6 +41,8 @@ Ne pas l'utiliser pour :
 | `size` | `"sm" \| "md"` | `"md"` | Hauteur du tracé : 160 ou 232 px. |
 | `Sparkline` : `values` | `number[]` | — (obligatoire) | Les valeurs, dans l'ordre du temps ; deux au moins, sinon rien n'est rendu. |
 | `Sparkline` : `label` | `string` | — (obligatoire) | Nom accessible : ce que montre la courbe, son début et sa fin. |
+| `Sparkline` : `formatValue` | `(v: number) => string` | aucune | Écrit la dernière valeur et son unité à droite de la courbe (« 4 min »), `--fg` moyen, chiffres de largeur égale (D-435). |
+| `Sparkline` : `fromZero` | `boolean` | `false` | Échelle depuis zéro, avec un trait de base `--line-strong` : un écart de 10 % ne se dessine pas comme un saut (D-435). |
 
 ## Exclus
 - Pas de couleur choisie par l'app, pas de couleur d'état pour une série (D-338), pas de dégradé ni d'aire remplie.
@@ -68,9 +70,11 @@ Ne pas l'utiliser pour :
 | Sans données : message, pas d'arrêt de Tab | verrouillé | `SansDonnees` |
 | Axe dense : une étiquette sur k, sans chevauchement, la dernière nommée (D-429) | verrouillé | `AxeDense` |
 | `Sparkline` : 32 px, `--chart-1`, nommée (D-429) | verrouillé | `PetiteCourbe` |
+| `Sparkline` hors de `Card metric` : la dernière valeur et son unité à droite (`formatValue`), sinon pas de courbe (D-435) | réglable (`formatValue`, `fromZero`) | `PetiteCourbeChiffree` |
 
 ## Contenu
 - `label` résume ce que le graphique montre et son mouvement : « Commandes par semaine, de 212 à 312 ». Le titre du bloc reste court : « Commandes par semaine ».
+- Une courbe porte au moins sa valeur courante et son unité (D-435) : dans `Card metric`, c'est le chiffre de la carte ; ailleurs, `formatValue`. Une courbe sans valeur ni repère décore sans informer : ne pas l'afficher. Une durée, une taille ou un compte se lisent depuis zéro (`fromZero`).
 - Catégories courtes : « S48 », « 12/11 », « T4 ». Les valeurs passent par `formatValue` (« 86 k€ », « 3,5 min »).
 - Noms de série au nom (« Commandes », « Retours »), sans unité si le titre la donne.
 
@@ -105,7 +109,7 @@ Dans une `PageSection` (titre et description du bloc), le plus souvent côte à 
 SVG maison, sans dépendance (D-428) ; couleurs et textes aux tokens ; info-bulle aux tokens de `Tooltip` ; anneau de focus commun (`nativeFocusRing`, D-425).
 
 ## Décisions
-D-338, D-425, D-426, D-428, D-429, D-430.
+D-338, D-425, D-426, D-428, D-429, D-430, D-435.
 
 ## Questions ouvertes
 Aucune.

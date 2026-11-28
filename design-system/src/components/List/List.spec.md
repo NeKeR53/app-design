@@ -81,7 +81,7 @@ Zone `list` de `ListPage`. Dans une section de page, une liste courte peut être
 Contient `Checkbox` (à spécifier), `IconButton`, `DropdownMenu`, `Tooltip`, `Badge` (D-160), `Skeleton` (D-165) et `EmptyState` (D-166) pour ses états (D-169).
 
 ## Décisions
-D-021, D-026, D-039, D-040, D-044, D-064, D-065, D-066, D-068, D-069, D-070, D-084, D-085, D-086, D-087, D-400
+D-021, D-026, D-039, D-040, D-044, D-064, D-065, D-066, D-068, D-069, D-070, D-084, D-085, D-086, D-087, D-400, D-434
 
 ## Questions ouvertes
 Aucune.

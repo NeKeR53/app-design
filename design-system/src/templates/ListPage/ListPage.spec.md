@@ -54,6 +54,7 @@ Ne pas l'utiliser pour :
 | `onRequestAccess` | `() => void` | aucun | Bouton « Demander l'accès » de l'accès refusé. |
 | `isLoading` | `boolean` | `false` | Rechargement avec des lignes déjà là : barre fine (D-084). |
 | `hasError` / `onRetry` | `boolean` / `() => void` | `false` | Le dernier chargement a échoué (D-085). |
+| `updatedAt` | `Date \| number \| string` | aucune | Date de la dernière lecture réussie. En erreur avec des lignes, le bandeau dit l'âge des données : « Dernière mise à jour il y a 12 minutes. » (D-434). |
 | `remote` | `boolean` | `false` | Données côté serveur : le gabarit ne filtre, ne trie, ne découpe rien ; il signale chaque changement à `onStateChange` (D-174). |
 | `total` | `number` | nombre de lignes | En mode `remote` : nombre total d'éléments qui correspondent. |
 | `onStateChange` | `(state: ListPageState) => void` | aucun | `{ query, filters, sort, page }` à chaque changement ; plus `pageSize` avec `pageSizes`, et `selection: "all"` en `remote` après « Sélectionner les N éléments ». |
@@ -84,7 +85,7 @@ Ne pas l'utiliser pour :
 | Vide (aucune ligne, aucun critère) | En-tête (sans l'action `primary`, qui passe dans l'état vide), puis `EmptyState` : icône, titre, phrase, action principale. Ni barre, ni pied (D-176). |
 | Aucun résultat (critères actifs) | Barre gardée ; message « Aucun résultat pour « … » » avec « Effacer la recherche », qui vide la recherche et les filtres (D-086, D-176). |
 | Erreur au premier chargement | En-tête, puis message centré « Impossible de charger les résultats » et « Réessayer » (D-085). |
-| Erreur avec des lignes | Lignes gardées, bandeau « Résultats non mis à jour » et « Réessayer » au-dessus (D-085). |
+| Erreur avec des lignes | Lignes gardées, bandeau « Résultats non mis à jour » et « Réessayer » au-dessus (D-085) ; avec `updatedAt`, l'âge des données suit : « Dernière mise à jour il y a 12 minutes. », relu chaque minute (D-434). Une app qui garde des données passe toujours `updatedAt`. |
 | Lignes cochées | Barre de sélection à la place de la barre d'outils (D-178). |
 | Tous les éléments sélectionnés (`allowSelectAll`) | « 312 éléments sélectionnés » et « Effacer la sélection » ; les lignes chargées ensuite sont cochées (D-345). |
 | Accès refusé (`isForbidden`) | Titre de la page, puis `EmptyState` `forbidden` ; ni actions, ni barre, ni liste, ni pied (D-351). |
@@ -145,7 +146,7 @@ Zone `main` d'`AppShell` (layout-rules, gabarit ListPage). Le panneau de détail
 `ActionBar`, `SearchInput`, `Select`, `Table`, `List`, `EmptyState`, `FormattedValue`, `Button`, `Pagination`, `Badge` (grille). Rien d'autre.
 
 ## Décisions
-D-021, D-080, D-084 à D-087, D-111, D-114, D-117, D-159, D-170 à D-178, D-382, D-414, D-415, D-416
+D-021, D-080, D-084 à D-087, D-111, D-114, D-117, D-159, D-170 à D-178, D-382, D-414, D-415, D-416, D-434
 
 ## Questions ouvertes
 Aucune.

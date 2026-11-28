@@ -84,7 +84,7 @@ Aucune.
 | `id` | `string` | le libellé | Identifiant de la ligne (clé, dépliage). |
 | `label` | `string` | — (obligatoire) | Libellé. |
 | `value` | `unknown` | — (obligatoire) | Valeur brute, mise en forme selon `type`. |
-| `type`, `statuses`, `currency`, `decimals`, `durationUnit` | `ValueFormat` (spec FormattedValue) | `type: "text"` | Rendu par `FormattedValue`, comme les colonnes de ListPage (D-170, D-182). Un texte simple (`text`, `tags`, `boolean`) garde la coupe à trois lignes et l'info-bulle (D-058). |
+| `type`, `statuses`, `currency`, `decimals`, `durationUnit` | `ValueFormat` (spec FormattedValue) | `type: "text"` | Rendu par `FormattedValue`, comme les colonnes de ListPage (D-170, D-182). Un texte simple (`text`, `boolean`) garde la coupe à trois lignes et l'info-bulle (D-058). `tags` (liste de textes) se rend en étiquettes : un `TagGroup` de lecture, nommé par le libellé du champ (D-433) ; en texte « a, b, c » seulement dans une ligne à `details`. |
 | `hideEmpty` | `boolean` | `false` | Ligne masquée si la valeur est vide, au lieu de « — ». |
 | `icon`, `action`, `details` | | | Comme `PropertyRow`. |
 
@@ -158,7 +158,7 @@ Uniquement dans le slot `detail` d'AppShell.
 Contient `IconButton`, `DropdownMenu`, `Toggle` (D-136), `Button` (D-100) et `Tooltip`. Forme déclarative : `ActionBar` (D-110), `Badge` (D-160), `SkeletonGroup` et `Skeleton` (D-165), `EmptyState` (D-166), et `FormattedValue` (D-170). Peut contenir `InlineEdit` comme valeur (D-324) et `Accordion` dans une section (D-321).
 
 ## Décisions
-D-007, D-015, D-018, D-025, D-026, D-040, D-047, D-057, D-058, D-059, D-060, D-061, D-084, D-085, D-110, D-113, D-116, D-160, D-165, D-166, D-170, D-171, D-180, D-181, D-182, D-183, D-184, D-185, D-240, D-241, D-242, D-321, D-324, D-399
+D-007, D-015, D-018, D-025, D-026, D-040, D-047, D-057, D-058, D-059, D-060, D-061, D-084, D-085, D-110, D-113, D-116, D-160, D-165, D-166, D-170, D-171, D-180, D-181, D-182, D-183, D-184, D-185, D-240, D-241, D-242, D-321, D-324, D-399, D-433
 
 ## Questions ouvertes
 Aucune.

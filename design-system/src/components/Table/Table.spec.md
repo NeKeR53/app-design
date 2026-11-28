@@ -60,7 +60,7 @@ Variante signature d'un thème d'organisation (`theme.signature.tableHeader`, D-
 | Chargement | Premier chargement : 6 lignes squelettes. Nouvelle recherche : anciens résultats gardés, barre de 2 px `--accent` en haut de la zone, `aria-busy` (D-084). |
 | Vide | Géré par le gabarit (`empty` de ListPage) : icône, titre, phrase, action principale. |
 | Aucun résultat (recherche) | « Aucun résultat pour « … » », « Vérifiez l'orthographe ou retirez un critère. », bouton « Effacer la recherche » (D-086). |
-| Erreur | Premier chargement : message centré « Impossible de charger les résultats » et « Réessayer ». Nouvelle recherche : anciens résultats gardés, bandeau « Résultats non mis à jour » avec « Réessayer » au-dessus (D-085). |
+| Erreur | Premier chargement : message centré « Impossible de charger les résultats » et « Réessayer ». Nouvelle recherche : anciens résultats gardés, bandeau « Résultats non mis à jour » avec « Réessayer » au-dessus (D-085) ; avec `updatedAt`, l'âge des données suit (« Dernière mise à jour il y a 12 minutes. », D-434). |
 
 ## Comportement
 | Règle | Niveau de réglage | Test (story) |
@@ -119,7 +119,7 @@ Zone `list` de `ListPage`, seul. Jamais dans le panneau de détail ni dans la si
 Contient `Checkbox` (à spécifier), `IconButton`, `DropdownMenu`, `Tooltip` `Skeleton` (D-165) et `EmptyState` (D-166) pour ses états (D-169). Une cellule de statut reçoit un `Badge` ou un `BadgeDot` (D-160, D-162).
 
 ## Décisions
-D-004, D-007, D-021, D-025, D-026, D-039, D-040, D-053, D-054, D-062, D-063, D-064, D-065, D-066, D-067, D-084, D-085, D-086, D-087, D-270, D-271, D-272, D-273, D-274, D-275, D-276, D-277, D-337
+D-004, D-007, D-021, D-025, D-026, D-039, D-040, D-053, D-054, D-062, D-063, D-064, D-065, D-066, D-067, D-084, D-085, D-086, D-087, D-270, D-271, D-272, D-273, D-274, D-275, D-276, D-277, D-337, D-434
 
 ## Questions ouvertes
 Aucune.

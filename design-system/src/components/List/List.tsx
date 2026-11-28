@@ -82,6 +82,7 @@ export function List({
   isLoading,
   hasError,
   onRetry,
+  updatedAt,
   searchTerms,
   onClearSearch,
 }: ListProps) {
@@ -155,7 +156,7 @@ export function List({
   return (
     <div className="socle-box relative flex min-h-0 flex-1 flex-col font-sans text-md text-fg" {...rowMenuProps}>
       {isLoading && all.length > 0 && <ReloadBar />}
-      {hasError && all.length > 0 && <ErrorBanner onRetry={onRetry} />}
+      {hasError && all.length > 0 && <ErrorBanner onRetry={onRetry} updatedAt={updatedAt} />}
       {hasError && all.length === 0 ? (
         <LoadError onRetry={onRetry} />
       ) : firstLoad ? (

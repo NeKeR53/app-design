@@ -306,26 +306,48 @@ export interface SparklineProps {
   values: ReadonlyArray<number>;
   /** Nom accessible : ce que montre la courbe, et son début et sa fin. */
   label: string;
+  /**
+   * Écrit la dernière valeur, avec son unité, à droite de la courbe (« 4,1 min »). Une courbe seule, hors de
+   * `Card variant="metric"`, la donne toujours : sans valeur, elle décore sans informer (D-435).
+   */
+  formatValue?: (value: number) => string;
+  /** Échelle depuis zéro, avec un trait de base : un écart de 10 % ne se dessine plus comme un saut (D-435). Défaut : du plus petit au plus grand. */
+  fromZero?: boolean;
 }
 
-/** Petite courbe d'une seule série, sans axe ni interaction : la tendance d'un chiffre clé (D-429). */
-export function Sparkline({ values, label }: SparklineProps) {
+/** Petite courbe d'une seule série, sans axe ni interaction : la tendance d'un chiffre clé (D-429, D-435). */
+export function Sparkline({ values, label, formatValue, fromZero = false }: SparklineProps) {
   const [box, width] = useWidth(160);
   const h = 32;
   const pad = 3;
   if (values.length < 2) return null;
-  const lo = Math.min(...values);
+  const lo = fromZero ? Math.min(0, ...values) : Math.min(...values);
   const hi = Math.max(...values);
   const x = (i: number) => pad + (i / (values.length - 1)) * (width - 2 * pad);
   const y = (v: number) => pad + (h - 2 * pad) * (1 - (v - lo) / (hi - lo || 1));
   const d = values.map((v, i) => `${i ? "L" : "M"}${x(i)},${y(v)}`).join(" ");
   const last = values.length - 1;
+  const svg = (
+    <svg role="img" aria-label={label} width={width} height={h} className="block overflow-visible">
+      {fromZero && <line x1={0} x2={width} y1={y(0) + 0.5} y2={y(0) + 0.5} stroke="var(--line-strong)" strokeWidth={1} />}
+      <path d={d} fill="none" stroke="var(--chart-1)" strokeWidth={1.5} strokeLinejoin="round" strokeLinecap="round" />
+      <circle cx={x(last)} cy={y(values[last]!)} r={2.5} fill="var(--chart-1)" />
+    </svg>
+  );
+  if (!formatValue)
+    return (
+      <div ref={box} className="socle-sparkline w-full">
+        {svg}
+      </div>
+    );
   return (
-    <div ref={box} className="socle-sparkline w-full">
-      <svg role="img" aria-label={label} width={width} height={h} className="block overflow-visible">
-        <path d={d} fill="none" stroke="var(--chart-1)" strokeWidth={1.5} strokeLinejoin="round" strokeLinecap="round" />
-        <circle cx={x(last)} cy={y(values[last]!)} r={2.5} fill="var(--chart-1)" />
-      </svg>
+    <div className="socle-sparkline flex w-full items-center gap-3">
+      <div ref={box} className="min-w-0 flex-1">
+        {svg}
+      </div>
+      <span data-sparkline-value="" aria-hidden="true" className="shrink-0 text-sm font-medium text-fg tabular-nums">
+        {formatValue(values[last]!)}
+      </span>
     </div>
   );
 }
